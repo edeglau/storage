@@ -262,6 +262,7 @@ class SelectionPalettUI(object):
                     pass
                 else:
                     return
+            self.clearList()
             for each in selectedObject:
                 cmds.select(each, r=1)
                 self.repopulateList(selectedObject)                      
