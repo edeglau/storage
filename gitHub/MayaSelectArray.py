@@ -64,42 +64,42 @@ class SelectionPalettUI(object):
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 20))
-        cmds.button (label='Grab Node', p='listBuildButtonLayout', command = self.get_node_property)
-        cmds.button (label='Grab Name', p='listBuildButtonLayout', command = self.get_name_property)
-        cmds.button (label='Filter Node', p='listBuildButtonLayout', command = self.create_list_by_node_filter)
+        cmds.button (label='Grab Node', p='listBuildButtonLayout', command = self._get_node_property)
+        cmds.button (label='Grab Name', p='listBuildButtonLayout', command = self._get_name_property)
+        cmds.button (label='Filter Node', p='listBuildButtonLayout', command = self._create_list_by_node_filter)
         cmds.popupMenu(button=1)
-        cmds.menuItem  (label='filter selected by type and make list', command = self.create_list_by_node_filter)
-        cmds.menuItem  (label='filter selected by type and add to list', command = self.add_list_by_node_filter)
-        cmds.button (label='Filter Name', p='listBuildButtonLayout', command = self.create_list_by_name_filter)
+        cmds.menuItem  (label='filter selected by type and make list', command = self._create_list_by_node_filter)
+        cmds.menuItem  (label='filter selected by type and add to list', command = self._add_list_by_node_filter)
+        cmds.button (label='Filter Name', p='listBuildButtonLayout', command = self._create_list_by_name_filter)
         cmds.popupMenu(button=1)
-        cmds.menuItem  (label='filter selected by name and make list', command = self.create_list_by_name_filter)
-        cmds.menuItem  (label='filter selected by name and add to list', command = self.add_list_by_name_filter)
-        cmds.button (label='All Node', p='listBuildButtonLayout', command = self.create_list_by_all_node)
+        cmds.menuItem  (label='filter selected by name and make list', command = self._create_list_by_name_filter)
+        cmds.menuItem  (label='filter selected by name and add to list', command = self._add_list_by_name_filter)
+        cmds.button (label='All Node', p='listBuildButtonLayout', command = self._create_list_by_all_node)
         cmds.popupMenu(button=1)
-        cmds.menuItem  (label='select all scene by type and make list', command = self.create_list_by_all_node)
-        cmds.menuItem  (label='select all scene by type and add to list', command = self.add_list_by_all_node)
-        cmds.button (label='All Name', p='listBuildButtonLayout', command = self.create_list_by_all_name)
+        cmds.menuItem  (label='select all scene by type and make list', command = self._create_list_by_all_node)
+        cmds.menuItem  (label='select all scene by type and add to list', command = self._add_list_by_all_node)
+        cmds.button (label='All Name', p='listBuildButtonLayout', command = self._create_list_by_all_name)
         cmds.popupMenu(button=1)
-        cmds.menuItem  (label='select all scene by name and make list', command = self.create_list_by_all_name)
-        cmds.menuItem  (label='select all scene by name and add to list', command = self.add_list_by_all_name)
+        cmds.menuItem  (label='select all scene by name and make list', command = self._create_list_by_all_name)
+        cmds.menuItem  (label='select all scene by name and add to list', command = self._add_list_by_all_name)
         cmds.text (label='Name or node type field',  p='selectArrayColumn')
         cmds.gridLayout('searchLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 25))
         self.nodeName=cmds.textField(w=120, h=25, p='searchLayout')
-        cmds.button (label='Find', command = self.find_in_list, p='searchLayout', w=20, ann='find this name in list below')
+        cmds.button (label='Find', command = self._find_in_list, p='searchLayout', w=20, ann='find this name in list below')
         cmds.popupMenu(button=1)
-        cmds.menuItem  (label='Select in list only', command = self.find_in_list)
-        cmds.menuItem  (label='Select in list and scene', command = self.find_in_listAndSelect)
+        cmds.menuItem  (label='Select in list only', command = self._find_in_list)
+        cmds.menuItem  (label='Select in list and scene', command = self._find_in_listAndSelect)
         self.listCountLabel=cmds.text (label='Selection list', p='selectArrayColumn')
         self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=220, h=300, p='selectArrayColumn')
         cmds.gridLayout('listArrangmentButtonLayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(40, 20))
-        cmds.button (label='clr', command = self.clear_list, p='listArrangmentButtonLayout')
-        cmds.button (label='+', command = self.add_selected_to_list, p='listArrangmentButtonLayout')
-        cmds.button (label='-', command = self.remove_from_list, p='listArrangmentButtonLayout')
-        cmds.button (label='><', command = self.swap_with_selected, p='listArrangmentButtonLayout', ann='swap out selected in list with selected in scene')
-        cmds.button (label='sel all', command = self.select_all_in_list, p='listArrangmentButtonLayout', w=50, ann='select all')
-        cmds.button (label='sel- ', command = self.clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
-        cmds.button (label='sort', command = self.sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
-        cmds.button (label='set', command = self.make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create_select_array_window set from selected in list')
+        cmds.button (label='clr', command = self._clear_list, p='listArrangmentButtonLayout')
+        cmds.button (label='+', command = self._add_selected_to_list, p='listArrangmentButtonLayout')
+        cmds.button (label='-', command = self._remove_from_list, p='listArrangmentButtonLayout')
+        cmds.button (label='><', command = self._swap_with_selected, p='listArrangmentButtonLayout', ann='swap out selected in list with selected in scene')
+        cmds.button (label='sel all', command = self._select_all_in_list, p='listArrangmentButtonLayout', w=50, ann='select all')
+        cmds.button (label='sel- ', command = self._clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
+        cmds.button (label='sort', command = self._sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
+        cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create_select_array_window set from selected in list')
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')
         cmds.text (label="elisedeglau.wordpress.com/2014/03/25/select-palette/", hl=1, w=300, al='left', p='selectArrayColumn')
         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
@@ -208,7 +208,7 @@ class SelectionPalettUI(object):
         cmds.deleteUI(windows, window=1)
         
     
-    def get_node_property(self, arg=None):
+    def _get_node_property(self, arg=None):
         '''----------------------------------------------------------------------------------
         This grabs the node property of selected object
         ----------------------------------------------------------------------------------'''          
@@ -225,7 +225,7 @@ class SelectionPalettUI(object):
             self.nothing_selected_error()
     
     
-    def get_name_property(self, arg=None):
+    def _get_name_property(self, arg=None):
         '''----------------------------------------------------------------------------------
         This grabs the named property of selected object
         ----------------------------------------------------------------------------------'''          
@@ -237,7 +237,7 @@ class SelectionPalettUI(object):
         else:
             self.nothing_selected_error()
             
-    def create_list_by_all_node(self, arg=None):
+    def _create_list_by_all_node(self, arg=None):
         '''----------------------------------------------------------------------------------
         This selects everything in scene by the matched node type in field and create_select_array_windows list
         ----------------------------------------------------------------------------------'''          
@@ -262,7 +262,7 @@ class SelectionPalettUI(object):
                     pass
                 else:
                     return
-            self.clear_list()
+            self._clear_list()
             for each in selectedObject:
                 cmds.select(each, r=1)
                 self.repopulate_list(selectedObject)                      
@@ -271,7 +271,7 @@ class SelectionPalettUI(object):
             return       
     
     
-    def add_list_by_all_node(self, arg=None):
+    def _add_list_by_all_node(self, arg=None):
         '''----------------------------------------------------------------------------------
         This adds all items of the same type
         ----------------------------------------------------------------------------------'''          
@@ -301,7 +301,7 @@ class SelectionPalettUI(object):
         else:
             self.selection_field_error()                       
     
-    def create_list_by_all_name(self, arg=None):
+    def _create_list_by_all_name(self, arg=None):
         '''----------------------------------------------------------------------------------
         This selects everything in scene by the matched name in field
         ----------------------------------------------------------------------------------'''          
@@ -317,7 +317,7 @@ class SelectionPalettUI(object):
             self.selection_field_error()
             
     
-    def add_list_by_all_name(self, arg=None):
+    def _add_list_by_all_name(self, arg=None):
         '''----------------------------------------------------------------------------------
         This adds all items in scene that share the same name shown in field
         ----------------------------------------------------------------------------------'''          
@@ -333,7 +333,7 @@ class SelectionPalettUI(object):
         else:
             self.selection_field_error()
     
-    def create_list_by_node_filter(self, arg=None):
+    def _create_list_by_node_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
         This filters all selected objects by name in field and create_select_array_windows a list from it
         ----------------------------------------------------------------------------------'''
@@ -345,7 +345,7 @@ class SelectionPalettUI(object):
         else:
             self.selection_field_error()
     
-    def add_list_by_node_filter(self, arg=None):
+    def _add_list_by_node_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
         Adds selected objects with filtered name to the list
         ----------------------------------------------------------------------------------'''          
@@ -360,7 +360,7 @@ class SelectionPalettUI(object):
     
     
     
-    def create_list_by_name_filter(self, arg=None):
+    def _create_list_by_name_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
         This filters all selected objects by name in field and create_select_array_windows a list from it
         ----------------------------------------------------------------------------------'''
@@ -373,7 +373,7 @@ class SelectionPalettUI(object):
             self.selection_field_error()
             
                  
-    def add_list_by_name_filter(self, arg=None):
+    def _add_list_by_name_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
         Adds selected objects with filtered name to the list
         ----------------------------------------------------------------------------------'''          
@@ -386,7 +386,7 @@ class SelectionPalettUI(object):
         else:
             self.selection_field_error()
             
-    def find_in_list(self, arg=None):
+    def _find_in_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This locates the object by name in list
         ----------------------------------------------------------------------------------'''          
@@ -406,7 +406,7 @@ class SelectionPalettUI(object):
         else:
             self.selection_field_error()  
     
-    def find_in_listAndSelect(self, arg=None):
+    def _find_in_listAndSelect(self, arg=None):
         '''----------------------------------------------------------------------------------
         This locates the object by name in list
         ----------------------------------------------------------------------------------'''          
@@ -431,14 +431,14 @@ class SelectionPalettUI(object):
     BOTTOM BUTTON FUNCTIONS
     =========================================================================================================================================='''          
     
-    def clear_list(self, arg=None):
+    def _clear_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         this clears the list
         ----------------------------------------------------------------------------------'''          
         cmds.textScrollList(self.nodeList, e=1, ra=1)
         self.count_objects_in_list() 
         
-    def add_selected_to_list(self, arg=None):
+    def _add_selected_to_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         Adds selected objects to the list
         ----------------------------------------------------------------------------------'''          
@@ -447,7 +447,7 @@ class SelectionPalettUI(object):
         if selectedObject:
             self.adding_to_list_function_main(selectedObject, listArray)  
             
-    def remove_from_list(self, arg=None):
+    def _remove_from_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This removes the selected item in the list from the list
         ----------------------------------------------------------------------------------'''          
@@ -458,7 +458,7 @@ class SelectionPalettUI(object):
             cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
             self.count_objects_in_list() 
     
-    def swap_with_selected(self, arg=None):
+    def _swap_with_selected(self, arg=None):
         '''----------------------------------------------------------------------------------
         This swaps the selected list item with the selected object
         ----------------------------------------------------------------------------------'''          
@@ -476,7 +476,7 @@ class SelectionPalettUI(object):
         else:
             print 'Select list item first and then object to swap with.'
     
-    def select_all_in_list(self, arg=None):
+    def _select_all_in_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This selects all items in list
         ----------------------------------------------------------------------------------'''          
@@ -487,13 +487,13 @@ class SelectionPalettUI(object):
         else:
             print "List is empty."
             
-    def clear_selection(self, arg=None):
+    def _clear_selection(self, arg=None):
         '''----------------------------------------------------------------------------------
         This clears the selection of the items in the list
         ----------------------------------------------------------------------------------'''          
         self.deselect_in_list_function()
     
-    def sort_list(self, arg=None):
+    def _sort_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This sorts the list by alphabetical and numerical
         ----------------------------------------------------------------------------------'''          
@@ -504,7 +504,7 @@ class SelectionPalettUI(object):
         else:
             print "Check that list is present."
             
-    def make_set_from_selection_list(self, arg=None):
+    def _make_set_from_selection_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This create_select_array_windows a set from selected items in list
         ----------------------------------------------------------------------------------'''          
