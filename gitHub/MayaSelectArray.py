@@ -1,6 +1,6 @@
 '''----------------------------------------------------------
 Selection Palette offers a work area where the artist
-can create_select_array_window a temporary selection group from commonly selected
+can create a temporary selection group from commonly selected
 objects in scene.
 -----------------------------------------------------------'''         
 
@@ -99,7 +99,7 @@ class SelectionPalettUI(object):
         cmds.button (label='sel all', command = self._select_all_in_list, p='listArrangmentButtonLayout', w=50, ann='select all')
         cmds.button (label='sel- ', command = self._clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
         cmds.button (label='sort', command = self._sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
-        cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create_select_array_window set from selected in list')
+        cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create set from selected in list')
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')
         cmds.text (label="elisedeglau.wordpress.com/2014/03/25/select-palette/", hl=1, w=300, al='left', p='selectArrayColumn')
         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
@@ -239,7 +239,7 @@ class SelectionPalettUI(object):
             
     def _create_list_by_all_node(self, arg=None):
         '''----------------------------------------------------------------------------------
-        This selects everything in scene by the matched node type in field and create_select_array_windows list
+        This selects everything in scene by the matched node type in field and create list
         ----------------------------------------------------------------------------------'''          
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
         if nameFieldText: 
@@ -335,7 +335,7 @@ class SelectionPalettUI(object):
     
     def _create_list_by_node_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
-        This filters all selected objects by name in field and create_select_array_windows a list from it
+        This filters all selected objects by name in field and create a list from it
         ----------------------------------------------------------------------------------'''
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
         selectedObject=cmds.ls(sl=1, fl=1)
@@ -362,7 +362,7 @@ class SelectionPalettUI(object):
     
     def _create_list_by_name_filter(self, arg=None):
         '''----------------------------------------------------------------------------------
-        This filters all selected objects by name in field and create_select_array_windows a list from it
+        This filters all selected objects by name in field and create a list from it
         ----------------------------------------------------------------------------------'''
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
         selectedObject=cmds.ls(sl=1, fl=1)
@@ -506,7 +506,7 @@ class SelectionPalettUI(object):
             
     def _make_set_from_selection_list(self, arg=None):
         '''----------------------------------------------------------------------------------
-        This create_select_array_windows a set from selected items in list
+        This create a set from selected items in list
         ----------------------------------------------------------------------------------'''          
         selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
         if selectedListItems:
@@ -521,7 +521,7 @@ class SelectionPalettUI(object):
                 text = cmds.promptDialog(query=True, text=True)
                 cmds.sets(n=text)
             else:
-                print "create_select_array_window set cancelled"
+                print "create set cancelled"
                 return
         else:
             print "Select something from selection list."
