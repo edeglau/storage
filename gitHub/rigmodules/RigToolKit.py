@@ -138,6 +138,7 @@ class ToolKitUI(object):
         cmds.button (label='Add Revert', ann="Adds the revert (mel - Author: NextDesign - from Highend/Creative crash) script to the File drop down in Maya.", p='listBuildButtonLayout', command = self._revert)          
         #cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
+        cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
         
         
