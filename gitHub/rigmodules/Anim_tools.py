@@ -10,7 +10,7 @@ import sys
 #import win32clipboard
 import operator
 
-'''MG rigging modules'''
+'''MG rigging modules '''
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons License'
