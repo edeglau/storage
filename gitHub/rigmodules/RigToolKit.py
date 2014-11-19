@@ -44,7 +44,6 @@ sys.path.append(str(getrenamerFilepath))
 getValueFilepath='\\'.join(gtepiece[:-2])+"\\Values\\"
 sys.path.append(str(getValueFilepath))
 
-# SApath=getfilePath.split("\\")
 getSelArrayPath='\\'.join(gtepiece[:-2])+"\\selectArray\\"
 sys.path.append(str(getSelArrayPath))
 
@@ -52,7 +51,7 @@ getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
 
-#getguideFilepath=( 'G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\AutoRig_MG\\guides\\' )        
+      
 class ToolKitUI(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
     Interface Layout
@@ -139,6 +138,7 @@ class ToolKitUI(object):
         #cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
         cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
+        cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
         
         
@@ -369,7 +369,6 @@ class ToolKitUI(object):
         LimitValues.ValueClass()
         
     def _eye_directions(self, arg=None):
-        #cmds.file(BbxFilepath,  r=1, sns=["ControlBox:",""], type="mayaAscii", iv=1, gl=1, gr=1, gn="ControlBox",mnc=0,  op=1)
         cmds.file(BbxFilepath, i=1,  type="mayaAscii", iv=1, mnc=0, gr=1, gn="FaceRig", op=1, rpr="ControlBox")
         try:
             getBox=cmds.ls("BigBox_CC_grp") 
