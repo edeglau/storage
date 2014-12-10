@@ -9,7 +9,7 @@ __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
-
+from pymel.core import *
 import maya.cmds as cmds
 import sys, os, glob
 # filepath=( "C:\Users\edeglau\git\Liquid\Liquid_egit\SSD\\" )
@@ -59,6 +59,11 @@ class BaseClass():
             cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
             cmds.delete(each, ch=1)
             print str(each)+" now has rotation, translation and scale frozen and construction history has been wiped"
+            
+    def displayViewAnim(self):
+        cmds.modelEditor("modelPanel4", e=1,allObjects=0)
+        cmds.modelEditor("modelPanel4", e=1,polymeshes=1)
+        cmds.modelEditor("modelPanel4", e=1,nurbsCurves=1)
 
     def expObj(self):
         '''this loads the obj plugin and exports a group of selected obj'''
@@ -85,6 +90,17 @@ class BaseClass():
             cmds.select(each)
 #             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJ", pr=1, es=1)
             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
+
+    
+    def fastFloat(self):
+        '''this creates a fast float attribute on selection'''
+        titleText=('Fast Float Attribute'),                        
+        messageText=("Enter name"), 
+        textText=("On"), 
+        float=self.makeDialog(titleText, messageText, textText)
+        for each in ls(sl=1):
+            cmds.addAttr([each], ln=float, min=0, max=1, at="double", k=1, nn=float)
+    
     def transferInfluence_selection(self):
         selObj=cmds.ls(sl=1, fl=1)
         controlObj=selObj[0]
