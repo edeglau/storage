@@ -20,7 +20,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 photoshop = r"C:\\Program Files\\Adobe\\Adobe Photoshop CC 2014\\Photoshop.exe"
-gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.8.exe"
+gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
 
 
 BbxName="eyeDirGuide"
@@ -34,18 +34,24 @@ import baseFunctions_maya
 reload (baseFunctions_maya)
 getClass=baseFunctions_maya.BaseClass()
 
-gtepiece=getfilePath.split("\\")
-getguideFilepath='\\'.join(gtepiece[:-2])+"\\guides\\"
+gtepiece=getfilePath.split("/")
+getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
 sys.path.append(str(getguideFilepath))
 
-getrenamerFilepath='\\'.join(gtepiece[:-2])+"\\renamer\\"
+getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
 sys.path.append(str(getrenamerFilepath))
 
-getValueFilepath='\\'.join(gtepiece[:-2])+"\\Values\\"
+getValueFilepath='/'.join(gtepiece[:-2])+"/Values/"
 sys.path.append(str(getValueFilepath))
 
-getSelArrayPath='\\'.join(gtepiece[:-2])+"\\selectArray\\"
+getSelArrayPath='/'.join(gtepiece[:-2])+"/selectArray/"
 sys.path.append(str(getSelArrayPath))
+
+getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
+sys.path.append(str(getSSDArrayPath))
+
+getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
+sys.path.append(str(getToolArrayPath))
 
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
@@ -101,7 +107,9 @@ class ToolKitUI(object):
         cmds.button (label='ConstraintMaker',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
         cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode):select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
-        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)                  
+        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
+        cmds.button (label='Fast Float', ann="Add a simple float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)                  
         cmds.text(label="")      
         cmds.text(label="Tools")
         cmds.text(label="")         
@@ -112,6 +120,7 @@ class ToolKitUI(object):
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
+        cmds.button (label='Create Edit Grps', ann="creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
         cmds.button (label='Transfer Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.button (label='Reset Asset', ann="Resets all Ctrl to zero. wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
@@ -135,7 +144,7 @@ class ToolKitUI(object):
         cmds.button (label='Open Image Gmp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
         cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
         cmds.button (label='Add Revert', ann="Adds the revert (mel - Author: NextDesign - from Highend/Creative crash) script to the File drop down in Maya.", p='listBuildButtonLayout', command = self._revert)          
-        #cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
+        cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
         cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
         cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
@@ -362,6 +371,11 @@ class ToolKitUI(object):
         import renamer
         reload (renamer)
         renamer.myUI()    
+        
+    def _defEditGrp(self, arg=None):
+        import DefEditGrps
+        reload (DefEditGrps)
+        DefEditGrps.myGrps()   
             
     def _change_limit_values(self, arg=None):
         import LimitValues
@@ -624,6 +638,11 @@ class ToolKitUI(object):
         getClass.clearAnim()    
         self.char_light_cleanup()    
 
+    def _fast_float(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.fastFloat()
 
     def _blend_colour_window(self, arg=None):
         getSel=cmds.ls(sl=1)        
@@ -667,17 +686,50 @@ class ToolKitUI(object):
         Controller=Controller+"."+geteattr      
         getClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
         
-#     def _blend_colour(self, arg=None):
-#         selObj=cmds.ls(sl=1)
-#         Controller=selObj[0]
-#         firstChild=selObj[1]
-#         secondChild=selObj[2]
-#         thirdChild=selObj[3]  
-#         geteattr=cmds.listAttr (Controller, ud=1)  
-#         print geteattr[0]
-#         Controller=Controller+"."+geteattr[0]       
-#         getClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
+    def _quickCconnect_window(self, arg=None):
+        getSel=cmds.ls(sl=1)  
+        getFirst=getSel[0]      
+        getSecond=getSel[1] 
+        global attributeFirstSel
+        global attributeSecondSel        
+        getFirstAttr=cmds.listAttr (getFirst)      
+        getFirstAttr=sorted(getFirstAttr)
+        getSecondAttr=cmds.listAttr (getSecond)
+        getSecondAttr=sorted(getSecondAttr)         
+        winName = "Quick connect attributes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         
+        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=cmds.optionMenu( label='From')
+        for each in getFirstAttr:
+            cmds.menuItem( label=each) 
+        attributeSecondSel=cmds.optionMenu( label='To')               
+        for each in getSecondAttr:
+            cmds.menuItem( label=each)                    
+        cmds.button (label='Go', p='listBuildButtonLayout', command = self._quickCconnect)
+        cmds.showWindow(window)   
+          
+    def _quickCconnect(self, arg=None):
+        getFirstattr=cmds.optionMenu(attributeFirstSel, q=1, v=1)          
+        getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
+        getSel=cmds.ls(sl=1)  
+        getFirst=getSel[0]      
+        getSecond=getSel[1]
+        cmds.connectAttr(getSecond+"."+getSecondattr, getFirst+"."+getFirstattr, f=1)
+
         
         
     def _switch_driven_key_window(self, arg=None):
@@ -749,42 +801,6 @@ class ToolKitUI(object):
         print Child+" is the attribute that is being driven"
         getClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
 
-#     def _switch_driven_key(self, arg=None):
-#         import baseFunctions_maya
-#         reload (baseFunctions_maya)
-#         getClass=baseFunctions_maya.BaseClass() 
-#         getSel=cmds.ls(sl=1)
-#         Child=getSel[1]
-#         firstValue=0
-#         print firstValue
-#         secondValue=1
-#         print secondValue
-#         Wbucket=[]
-#         getChild=cmds.listRelatives(Child, ad=1)
-#         for wach in getChild:
-#             geteattr=cmds.listAttr(wach)
-#             print geteattr
-#         for item in geteattr:
-#             if "W0" in item or "W1" in item :
-#                 Wbucket.append(item)
-#         if Wbucket:
-#             print Wbucket
-#         else:
-#             print "not enough constraints on child object"
-#         child_one_constraint=getChild[0]+"."+Wbucket[0]  
-#         child_two_constraint=getChild[0]+"."+Wbucket[1] 
-#         print child_two_constraint+" is the first value"        
-#         print child_one_constraint+" is the second value"
-#         geteattr=cmds.listAttr (getSel[0], ud=1, st="*IK")
-#         getIKItem=[]
-#         for item in geteattr:
-#             getIKItem=item   
-#         Controller=getSel[0]+"."+getIKItem
-#         print Controller+ " is the Control value I hook up to"
-#         Child=getChild[0]
-#         print Child+" is the attribute that is being driven"
-#         getClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
-
     def _build_ik(self, arg=None):
         import baseFunctions_maya
         reload (baseFunctions_maya)
@@ -817,6 +833,7 @@ class ToolKitUI(object):
         reload (baseFunctions_maya)
         getClass=baseFunctions_maya.BaseClass()
         getClass.makeShape()
+
     def _mirror_object(self, arg=None):
         import baseFunctions_maya
         reload (baseFunctions_maya)
@@ -877,8 +894,6 @@ class ToolKitUI(object):
         getClass.createGrpCtrl()
         
     def _load_ssd(self, arg=None):
-        nfilepath=filepath.replace("rigmodules", "SSD")
-        sys.path.append(str(nfilepath))
         import SSD
         reload (SSD)
         SSD.ui()
@@ -891,4 +906,5 @@ class ToolKitUI(object):
         
 inst = ToolKitUI()
 inst.create()
+
 
