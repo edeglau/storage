@@ -8,7 +8,7 @@ from os  import popen
 from sys import stdin
 import subprocess
 import os
-
+from pymel.core import *
 #import win32clipboard
 import operator
 trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]  
@@ -96,7 +96,6 @@ class ToolKitUI(object):
         cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Joints that control CVs along a curve. Create a guide chain and use this to create a curve rig", p='listBuildButtonLayout', command = self._curve_rig)    
         cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute", p='listBuildButtonLayout', command = self.chain_rig)    
         cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
-        cmds.button (label='Sandwich ctrl', bgc=[0.45, 0.5, 0.5], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='listBuildButtonLayout', command = self._sandwich_control)
         cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object",  p='listBuildButtonLayout', command = self._grp_insert)          
         cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
         cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator", p='listBuildButtonLayout', command = self._bone_rivet) 
@@ -108,9 +107,6 @@ class ToolKitUI(object):
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
         cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode):select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
         cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
-        cmds.button (label='Fast Float', ann="Add a simple float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
-        cmds.button (label='Fast Connect', ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)                  
-        cmds.text(label="")      
         cmds.text(label="Tools")
         cmds.text(label="")         
         cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
@@ -121,17 +117,26 @@ class ToolKitUI(object):
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
         cmds.button (label='Create Edit Grps', ann="creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
-        cmds.button (label='Transfer Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.button (label='Reset Asset', ann="Resets all Ctrl to zero. wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
         cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)                               
         cmds.text(label="Controllers")
         cmds.text(label="")           
-        cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)  
+        cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)
+        cmds.button (label='Sandwich ctrl', bgc=[0.45, 0.5, 0.5], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='listBuildButtonLayout', command = self._sandwich_control)          
         cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_colours)    
         cmds.button (label='Limits', ann="An interface for creating limits on rigs. Can globally set, load or reset a rig.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_limit_values)    
         cmds.button (label='Combine Shapes', ann="Combines selected curves into a single shape", p='listBuildButtonLayout', command = self._group_shapes)   
+        cmds.text(label="")  
+        cmds.text(label="Attributes")          
+        cmds.text(label="")  
+        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
+        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
+        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Transfer Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.text(label="")   
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -731,7 +736,124 @@ class ToolKitUI(object):
         cmds.connectAttr(getSecond+"."+getSecondattr, getFirst+"."+getFirstattr, f=1)
 
         
+    def _createAlias_window(self, arg=None):
+        getSel=ls(sl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr        
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick connect attributes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+        makeAttr=textField()
+        button (label='Go', p='listBuildButtonLayout', command = self._create_alias)
+        showWindow(window)   
+          
+    def _create_alias(self, arg=None):
+        getSel=ls(sl=1)
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)       
+        floater=textField(makeAttr, q=1, text=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        cmds.addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        for each in getFirst:
+            connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
+
+    def _createSDK_alias_window(self, arg=None):
+        getSel=ls(sl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr   
+        global firstMinValue
+        global firstMaxValue
+        global secondMinValue
+        global secondMaxValue
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick SDK alias"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+        makeAttr=textField()
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
+        cmds.text(label="1st min/max", w=80, h=25) 
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
+        cmds.text(label="2nd min/max", w=80, h=25) 
+        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._create_SDK_alias())
+        showWindow(window)   
+          
+    def _create_SDK_alias(self, arg=None):
+        getSel=ls(sl=1)
+        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
+        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+        floater=textField(makeAttr, q=1, text=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        Controller=getSecond+"."+floater
+        for each in getFirst:
+            Child=each+"."+getFirstattr
+            setAttr(Child, lock=0) 
+            setAttr(Controller, secondMinValue)
+            setAttr(Child,firstMinValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMaxValue)
+            setAttr(Child, firstMaxValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMinValue)
+            setAttr(Child, lock=1)        
+
     def _switch_driven_key_window(self, arg=None):
         getSel=cmds.ls(sl=1)        
         global attributeSel
