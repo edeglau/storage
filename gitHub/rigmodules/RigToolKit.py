@@ -116,8 +116,8 @@ class ToolKitUI(object):
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
-        cmds.button (label='Create Edit Grps', ann="creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
-        cmds.button (label='Reset Asset', ann="Resets all Ctrl to zero. wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
+        cmds.button (label='Create Edit Grps', ann="Creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='Reset Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
         cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)                               
@@ -135,7 +135,7 @@ class ToolKitUI(object):
         cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
         cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
         cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
-        cmds.button (label='Transfer Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.button (label='Trans Mult Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.text(label="")   
         cmds.text(label="Modelling")          
         cmds.text(label="")               
@@ -732,8 +732,10 @@ class ToolKitUI(object):
         getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
         getSel=cmds.ls(sl=1)  
         getFirst=getSel[0]      
-        getSecond=getSel[1]
+        getSecond=getSel[1]         
         cmds.connectAttr(getSecond+"."+getSecondattr, getFirst+"."+getFirstattr, f=1)
+
+
 
         
     def _createAlias_window(self, arg=None):
@@ -778,8 +780,15 @@ class ToolKitUI(object):
         floater=textField(makeAttr, q=1, text=1)
         getFirst=getSel[:-1]
         getSecond=getSel[-1]
-        cmds.addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)  
         for each in getFirst:
+            get=cmds.keyframe(each+'.'+getFirstattr, q=1, kc=1)
+            print get
+            if get>0:
+                getSource=connectionInfo(each+'.'+getFirstattr, sfd=1) 
+                connectAttr(getSource, getSecond+"."+floater, f=1)
+            else:
+                pass        
             connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
 
     def _createSDK_alias_window(self, arg=None):
