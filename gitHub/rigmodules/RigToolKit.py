@@ -117,7 +117,9 @@ class ToolKitUI(object):
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
         cmds.button (label='Create Edit Grps', ann="Creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
-        cmds.button (label='Reset Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
+        cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
+        cmds.button (label='Wipe Anim From Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
+        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
         cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)                               
@@ -135,6 +137,7 @@ class ToolKitUI(object):
         cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
         cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
         cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Trans Anim Attr', ann="transfers animated attributes to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Trans Mult Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.text(label="")   
         cmds.text(label="Modelling")          
@@ -783,13 +786,66 @@ class ToolKitUI(object):
         addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)  
         for each in getFirst:
             get=cmds.keyframe(each+'.'+getFirstattr, q=1, kc=1)
-            print get
             if get>0:
                 getSource=connectionInfo(each+'.'+getFirstattr, sfd=1) 
                 connectAttr(getSource, getSecond+"."+floater, f=1)
             else:
                 pass        
             connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
+
+    def _transfer_anim_attr(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                    if get>0:
+                        getSource=connectionInfo(each+'.'+item, sfd=1) 
+                        connectAttr(getSource, getSecond+"."+item, f=1)
+                    else:
+                        pass
+                    
+    def _remove_anim(self, arg=None):
+        self._reset()
+        self._erase_anim()
+
+    def _erase_anim(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                    if get>0:
+                        getSource=connectionInfo(each+'.'+item, sfd=1) 
+                        delete(getSource)
+                    else:
+                        pass
+
+    def _reset(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    if ".scaleX" not in item or ".scaleY" not in item or ".scaleZ" not in item:
+                        get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                        if get>0:
+                            setAttr(each+'.'+item, 0)
+                        
+    def _copy_into_grp(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel[:-1]
+        getGrp=getSel[-1]
+        for each in getFirst:
+            newDupe=duplicate(each)
+            parent(newDupe, getGrp)
+            rename(newDupe[0], each)
 
     def _createSDK_alias_window(self, arg=None):
         getSel=ls(sl=1)  
