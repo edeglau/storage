@@ -98,6 +98,7 @@ class ToolKitUI(object):
         cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
         cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object",  p='listBuildButtonLayout', command = self._grp_insert)          
         cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
+        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. adds selected object to rivet.", p='listBuildButtonLayout', command = self._rivet_obj)             
         cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator", p='listBuildButtonLayout', command = self._bone_rivet) 
         cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides", p='listBuildButtonLayout', command = self._build_joints) 
         cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller", p='listBuildButtonLayout', command = self._build_ik)         
@@ -417,10 +418,17 @@ class ToolKitUI(object):
             cmds.parent(name, each)      
     def _rivet(self, arg=None):
         maya.mel.eval( "rivet;" )
-        getSel=cmds.ls(sl=1)[0]
-        for each in trans:
-            cmds.setAttr(getSel+each, l=1)
-            cmds.setAttr(getSel+each, k=0)
+#        getSel=cmds.ls(sl=1)[0]
+#        for each in trans:
+#            cmds.setAttr(getSel+each, l=1)
+#            cmds.setAttr(getSel+each, k=0)
+    def _rivet_obj(self, arg=None): 
+        selObj=cmds.ls(sl=1, fl=1)
+        getFirst=selObj[:-1]
+        constrainObj=selObj[-1]
+        maya.mel.eval( "rivet" )
+        getRiv=cmds.ls(sl=1)
+        cmds.parent(constrainObj, getRiv)
     def _disappear(self, arg=None):
         getSel=cmds.ls(sl=1)
         for item in getSel:
@@ -809,8 +817,9 @@ class ToolKitUI(object):
                         pass
                     
     def _remove_anim(self, arg=None):
-        self._reset()
+        self._reset() 
         self._erase_anim()
+       
 
     def _erase_anim(self, arg=None):
         getSel=ls(sl=1)
@@ -822,7 +831,7 @@ class ToolKitUI(object):
                     get=cmds.keyframe(each+'.'+item, q=1, kc=1)
                     if get>0:
                         getSource=connectionInfo(each+'.'+item, sfd=1) 
-                        delete(getSource)
+                        delete(getSource.split(".")[0])
                     else:
                         pass
 
@@ -833,10 +842,14 @@ class ToolKitUI(object):
             getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
             for item in getFirstattr:
                 if "." not in item:
-                    if ".scaleX" not in item or ".scaleY" not in item or ".scaleZ" not in item:
+                    if "scaleX" not in item and "scaleY" not in item and "scaleZ" not in item:
                         get=cmds.keyframe(each+'.'+item, q=1, kc=1)
                         if get>0:
                             setAttr(each+'.'+item, 0)
+                    else:
+                        setAttr(each+'.'+item, 1)
+  
+                    
                         
     def _copy_into_grp(self, arg=None):
         getSel=ls(sl=1)
