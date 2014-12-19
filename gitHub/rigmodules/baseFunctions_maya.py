@@ -2360,7 +2360,35 @@ class BaseClass():
             try:
                 cmds.setAttr(each+".liw", 1)
             except:
-                pass            
+                pass 
+            
+    def massDef(self, arg=None):    
+        getMesh=cmds.ls(sl=1)
+        if len(getMesh)<2:
+            print "select two groups"
+        else:
+            pass
+        getMeshTarget=getMesh[0]
+        getMeshController=getMesh[1]
+        getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")
+        if getChildrenController==None:
+            getChildrenController=([getMeshController])
+        print getChildrenController      
+        getChildrenTarget=cmds.listRelatives(getMeshTarget, c=1, typ="transform")
+        if getChildrenTarget==None:
+            getChildrenTarget=([getMeshTarget]) 
+        print getChildrenTarget
+        for eachController, eachChild in map(None, getChildrenController, getChildrenTarget):
+            if eachController ==eachChild :
+                try:    
+                    cmds.select(eachChild)
+                    cmds.select(eachController, add=1)
+                    cmds.deformer(type="wrap")
+                except:
+                    pass
+    
+
+                                 
     def lockRightWeights(self, arg=None):
         '''this locks all Right bone weights'''
         getRefJoints=cmds.ls("*:*_jnt")
