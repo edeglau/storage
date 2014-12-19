@@ -1,76 +1,215 @@
-'''
-Created on Apr 8, 2014
-
-@author: Elise
-'''
+import maya.cmds as cmds
+from functools import partial
+from string import *
+import re
+import maya.mel
+import os, subprocess, sys, platform
+from os  import popen
+from sys import stdin
+import subprocess
+import os
+from pymel.core import *
+#import win32clipboard
+import operator
+trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]  
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
-from pymel.core import *
-import maya.cmds as cmds
-import sys, os, glob
-# filepath=( "C:\Users\edeglau\git\Liquid\Liquid_egit\SSD\\" )
-# sys.path.append(str(filepath))
-import maya.mel
 
-getScenePath=cmds.file(q=1, location=1)
-getPathSplit=getScenePath.split("/")
-folderPath='\\'.join(getPathSplit[:-1])+"\\"
-guideFolderPath=folderPath+"Guides\\"
-infFolderPath=folderPath+"Influences\\"
-xmlFolderPath=folderPath+"XMLskinWeights\\"
-objFolderPath=folderPath+"Obj\\"
+photoshop = r"C:\\Program Files\\Adobe\\Adobe Photoshop CC 2014\\Photoshop.exe"
+gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
+
+
+BbxName="eyeDirGuide"
+BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
 getfilePath=str(__file__)
 filepath= os.getcwd()
 
-gtepiece=getfilePath.split("\\")
-getSSDFilepath='\\'.join(gtepiece[:-2])+"\\SSD\\"
+sys.path.append(str(filepath))
+import baseFunctions_maya
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
 
-class BaseClass():
+gtepiece=getfilePath.split("/")
+getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
+sys.path.append(str(getguideFilepath))
 
-    def loadSS(self):
-        '''this builds my swim stream basic window'''
-        import SS
-        reload (SS)
-        getClass=SS.ui() 
-    
-    def loadSSD(self):
-        '''this loads my swim stream deluxe window'''          
-        import SSD
-        reload (SSD)
-        getClass=SSD.ui()
-    
-    def cleanModels(self):
-        '''this deletes history and freezes out transformes'''
-        objSel=cmds.ls(sl=1)
-        for each in objSel:
-            cmds.polySoftEdge(each, a=180, ch=1)
-            cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
-            cmds.delete(each, ch=1)
-            print str(each)+" now has rotation, translation and scale frozen and construction history has been wiped"
-    def cleanScene(self):
-        '''this deletes history and freezes out transformes'''
-        objSel=cmds.ls(sl=1)
-        for each in objSel:
-            cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
-            cmds.delete(each, ch=1)
-            print str(each)+" now has rotation, translation and scale frozen and construction history has been wiped"
-            
-    def displayViewAnim(self):
-        cmds.modelEditor("modelPanel4", e=1,allObjects=0)
-        cmds.modelEditor("modelPanel4", e=1,polymeshes=1)
-        cmds.modelEditor("modelPanel4", e=1,nurbsCurves=1)
+getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
+sys.path.append(str(getrenamerFilepath))
 
-    def expObj(self):
-        '''this loads the obj plugin and exports a group of selected obj'''
+getValueFilepath='/'.join(gtepiece[:-2])+"/Values/"
+sys.path.append(str(getValueFilepath))
+
+getSelArrayPath='/'.join(gtepiece[:-2])+"/selectArray/"
+sys.path.append(str(getSelArrayPath))
+
+getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
+sys.path.append(str(getSSDArrayPath))
+
+getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
+sys.path.append(str(getToolArrayPath))
+
+getScenePath=cmds.file(q=1, location=1)
+getPathSplit=getScenePath.split("/")
+folderPath='\\'.join(getPathSplit[:-1])+"\\"
+
+      
+class ToolKitUI(object):
+    '''--------------------------------------------------------------------------------------------------------------------------------------
+    Interface Layout
+    --------------------------------------------------------------------------------------------------------------------------------------'''          
+    def __init__(self, winName="Rig Tool Kit"):
+        self.winTitle = "Rig Tool Kit"
+        self.winName = winName
+
+    def create(self):
+        
+        if cmds.window(self.winName, exists=True):
+                cmds.deleteUI(self.winName)
+
+        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=350, h=550 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+
+        cmds.rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.text(label="Rig setup")          
+        cmds.text(label="")  
+        cmds.button (label='Guides Tool', ann="This is the guide tool menu to build the guides that creates the MG rig system", bgc=[0.7, 0.7, 0.7],p='listBuildButtonLayout', command = self._guides)
+        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='listBuildButtonLayout', command = self._rig_biped)
+        cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_biped_mirror)
+        cmds.button (label='Build Quad', ann="This is the Quad MG rig system", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_quad)
+        cmds.button (label='Face Hugger', ann="This is the Face Hugger rig", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._rig_face)                
+        cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._skinning)        
+        cmds.text(label="Mini rigs")          
+        cmds.text(label="")              
+        cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Joints that control CVs along a curve. Create a guide chain and use this to create a curve rig", p='listBuildButtonLayout', command = self._curve_rig)    
+        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute", p='listBuildButtonLayout', command = self.chain_rig)    
+        cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
+        cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object",  p='listBuildButtonLayout', command = self._grp_insert)          
+        cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
+        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. adds selected object to rivet.", p='listBuildButtonLayout', command = self._rivet_obj)             
+        cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator", p='listBuildButtonLayout', command = self._bone_rivet) 
+        cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides", p='listBuildButtonLayout', command = self._build_joints) 
+        cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller", p='listBuildButtonLayout', command = self._build_ik)         
+        cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute", p='listBuildButtonLayout', command = self._stretch_ik)    
+        cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='listBuildButtonLayout', command = self._stretch_ik_spline)    
+        cmds.button (label='ConstraintMaker',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
+        cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
+        cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode):select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
+        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
+        cmds.text(label="") 
+        cmds.text(label="Tools")
+        cmds.text(label="")         
+        cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
+        cmds.button (label='Material tool', ann="This opens a material tool for manipulating and naming shaders and shader nodes" , bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._material_namer)  
+        cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._sets_win)           
+        cmds.button (label='Edit sets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win) 
+        cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
+        cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
+        cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
+        cmds.button (label='Create Edit Grps', ann="Creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
+        cmds.button (label='Wipe Anim From Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
+        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
+        cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
+        cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
+        cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)                               
+        cmds.text(label="Controllers")
+        cmds.text(label="")           
+        cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)
+        cmds.button (label='Sandwich ctrl', bgc=[0.45, 0.5, 0.5], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='listBuildButtonLayout', command = self._sandwich_control)          
+        cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_colours)    
+        cmds.button (label='Limits', ann="An interface for creating limits on rigs. Can globally set, load or reset a rig.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_limit_values)    
+        cmds.button (label='Combine Shapes', ann="Combines selected curves into a single shape", p='listBuildButtonLayout', command = self._group_shapes)   
+        cmds.text(label="")  
+        cmds.text(label="Attributes")          
+        cmds.text(label="")  
+        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
+        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
+        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Trans Anim Attr', ann="transfers animated attributes to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
+        cmds.button (label='Trans Mult Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.text(label="Modelling")          
+        cmds.text(label="")               
+        cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
+        cmds.button (label='Export multiple obj', ann="Exports a group of selected objects as separate .obj files.",p='listBuildButtonLayout', command = self._exp_obj)   
+        cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='listBuildButtonLayout', command = self._clean_mod)           
+        cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='listBuildButtonLayout', command = self._mirror_blend)              
+        cmds.text(label="External folders")
+        cmds.text(label="")                       
+        cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
+        cmds.button (label='Open Image Gmp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
+        cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
+        cmds.button (label='Add Revert', ann="Adds the revert (mel - Author: NextDesign - from Highend/Creative crash) script to the File drop down in Maya.", p='listBuildButtonLayout', command = self._revert)          
+        cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
+        cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
+        cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
+        cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
+        cmds.showWindow(self.window)
+        
+        
+        
+    def _set_any(self, arg=None):
+        import FaceRig
+        reload (FaceRig)
+        getClass=FaceRig.FaceSetup()    
+        getClass.TR_SDKKeys()   
+                
+    def _bone_rivet(self, arg=None): 
+        global RivetName
+        winName = "Bone Rivets"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(200, 20))
+        RivetName=cmds.textField(w=120, h=25, p='listBuildButtonLayout')    
+        cmds.button (label='Create Lash Rivet', p='listBuildButtonLayout', command = lambda *args:self._add_bone_rivet())        
+
+    def _add_bone_rivet(self, arg=None):
+        queryRivet=cmds.textField(RivetName, q=1, text=1)       
+        selObj=cmds.ls(sl=1, fl=1)
+        getLists=zip(selObj[::2], selObj[1::2])
+        for each in getLists:
+            cmds.select(each[0])
+            cmds.select(each[1], add=1)
+            maya.mel.eval( "rivet;" )
+            getRiv=cmds.ls(sl=1)
+            cmds.rename(getRiv[0], queryRivet)
+            getNewRiv=cmds.ls(sl=1)
+            getClass.makeJoint()
+            cmds.parent(getNewRiv[0]+"_jnt", getNewRiv[0]) 
+        
+    def chain_rig(self, arg=None):
+        import ChainWork
+        reload (ChainWork)
         result = cmds.promptDialog( 
-                    title='save Obj', 
-                    message="Enter path", 
-                    text=objFolderPath, 
+                    title='Building a chainrig', 
+                    message="Enter dimentions for chain - EG:", 
+                    text="name, Y, 10", 
                     button=['Continue','Cancel'],
                     defaultButton='Continue', 
                     cancelButton='Cancel', 
@@ -78,1814 +217,459 @@ class BaseClass():
         if result == 'Continue':
             resultInfo=cmds.promptDialog(q=1)
             if resultInfo:
-                pass
-            else:
-                print "nothing collected" 
-        if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)         
-        cmds.pluginInfo("C:/Program Files/Autodesk/Maya2015/bin/plug-ins/objExport.mll", e=1, autoload=True)
-#         getname=cmds.ls(sl=1, sn=1)
-        getname=cmds.ls(sl=1)
-        cmds.select(cl=1)
-        for each in getname:
-            cmds.select(each)
-#             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJ", pr=1, es=1)
-            cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
-
-    
-    def fastFloat(self):
-        '''this creates a fast float attribute on selection'''
-        titleText=('Fast Float Attribute'),                        
-        messageText=("Enter name"), 
-        textText=("On"), 
-        float=self.makeDialog(titleText, messageText, textText)
-        for each in ls(sl=1):
-            cmds.addAttr([each], ln=float, min=0, max=1, at="double", k=1, nn=float)
-    
-    def transferInfluence_selection(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        controlObj=selObj[0]
-        targetObj=selObj[1]
-        getSkinCluster=cmds.skinCluster(controlObj, q=1, dt=1)
-        skinID, getInf=self.skinClust(getSkinCluster, controlObj)
-        targetgetSkinCluster=cmds.skinCluster(targetObj, q=1, dt=1)
-        targetskinID, targetgetInf=self.skinClust(targetgetSkinCluster, targetObj)        
-        for each in getInf:
-            try:
-                cmds.skinCluster(targetskinID, e=1, ai=each)
-            except:
-                print each+" is already attached to "+targetObj
-                pass
-
-
-
-    def reskin(self, arg=None):
-        getMesh=cmds.ls(sl=1, fl=1)
-        for each in getMesh:
-            self.fullSkin_callup(each)
-            
-            
-    def fullSkin_callup(self, each):
-        '''selects the joint influences and reapplies to same mesh(for mesh changes)'''
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            self.exportXMLSkinWeights_callup(xmlFolderPath, each)
-            cmds.skinCluster(each, e=1, ub=1)
-            cmds.select(getInf[0])
-            for item in getInf[1:]:
-                cmds.select(item, add=1)
-            cmds.select(each, add=1)
-            cmds.skinCluster(tsb=1)
-            self.importXMLSkinWeights_callup(xmlFolderPath, each)
-            skinID, getInf=self.skinnedBones(each)
-            cmds.select(each)
-            cmds.skinPercent(skinID, normalize=1)            
-        
-
-#     def fullSkin_callupV1OLD(self, each):
-#         import saveInfluences
-#         reload (saveInfluences)
-#         getInfClass=saveInfluences.savingInfluences()        
-#         getInfClass._save_influence_callup(infFolderPath, each)        
-#         self.exportXMLSkinWeights_callup(xmlFolderPath, each)
-#         cmds.skinCluster(each, e=1, ub=1)
-#         getInfClass.open_influence_callup(infFolderPath, each, getMesh)
-#         self.importXMLSkinWeights_callup(xmlFolderPath, each)
-#         skinID, getInf=self.skinnedBones(each)
-#         cmds.select(each)
-#         cmds.skinPercent(skinID, normalize=1)
-
-    def weightInf_transfer_to_copy(self):
-        getControlObject, getTargetObject=self.getGroupedMesh_controller_target()
-        self.weightInf_transfer_to_copy_callup(getControlObject, getTargetObject)
-
-    def weightInf_transfer_to_copy_callup(self, getControlObject, getTargetObject):     
-        '''weight transfer from a group to another group'''
-        for eachControlItem, eachTargetItem in map(None, getControlObject, getTargetObject):         
-            try:
-                getSkinCluster=cmds.skinCluster(eachControlItem, q=1, dt=1)
-                skinID, getInf=self.skinClust(getSkinCluster, eachControlItem)
-                self.exportXMLSkinWeights_callup(xmlFolderPath, eachControlItem)
-                cmds.select(getInf[0])
-                for item in getInf[1:]:
-                    cmds.select(item, add=1)
-                cmds.select(eachTargetItem, add=1)
-                try:
-                    cmds.skinCluster(tsb=1)
-                except:
-                    print eachTargetItem+" already has a skincluster. passing"
-                    pass          
-                self.importXMLSkinWeights_callup(xmlFolderPath, eachTargetItem)
-                skinID, getInf=self.skinnedBones(eachTargetItem)
-                cmds.select(eachTargetItem)
-                cmds.skinPercent(skinID, normalize=1)
-            except:
-                print eachControlItem+" missing influences. passing"
-                pass     
- 
-
-    def weightInf_transfer_to_copy_single(self):
-        '''weight transfer from selection of items'''
-        getMesh=cmds.ls(sl=1)
-        if len(getMesh)<2:
-            print "select a skinned mesh group and an unskinned target mesh group"
-            return
-        else:
-            pass        
-        for eachController, eachChild in map(None, getMesh[::2], getMesh[1::2]): 
-            print "attempting to copy from "+eachController+" to "+eachChild
-            try:
-                getSkinCluster=cmds.skinCluster(eachController, q=1, dt=1)
-                pass
-            except:
-                print eachController+" missing influences. passing"
-                pass               
-            skinID, getInf=self.skinClust(getSkinCluster, eachController)
-            self.exportXMLSkinWeights_callup(xmlFolderPath, eachController)
-            cmds.select(getInf[0])
-            for item in getInf[1:]:
-                cmds.select(item, add=1)
-            cmds.select(eachChild, add=1)
-            try:
-                cmds.skinCluster(tsb=1)
-            except:
-                print eachChild+" already has a skincluster. passing"
-                pass
-            self.importXMLSkinWeights_callup(xmlFolderPath, eachChild)
-            skinID, getInf=self.skinnedBones(eachChild)
-            cmds.select(eachChild)
-            cmds.skinPercent(skinID, normalize=1) 
- 
-            
-#     def weightInf_transfer_to_copy_singleV1(self):
-#         getMesh=cmds.ls(sl=1)
-#         if len(getMesh)<2:
-#             print "select a skinned mesh group and an unskinned target mesh group"
-#             return
-#         else:
-#             pass        
-#         import saveInfluences
-#         reload (saveInfluences)
-#         getInfClass=saveInfluences.savingInfluences()  
-#         for eachController, eachChild in map(None, getMesh[::2], getMesh[1::2]): 
-#             print "attempting to copy from "+eachController+" to "+eachChild
-#             try:
-#                 getInfClass._save_influence_callup(infFolderPath, eachController)   
-#                 getInfClass.open_influence_callup(infFolderPath, eachChild)
-#                 self.exportXMLSkinWeights_callup(xmlFolderPath, eachController)
-#                 self.importXMLSkinWeights_callup(xmlFolderPath, eachChild)
-#                 skinID, getInf=self.skinnedBones(eachChild)
-#                 cmds.select(eachChild)
-#                 cmds.skinPercent(skinID, normalize=1)   
-#             except:
-#                 print eachController+"missing influences. passing"
-#                 pass        
-#     def weightInf_transfer_to_copy_callupV1(self, getControlObject, getTargetObject):
-#         import saveInfluences
-#         reload (saveInfluences)
-#         getInfClass=saveInfluences.savingInfluences()       
-#         for eachControlItem, eachTargetItem in map(None, getControlObject, getTargetObject):         
-#             try:
-#                 getInfClass._save_influence_callup(infFolderPath, eachControlItem)   
-#                 getInfClass.open_influence_callup(infFolderPath, eachTargetItem)
-#                 self.exportXMLSkinWeights_callup(xmlFolderPath, eachControlItem)
-#                 self.importXMLSkinWeights_callup(xmlFolderPath, eachTargetItem)
-#                 skinID, getInf=self.skinnedBones(eachTargetItem)
-#                 cmds.select(eachTargetItem)
-#                 cmds.skinPercent(skinID, normalize=1)   
-#             except:
-#                 print eachControlItem+"missing influences. passing"
-#                 pass            
-
-    def vertSkinCopyUneven(self):
-#         cmds.copySkinWeights(nm=1,sa="closestComponent",ia="closestJoint", nr=1)
-        cmds.copySkinWeights(nm=1,sa="rayCast",ia="closestJoint", nr=1)
-
-    def vertSkinCopyEven(self):
-        cmds.copySkinWeights(nm=1, sa="closestComponent", ia="oneToOne", nr=1)
-        
-    def meshSkinCopyEven(self): 
-        cmds.copySkinWeights(nm=1, sa="closestPoint", ia="closestJoint")
-        
-    def meshSkinCopyUnEven(self): 
-        cmds.copySkinWeights(nm=1, sa="closestPoint", ia="closestBone")
-        
-    def mirrorCopyEven(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)  
-#             cmds.copySkinWeights(ss=skinID, ds=skinID, mm="YZ", mi=1, sa="closestPoint", ia="oneToOne", nr=1)
-            cmds.copySkinWeights(ss=skinID, ds=skinID, mm="YZ", mi=1, sa="rayCast", ia="oneToOne", nr=1)
-        
-
-    def grabInfluence(self):
-        getControlObject, getTargetObject=self.getTargetControl()
-        self.grabInfluence_callup(getControlObject, getTargetObject)
-        
-    def grabWeightMatch(self):
-        getControlObject, getTargetObject=self.getTargetControl()
-        self.grabweightMatch_callup(getControlObject, getTargetObject)
-
-    def grabInfWeightsMatch(self):
-        getControlObject, getTargetObject=self.getTargetControl()
-        self.grabInfluence_callup(getControlObject, getTargetObject)
-        self.grabweightMatch_callup(getControlObject, getTargetObject)
-        
-    def grabInfWeightsUnMatch(self):
-        getControlObject, getTargetObject=self.getTargetControl()
-        self.grabInfluence_callup(getControlObject, getTargetObject)
-        cmds.select(getControlObject)
-        cmds.select(getTargetObject, add=1)
-        self.vertSkinCopyUneven()
-
-    def getTargetControl(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        getControlObject=[selObj[0]]
-        getTargetObject=[selObj[1]]
-        return getControlObject, getTargetObject
-       
-    def grabInfluence_callup(self, getInfluenceObject, getTargetObject):
-        getBones=self.bagOfBones(getInfluenceObject)
-        try:
-            getSkinCluster=cmds.skinCluster(getTargetObject, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, getTargetObject)
-            if len(skinID)>0:
-                for each in getBones:
-                    cmds.skinCluster(getTargetObject, e=1, ai=each)
-                    #cmds.skinCluster(str(skinID), e=1, ai=each)  
-        except:
-            cmds.select(getBones)
-            cmds.select(getTargetObject, add=1)
-            try:
-                cmds.skinCluster()
-                for each in getBones:
-                    try:
-                        print "bound "+each+" to "+getTargetObject
-                    except:
-                        pass        
-            except:
-                pass
-        
-    def grabweightMatch_callup(self, getWeightedObject, getTargetObject):
-        self.exportXMLSkinWeights_callup(xmlFolderPath,getWeightedObject)
-        for each, item in map(None, getWeightedObject, getTargetObject):
-            self.grabweightMatchMulti_callup(each, item )
-
-    def grabweightMatchMulti_callup(self, each, item):
-        self.exportXMLSkinWeights_callup(xmlFolderPath,each)
-        getCtrlItemName=each.split(":")
-        getTgtItemName=item.split(":")
-        getControlMesh=getCtrlItemName[-1:]
-        getTargetMesh= getTgtItemName[-1:]    
-        fleName =getControlMesh[0]+".xml"   
-        pathText=xmlFolderPath+fleName
-#             newPathText=xmlFolderPath+getTargetMesh+".xml"
-        try:
-            newname, skinID=getClass.getSkinWeightsforXML(each)
-            cmds.deformerWeights (newname+".xml", p=xmlFolderPath,  ex=True, deformer=skinID)
-            print "deformer weights have been exported from "+each
-            self.rename_file_callup(fleName, xmlFolderPath, getControlMesh, getTargetMesh)
-            self.change_file_content_callup( pathText, getControlMesh, getTargetMesh)
-            self.importtXMLSkinWeights_callup(xmlFolderPath,getTargetObject)
-        except:
-            print "shape or weights missing"  
-
-    def rename_file_callup(self,fleName, pathName, oldNamePart, newNamePart):
-        for fleName in glob.glob(os.path.join(pathName, "*"+oldNamePart+"*")): 
-            os.rename(fleName, fleName.replace(oldNamePart, newNamePart)) 
-            
-    def change_file_content_callup(self, pathText, oldJointText, newJointText):
-        files=glob.glob(pathText)
-        for each in files: 
-            dataFromTextFile=open(each).read()
-            dataFromTextFile=dataFromTextFile.replace(oldJointText, newJointText)
-            replacedDataTextFile=open(each, 'w')
-            replacedDataTextFile.write(dataFromTextFile)
-            print dataFromTextFile
-            replacedDataTextFile.close()    
-
-    def getGroupedMesh_controller_target(self):
-        getMesh=cmds.ls(sl=1)
-        if len(getMesh)<2:
-            print "select a skinned mesh group and an unskinned target mesh group"
-            return
-        else:
-            pass
-        getMeshController=getMesh[0]
-        getMeshTarget=getMesh[1]
-        getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")
-        if getChildrenController==None:
-            getChildrenController=([getMeshController])
-        getChildrenTarget=cmds.listRelatives(getMeshTarget, c=1, typ="transform")
-        if getChildrenTarget==None:
-            getChildrenTarget=([getMeshTarget])        
-#         getControlObject=self.getGroupedMesh(getMeshController)
-#         getTargetObject=self.getGroupedMesh(getMeshTarget)
-        return getChildrenController, getChildrenTarget        
-     
-        
-    def getGroupedMesh(self, meshGroup):
-        getObject=cmds.listRelatives(meshGroup, c=1, typ="transform")
-        if getObject==None:
-            getMeshObject=([getObject])
-            return getMeshObject
-
-
-
-            
-    def outPutConnector(self):
-        getSel=cmds.ls(sl=1)
-        getConnOut=cmds.connectionInfo(getSel[0]+".worldMesh[0]", dfs=1)
-        for each in getConnOut:
-            cmds.connectAttr(getSel[1]+".worldMesh[0]", each, f=1)
-#         getConnIn=cmds.connectionInfo(getSel[0]+".inMesh", sfd=1)    
-#         cmds.connectAttr(getConnIn, getSel[1]+".inMesh", f=1)
-    def inPutConnectorV1(self):
-        getSel=cmds.ls(sl=1)
-        masterMesh=getSel[0]
-        for each in getSel[1:]:
-            getConnIn=[cmds.connectionInfo(masterMesh+".inMesh", sfd=1)]
-            print getConnIn[0]
-            cmds.connectAttr(getConnIn[0], each+"GroupParts.inputGeometry", f=1)
-            cmds.connectAttr(each+".outputGeometry[0]", masterMesh+".inMesh", f=1)
-    def outPutConnector_mesh(self):
-        getSel=cmds.ls(sl=1)
-        if len(getSel)>1:
-            masterMesh=getSel[0]
-            getDef=getSel[1]
-#             getSourceConnector=getSel[2]
-            for each in getSel[1:]:
-                getplug=[cmds.listConnections (masterMesh, p=1, d=1, s=0)]
-            for item in getplug[0]:
-                if "input" in item or "inMesh" in item or "worldMesh" in item or "geo" in item:
-                    print item
-                    getConnIn=[cmds.connectionInfo(item, sfd=1)]
-                    print getConnIn
-                    for Connect in getConnIn:
-                        getConnectionPlug=Connect.split(".")[1]
-                        print getConnectionPlug
-                        cmds.connectAttr(getDef+'.'+getConnectionPlug, item, f=1)
-        else:
-            print " select a deforming shape and a target shape"
-            return
-    def inPutConnector_mesh(self):
-        getSel=cmds.ls(sl=1)
-        if len(getSel)>1:
-            masterMesh=getSel[0]
-            getDef=getSel[1]
-#             getSourceConnector=getSel[2]
-            for each in getSel[1:]:
-                getplug=[cmds.listConnections (masterMesh, p=1, d=0, s=1)]
-            for item in getplug[0]:
-                if "output" in item or "outMesh" in item or "geo" in item or "worldMesh" in item:
-                    print item
-                    getConnIn=[cmds.connectionInfo(item, dfs=1)]
-                    print getConnIn[0]
-                    for Connect in getConnIn[0]:
-                        getConnectionPlug=Connect.split(".")[1]
-                        cmds.connectAttr(item, getDef+'.'+getConnectionPlug, f=1)
-        else:
-            print " select a deformed shape and a target shape "
-            return
-#     def inPutConnector(self):
-#         getSel=cmds.ls(sl=1)
-#         masterMesh=getSel[0]
-#         getSourceConnector=getSel[2]
-#         for each in getSel[1:]:
-#             getConnIn=[cmds.connectionInfo(masterMesh+".worldMatrix[0]", dfs=1)]
-#             print getConnIn[0]
-# #             cmds.connectAttr(getConnIn[0], each+"GroupParts.inputGeometry", f=1)
-#             cmds.connectAttr(each+".worldMatrix[0]", getConnIn[0], f=1)
-    def inPutConnectorRig(self):
-        '''pings source plug, pongs all outputs from source'''
-        #dialog
-        getSel=cmds.ls(sl=1)
-        titleText=('Define Rig'),                        
-        messageText=("Enter Rig name"), 
-        textText=("LA0095_Crissy_Rig"), 
-        newRig=self.makeDialog(titleText, messageText, textText)
-        #function
-        for each in getSel:
-            getConnIn=[cmds.listConnections(each, p=1, s=1, d=0)]
-            for item in getConnIn[0]:
-                if ":" in item:
-                    getRigPart=item.split(":")[1]
-                    getNewRigPart=newRig+":"+getRigPart
-                    getConnOut=[cmds.connectionInfo(item, dfs=1)]
-                    for eachOut in getConnOut[0]:
-                        print eachOut
-                        try:
-                            cmds.connectAttr(getNewRigPart, eachOut, f=1)
-                        except:
-                            print "skipped "+getNewRigPart+" for some reason. Passing."
-                            pass
-
-    def inPutConnectorRigName(self):
-        '''pings source plug, pongs all outputs from source'''
-        #dialog
-        getSel=cmds.ls(sl=1)
-        titleText=('Define Rig'),                        
-        messageText=("Enter Rig name"), 
-        textText=("LA0095_Crissy_Rig"), 
-        newRig=self.makeDialog(titleText, messageText, textText)
-        #function
-        for each in getSel:
-            getConnIn=[cmds.listConnections(each, p=1, s=1, d=0)]
-            for item in getConnIn[0]:
-                if ":" in item:
-                    getRigPart=item.split(":")[1]
-                    getNewRigPart=newRig+":"+getRigPart
-                    getConnOut=[cmds.connectionInfo(item, dfs=1)]
-                    for eachOut in getConnOut[0]:
-                        print eachOut
-                        try:
-                            cmds.connectAttr(getNewRigPart, eachOut, f=1)
-                        except:
-                            print "skipped "+getNewRigPart+" for some reason. Passing."
-                            pass
-
-    def getSkinWeightsforXML(self, each):
-        '''this collects the skinweights'''
-#         selObj=cmds.ls(sl=1, fl=1)
-#         for each in selObj:
-#             vertexCnt=cmds.polyEvaluate(each, v=1)
-#             cmds.select(cl=1)
-#             for i in range(vertexCnt):
-#                 cmds.select(each+'.vtx[0:'+str(vertexCnt)+']', add=True)
-        try:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            for item in getSkinCluster:
-                if "GroupId" in item:
-                    skinID=[eachDefObj for eachDefObj in cmds.listConnections(item, s=1) if cmds.nodeType(eachDefObj)=="skinCluster"][0]
-                    #skinID=item.split("GroupId")[0]
-            if ":" in each:
-                newname=each.split(":")[-1:]
-                newname=newname[0]
-            else:
-                newname=each                          
-            return newname, skinID
-        except:
-            pass
-
-    def importXMLSkinWeights(self):
-        '''import skinweights'''
-        result = cmds.promptDialog( 
-                    title='find XML', 
-                    message="Enter path", 
-                    text=xmlFolderPath, 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            resultInfo=cmds.promptDialog(q=1)
-            if resultInfo:
-                pass
-            else:
-                print "nothing collected"        
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            self.importXMLSkinWeights_callup(resultInfo, each)
-            
-    def importXMLSkinWeights_callup(self, resultInfo, each):
-        '''import skinweights function'''        
-        newname, skinID=self.getSkinWeightsforXML(each)     
-        print newname   
-        try:      
-            cmds.deformerWeights (newname+".xml", p=resultInfo, im=True, deformer=skinID)
-        except:
-            print "unable to open xml file for "+newname
-            pass 
-        print "imported skinweights"
-        try:
-            cmds.select(each)
-            cmds.skinPercent(skinID, normalize=1)
-            print "normalized"
-        except:
-            pass
-
-            
-    def exportXMLSkinWeights(self):
-        '''export skinweights'''
-        selObj=cmds.ls(sl=1, fl=1)
-        result = cmds.promptDialog( 
-                    title='find XML', 
-                    message="Enter path", 
-                    text=xmlFolderPath, 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            resultInfo=cmds.promptDialog(q=1)
-            if resultInfo:
-                pass
-            else:
-                print "nothing collected"          
-        for each in selObj:
-            self.exportXMLSkinWeights_callup(resultInfo, each)
-            
-    def exportXMLSkinWeights_callup(self, resultInfo, each):
-        '''export skinweights function'''        
-        if not os.path.exists(resultInfo): os.makedirs(resultInfo)
-        newname, skinID=self.getSkinWeightsforXML(each)
-#         print newname, skinID
-#         if type(newname)=="string":
-#             newname=newname
-#         elif type(newname)=="list":
-#             newname=newname[0]
-        cmds.deformerWeights (newname+".xml", p=resultInfo,  ex=True, deformer=skinID)    
-
-  
-
-    def skinclusterOneVert(self):
-        '''this weights the vertices to a listed joint and zeros out all others(****MIGHT BE OBSOLETE)'''
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='Keep Bone', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            keep=cmds.promptDialog(q=1)
-            if keep:
                 pass
             else:
                 print "nothing collected"
-            selObj=cmds.ls(sl=1, fl=1)
-            if selObj:
-                pass
-            else:
-                print "nothing selected"
-            for each in selObj:
-                try:
-                    getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-                    for item in getSkinCluster:
-                        if "GroupId" in item:
-                            skinID=[eachDefObj for eachDefObj in cmds.listConnections(item, s=1) if cmds.nodeType(eachDefObj)=="skinCluster"][0]
-                            getInf=cmds.skinCluster(each, q=1, inf=1)
-                        for Infitem in getInf:
-                            if keep in Infitem:
-                                cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(keep), 1)])
-                            else:
-                                cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)]) 
-                except:
-                    print "select skin cluster"   
-
-
-
-    def skinClust(self, getSkinCluster, each):
-        '''this returns the skin cluster ID and the joint influences'''
-        for item in getSkinCluster:
-            if "GroupId" in item:    
-                skinID=[eachDefObj for eachDefObj in cmds.listConnections(item, s=1) if cmds.nodeType(eachDefObj)=="skinCluster"][0]
-                try:
-                    getInf=cmds.skinCluster(each, q=1, inf=1)
-                    return skinID, getInf
-                except:
-                    print "cant find skincluster for "+each
-                    pass
-                
-
-    def skinnedBones(self, each):
-        '''obsolete function'''
-        getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-        skinID, getInf=self.skinClust(getSkinCluster, each)  
-        return skinID, getInf           
+            getInfo=resultInfo.split(', ')
+            getDir=getInfo[1]
+            mainName=getInfo[0]
+            if getDir=="X":
+                nrx=1
+                nry=0
+                nrz=0  
+            if getDir=="Y":
+                nrx=0
+                nry=1
+                nrz=0   
+            if getDir=="Z":
+                nrx=0
+                nry=0
+                nrz=1
+            ControllerSize=int(getInfo[2])
+            getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
             
-    def selectSkinnedBones(self):
-        '''selects the joint influences that are in a cluster'''
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-        cmds.select(getInf[0])
-        for each in getInf[1:]:
-            cmds.select(each, add=1) 
- 
-                 
-    def selectOppSkinnedBones(self):
-        '''selects the opposite joint influences'''
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)        
-        getOppInf=[]
-        for each in getInf:
-            if "Right" in each:
-                lognm=each.replace("Right", 'Left')   
-                getOppInf.append(lognm)
-            elif "Left" in each:
-                lognm=each.replace("Left", 'Right')   
-                getOppInf.append(lognm)
-            else:
-                getOppInf.append(each)
-        cmds.select(getOppInf[0])
-        for each in getOppInf[1:]:
-            cmds.select(each, add=1)
-                
-    def selectNewRigSkinnedBonesV1(self):
-        '''selects another rig's bones of the same name'''
-        getSel=cmds.ls(sl=1)
-        titleText=('Define Rig'),                        
-        messageText=("Enter Rig name"), 
-        textText=("LA0095_Crissy_Rig"), 
-        newRig=self.makeDialog(titleText, messageText, textText)        
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)        
-        getRigBones=[]
-        for each in getInf:
-            if ":" in item:
-                getRigPart=each.split(":")[1]
-                getNewRigPart=newRig+":"+getRigPart  
-                getRigBones.append(getNewRigPart)          
-        cmds.select(getRigBones[0])
-        for each in getRigBones[1:]:
-            cmds.select(each, add=1)
-            
-    def selectNewRigSkinnedBones(self, Arg=None):
+    def _sets_win(self, arg=None):
         try:
-            getallnames=cmds.ls("*Rig:*")
+            getallnames=cmds.ls("*:*BodyControl")
         except:
-            print "No rig is loaded. Please ensure 'Rig' is at the end of the name"
-        bucket=[]
-        for each in  getallnames:
-            foundFirst=each.split(":")[0]
-            bucket.append(foundFirst)
-        bucket=set(bucket)
-        global jointSelect
-        winName = "Swap Influence select"
+            print "No BodyControl set is present"
+        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "BodyControl" in each]
+        global setMenu
+        winName = "Sets"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(200, 20))
+        setMenu=cmds.optionMenu( label='joints')
+        for each in getAllSets:
+            cmds.menuItem( label=each)        
+        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set())
+
+        cmds.showWindow(window)
+        
+    def _mirror_blend(self, arg=None): 
+        getBaseClass.mirrorBlendshape()       
+
+    def _add_to_set(self, arg=None):
+        querySet=cmds.optionMenu(setMenu, q=1, v=1)
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.sets(each, add=querySet)
+    def _edit_sets_win(self, arg=None):
+#         try:
+#             getallnames=cmds.ls("*:*BodyControl")
+#         except:
+#             print "No BodyControl set is present"
+        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
+        global setMenu
+        winName = "Sets"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(200, 20))
+        setMenu=cmds.optionMenu( label='joints')
+        for each in getAllSets:
+            cmds.menuItem( label=each)        
+        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set())
+        cmds.button (label='remove from set', p='listBuildButtonLayout', command = lambda *args:self._remove_from_set())
+
+        cmds.showWindow(window)
+
+    def _remove_from_set(self, arg=None):
+        querySet=cmds.optionMenu(setMenu, q=1, v=1)
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.sets(each, rm=querySet)
+            
+    def _material_namer(self, arg=None):
+        import Material_UI
+        reload (Material_UI)
+        Material_UI.Mat_Namer()
+        
+    def _open_texture_file_gmp(self, arg=None):
+        try:
+            selObj=cmds.ls(sl=1, fl=1)[0]
+            pass
+        except:
+            print "nothing selected"
+            return
+        getNodeType=cmds.nodeType(selObj)
+        if getNodeType=="file":
+            Attr=cmds.listAttr(selObj)
+            for each in Attr:
+                if "fileTextureName" in each and "Pattern" not in each:
+                    getValue=cmds.getAttr(selObj+'.'+each)   
+                    subprocess.Popen([gimp, getValue])
+        else:
+            print "need to select a texture node"
+    def _open_work_folder(self, arg=None):
+        destImagePath=folderPath
+        print destImagePath
+        self.get_path(destImagePath)    
+        
+    def get_path(self, path):
+        print path
+        if '\\\\' in path:
+            newpath=re.sub(r'\\\\',r'\\', path)
+            os.startfile(r'\\'+newpath[1:])    
+        else:
+            os.startfile(path)            
+            
+    def _open_texture_file_ps(self, arg=None):
+        try:
+            selObj=cmds.ls(sl=1, fl=1)[0]
+            pass
+        except:
+            print "nothing selected"
+        getNodeType=cmds.nodeType(selObj)
+        if getNodeType=="file":
+            Attr=cmds.listAttr(selObj)
+            for each in Attr:
+                if "fileTextureName" in each and "Pattern" not in each:
+                    getValue=cmds.getAttr(selObj+'.'+each)   
+                    getpath=getValue.split("/")
+                    getpPath="\\".join(getpath[:-1])
+                    getFile=getpath[-1:]
+                    getValue=getpPath+"\\"+getFile[0]
+                    getValue = r"%s"%getValue           
+                    subprocess.Popen([photoshop, getValue])
+        else:
+            print "need to select a texture node"
+
+        
+    def _guides(self, arg=None):
+        import combinedGuides
+        reload (combinedGuides)
+        combinedGuides.GuideUI()
+        
+    def _renamer(self, arg=None):
+        import renamer
+        reload (renamer)
+        renamer.myUI()    
+        
+    def _defEditGrp(self, arg=None):
+        import DefEditGrps
+        reload (DefEditGrps)
+        DefEditGrps.myGrps()   
+            
+    def _change_limit_values(self, arg=None):
+        import LimitValues
+        reload (LimitValues)
+        LimitValues.ValueClass()
+        
+    def _eye_directions(self, arg=None):
+        cmds.file(BbxFilepath, i=1,  type="mayaAscii", iv=1, mnc=0, gr=1, gn="FaceRig", op=1, rpr="ControlBox")
+        try:
+            getBox=cmds.ls("BigBox_CC_grp") 
+        except:
+            getBox=cmds.ls("*:BigBox_CC_grp")  
+        getTranslation, getRotation=getClass.locationXForm(getHeadCtrl)
+        cmds.move(getTranslation[0]+40, getTranslation[1], getTranslation[2], getBox)
+        cmds.parentConstraint(getHeadCtrl,getBox, mo=1)
+        print "Eye Direction Present"
+        
+    def addEyeDir(self, arg=None):
+        '''this sandwitches a circle control to another control for an easy override switch(face controllers for SDK keys)'''
+        colour=6
+        size=1 
+        selObj=("EyeOrient_L_jnt", "EyeOrient_R_jnt")
+        for each in selObj:
+            selObjParent=cmds.listRelatives( each, allParents=True )
+            transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)        
+            nrx, nry, nrz = 0.0, 0.0, 1.0 
+            getcolour=cmds.getAttr(each+".overrideColor")
+            name=each.split("_jnt")[0]+"_dir"
+            grpname=each.split("_jnt")[0]+"_dir_grp"
+            getClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
+            cmds.parent(name, each)      
+    def _rivet(self, arg=None):
+        maya.mel.eval( "rivet;" )
+#        getSel=cmds.ls(sl=1)[0]
+#        for each in trans:
+#            cmds.setAttr(getSel+each, l=1)
+#            cmds.setAttr(getSel+each, k=0)
+    def _rivet_obj(self, arg=None): 
+        selObj=cmds.ls(sl=1, fl=1)
+        getFirst=selObj[:-1]
+        constrainObj=selObj[-1]
+        maya.mel.eval( "rivet" )
+        getRiv=cmds.ls(sl=1)
+        cmds.parent(constrainObj, getRiv)
+    def _disappear(self, arg=None):
+        getSel=cmds.ls(sl=1)
+        for item in getSel:
+            for each in trans:
+#                 cmds.setAttr(item+each, l=1)
+                cmds.setAttr(item+each, k=0)
+                cmds.setAttr(item+".visibility", 0)
+                
+    def char_light_cleanup(self):
+        try:    
+            cmds.pointConstraint("*:Master_Ctrl", "*:LA0095_CharBaseLighting_Master:Lights", mo=1)
+        except:
+            print "no CharBased lighting present. Passing on relinking it."
+            pass        
+        try:
+            if cmds.ls("*:LA0095_CharBaseLighting_Master:LightCtrl"):
+                getLightObj=cmds.ls("*:LA0095_CharBaseLighting_Master:LightCtrl")
+                for each in getLightObj:
+                    getChildConstraint=[(each) for each in cmds.listRelatives(each, ad=1, typ="parentConstraint")]
+                    if len(getChildConstraint)>0:
+                        cmds.delete(getChildConstraint[0])
+        except:
+            pass        
+    def _clean_up(self, arg=None): 
+        self.char_light_cleanup()
+        if cmds.ls("*Skirtvtx*jnt") :                      
+            getSel=cmds.ls("*Skirtvtx*jnt") 
+            for item in getSel:
+                    cmds.setAttr(item+"_parentConstraint1.interpType", 0 )    
+                    print item+" -set joint interpolation type to No Flip"    
+        if cmds.ls("*Dressvtx*jnt") :                      
+            getSel=cmds.ls("*Dressvtx*jnt") 
+            for item in getSel:
+                    cmds.setAttr(item+"_parentConstraint1.interpType", 0 )    
+                    print item+" -set joint interpolation type to No Flip"    
+        if cmds.ls(typ="locator") :                      
+            getSel=cmds.ls(typ="locator")
+            for item in getSel:
+                getTransform=cmds.listRelatives(item, ap=1)[0]
+                for each in trans:
+                    try:
+                        cmds.setAttr(getTransform+each, k=0)
+                    except:
+                        print "cannot set keyable state in this file for "+getTransform+each
+                        pass
+                    try:
+                        cmds.setAttr(item+".visibility", 0)
+                    except:
+                        print "unable to set visibility on shape node of locator: " +getTransform
+                        pass        
+        if cmds.ls("Lash*RIV"):
+            getSel=cmds.ls("Lash*RIV")
+            getSel.append("Lash_attribute_holder")
+            for item in getSel:
+                for each in trans:
+                    try:
+                        cmds.setAttr(item+each, k=0)
+                        print "keyframe ability turned off for : "+item+each
+                    except:
+                        pass
+                    try:
+                        cmds.setAttr(item+".visibility", 0)
+                        print "hid "+item
+                    except:
+                        pass
+        if cmds.ls("Eye_*_scptStretchOrigin"):
+            getSel=cmds.ls("Eye_*_scptStretchOrigin") 
+            for item in getSel:
+                for each in trans:
+                    cmds.setAttr(item+each, k=0)
+                    print "keyframe ability turned off for : "+item+each
+                    cmds.setAttr(item+".visibility", 0)   
+            getSel=cmds.ls("Eye_*_scpt.en") 
+            for item in getSel:                 
+                cmds.setAttr(item, l=1)  
+                print "locked "+item
+        if cmds.ls("Eyes_txt_CC") :                      
+            getSel=cmds.ls("Eyes_txt_CC")  
+            getEye=cmds.ls("Eyes_select")  
+            getSel=getSel+getEye
+            for item in getSel:
+                for each in trans:
+                    cmds.setAttr(item+each, k=0)
+                    print "keyframe ability turned off for : "+item+each
+                    cmds.setAttr(item+".visibility", 0)    
+                    print "hid "+item            
+#         if cmds.ls("rivet*") :                      
+#             getSel=cmds.ls("rivet*") 
+#             for item in getSel:
+#                 for each in trans:
+#                     cmds.setAttr(item+each, k=0)
+#                     print "keyframe ability turned off for : "+item+each
+#                     cmds.setAttr(item+".visibility", 0)    
+#                     print "hid "+item            
+        if cmds.nodeType(typ="locator") :                      
+            getSel=mds.nodeType(typ="locator")
+            for item in getSel:
+                print item
+                for each in trans:
+                    cmds.setAttr(item+each, k=0)
+                    print "keyframe ability turned off for : "+item+each
+                    cmds.setAttr(item+".visibility", 0)      
+                    print "hid "+item  
+                            
+    def _clean_up_rig(self, arg=None):
+        getTransShoulder=[".tx", ".ty", ".tz"]
+        if cmds.ls("Shoulder_*_Ctrl"):
+            getSel=cmds.ls("Shoulder_*_Ctrl")
+            for item in getSel:
+                for each in getTransShoulder:
+                    cmds.setAttr(item+each, cb=0)
+                    cmds.setAttr(item+each, l=1)
+                    cmds.setAttr(item+each, k=0)
+        if cmds.ls("Hips_Ctrl"):
+            getSel=cmds.ls("Hips_Ctrl")   
+            for item in getSel: 
+                cmds.setAttr(item+".spineFK_IK", 0)                
+        if cmds.ls(typ="locator") :                      
+            getSel=cmds.ls(typ="locator")
+            for item in getSel:
+                getTransform=cmds.listRelatives(item, ap=1)[0]
+                for each in trans:
+                    try:
+                        cmds.setAttr(getTransform+each, k=0)
+                        print "keyframe ability turned off for : "+getTransform+each
+                    except:
+                        print "cannot set keyable state in this file"
+                        pass
+                    try:
+                        cmds.setAttr(item+".visibility", 0)
+                        print "hid "+item
+                    except:
+                        print "unable to set visibility on shape node of locator: " +getTransform
+                        pass        
+        if cmds.ls("Hand_*_Fingers_Ctrl"):
+            selObj=cmds.ls("Hand_*_Fingers_Ctrl")
+            for each in selObj:
+                cmds.addAttr(each+".SpreadFingers", e=1, min=-0, max=90)
+                print "reset " +each+".SpreadFingers"
+                cmds.addAttr(each+".CurlFingers", e=1, min=-160, max=0)
+                print "reset " +each+".CurlFingers"
+        if cmds.ls("*_Finger_*_Ctrl"):
+            selObj=cmds.ls("*_Finger_*_Ctrl")
+            for each in selObj:
+                if "|" not in each:
+                    cmds.addAttr(each+".MiddleJoint", e=1, min=-160, max=0)
+                    print "reset " +each+".MiddleJoint"
+                    cmds.addAttr(each+".LastJoint", e=1, min=-160, max=0)
+                    print "reset " +each+".LastJoint"
+                    cmds.addAttr(each+".FingerFullCurl", e=1, min=-160, max=0)  
+                    print "reset " +each+".FingerFullCurl"     
+        Side=["Right", "Left"]
+        for eachSide in Side:
+            try:
+                SDK_Fingers=("Index_Finger_"+eachSide+"_M_Ctrl.rotateY",
+                            "Mid_Finger_"+eachSide+"_M_Ctrl.rotateY",
+                            "Ring_Finger_"+eachSide+"_M_Ctrl.rotateY",
+                            "Pinky_Finger_"+eachSide+"_M_Ctrl.rotateY",
+                            "Thumbmid_"+eachSide+"_M_Ctrl.rotateY",
+                            "Thumbbase_"+eachSide+"_M_Ctrl.rotateY",
+                            "Index_Finger_"+eachSide+"_M_Ctrl.ry")
+                for each in SDK_Fingers:
+                    cmds.setAttr(each, lock=1) 
+                    print each+" attribute has been locked"
+            except:
+                pass    
+
+        
+    def _revert(self, arg=None):
+        maya.mel.eval( "revert();" )
+        
+    def _change_colours(self, arg=None):
+        import Colours
+        reload (Colours)
+        Colours.ColourPalet()
+        
+    def _anim_tools(self, arg=None):
+        import Anim_Tools
+        reload (Anim_Tools)
+        Anim_Tools.AnimMoveTools()
+
+        
+    def _rig_biped(self, arg=None):
+        import RiggerUI
+        reload (RiggerUI)
+        RiggerUI.BipeddUI()
+        
+    def _rig_biped_mirror(self, arg=None):
+        import BipedMirrorUI
+        reload (BipedMirrorUI)
+        BipedMirrorUI.BipeddUI()
+
+    def _rig_quad(self, arg=None):
+        import QuadRigUI
+        reload (QuadRigUI)
+        QuadRigUI.QuadUI()
+            
+    def _rig_face(self, arg=None):
+        import Face_Rig_UI
+        reload (Face_Rig_UI)
+        Face_Rig_UI.FaceRigger()
+                
+    def _skinning(self, arg=None):
+        import Skinner_UI
+        reload (Skinner_UI)
+        getClass=Skinner_UI.SkinningUI()        
+
+    def _select_array(self, arg=None):
+        import selectArray
+        reload (selectArray)
+        selectArray.SelectionPalettUI()         
+        
+    def _tran_att(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.massTransfer()      
+
+    def _reset_asset(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.clearAnim()    
+        self.char_light_cleanup()    
+
+    def _fast_float(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.fastFloat()
+
+    def _blend_colour_window(self, arg=None):
+        getSel=cmds.ls(sl=1)        
+        global attributeSel
+        geteattr=cmds.listAttr (getSel[0], ud=1)        
+        winName = "select attribute to link the switch constraint driven key to"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
 
         window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        jointSelect=cmds.optionMenu( label='joints')
-        for each in bucket:
-            cmds.menuItem( label=each)        
-        cmds.button (label='select influences', p='listBuildButtonLayout', command = lambda *args:self.selectNewRigSkinnedBones_callup())
-        cmds.showWindow(window)              
-               
-    def selectNewRigSkinnedBones_callup(self):
-        '''selects another rig's bones of the same name'''
-        newRig=cmds.optionMenu(jointSelect, q=1, v=1)     
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)        
-        getRigBones=[]
-        for item in getInf:
-            if ":" in item:
-                getRigPart=item.split(":")[1]
-                getNewRigPart=newRig+":"+getRigPart  
-                getRigBones.append(getNewRigPart)    
-            else:
-              getRigBones.append(item)    
-        cmds.select(getRigBones[0])
-        for each in getRigBones[1:]:
-            cmds.select(each, add=1)            
-            
-    def bagOfBones(self, skinnedObject):
-        '''detects the joint influences that are in a cluster'''
-        boneBag=[]
-        getSkinCluster=cmds.skinCluster(skinnedObject, q=1, dt=1)
-        skinID, getInf=self.skinClust(getSkinCluster, skinnedObject)
-        for each in getInf:
-            boneBag.append(each)
-        return boneBag    
-
-    def Reset(self):
-        '''this resets selected'''
-        selObj=cmds.ls(sl=1)
-        for each in selObj:
-            self.reset_Callup(each)
-
-    def reset_callup(self, each):      
-        ChildAttributes=(".tx", ".ty", ".tz" , ".rx", ".ry", ".rz")        
-        for attribute in ChildAttributes:
-            try:           
-                cmds.setAttr(each+attribute, 0.0)
-            except:
-                pass
-        
-    def removekey_callup(self, each):
-        cmds.select(each)
-        cmds.cutKey()
-        
-    def removeKey(self):
-        getCtrlBucket=[]
-        if cmds.ls("*:*Ctrl"):
-            selObj=cmds.ls("*:*Ctrl")
-            for each in selObj:
-                getCtrlBucket.append(each)
-        elif cmds.ls("*Ctrl"):
-            selObj=cmds.ls("*Ctrl")
-            for each in selObj:
-                getCtrlBucket.append(each)
-        for each in getCtrlBucket:
-            self.removekey_callup(each)
-            
-    def clearAnim(self):
-        getCtrlBucket=[]
-        if cmds.ls("*:*Ctrl"):
-            selObj=cmds.ls("*:*Ctrl")
-            for each in selObj:
-                getCtrlBucket.append(each)
-        elif cmds.ls("*Ctrl"):
-            selObj=cmds.ls("*Ctrl")
-            for each in selObj:
-                getCtrlBucket.append(each)
-        for each in getCtrlBucket:
-            self.reset_callup(each)
-            self.removekey_callup(each)
-        
-    def selectSkinnedVerts(self):
-        '''this selects all the verts that are elected to a named influence'''
-        titleText=('Define joint'),                        
-        messageText=("Enter name"), 
-        textText=("footballRight"), 
-        jointName=self.makeDialog(titleText, messageText, textText)
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-        jointInf=cmds.ls("*:*"+jointName+"_jnt")
-        if not jointInf:
-            jointInf=cmds.ls("*"+jointName+"_jnt")
-        getSkinCluster=cmds.skinCluster(skinID, e=1, siv=jointInf)     
-        
-         
-    def isolateVertSkinSide(self):
-        '''this removes the weight of a joint name type from selected vertice'''
-        selObj=cmds.ls(sl=1, fl=1)
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='remove bone name(enter named part EG: "Right"', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            remove=cmds.promptDialog(q=1)
-            if remove:
-                pass
-            else:
-                print "nothing collected"        
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            for Infitem in getInf:
-                if remove in Infitem:
-                    cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)])
-                   
-
-    def isolateJointSkin(self):
-        '''this keeps the name portion of a skinned joint and removes all others from selected vertice weights'''
-        selObj=cmds.ls(sl=1, fl=1)
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='keep only, remove all else', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            remove=cmds.promptDialog(q=1)
-            if remove:
-                pass
-            else:
-                print "nothing collected"        
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            for Infitem in getInf:
-                if remove not in Infitem:
-                    #cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)])
-                    cmds.skinCluster(str(skinID), e=1, ri=Infitem)
-
-    def skinclusterOne(self):
-        '''This collects all of the selected vertices weighted onto the one labelled bone'''
-        selObj=cmds.ls(sl=1, fl=1)        
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='full weight on joint name(named part EG: "elbow")', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            keep=cmds.promptDialog(q=1)
-            if keep:
-                pass
-            else:
-                print "nothing collected"  
-        for each in selObj:
-            try:
-                getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-                skinID, getInf=self.skinClust(getSkinCluster, each)
-                for Infitem in getInf:
-                    if keep in Infitem:
-                        cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 1)])   
-#                     else:     
-#                         cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)]) 
-            except:
-                getJoint=cmds.ls(keep)
-                for item in getJoint:
-                    cmds.skinCluster(each,item,sm=0 )
-    def skinclusterZero(self):
-        '''This sets targetted bone names to zero influence'''
-        selObj=cmds.ls(sl=1, fl=1)        
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='pull weight off joint name(named part EG: "elbow")', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            deassign=cmds.promptDialog(q=1)
-            if deassign:
-                pass
-            else:
-                print "nothing collected"  
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            for Infitem in getInf:
-                if deassign in Infitem:
-                    cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)])   
-
-
-    def getJointInfluence(self):
-        '''This removes a joint name from being an influence on a skin(this removes, it does not set to 0)'''
-        selObj=cmds.ls(sl=1, fl=1)        
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='remove bone name influence(named part EG: "elbow"', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            keep=cmds.promptDialog(q=1)
-            if keep:
-                pass
-            else:
-                print "nothing collected"  
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            return (keep, skinID, getInf)
-
-                        
-    def jointInfluenceRemove(self):
-        '''if name is found as an influence, this will remove it'''
-        keep, skinID, getInf=self.getJointInfluence()
-        for Infitem in getInf:
-            if keep in Infitem:
-                cmds.skinCluster(str(skinID), e=1, ri=Infitem)
-
-    def jointInfluenceHammer(self):
-        '''if name is not identified as an influence this will remove it'''
-        keep, skinID, getInf=self.getJointInfluence()
-        for Infitem in getInf:
-            if keep not in Infitem:
-                cmds.skinCluster(str(skinID), e=1, ri=Infitem)
-                
-    def jointInfluenceHammer_callup(self, keep, each):
-        '''if name is not identified as an influence this will remove it - calls from other controllers'''
-        getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-        skinID, getInf=self.skinClust(getSkinCluster, each)
-        for Infitem in getInf:
-            if keep not in Infitem:
-                cmds.skinCluster(str(skinID), e=1, ri=Infitem)
-                    
-    def jointInfluenceRemoveMult(self):
-        '''work in progress - joint remove multi from a skinweight'''
-        selObj=cmds.ls(sl=1, fl=1)        
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='remove bone name influence(named part EG: "elbow"', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            removeThis=cmds.promptDialog(q=1)   
-            if "," in removeThis:
-                throwAwayBucket=[]
-                eachInfluenceRemove=removeThis.split(", ")
-                throwAwayBucket.append(eachInfluenceRemove)
-            else:
-                throwAwayBucket=[removeThis]
-        else:
-            print "nothing collected"  
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-            findMyItem=[(infItem) for infItem in getInf for throwItem in throwAwayBucket if str(throwItem) in infItem]
-            for item in findMyItem:
-                print "removing: "+item
-                cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(item), 0)])   
-                cmds.skinCluster(str(skinID), e=1, ri=item)
-    def jointInfluenceAddMult(self):
-        '''work in progress - joint add to skin'''
-        selObj=cmds.ls(sl=1, fl=1)        
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='add bone name influence(named part EG: "elbow"', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            addThis=cmds.promptDialog(q=1)   
-            if "," in addThis:
-                AddBucket=[]
-                eachInfluenceAdd=addThis.split(", ")
-                allObject=cmds.ls(sn=1)
-                getItem=[(each)for each in allObject if addThis in each if cmds.nodeType(each)=="joint"]                
-                AddBucket.append(getItem)
-            else:
-                allObject=cmds.ls(sn=1)
-                getItem=[(each)for each in allObject if addThis in each if cmds.nodeType(each)=="joint"] 
-                AddBucket=[getItem]
-        else:
-            print "nothing collected"  
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-#             findMyItem=[(infItem) for infItem in getInf for throwItem in AddBucket if str(throwItem) in infItem]
-            if len(AddBucket)>0:
-                for item in AddBucket:
-                    for eachJoint in item:
-    #                 cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(item), 0)])
-                        try:   
-                            cmds.skinCluster(str(skinID), e=1, ai=eachJoint)
-                            print eachJoint+" has been added"
-                        except:
-                            print eachJoint+" has already been added"
-                            pass
-            else:
-                print "cannot identify this influence in scene"
-                  
-    def skinClusterRemoveDialog(self):
-        '''obsolete experiment'''
-        result = cmds.promptDialog( 
-                    title='Confirm', 
-                    message='remove bone', 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            DoNotKeep=cmds.promptDialog(q=1)
-            if DoNotKeep:
-                pass
-            else:
-                print "nothing collected"
-            selObj=cmds.ls(sl=1, fl=1)
-            if selObj:
-                pass
-            else:
-                print "nothing selected"
-            for each in selObj:
-                try:    
-                    self.skinClusterRemove(DoNotKeep, selObj)
-                except:
-                    print "select skin cluster"                                   
-                
-    def skinClusterRemove(self, DoNotKeep, selObj):
-        '''part of obsolete experiment'''
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            for eachBone in DoNotKeep:
-                getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-                for item in getSkinCluster:
-                    if "GroupId" in item:
-                        skinID=[eachDefObj for eachDefObj in cmds.listConnections(item, s=1) if cmds.nodeType(eachDefObj)=="skinCluster"][0]
-                getInf=cmds.skinCluster(each, q=1, inf=1)
-                for Infitem in getInf:
-                    if eachBone in Infitem:
-                        #cmds.skinPercent(str(skinID), str(each), nrm=1, tv=[(str(Infitem), 0)])
-                        cmds.skinCluster(str(skinID), e=1, ri=Infitem)
-                        
-    def MassCleanInfluence(self):
-        '''clears out unused bones on all mesh items in scene'''
-        meshList =cmds.ls(sl=1, fl=1)
-        for each in meshList:
-            maya.mel.eval( "removeUnusedInfluences;" )
-
-    def accMirrorWeights(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        for each in selObj:
-            getSkinCluster=cmds.skinCluster(each, q=1, dt=1)
-            skinID, getInf=self.skinClust(getSkinCluster, each)
-        cmds.copySkinWeights(ss=str(skinID), ds=str(skinID), mm="YZ", mi=1, sa="rayCast", ia="closestJoint")
-
-    def MassSkinClusterQuery(self):
-        '''This removes a collection of bone name types from the skincluster mesh for the entire scene'''
-        DoNotKeep=("IK", "FK", "Clst")
-        meshList = cmds.ls(typ="mesh")
-        for item in meshList:
-            vtxCount = cmds.polyEvaluate(v=True)
-            selObj=cmds.select(item+'.vtx[0:'+str(vtxCount)+']', add=True)        
-        #meshList=[(item) for item in cmds.ls(typ="mesh") if cmds.objectType(item)]
-        self.skinClusterRemove(DoNotKeep, selObj)
-        
-    def multipleWorldMeshConnect(self):
-        '''select new mesh and select the first input to connect to on a multiple selection(useful for relinking rivets to new mesh)'''
-        getObj=cmds.ls(sl=1)
-        newmesh=getObj[0]
-        for each in getObj[1:]:
-            cmds.connectAttr(newmesh+".worldMesh[0]", each+".inputMesh", f=1)
-            
-            
-    def directWorldMeshConnect(self):
-        '''this replaces the first selection world mesh plug with the second selection(useful for plugging into an entire rig'''
-        getObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, getObj[::2], getObj[1::2]):
-            getConn=cmds.connectionInfo(eachController, dfs=1)
-            for item in getConn:
-                cmds.connectAttr(eachChild+".worldMesh[0]",  item+".inputMesh", f=1)
-        
-    def createGrpCtrl(self):
-        '''creates a group above a selected object and zeroes it out'''
-        selObj=cmds.ls(sl=1)
-        self.buildGrp(selObj[0])
-        
-    def hideEyes(self):
-        '''this hides unwanted curves'''
-        getEyecurves=("eyeDirGuide_LeftEye_IndicatorShape", "eyeDirGuide_Leftpupil_IndicatorShape", "eyeDirGuide_RightEye_IndicatorShape", "eyeDirGuide_RightPupil_IndicatorShape")
-        for each in getEyecurves:
-            cmds.setAttr(each+".overrideDisplayType", 2)
-            
-    def buildGrp(self, each):
-        '''this partners with the createGrpCtrl is the create group function'''
-        selObjParent=cmds.listRelatives( each, allParents=True )
-        cmds.CreateEmptyGroup(each+'_grp')
-        grpObj=cmds.ls(sl=1)
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-        #worldMatrix = cmds.xform(selObj[0], q=True, ws=1, m=True)
-        #cmds.xform(grpObj[0], ws=1,  m=worldMatrix )
-        cmds.xform(grpObj[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(grpObj[0], ws=1, ro=rotateWorldMatrix)         
-        cmds.rename(grpObj[0], each+'_grp')      
-        if selObjParent:
-            cmds.parent(each+'_grp', selObjParent[0] )
-        cmds.parent(each, each+'_grp')
-        Child=cmds.listRelatives(each+'_grp', ad=1, typ="transform") 
-        cmds.makeIdentity(Child, a=True, t=1, n=0)  
-        
-    def buildGrpIsolated(self, each, grpName):
-        selObjParent=cmds.listRelatives( each, allParents=True )
-        cmds.CreateEmptyGroup()
-        cmds.rename(grpName)
-        grpObj=cmds.ls(sl=1)
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-        #worldMatrix = cmds.xform(selObj[0], q=True, ws=1, m=True)
-        #cmds.xform(grpObj[0], ws=1,  m=worldMatrix )
-        cmds.xform(grpObj[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(grpObj[0], ws=1, ro=rotateWorldMatrix)     
-        if selObjParent:
-            cmds.parent(grpName, selObjParent[0] )
-        cmds.parent(each, grpName)
-        Child=cmds.listRelatives(grpName, ad=1, typ="transform") 
-        cmds.makeIdentity(Child, a=True, t=1, n=0)        
-                            
-    def makeGuide(self):
-        '''This is the initate buildguide function'''
-        selectionCheck=cmds.ls(sl=1)
-        colour1=13
-        colour2=6
-        colour3=27        
-        if selectionCheck:
-            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                name=each+"_guide"
-                self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-        else:
-            each="name_guide"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)           
-            self.guideBuild(each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-
-    def guideBuild(self, each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3):
-        '''finds location for the build guides function'''
-        xCircmake=self.makeguide_shapes(each, colour1, colour2, colour3)
-        cmds.xform(xCircmake[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(xCircmake[0], ws=1, ro=rotateWorldMatrix)     
-        #cmds.makeIdentity(xCircmake[0], a=True, t=1, s=1, r=1, n=0)
-        cmds.select(xCircmake[0]) 
-
-            
-    def makeguide_shapes(self, each, colour1, colour2, colour3):
-        '''builds shapes for the build guides function'''
-        newBucket=[]  
-        xCircmake=cmds.circle(n=each, r=1.5, nrx=1, nry=0, nrz=0)
-        yCircmake=cmds.circle(n="yCirc", r=1.5, nrx=0, nry=1, nrz=0)
-        zCircmake=cmds.circle(n="zCirc", r=1.5, nrx=0, nry=0, nrz=1)
-        groupingShapes=[str(zCircmake[0]+"Shape"), str(yCircmake[0]+"Shape"), str(xCircmake[0])]
-        newBucket.append(xCircmake[0])
-        cmds.parent(groupingShapes,r=1, s=1)
-        cmds.delete(yCircmake[0])
-        cmds.delete(zCircmake[0])
-        guidez=cmds.rename(zCircmake[0]+"Shape", xCircmake[0]+"Guidez")
-        newBucket.append(guidez)
-        guidey=cmds.rename(yCircmake[0]+"Shape", xCircmake[0]+"Guidey")
-        newBucket.append(guidey)   
-        for each in newBucket:
-            cmds.setAttr(each+".overrideEnabled", 1)
-        cmds.setAttr(newBucket[0]+".overrideColor", colour1)
-        cmds.setAttr(newBucket[1]+".overrideColor", colour2)    
-        cmds.setAttr(newBucket[2]+".overrideColor", colour3)     
-        return xCircmake
-           
-    def makeJoint(self):
-        '''This creates a joint at a selection'''
-        selectionCheck=cmds.ls(sl=1)
-        if selectionCheck:
-            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                name=each                   
-                self.buildJoint(name, transformWorldMatrix, rotateWorldMatrix)
-        else:     
-            name="joint"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)            
-            self.buildJoint(name, transformWorldMatrix, rotateWorldMatrix)
-            #getjoint=cmds.joint() 
-            cmds.select(cl=1)
-            
-    def buildJoint(self, name, transformWorldMatrix, rotateWorldMatrix):
-        '''this is the build joint function to work with makejoint'''
-        jointName=name+"_jnt"
-        getloc=cmds.spaceLocator(n=name+"_lctr")
-        cmds.xform(getloc[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(getloc[0], ws=1, ro=rotateWorldMatrix)      
-        getjoint=cmds.joint(n=jointName)
-        cmds.xform(jointName, ws=1, t=transformWorldMatrix)
-        cmds.xform(jointName, ws=1, ro=rotateWorldMatrix) 
-        cmds.parent(jointName, w=1)
-        cmds.delete(getloc[0])    
-        cmds.select(cl=1)   
-
-
-    def buildJointFunction_callup(self):
-        titleText=('Define name of joint chain'),                        
-        messageText=("Enter name"), 
-        textText=("name"), 
-        mainName=self.makeDialog(titleText, messageText, textText)
-        mainChain=(cmds.ls(mainName+"*_guide"))
-        cmds.select(cl=1)
-        lastmainChainJoint=mainChain[-1:]
-        for each in mainChain:
-            jointSuffix='_jnt'
-            self.rigJoints(each, jointSuffix) 
-
-    def buildLoc(self, name, grpname, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''this is the build locator function'''
-        jointName=name+"_lctr"
-        getloc=cmds.spaceLocator(n=name+"_lctr")
-        cmds.xform(getloc[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(getloc[0], ws=1, ro=rotateWorldMatrix)   
-        cmds.setAttr(getloc[0]+"Shape.overrideEnabled", 1)
-        cmds.setAttr(getloc[0]+"Shape.overrideColor", colour)        
-        self.buildGrp(getloc[0])   
-
-
-    def makeCtrl(self):
-        '''this builds a control at a selection'''
-        selectionCheck=cmds.ls(sl=1)
-        if selectionCheck:
-            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                size=1
-                colour=6
-                name=each+"_ctrl"
-                grpname=each+"_grp"
-                nrx=0
-                nry=1
-                nrz=0
-                self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        else:   
-            each="newl"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)
-            size=1
-            colour=6
-            name=each+"_ctrl"
-            grpname=each+"_grp"   
-            nrx=0
-            nry=1
-            nrz=0         
-            self.guideBuild(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-
-            
-    def buildCtrl(self, each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz):
-        '''this builds a control at a selection- works with the makectrl and referenced for other uses'''
-        yCircmake=cmds.circle(n=name, r=size, nrx=nrx, nry=nry, nrz=nrz)
-        self.locationEcho(yCircmake[0], grpname, colour, transformWorldMatrix, rotateWorldMatrix)         
-    
-    def locationXForm(self, each):
-        transform=cmds.xform(each , q=True, ws=1, t=True)
-        if transform==[0, 0, 0]:
-            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
-        else:
-            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
-        return  transformWorldMatrix, rotateWorldMatrix
-
-    def forcedlocationXForm(self, each):
-        transform=cmds.xform(each , q=True, ws=1, t=True)
-        transformWorldMatrix = cmds.xform(each, q=True, r=1, sp=True)  
-        rotateWorldMatrix = cmds.xform(each, q=True, r=1, ro=True)  
-        return  transformWorldMatrix, rotateWorldMatrix
-    
-    
-    def fullMatrixXform(self, each):
-        transform=cmds.xform(each , q=True, ws=1, m=True)
-        return  transform,
-
-    def makesquareCtrl(self):
-        '''This builds the square shaped control'''
-        selectionCheck=cmds.ls(sl=1)
-        colour=13
-        if selectionCheck:
-            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                xSquaremake=self.makeSquare(each) 
-                grpname=xSquaremake[0]+"_grp"
-                self.locationEcho(xSquaremake[0], grpname, colour, transformWorldMatrix, rotateWorldMatrix)           
-        else:   
-            each="square"
-            xSquaremake=self.makeSquare(each)
-            grpname="square_grp"
-            transformWorldMatrix, rotateWorldMatrix=[0.0,0.0,0.0],[0.0,0.0,0.0]
-            self.locationEcho(xSquaremake[0], grpname, colour, transformWorldMatrix, rotateWorldMatrix)   
-
-    def makeSquare(self, each):
-        '''obsolete - makes a square control using nurbs'''
-        newBucket=[]         
-        xCircmake=cmds.nurbsSquare(n=each+"_ctrl", nr=(0,1,0), sl1=.5, sl2=.5)
-        groupingShapes=["top"+each+"_ctrlShape",
-                        "left"+each+"_ctrlShape",
-                        "bottom"+each+"_ctrlShape",
-                        "right"+each+"_ctrlShape",
-                        each+"_ctrl"]
-        newBucket.append(each+'ctrl')        
-        cmds.parent(groupingShapes ,r=1, s=1)
-        top=cmds.rename("top"+each+"_ctrlShape", xCircmake[0]+"top")
-        newBucket.append(top)
-        left=cmds.rename("left"+each+"_ctrlShape", xCircmake[0]+"left")
-        newBucket.append(left)         
-        bottom=cmds.rename("bottom"+each+"_ctrlShape", xCircmake[0]+"bottom")
-        newBucket.append(bottom) 
-        right=cmds.rename("right"+each+"_ctrlShape", xCircmake[0]+"right")
-        newBucket.append(right)    
-        cmds.delete("top"+each+"_ctrl")
-        cmds.delete("left"+each+"_ctrl")   
-        cmds.delete("bottom"+each+"_ctrl")
-        cmds.delete("right"+each+"_ctrl")
-        return xCircmake
-
-    def moveto(self):
-        objSel=cmds.ls(sl=1)
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(objSel[0])
-        for each in objSel[1:]:
-            cmds.xform(each, ws=1, t=transformWorldMatrix)
-            cmds.xform(each, ws=1, ro=rotateWorldMatrix) 
- 
-    def xformmove(self):
-        '''move to matrix'''
-        objSel=cmds.ls(sl=1)
-        matrix=cmds.xform(objSel[1], q=1, ws=1, m=1)
-        cmds.xform(objSel[0], ws=1, m=matrix)   
-        cmds.select(objSel[0])
-    
-    def xformtran(self):
-        '''move to transform and rotation'''
-        objSel=cmds.ls(sl=1)
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(objSel[1])
-        cmds.xform(objSel[0], ws=1, t=transformWorldMatrix)
-        cmds.xform(objSel[0], ws=1, ro=rotateWorldMatrix) 
-        #cmds.xform(objSel[0], ws=1, m=matrix)   
-        cmds.select(objSel[0])
-    def xformmatch(self):
-        '''move to transform and rotation relative'''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            transformWorldMatrix=cmds.xform(eachController, q=1, t=1)
-            rotateWorldMatrix=cmds.xform(eachController, q=1, ro=1)
-            cmds.xform(eachChild, r=1, t=transformWorldMatrix)
-            cmds.xform(eachChild, r=1, ro=rotateWorldMatrix) 
-        
-    def rigJoints(self, each, jointsuf):
-        '''build joints for rig'''
-        getTranslation=cmds.xform(each, q=1, t=1, ws=1)
-        getName=each.split("_")
-        jointnames=str(getName[0]+jointsuf)
-        cmds.joint(n=jointnames, p=getTranslation)   
-    def rigJointnames(self, each, name):
-        '''make jointnames'''
-        getTranslation=cmds.xform(each, q=1, t=1, ws=1)
-        cmds.joint(n=name, p=getTranslation)          
-    def rigJointsnname(self, each, name):
-        '''rig joints without a suffix'''
-        getTranslation=cmds.xform(each, q=1, t=1, ws=1)
-        cmds.joint(n=name, p=getTranslation)      
-    def blendColors(self, each, Controller):
-        '''this creates the ik fk blend rotation'''
-        cmds.shadingNode('blendColors', n=each+'_blnd', asShader=True)
-        cmds.connectAttr( each+"IK_jnt.rotate", each+'_blnd.color1', f=1)
-        cmds.connectAttr( each+"FK_jnt.rotate", each+'_blnd.color2', f=1)    
-        cmds.connectAttr( each+"_blnd.output", each+"_jnt.rotate", f=1)
-        cmds.shadingNode('blendColors', n=each+'_sblnd', asShader=True)    
-        cmds.connectAttr( each+"_sblnd.output.outputR", each+"_jnt.scale.scaleX", f=1)
-        cmds.connectAttr( each+"IK_jnt.scale.scaleX", each+'_sblnd.color1.color1R', f=1)    
-        cmds.connectAttr( each+"FK_jnt.scale.scaleX", each+'_sblnd.color2.color2R', f=1)   
-        cmds.connectAttr(Controller, each+"_blnd.blender", f=1)
-        cmds.connectAttr(Controller, each+"_sblnd.blender", f=1)
-        
-    def blendColors_callup(self, Controller, firstChild, secondChild, thirdChild):
-        '''this creates a blend rotation based on selection(used in Rig kit)'''
-        cmds.shadingNode('blendColors', n=firstChild+'_blnd', asShader=True)
-        cmds.connectAttr( secondChild+".rotate", firstChild+'_blnd.color1', f=1)
-        cmds.connectAttr( thirdChild+".rotate", firstChild+'_blnd.color2', f=1)    
-        cmds.connectAttr( firstChild+"_blnd.output", firstChild+".rotate", f=1)
-        cmds.shadingNode('blendColors', n=firstChild+'_sblnd', asShader=True)    
-        cmds.connectAttr( firstChild+"_sblnd.output.outputR", firstChild+".scale.scaleX", f=1)
-        cmds.connectAttr( secondChild+".scale.scaleX", firstChild+'_sblnd.color1.color1R', f=1)    
-        cmds.connectAttr( thirdChild+".scale.scaleX", firstChild+'_sblnd.color2.color2R', f=1)   
-        cmds.connectAttr(Controller, firstChild+"_blnd.blender", f=1)
-        cmds.connectAttr(Controller, firstChild+"_sblnd.blender", f=1)
-        
-    def blendColorsTranslate(self, each, Controller):
-        '''this creates the translate blend bexformmovetween ik and fk'''
-        cmds.shadingNode('blendColors', n=each+'_tblnd', asShader=True)                 
-        cmds.connectAttr( each+"_tblnd.output.outputR", each+"_jnt.translate.translateX", f=1)
-        cmds.connectAttr( each+"IK_jnt.translate.translateX", each+'_tblnd.color1.color1R', f=1)    
-        cmds.connectAttr( each+"FK_jnt.translate.translateX", each+'_tblnd.color2.color2R', f=1)   
-        cmds.connectAttr( each+"_tblnd.output.outputG", each+"_jnt.translate.translateY", f=1)
-        cmds.connectAttr( each+"IK_jnt.translate.translateY", each+'_tblnd.color1.color1G', f=1)    
-        cmds.connectAttr( each+"FK_jnt.translate.translateY", each+'_tblnd.color2.color2G', f=1)   
-        cmds.connectAttr( each+"_tblnd.output.outputB", each+"_jnt.translate.translateZ", f=1)
-        cmds.connectAttr( each+"IK_jnt.translate.translateZ", each+'_tblnd.color1.color1B', f=1)    
-        cmds.connectAttr( each+"FK_jnt.translate.translateZ", each+'_tblnd.color2.color2B', f=1)   
-        cmds.connectAttr(Controller, each+"_tblnd.blender", f=1)       
-
-    def curve_rig(self):
-        '''this builds a curve rig'''
-        result = cmds.promptDialog( 
-                    title='Building a CurveRig', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="name", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            mainName=cmds.promptDialog(q=1)
-            if mainName:
-                self.build_curve_rig(mainName)
-            else:
-                print "nothing collected"     
-                
-    def build_curve_rig(self, mainName):   
-        '''function for building a curve rig'''
-        getTopOpenGuides = cmds.ls(mainName + "*_guide")
-        getKnotValue = len(getTopOpenGuides)
-        curvename = mainName + "_crv"
-        values = []
-        for each in getTopOpenGuides:#get point values to build curve
-            translate, rotate = self.locationXForm(each)
-            values.append(translate)
-        self.buildCurves(values, curvename, getKnotValue)  #build top curve    
-        self.buildJointClusters(getTopOpenGuides, curvename)#build controllers and the bound joints for the top lid curve(this pulls into shapes)
-    def buildCurves(self, values, name, getKnotValue):
-        getKnotValueList = list(range(getKnotValue))
-        getKnotValueList.insert(0, 0)
-        getKnotValueList.append(getKnotValue)
-        try:
-            CurveMake = cmds.curve(n=name, d=1, p=values)
-        except:
-            print "Check the name of the guide you are using to build this"        
-    def buildJointClusters(self, Guides, curvename):       
-        '''function for skinning bones to a curve and making a curv rig'''
-        cmds.select(cl=1) 
-        collectJoints=[]
-        for each in Guides:
-            getTranslation=cmds.xform(each, q=1, t=1, ws=1)
-            jointnames=each.split("_guide")[0]+"_Clst_jnt"
-            cmds.joint(n=jointnames, p=getTranslation)     
-            collectJoints.append(jointnames)   
-        cmds.select(cl=1)
-        getIKCurveCVs=cmds.ls(curvename+".cv[*]", fl=1)
-        for each , bone in map(None, getIKCurveCVs[:-1], collectJoints[:-1]):
-            cmds.select(clear=1)
-            cmds.select(each)
-            cmds.select( bone, add=1)
-            cmds.bindSkin(each, bone, tsb=1)
-        getlastjoint=collectJoints[-1:] 
-        getverylastCVs=getIKCurveCVs[-1:]
-        for each in getverylastCVs:
-            cmds.select(each) 
-            createdCluster=cmds.cluster()
-            cmds.select(each, add=1)    
-            cmds.parent(createdCluster, getlastjoint)  
-        result = cmds.promptDialog( 
-                    title='Choose Controller type', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="StarSphere, Controller", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            mainName=cmds.promptDialog(q=1)
-            if mainName=="StarSphere":
-                self.buildStarSphereClusterControl(Guides, collectJoints)
-            elif mainName=="Controller":
-                self.buildControllerClusterControl(Guides, collectJoints)
-            else:
-                print "nothing collected"               
-                
-    def IKMaker(self):          
-        '''builds a rotational plane ik on a group of selected bones'''
-        selObj=cmds.ls(sl=1)
-        for each in selObj:
-            getChildForIK=cmds.listRelatives(each, ad=1, typ="joint")
-            cmds.ikHandle(n=each.split("_jnt")[0]+"_ik", sj=each, ee=getChildForIK[0], sol="ikRPsolver")
-
-    def constraintMaker(self):
-        '''this builds a constraint on a group of selected items to the first selected item'''
-        result = cmds.promptDialog( 
-                    title='Define Constraint', 
-                    message="Enter dimensions for constraint:", 
-                    text="orient, aim, parent, point", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            ConstraintType=cmds.promptDialog(q=1)  
-            if ConstraintType=="orient":
-                getObj=cmds.ls(sl=1)
-                getParent=getObj[0]
-                for each in getObj[1:]:
-                    cmds.orientConstraint(getParent, each, mo=1)               
-            elif ConstraintType=="aim":
-                getObj=cmds.ls(sl=1)
-                getParent=getObj[0]
-                for each in getObj[1:]:
-                    cmds.aimConstraint(getParent, each, mo=1)   
-            elif ConstraintType=="parent":
-                getObj=cmds.ls(sl=1)
-                getParent=getObj[0]
-                for each in getObj[1:]:
-                    cmds.parentConstraint(getParent, each, mo=1)   
-            elif ConstraintType=="point":
-                getObj=cmds.ls(sl=1)
-                getParent=getObj[0]
-                for each in getObj[1:]:
-                    cmds.pointConstraint(getParent, each, mo=1)              
-            else:
-                print "nothing constrained"
-
-                    
-    def buildStarSphereClusterControl(self, Guides, joints):
-        '''uses the CCCircle(sphere controller) script to make a broken circle shaped controller(if you get tired of seeing circles)'''
-        num0, num1, num2, num3 = 1, .5, .7, .9
-        colour=13
-        for each, joint in map(None, Guides, joints):
-            name=each.split("_guide")[0]+"_Ctrl"
-            grpname=each.split("_guide")[0]+"_grp"
-            getTranslation, getRotation=self.locationXForm(each)
-            self.CCCircle(name, grpname, num0, num1, num2, num3, getTranslation, getRotation, colour)
-            cmds.parentConstraint(name,joint)
-            
-    def buildControllerClusterControl(self, Guides, joints):
-        '''builds the sphere controller used in the build curve rig function'''
-        result = cmds.promptDialog( 
-                    title='Define Axis of Controller', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="X, Y, Z", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            mainName=cmds.promptDialog(q=1)
-            if mainName=="X":
-                nrx=1
-                nry=0
-                nrz=0                  
-            elif mainName=="Y":
-                nrx=0
-                nry=1
-                nrz=0   
-            elif mainName=="Z":
-                nrx=0
-                nry=0
-                nrz=1
-            else:
-                print "nothing collected"
-        result = cmds.promptDialog( 
-                    title='Define Colour of Controller', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="Red, Green, Blue, Yellow, Maroon, FGreen", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            mainName=cmds.promptDialog(q=1)
-            if mainName=="Red":
-                colour=13          
-            elif mainName=="Blue":
-                colour=6   
-            elif mainName=="Green":
-                colour=14
-            elif mainName=="Yellow":
-                colour=22
-            elif mainName=="Maroon":
-                colour=31        
-            elif mainName=="FGreen":
-                colour=23                      
-            else:
-                print "nothing collected"
-        result = cmds.promptDialog( 
-                    title='Define size of Controller', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="6", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            size=cmds.promptDialog(q=1)     
-        else:
-            print "nothing collected"     
-        self.ClstrControl(size, colour, nrx, nry, nrz, Guides, joints)
-            
-    def ClstrControl(self, size, colour, nrx, nry, nrz, Guides, joints):       
-        for each, joint in map(None, Guides, joints):
-            name=each.split("_guide")[0]+"_Ctrl"
-            grpname=each.split("_guide")[0]+"_grp"
-            getTranslation, getRotation=self.locationXForm(each)
-            self.buildCtrl(each, name, grpname, getTranslation, getRotation, size, colour, nrx, nry, nrz)
-            cmds.parentConstraint(name,joint)
-
-    def autoCurveRig(self, Guides, curvename, size, colour, nrx, nry, nrz):    
-        '''the build curve rig function''' 
-        getKnotValue = len(Guides)
-        curvename = Guides + "_crv"
-        values = []
-        for each in Guides:#get point values to build curve
-            translate, rotate = self.locationXForm(each)
-            values.append(translate)
-        getKnotValueList = list(range(getKnotValue))
-        getKnotValueList.insert(0, 0)
-        getKnotValueList.append(getKnotValue)
-        CurveMake = cmds.curve(n=name, d=1, p=values)           
-        cmds.select(cl=1) 
-        collectJoints=[]
-        for each in Guides:
-            getTranslation=cmds.xform(each, q=1, t=1, ws=1)
-            jointnames=each.split("_guide")[0]+"_Clst_jnt"
-            cmds.joint(n=jointnames, p=getTranslation)     
-            collectJoints.append(jointnames)   
-        cmds.select(cl=1)
-        getIKCurveCVs=cmds.ls(curvename+".cv[*]", fl=1)
-        for each , bone in map(None, getIKCurveCVs[:-1], collectJoints[:-1]):
-            cmds.select(clear=1)
-            cmds.select(each)
-            cmds.select( bone, add=1)
-            cmds.bindSkin(each, bone, tsb=1)
-        getlastjoint=collectJoints[-1:] 
-        getverylastCVs=getIKCurveCVs[-1:]
-        for each in getverylastCVs:
-            cmds.select(each) 
-            createdCluster=cmds.cluster()
-            cmds.select(each, add=1)    
-            cmds.parent(createdCluster, getlastjoint)  
-        self.ClstrControl(size, colour, nrx, nry, nrz)
-
-    def cubeI(self, name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''builds a cube controller'''
-        xCubeMake=cmds.curve(n=name, d=1, p =[(-num, num, num), (num, num, num), (num, num, -num), (-num, num, -num), (-num, num, num), (-num, -num, num), (-num, -num, -num), (num, -num, -num), (num, -num, num), (-num, -num, num), (num, -num, num), (num, num, num), (num, num, -num), (num, -num, -num), (-num, -num, -num), (-num, num, -num)])
-        self.locationEcho(xCubeMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)   
-
-    def squareI(self, name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''builds a square controller'''
-        xSquareMake=cmds.curve(n=name, d=1, p =[(-num, 0.0, num), (num, 0.0, num), (num, 0.0, -num), (-num, 0.0, -num),(-num, 0.0, num)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix) 
-
-    def rectI(self, name, grpname, numlen, numwid, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''builds a rectangle controller'''
-        xSquareMake=cmds.curve(n=name, d=1, p =[(-numlen, 0.0, numwid), (numlen, 0.0, numwid), (numlen, 0.0, -numwid), (-numlen, 0.0, -numwid),(-numlen, 0.0, numwid)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)   
-        
-    def TriI(self, name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''builds a triangle controller'''
-        narrow=num/3.9
-        xSquareMake=cmds.curve(n=name, d=1, p =[(0.0, 0.0, 0.0), (0.0, num, narrow), (0.0, num, -narrow), (0.0, 0.0,0.0)])
-        cmds.move(0, 0, 0, xSquareMake+".rotatePivot" ,r=1, rpr=1 )
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)        
-
-    def BuildJackI(self):
-        name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour="Jack_Ctrl", "Jack_grp", 3, [0.0,0.0,0.0], [0.0,0.0,0.0], 13
-        self.JackI(name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour)
- 
-
-    def JackI(self, name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''creates a controller that looks like a locator'''
-        narrow=num/3.9
-        xSquareMake=cmds.curve(n=name, d=1, p =[(0.0, 0.0, num), (0.0,0.0,0.0), (0.0, 0.0, -num), (0.0,0.0,0.0), (num, 0.0, 0.0), (0.0,0.0,0.0), (-num, 0.0, 0.0), (0.0,0.0,0.0), (0.0, num, 0.0), (0.0,0.0,0.0), (0.0, -num, 0.0), (0.0,0.0,0.0)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)  
-
-    def PrimI(self, name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''creates a primitive controller'''
-        xSquareMake=cmds.curve(n=name, d=1, p =[( num, 0, num ), (num, 0, -num), (-num*2, 0, 0 ), (num, num, 0), ( num, 0, 0), (num, -num, 0 ), (-num*2, 0, 0 ),( num, 0, num )])
-        cmds.rotate(0, 90,0, name)
-        cmds.makeIdentity(name, a=True, t=1, s=1, r=1, n=0)
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)  
-
-    def ballArrowI(self, name, grpname, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''this creates a handle controller with an arrow'''
-        xSquareMake=cmds.curve(n=name, d=1, p =[(0,24,0),
-        (-4,24,0),
-        (0,32,0),
-        (4,24,0),
-        (0,24,0),
-        (0,4,0),
-        (1.034188,3.860232,0),
-        (1.998312,3.460872,0),(2.828448,2.82845,0),(3.460875,1.998311,0),(3.860228,1.034189,0),(4.00003,-2.3063e-007,0),
-        (3.860228,-1.034188,0),(3.460875,-1.998312,0),(2.828448,-2.828448,0),(1.998312,-3.460875,0),(1.034188,-3.860228,0),
-        (0,-4.00003,0),(-1.034188,-3.860228,0),(-1.998312,-3.460875,0),(-2.828448,-2.828448,0),(-3.460875,-1.998312,0),
-        (-3.860228,-1.034188,0),(-4.00003,-2.3063e-007,0),(-3.860228,1.034189,0),(-3.460875,1.998311,0),
-        (-2.828448,2.82845,0),(-1.998312,3.460872,0),(-1.034188,3.860232,0), (0,4,0)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)  
-
-    def handleI(self, name, grpname, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''creates a handle controller'''
-        xSquareMake=cmds.curve(n=name, d=1, p= [(0,10.112068,0),(-0.373493,10.162557,0),(-0.721682,10.306782,0),(-1.021482,10.53518,0),(-1.24988,10.83498,0),
-        (-1.394105,11.183169,0),(-1.444594,11.556662,0),(-1.394105,11.930155,0),(-1.24988,12.278343,0),(-1.021482,12.578144,0),
-        (-0.721682,12.806541,0),(-0.373493,12.950768,0),(0,13.001244,0),(0.373493,12.950768,0),(0.721682,12.806541,0),
-        (1.021482,12.578144,0),(1.24988,12.278343,0),(1.394105,11.930155,0),(1.444594,11.556662,0),(1.394105,11.183169,0),
-        (1.24988,10.83498,0),(1.021482,10.53518,0),(0.721682,10.306782,0),(0.373493,10.162557,0),(0,10.112068,0),(0,0,0)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)  
-
-    def makeGuideCCC(self):
-        '''stand alone build guides at a selection or creates new at world center'''
-        selectionCheck=cmds.ls(sl=1)
-        num0, num1, num2, num3, colour=1, .4, .9, .7, 22
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_guide", each+"_guide_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour) 
-        else:
-            name, grpname="name_guide", "name_guide_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)           
-            self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)        
-        
-    def CCCircle(self, name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour):
-        '''creates a sphere controller'''
-        xSquareMake=cmds.curve(n=name, d=1, p =[(0,num0, 0),(0, num2, num1),(0, num3, num3),(0, num1, num2),(0, 0, num0),(0, -num1, num2),(0, -num3, num3),(0, -num2, num1),(0, -num0, 0),(0, -num2, -num1),(0, -num3, -num3),(0, -num1, -num2),
-                                                (0, 0, -num0),(0, num1, -num2),(0, num3, -num3),(0, num2, -num1),(0,num0, 0),(num1, num2, 0),(num3, num3, 0),(num2, num1, 0),(num0, 0, 0),(num2, -num1, 0),(num3, -num3, 0),(num1, -num2, 0),
-                                                (0, -num0, 0),(-num1, -num2, 0),(-num3, -num3, 0),(-num2, -num1, 0),(-num0, 0, 0),(-num2, num1, 0),(-num3, num3, 0),(-num1, num2, 0),(0,num0, 0),(0, num2, -num1),(0, num3, -num3),(0, num1, -num2),
-                                                (0, 0, -num0),(-num1, 0, -num2),(-num3, 0, -num3),(-num2, 0, -num1),(-num0, 0, 0),(-num2, 0, num1),(-num3, 0, num3),(-num1, 0, num2),(0, 0, num0),(num1, 0, num2),(num3, 0, num3),(num2, 0, num1),
-                                                (num0, 0, 0),(num2, 0, -num1),(num3, 0, -num3),(num1, 0, -num2),(0, 0, -num0)])
-        self.locationEcho(xSquareMake, grpname, colour, transformWorldMatrix, rotateWorldMatrix)  
-        
-    def locationEcho(self, Shape, groupname, colour, transform, rotate):
-        '''sets colour of shape, creates group and then moves group to location'''
-        cmds.setAttr(Shape+".overrideEnabled", 1)
-        cmds.setAttr(Shape+".overrideColor", colour)
-        cmds.group(n=groupname)
-        grpObj=cmds.ls(sl=1)
-        cmds.xform(grpObj[0], ws=1, t=transform)
-        cmds.xform(grpObj[0], ws=1, ro=rotate)
-
-    def controlFirstValueChildOn(self, Controller, Child, defaultSet, ChildActivatedValue, ChildDeactivatedValue, ControllerOnValue, ControllerOffValue):
-        '''sets a driven key on two items only. if child is in on state, the controller will be keyed to first value'''
-        cmds.setAttr(Child, lock=0) 
-        cmds.setAttr(Controller, ControllerOffValue)
-        cmds.setAttr(Child,ChildActivatedValue)
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, ControllerOnValue)
-        cmds.setAttr(Child, ChildDeactivatedValue)
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, defaultSet)
-        cmds.setAttr(Child, lock=1)
-        
-    def controlSecondValueChildOn(self, Controller, Child, defaultSet, ChildActivatedValue, ChildDeactivatedValue, ControllerOnValue, ControllerOffValue):
-        '''sets a driven key on two items only. if child is in on state, the controller will be keyed to second value'''
-        cmds.setAttr(Child, lock=0) 
-        cmds.setAttr(Controller, ControllerOnValue)
-        cmds.setAttr(Child, ChildActivatedValue)
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, ControllerOffValue)
-        cmds.setAttr(Child, ChildDeactivatedValue)
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, defaultSet)    
-        cmds.setAttr(Child, lock=1)    
-        
-    def doubleSetDrivenKey_constraint(self, Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue):
-        '''sets a driven key on two items only. if child is in on state, the controller will be keyed to second value'''
-        cmds.setAttr(child_one_constraint, lock=0)
-        cmds.setAttr(child_two_constraint, lock=0) 
-        cmds.setAttr(Controller, secondValue)     
-        cmds.setAttr(child_one_constraint, secondValue)
-        cmds.setAttr(child_two_constraint, firstValue)         
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, firstValue)     
-        cmds.setAttr(child_one_constraint, firstValue)
-        cmds.setAttr(child_two_constraint, secondValue)         
-        cmds.setDrivenKeyframe(Child, cd=Controller)
-        cmds.setAttr(Controller, firstValue) 
-        cmds.setAttr(child_one_constraint, lock=1)
-        cmds.setAttr(child_two_constraint, lock=1) 
-
-    def buildRoughCalamari(self, size):
-        '''this creates cubes as a low res standin for mesh on a bone heirarchy. handy to check for flipping'''
-        selObj=cmds.ls(sl=1)
-        getGrp=cmds.listRelatives(selObj[0], ad=1, typ="joint")
-        getGrp.append(selObj[0])
-        for each in getGrp:
-            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-            buildCube=cmds.polyCube(n="calamariCube", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
-            cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
-            cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
-            cmds.parent(buildCube[0], each)
-            
-    def groupShapes(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        for item in selObj:
-            try:
-                cmds.parent(item, w=1)
-            except:
-                pass
-            cmds.makeIdentity(item, a=True, t=1, s=1, r=1, n=0)
-        shapeBucket=[]
-        parentCurve=selObj[0]
-        for item in selObj[1:]:
-            getShapes= cmds.listRelatives(item, ad=1, typ="shape")
-            shapeBucket.append(getShapes[0])
-        shapeBucket.append(parentCurve)
-        cmds.parent(shapeBucket, parentCurve, r=1, s=1)
-
-
-            
-    def buildSkinCasing(self):
-        '''this creates a low res cylinder to a selected bone for simplistic skinning to copy from'''
-        selObj=cmds.ls(sl=1)
-        size=self.fetchSize()
-        sizeHieght=(size/2)+size
-        sizeFindPiv=size/2
-        for each in selObj:
-            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-            buildCube=cmds.polyCylinder(n=each+"loresskin", r=size, h=sizeHieght, sx=8, sy=5, sz=0, ax=(0, 1, 0), rcp=0, cuv=3, ch=1)
-            cmds.move(0, sizeFindPiv, 0, buildCube[0]+".rotatePivot" ,r=1, rpr=1 )
-            cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
-            cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
-            #cmds.skinCluster(buildCube[0], each) 
-            #cmds.parent(buildCube[0], each)
-    def swapInfluenceSelect(self):
-        '''this swaps influence selection to another joint collection of influences in scene by name type'''
-        selObj=cmds.ls(sl=1)
-        getallnames=cmds.ls("*Rig:*")
-        bucket=[]
-        for each in  getallnames:
-            foundFirst=each.split(":")[0]
-            bucket.append(foundFirst)
-        bucket=set(bucket)
-        global jointSelect
-        winName = "Swap Influence select"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=250, h=100 )
 
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
@@ -1897,1183 +681,46 @@ class BaseClass():
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        jointSelect=cmds.optionMenu( label='joints')
-        for each in bucket:
+        attributeSel=cmds.optionMenu( label='user attribute')
+        for each in geteattr:
             cmds.menuItem( label=each)            
-        cmds.button (label='set joint', p='listBuildButtonLayout', command = self.set_joint_select)
-        cmds.showWindow(window)
-     
-    def set_joint_select(self, arg=None):
-        queryJoint=cmds.optionMenu(jointSelect, q=1, v=1)
-        getSel=cmds.ls(sl=1)
-        getNames=[]
-        for each in getSel:
-            getName=each.split(":")
-            getPArt=getName[-1:]
-            getNames.append(queryJoint+":"+getPArt[0])
-        cmds.select(getNames[0])
-        for each in getNames[1:]:
-            cmds.select(each, add=1)
-        
-#         selObj=cmds.ls(sl=1)
-#         size=self.fetchSize()
-#         sizeHieght=(size/2)+size
-#         sizeFindPiv=size/2
-#         for each in selObj:
-#             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-#             buildCube=cmds.polyCylinder(n=each+"loresskin", r=size, h=sizeHieght, sx=8, sy=5, sz=0, ax=(0, 1, 0), rcp=0, cuv=3, ch=1)
-#             cmds.move(0, sizeFindPiv, 0, buildCube[0]+".rotatePivot" ,r=1, rpr=1 )
-#             cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
-#             cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
-#             #cmds.skinCluster(buildCube[0], each) 
-#             #cmds.parent(buildCube[0], each)
-            
-    def BlinkSculpt(self):
-        '''this attaches a blink sculpt if a characters eyes are hollowing out'''
-        eyeBones=[]
-        Eye_L_joint=(cmds.ls("*:*Eye_L_jnt")[0])
-        eyeBones.append(Eye_L_joint)
-        Eye_R_joint=(cmds.ls("*:*Eye_R_jnt")[0])
-        eyeBones.append(Eye_R_joint)
+        cmds.button (label='Go', p='listBuildButtonLayout', command = self._blend_colour)
+        cmds.showWindow(window)   
+          
+    def _blend_colour(self, arg=None):
+        geteattr=cmds.optionMenu(attributeSel, q=1, v=1)          
         selObj=cmds.ls(sl=1)
-        mesh=selObj[0]
-        for each in eyeBones:
-            try:
-                getname=each.split(":")[1]
-            except:
-                getname=each
-            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-            createSculpt=cmds.sculpt(mesh, n=getname.split("_jnt")[0]+"_scpt", mode="flip", insideMode="even", maxDisplacement=2, dropoffType="linear", dropoffDistance=7, groupWithLocator=1, objectCentered=1)
-            cmds.move(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], createSculpt)
-            cmds.parent(createSculpt, each)
-
-
-    def makeDialog(self, titleText, messageText, textText):
-        '''make dialog box function'''
-        result = cmds.promptDialog( 
-            title=str(titleText[0]), 
-            message=str(messageText[0]), 
-            text=str(textText[0]),
-            button=['Continue','Cancel'],
-            defaultButton='Continue', 
-            cancelButton='Cancel', 
-            dismissString='Cancel' )
-        if result == 'Continue':            
-            mainName=cmds.promptDialog(q=1)
-            return mainName
-        else:
-            print "nothing collected"    
-            
-
-            
-    def makeShape(self):
-        '''this builds controller shapes'''
-        titleText=('Controller'), 
-        messageText=("enter controller type"), 
-        textText=("sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
-        mainName=self.makeDialog(titleText, messageText, textText)
-        selectionCheck=cmds.ls(sl=1)
-        if selectionCheck:
-            self.CreateShapeFunction(selectionCheck, mainName)
-        else:
-            selectionCheck=None
-            self.CreateShapeFunction(selectionCheck, mainName)   
-            
-    def CreateShapeFunction(self, selectionCheck, mainName):
-        if mainName=="sphere":
-            colour=self.fetchColour()
-            self.getSphere(selectionCheck, colour)
-        if mainName=="circle":
-            colour=self.fetchColour()
-            self.getcircle(selectionCheck, colour)
-        if mainName=="square":
-            colour=self.fetchColour()
-            self.getsquare(selectionCheck, colour)
-        if mainName=="rectangle":
-            colour=self.fetchColour()
-            self.getrectangle(selectionCheck, colour)
-        if mainName=="prim":
-            colour=self.fetchColour()
-            self.getprim(selectionCheck, colour)
-        if mainName=="triangle":
-            colour=self.fetchColour()
-            self.gettri(selectionCheck, colour)
-        if mainName=="cube":
-            colour=self.fetchColour()
-            self.getcube(selectionCheck, colour)
-        if mainName=="jack":
-            colour=self.fetchColour()
-            self.getjack(selectionCheck, colour)
-        if mainName=="joint":
-            self.getJoint(selectionCheck)      
-        if mainName=="ballarrow":
-            colour=self.fetchColour()
-            self.getballarrow(selectionCheck, colour)   
-        if mainName=="handle":
-            colour=self.fetchColour()
-            self.gethandle(selectionCheck, colour)                                 
-        if mainName=="locator":
-            colour=self.fetchColour()
-            self.getLoc(selectionCheck, colour) 
-            
-    def getSphere(self, selectionCheck, colour):
-        titleText=('Define dimension'),                        
-        messageText=("Enter 4 numbers"), 
-        textText=("1, .4, .9, .7, 22"), 
-        size=self.makeDialog(titleText, messageText, textText)
-        getNumbers= size.split(', ')
-        numberBucket=[]
-        for each in getNumbers:
-            numberBucket.append(float(each))
-        num0, num1, num2, num3=numberBucket[0],numberBucket[1],numberBucket[2],numberBucket[3]
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)          
-                self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)  
-            self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
-            
-    def getcircle(self, selectionCheck, colour):            
-        nrx, nry, nrz = self.fetchDirection() 
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)            
-                self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        else:
-            each=None
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)         
-            self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)            
-    def getsquare(self, selectionCheck, colour):           
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)            
-                self.squareI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)            
-            self.squareI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
-            
-    def getrectangle(self, selectionCheck, colour):                        
-        titleText=('Define dimension'),                        
-        messageText=("Enter 2 numbers"), 
-        textText=("4, 5"), 
-        size=self.makeDialog(titleText, messageText, textText)
-        getParts=size.split(', ')
-        numlen, numwid= int(getParts[0]), int(getParts[1])
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.rectI(name, grpname, numlen, numwid, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)    
-            self.rectI(name, grpname, numlen, numwid, transformWorldMatrix, rotateWorldMatrix, colour)
-                                  
-    def getprim(self, selectionCheck, colour):                                    
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.PrimI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)    
-            self.PrimI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)                     
-    def gettri(self, selectionCheck, coloure):                                                
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.TriI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)    
-            self.TriI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)             
-    def getcube(self, selectionCheck, colour):                                                            
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.cubeI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)    
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)        
-            self.cubeI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)    
-                     
-    def getjack(self, selectionCheck, colour):                                                
-        size=self.fetchSize()
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.JackI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)              
-            self.JackI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)   
-    def getJoint(self, selectionCheck):
-        if selectionCheck:
-            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.buildJoint(each, transformWorldMatrix, rotateWorldMatrix)
-        else:
-            name, grpname="name", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)
-            self.buildJoint(name, transformWorldMatrix, rotateWorldMatrix)
-
-    def getLoc(self, selectionCheck, colour):
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_loc", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.buildLoc(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_loc", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)   
-            self.buildLoc(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-                          
-    def getballarrow(self, selectionCheck, colour):   
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)                                                        
-                self.ballArrowI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)                 
-            self.ballArrowI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-            
-    def gethandle(self, selectionCheck, colour):
-        if selectionCheck:
-            for each in selectionCheck:
-                name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
-                self.handleI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-        else:
-            name, grpname="name_Ctrl", "name_grp"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)                 
-            self.handleI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
-                               
-    def fetchDirection(self):
-        titleText=('Define Axis of Controller'),                        
-        messageText=("Enter direction"), 
-        textText=("X, Y, Z"), 
-        direction=self.makeDialog(titleText, messageText, textText)
-        if direction=="X":
-            nrx=1
-            nry=0
-            nrz=0                  
-        elif direction=="Y":
-            nrx=0
-            nry=1
-            nrz=0   
-        elif direction=="Z":
-            nrx=0
-            nry=0
-            nrz=1 
-        return nrx, nry, nrz   
-    def fetchColour(self):
-        titleText=('Define Colour of Controller'),                        
-        messageText=("Enter colour"), 
-        textText=("red, green, blue, yellow"), 
-        colour=self.makeDialog(titleText, messageText, textText)
-        if colour=="red":
-            colour=13          
-        elif colour=="blue":
-            colour=6   
-        elif colour=="green":
-            colour=14
-        elif colour=="yellow":
-            colour=22  
-        return colour       
-    
-    def fetchSize(self, arg=None):
-        titleText=('Define size of Controller'),                        
-        messageText=("Enter size"), 
-        textText=("6"), 
-        size=self.makeDialog(titleText, messageText, textText)
-        return float(size)  
-
-    def mirrorController(self):
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rotated=self.locationXForm(eachController)
-            cmds.move(-translate[0], translate[1], translate[2], eachChild)
-            cmds.rotate(-rotated[0], -rotated[1], rotated[2], eachChild)   
-             
-    def massTransfer(self):
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            cmds.select(eachController)    
-            cmds.select(eachChild, add=1)
-            cmds.copyAttr(values=1, inConnections=1, outConnections=1, keepSourceConnections=1)
-
-    def mirrorSelection(self):
-        selObj=cmds.ls(sl=1)
-        getSelected=[]
-        for each in selObj:
-            if "_R_" in each:
-                lognm=each.replace("_R_", "_L_")
-                getSelected.append(lognm)
-            elif "_L_" in each:
-                lognm=each.replace("_L_", "_R_")
-                getSelected.append(lognm)
-            else:
-                getSelected.append(each)
-        cmds.select(getSelected[0])
-        for each in getSelected[1:]:
-            cmds.select(each, add=1)
-    def combineSelect(self):
-        selObj=cmds.ls(sl=1)
-        getSelected=[]
-        for each in selObj:
-            if "_R_" in each:
-                lognm=each.replace("_R_", "_L_")
-                getSelected.append(lognm)
-            elif "_L_" in each:
-                lognm=each.replace("_L_", "_R_")
-                getSelected.append(lognm)
-            else:
-                getSelected.append(each)
-        cmds.select(selObj[0])
-        for each, item in map(None, selObj[1:], getSelected):
-            cmds.select(item, add=1)
-            cmds.select(each, add=1)
-             
-
-    def matchXform(self, arg=None):
-        '''This matches a matrix value to a group selection'''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            getValue=cmds.xform(eachController, q=True, m=True)
-            cmds.xform(eachChild, m=getValue)
-            
-#         selObj=cmds.ls(sl=1)
-#         Controller=selObj[0]
-#         Child=selObj[1]
-#         getValue=cmds.xform(Controller, q=True, m=True)
-#         cmds.xform(Child, m=getValue) 
-    def mirrorXformV1(self, arg=None):
-        '''this mirrors a group selection on a face'''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.locationXForm(eachController)
-            #translate, rot=self.forcedlocationXForm(eachController)
-            cmds.move(-translate[0], translate[1], translate[2], eachChild)
-            cmds.rotate(rot[0], -rot[1], -rot[2], eachChild)
-    def mirrorXform(self, arg=None):
-        ''''''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            if "Wrist" in eachChild or "hand" in eachChild:
-                cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-            else:
-                cmds.rotate(-rot[0], -rot[1], -rot[2],eachChild)
-    def mirrorXformProper(self, arg=None):
-        ''''''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(-rot[0], -rot[1], -rot[2],eachChild)
-    def mirrorXformface(self, arg=None):
-        ''''''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            if "Wrist" in eachChild or "hand" in eachChild:
-                cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-            else:
-                cmds.rotate(-rot[0], rot[1], -rot[2],eachChild)
-    def mirrorXformRig(self, arg=None):
-        ''''''
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-    def lockLeftWeights(self, arg=None):
-        '''this locks all left bone weights'''
-        getRefJoints=cmds.ls("*:*_jnt")
-        getJoints=cmds.ls("*_jnt")
-        for each in getJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass 
-        for each in getRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass
-        getLeftJoints=cmds.ls("*:*_L_jnt")
-        getLeftFaceJoints=cmds.ls("*L_jnt")
-        getLeftBodyRefJoints=cmds.ls("*:*Left*_jnt")
-        getLeftBodyJoints=cmds.ls("*Left*_jnt")
-        for each in getLeftJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getLeftFaceJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getLeftBodyRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass            
-        for each in getLeftBodyJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass 
-            
-    def massDef(self, arg=None):    
-        getMesh=cmds.ls(sl=1)
-        if len(getMesh)<2:
-            print "select two groups"
-        else:
+        if len(selObj)>3:
             pass
-        getMeshTarget=getMesh[0]
-        getMeshController=getMesh[1]
-        getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")
-        if getChildrenController==None:
-            getChildrenController=([getMeshController])
-        print getChildrenController      
-        getChildrenTarget=cmds.listRelatives(getMeshTarget, c=1, typ="transform")
-        if getChildrenTarget==None:
-            getChildrenTarget=([getMeshTarget]) 
-        print getChildrenTarget
-        for eachController, eachChild in map(None, getChildrenController, getChildrenTarget):
-            if eachController ==eachChild :
-                try:    
-                    cmds.select(eachChild)
-                    cmds.select(eachController, add=1)
-                    cmds.deformer(type="wrap")
-                except:
-                    pass
-    
-
-                                 
-    def lockRightWeights(self, arg=None):
-        '''this locks all Right bone weights'''
-        getRefJoints=cmds.ls("*:*_jnt")
-        getJoints=cmds.ls("*_jnt")
-        for each in getJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass 
-        for each in getRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass
-        getRightJoints=cmds.ls("*:*_R_jnt")
-        getRightFaceJoints=cmds.ls("*L_jnt")
-        getRightBodyRefJoints=cmds.ls("*:*Right*_jnt")
-        getRightBodyJoints=cmds.ls("*Right*_jnt")
-        for each in getRightJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getRightFaceJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getRightBodyRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass            
-        for each in getRightBodyJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass            
-    def lockBodyWeights(self, arg=None):
-        '''this locks all body joint weights'''
-        getLegJoints=cmds.ls("*:leg*_jnt")
-        getSpineJoints=cmds.ls("*:spine*_jnt")
-        getArmJoints=cmds.ls("*:arm*_jnt")
-        getFootJoints=cmds.ls("*:foot*_jnt")
-        for each in getLegJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getSpineJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass
-        for each in getArmJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass            
-        for each in getFootJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass            
-    def lockFaceWeights(self, arg=None):
-        '''this locks all body joint weights'''
-        getFaceJoints=cmds.ls("face*_jnt")
-        for each in getFaceJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass      
-    def lockAllWeights(self, arg=None):
-        '''this locks all weights'''
-        getRefJoints=cmds.ls("*:*_jnt")
-        getJoints=cmds.ls("*_jnt")
-        for each in getJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass 
-        for each in getRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 1)
-            except:
-                pass                           
-    def unLockWeights(self, arg=None):
-        '''this unlocks all weights'''
-        getRefJoints=cmds.ls("*:*_jnt")
-        getJoints=cmds.ls("*_jnt")    
-        for each in getJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass            
-        for each in getRefJoints:
-            try:
-                cmds.setAttr(each+".liw", 0)
-            except:
-                pass   
-                    
-    def massCopyWeight(self, arg=None):
-        getMesh=cmds.ls(sl=1)
-        if len(getMesh)<2:
-            print "select a skinned mesh group and target skinned mesh"
         else:
-            pass
-        getMeshController=getMesh[0]
-        getMeshTarget=getMesh[1]
-        getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")
-        if getChildrenController==None:
-            getChildrenController=([getMeshController])
-        getChildrenTarget=cmds.listRelatives(getMeshTarget, c=1, typ="transform")
-        if getChildrenTarget==None:
-            getChildrenTarget=([getMeshTarget])
-        for each, item in map(None, getChildrenController, getChildrenTarget):
-            if each!=None:
-                getCtrlItemName=each.split(":")
-                getTgtItemName=item.split(":")
-                getOldMeshNameSpace=':'.join(getCtrlItemName[:-1])+":"
-                newAssetsNamespace=':'.join(getTgtItemName[:-1])+":"
-                if getCtrlItemName[-1:][0] ==getTgtItemName[-1:][0]:
-                    cmds.select(each)
-                    cmds.select(item, add=1)
-                    cmds.copySkinWeights(noMirror=1, surfaceAssociation="closestPoint", influenceAssociation="closestJoint")
-                    
-    def massCopyWeightSingleToMass(self, arg=None):
-        getMesh=cmds.ls(sl=1)
-        if len(getMesh)<2:
-            print "select a skinned mesh group and target skinned mesh"
-        else:
-            pass
-        getMeshController=getMesh[0]
-        for each in getMesh[1:]:
-            cmds.select(getMeshController)
-            cmds.select(each, add=1)
-            cmds.copySkinWeights(noMirror=1, surfaceAssociation="closestPoint", influenceAssociation="closestJoint")
-                    
-            
-            
-#             translate, rot=self.forcedlocationXForm(eachController)
-# #             transformWorldMatrix = cmds.xform(eachController, q=True, wd=1, m=True)
-# #             cmds.xform(eachChild, m=transformWorldMatrix)
-# #             cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-#             translate=cmds.xform(eachController, q=1, t=1)
-#             transformWorldMatrix = cmds.xform(eachController, q=True, wd=1, m=True)
-#             cmds.move(-translate[0], 0, 0,eachChild, r=1, rpr=1)
-#             cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)            
-            
-    def mirrorSDKMouth(self, arg=None):
-        dominateSide="R"
-        subordinateSide="L"  
-        selObj=(
-        "Lip_T_"+dominateSide+"_SDK",
-        "Lip_T_"+subordinateSide+"_SDK",
-        "Lip_Corner_"+dominateSide+"_SDK",
-        "Lip_Corner_"+subordinateSide+"_SDK",
-        "Lip_B_"+dominateSide+"_SDK",
-        "Lip_B_"+subordinateSide+"_SDK",)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-            
-    def mirrorMouth(self, arg=None):
-        '''this mirrors the mouth controls'''
-        getSelChar=cmds.ls(sl=1)
-        getName=getSelChar[0].split(":")
-        getCharNameCtrlPref=':'.join(getName[:-1])+":"
-        titleText=('Define dominatingside'),                        
-        messageText=("Enter Side"), 
-        textText=("R, L"), 
-        side=self.makeDialog(titleText, messageText, textText)  
-        if side =="R":
-            dominateSide="R"
-            subordinateSide="L"  
-        else:
-            dominateSide="L"
-            subordinateSide="R"  
-        selObj=(
-        getCharNameCtrlPref+"Lip_T_"+dominateSide+"_Ctrl",
-        getCharNameCtrlPref+"Lip_T_"+subordinateSide+"_Ctrl",
-        getCharNameCtrlPref+"Lip_Corner_"+dominateSide+"_Ctrl",
-        getCharNameCtrlPref+"Lip_Corner_"+subordinateSide+"_Ctrl",
-        getCharNameCtrlPref+"Lip_B_"+dominateSide+"_Ctrl",
-        getCharNameCtrlPref+"Lip_B_"+subordinateSide+"_Ctrl",)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-#             translate, rot=self.forcedlocationXForm(eachController)
-#             transformWorldMatrix = cmds.xform(eachController, q=True, wd=1, m=True)
-#             cmds.xform(eachChild, m=transformWorldMatrix)
-#             cmds.move(-translate[0], translate[1], translate[2], eachChild)
-#             cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-            
-
-
-    def mirrorBrows(self, arg=None):
-        '''This mirrors the eyebrows for SDK creation'''  
-        selObj=("Lip_T_R_SDK",
-        "Brow05_R_SDK",
-        "Brow05_L_SDK",
-        "Brow04_R_SDK",
-        "Brow04_L_SDK",
-        "Brow03_R_SDK",
-        "Brow03_L_SDK",
-        "Brow02_R_SDK",
-        "Brow02_L_SDK",
-        "Brow01_R_SDK",
-        "Brow01_L_SDK",)
-        #selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-               
-#             translate, rot=self.forcedlocationXForm(eachController)
-#             translate=cmds.xform(eachController, q=1, t=1)
-#             transformWorldMatrix = cmds.xform(eachController, q=True, wd=1, m=True)
-#             cmds.move(-translate[0], 0, 0,eachChild, r=1, rpr=1)
-#             cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)            
-    def mirrorAnimBrows(self, arg=None):
-        '''This mirrors the eyebrows'''
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        titleText=('Define dominatingside'),                        
-        messageText=("Enter Side"), 
-        textText=("R, L"), 
-        side=self.makeDialog(titleText, messageText, textText)  
-        if side =="R":
-            dominateSide="R"
-            subordinateSide="L"  
-        else:
-            dominateSide="L"
-            subordinateSide="R"    
-        selObj=(
-        getAsset+"Brow05_"+dominateSide+"_Ctrl",
-        getAsset+"Brow05_"+subordinateSide+"_Ctrl",
-        getAsset+"Brow04_"+dominateSide+"_Ctrl",
-        getAsset+"Brow04_"+subordinateSide+"_Ctrl",
-        getAsset+"Brow03_"+dominateSide+"_Ctrl",
-        getAsset+"Brow03_"+subordinateSide+"_Ctrl",
-        getAsset+"Brow02_"+dominateSide+"_Ctrl",
-        getAsset+"Brow02_"+subordinateSide+"_Ctrl",
-        getAsset+"Brow01_"+dominateSide+"_Ctrl",
-        getAsset+"Brow01_"+subordinateSide+"_Ctrl",)
-        #selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-               
-    def mirrorAnimEyes(self, arg=None):
-        '''This mirrors the eyebrows'''
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        titleText=('Define dominatingside'),                        
-        messageText=("Enter Side"), 
-        textText=("R, L"), 
-        side=self.makeDialog(titleText, messageText, textText)  
-        if side =="R":
-            dominateSide="R"
-            subordinateSide="L"  
-        else:
-            dominateSide="L"
-            subordinateSide="R"     
-        selObj=(
-                getAsset+"Lid_Open03_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open03_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open04_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open04_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open05_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open05_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open04_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open04_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open03_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open03_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open02_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open02_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open02_T_"+dominateSide+"_Ctrl",                
-                getAsset+"Lid_Open02_T_"+subordinateSide+"_Ctrl",                
-                )
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-       
-    def mirrorAnimFace(self, arg=None):
-        '''This mirrors the eyebrows'''
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        titleText=('Define dominatingside'),                        
-        messageText=("Enter Side"), 
-        textText=("R, L"), 
-        side=self.makeDialog(titleText, messageText, textText)  
-        if side =="R":
-            dominateSide="R"
-            subordinateSide="L"  
-        else:
-            dominateSide="L"
-            subordinateSide="R"      
-        selObj=(
-                getAsset+"Lid_Open03_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open03_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open04_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open04_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open05_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open05_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open04_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open04_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open03_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open03_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open02_B_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open02_B_"+subordinateSide+"_Ctrl",
-                getAsset+"Lid_Open02_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lid_Open02_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Brow01_"+dominateSide+"_Ctrl",
-                getAsset+"Brow01_"+subordinateSide+"_Ctrl",
-                getAsset+"Brow02_"+dominateSide+"_Ctrl",
-                getAsset+"Brow02_"+subordinateSide+"_Ctrl",
-                getAsset+"Brow03_"+dominateSide+"_Ctrl",
-                getAsset+"Brow03_"+subordinateSide+"_Ctrl",
-                getAsset+"Brow04_"+dominateSide+"_Ctrl",
-                getAsset+"Brow04_"+subordinateSide+"_Ctrl",
-                getAsset+"Brow05_"+dominateSide+"_Ctrl",
-                getAsset+"Brow05_"+subordinateSide+"_Ctrl",
-                getAsset+"CheekBone_"+dominateSide+"_Ctrl",
-                getAsset+"CheekBone_"+subordinateSide+"_Ctrl",
-                getAsset+"Cheek_T_"+dominateSide+"_Ctrl",
-                getAsset+"Cheek_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Cheek_"+dominateSide+"_Ctrl",
-                getAsset+"Cheek_"+subordinateSide+"_Ctrl",
-                getAsset+"Nose_"+dominateSide+"_Ctrl",
-                getAsset+"Nose_"+subordinateSide+"_Ctrl",
-                getAsset+"Jaw_"+dominateSide+"_Ctrl",
-                getAsset+"Jaw_"+subordinateSide+"_Ctrl",
-                getAsset+"Lip_Corner_"+dominateSide+"_Ctrl",
-                getAsset+"Lip_Corner_"+subordinateSide+"_Ctrl",
-                getAsset+"Lip_T_"+dominateSide+"_Ctrl",
-                getAsset+"Lip_T_"+subordinateSide+"_Ctrl",
-                getAsset+"Lip_B_"+dominateSide+"_Ctrl",              
-                getAsset+"Lip_B_"+subordinateSide+"_Ctrl",              
-                )
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            translate, rot=self.forcedlocationXForm(eachController)
-            translate=cmds.xform(eachController, q=1, t=1)
-            cmds.xform(eachChild, t=[-translate[0], translate[1], translate[2]])
-            cmds.rotate(rot[0], -rot[1], -rot[2],eachChild)
-       
-
-    def setBoxX(self, arg=None):
-        '''this sets an SDK key on a group of controls if a parent controller box moves in the X axis'''        
-        selObj=cmds.ls(sl=1)
+            print "select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object"
+            return
         Controller=selObj[0]
-        ChildAttributes=(".tx", ".ty", ".tz" , ".rx", ".ry", ".rz")
-        ControllerAttributesHz=".tx"
-        ControllerAttributesVrt=".ty"
-        for Child in selObj[1:]:
-            for attribute in ChildAttributes:
-                cmds.setDrivenKeyframe(Child+attribute, cd=Controller+ControllerAttributesHz)
-
-    def setBoxY(self, arg=None):
-        '''this sets an SDK key on a group of controls if a parent controller box moves in the Y axis'''
-        selObj=cmds.ls(sl=1)
-        Controller=selObj[0]
-        ChildAttributes=(".tx", ".ty", ".tz" , ".rx", ".ry", ".rz")
-        ControllerAttributesHz=".tx"
-        ControllerAttributesVrt=".ty"
-        for Child in selObj[1:]:
-            for attribute in ChildAttributes:
-                cmds.setDrivenKeyframe(Child+attribute, cd=Controller+ControllerAttributesVrt)
-    def buildContainerBulkSelected(self, arg=None):
-        getSel=cmds.ls(sl=1)
-        makeContainer=cmds.container(n=getSel[0]+"_CTR")
-        for each in getSel:
-            cmds.container(makeContainer, e=1, an=each)
-    def buildContainerMassSelected(self, arg=None):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            makeContainer=cmds.container(n=each+"_CTR")
-
-    def sandwichControl(self):
-        '''this sandwitches a circle control to another control for an easy override switch(face controllers for SDK keys)'''
-        titleText=('Define type of Controller'),                        
-        messageText=("Enter type"), 
-        textText=("SDK"), 
-        typeCtrl=self.makeDialog(titleText, messageText, textText)   
-        colour=self.fetchColour()
-        size=self.fetchSize()     
-        selObj=cmds.ls(sl=1)
-        for each in selObj:
-            self.sandwichControlFunct(colour, size, each, typeCtrl)
+        firstChild=selObj[1]
+        secondChild=selObj[2]
+        thirdChild=selObj[3]  
+        Controller=Controller+"."+geteattr      
+        getClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
         
-    def sandwichControlFunct(self, colour, size, each, typeCtrl):
-        selObjParent=cmds.listRelatives( each, allParents=True )
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)        
-        nrx, nry, nrz = 0.0, 0.0, 1.0 
-        getcolour=cmds.getAttr(each+".overrideColor")
-        name=each.split("_Ctrl")[0]+typeCtrl+"_Ctrl"
-        grpname=each.split("_Ctrl")[0]+typeCtrl+"_grp"
-        self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
-        cmds.setAttr(name+"Shape.visibility", 1)
-        if selObjParent:
-            cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
-        cmds.parent(each, each.split("_Ctrl")[0]+typeCtrl+"_Ctrl")
-
-    def sandwichAuto(self, each, typeCtrl, colour, size ):
-        selObjParent=cmds.listRelatives( each, allParents=True )
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)        
-        nrx, nry, nrz = 0.0, 0.0, 1.0 
-        getcolour=cmds.getAttr(each+".overrideColor")
-        name=each.split("_Ctrl")[0]+typeCtrl+"_Ctrl"
-        grpname=each.split("_Ctrl")[0]+typeCtrl+"_grp"
-        self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
-        if selObjParent:
-            cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
-        cmds.parent(each, each.split("_Ctrl")[0]+typeCtrl+"_Ctrl")
-    def sandwichControlV1(self):
-        '''this builds controller shapes'''
-        titleText=('Controller'), 
-        messageText=("enter controller type"), 
-        textText=("sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
-        mainName=self.makeDialog(titleText, messageText, textText)
-        selectionCheck=cmds.ls(sl=1)
-        if selectionCheck:
-            for each in selectionCheck:
-                selObjParent=cmds.listRelatives( each, allParents=True )
-                getItem=self.CreateShapeFunction(selectionCheck, mainName)
-                cmds.parent(getItem, each.split("_Ctrl")[0]+typeCtrl+"_Ctrl")
-        if selObjParent:
-            cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
-
-
-    def mirrorBlendshape(self):
-        selObj=cmds.ls(sl=1)
-        if len(selObj)<2:
-            print "must select a deformed shape and the mesh to apply the reverse mirror to"
-        else:
-            pass
-        cmds.duplicate(selObj[1],n="shape_Scale")
-        cmds.setAttr("shape_Scale.scaleX", -1)
-        cmds.duplicate(selObj[1], n="shape_Wrap")
-        cmds.select(selObj[0])
-        cmds.select("shape_Scale", add=1)
-        cmds.blendShape(n="reflectBlend")
-        cmds.select("shape_Wrap")
-        cmds.select("shape_Scale", add=1)
-        cmds.CreateWrap()
-        cmds.setAttr( "reflectBlend."+selObj[0], 1)        
-        cmds.duplicate("shape_Wrap", n="reflectedBlend")
-        remove=("shape_Wrap", "shape_Scale")
-        for each in remove:
-            cmds.delete(each)
-    def mirrorBlendshapeFace(self):
-        selObj=cmds.ls(sl=1)
-        if len(selObj)<2:
-            print "must select a deformed shape and the mesh to apply the reverse mirror to"
-        else:
-            pass
-        cmds.duplicate(selObj[1],n="shape_Scale")
-        cmds.setAttr("shape_Scale.scaleX", -1)
-        cmds.duplicate(selObj[1], n="shape_Wrap")
-        cmds.select(selObj[0])
-        cmds.select("shape_Scale", add=1)
-        if "_R_" in selObj[0]:
-            lognm=selObj[0].replace("_R_", '_L_')
-            cmds.blendShape(n=lognm)
-        else:
-            cmds.blendShape(n="reflectBlend")
-        cmds.select("shape_Wrap")
-        cmds.select("shape_Scale", add=1)
-        cmds.CreateWrap()
-        cmds.setAttr( "reflectBlend."+selObj[0], 1)        
-        cmds.duplicate("shape_Wrap", n="reflectedBlend")
-        remove=("shape_Wrap", "shape_Scale")
-        for each in remove:
-            cmds.delete(each)
-            
-    def mirrorObject(self, arg=None):
-        titleText=('Define Sides'),                        
-        messageText=("Enter Enter sides or leave blank, will add 'opp' to new object"), 
-        textText=("Right, _R_","_R"), 
-        Side=self.makeDialog(titleText, messageText, textText)
-        if Side=="Right":
-            otherSide="Left"
-        elif Side=="_R_":
-            otherSide="_L_"
-        elif Side=="_R":
-            otherSide="_L"
-        elif Side=="R_":
-            otherSide="L_"
-        elif Side=="Left":
-            otherSide="Right"
-        elif Side=="_L_":
-            otherSide="_R_"
-        elif Side=="_L":
-            otherSide="_R"
-        elif Side=="L_":
-            otherSide="R_"
-        getObj=cmds.ls(sl=1)
-        if Side:
-            for each in getObj:
-                NewString=each.replace(Side, otherSide)
-                cmds.duplicate(each, n=NewString, rr=1)
-                cmds.CreateEmptyGroup()
-                grp=cmds.ls(sl=1)[0]
-                cmds.parent(NewString, grp)
-                cmds.setAttr(grp+".scaleX", -1)
-                cmds.parent(NewString, w=1) 
-                cmds.delete(grp)
-        else:
-            for each in getObj:
-                NewString=each+"_oppSide"
-                cmds.duplicate(each, n=NewString, rr=1)
-                cmds.CreateEmptyGroup()
-                grp=cmds.ls(sl=1)[0]
-                cmds.parent(NewString, grp)
-                cmds.setAttr(grp+".scaleX", -1)
-                cmds.parent(NewString, w=1) 
-                cmds.delete(grp)
-            
-    def mirrorObject_callup(self, getObj, Side, otherSide):
-            NewString=getObj.replace(Side, otherSide)
-            cmds.duplicate(getObj, n=NewString, rr=1)
-            cmds.CreateEmptyGroup()
-            grp=cmds.ls(sl=1)[0]
-            cmds.parent(NewString, grp)
-            cmds.setAttr(grp+".scaleX", -1)
-            cmds.parent(NewString, w=1) 
-            cmds.delete(grp)
-            
-    def ikToFK_Arm(self, arg=None):
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        if "_R_" in getSel:
-            IkWrist=getAsset+"Armhand_IK_R_Ctrl"
-            FKWrist=getAsset+"Wrist_R_Ctrl"
-            IKPoleElbow=getAsset+"elbow_R_PoleVector_Ctrl"
-            FKPoleElbow=getAsset+"armelbowRightFK_target"   
-            IKPoleWrist=getAsset+"wrist_R_PoleVector_Ctrl"
-            FKPoleWrist=getAsset+"armwristRightFK_target"     
-        if "_L_" in getSel:
-            IkWrist=getAsset+"Armhand_IK_L_Ctrl"
-            FKWrist=getAsset+"Wrist_L_Ctrl"    
-            IKPoleElbow=getAsset+"elbow_L_PoleVector_Ctrl"
-            FKPoleElbow=getAsset+"armelbowLeftFK_target"      
-            IKPoleWrist=getAsset+"wrist_L_PoleVector_Ctrl"
-            FKPoleWrist=getAsset+"armwristLeftFK_target" 
-        self.xformAutoMove(IkWrist, FKWrist)
-        self.xformAutoMove(IKPoleElbow, FKPoleElbow)
-        #getClass.xformAutoMove(IKPoleWrist, FKPoleWrist)
-
-    def fkToIK_Arm(self, arg=None):
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        if "_R_" in getSel:
-            FK_Shoulder=getAsset+"Shoulder_R_Ctrl"
-            FK_Elbow=getAsset+"Elbow_R_Ctrl"
-            FK_Wrist=getAsset+"Wrist_R_Ctrl"
-            IK_Shoulder=getAsset+"armshoulderRightIK_jnt"
-            IK_Elbow=getAsset+"armelbowRightIK_jnt"            
-            IK_Wrist=getAsset+"armwristRightIK_jnt"
-        if "_L_" in getSel:
-            FK_Shoulder=getAsset+"Shoulder_L_Ctrl"
-            FK_Elbow=getAsset+"Elbow_L_Ctrl"
-            FK_Wrist=getAsset+"Wrist_L_Ctrl"
-            IK_Shoulder=getAsset+"armshoulderLeftIK_jnt"
-            IK_Elbow=getAsset+"armelbowLeftIK_jnt"            
-            IK_Wrist=getAsset+"armwristLeftIK_jnt"
-        rotateWorldMatrix=cmds.xform(IK_Shoulder, q=1, ro=1)
-        cmds.xform(FK_Shoulder, ro=rotateWorldMatrix) 
-        rotateWorldMatrix=cmds.xform(IK_Elbow, q=1, ro=1)
-        cmds.xform(FK_Elbow, ro=rotateWorldMatrix)         
-#         rotateWorldMatrix=cmds.xform(IK_Elbow, q=1, ws=1, rp=1)
-#         cmds.xform(FK_Elbow, ro=rotateWorldMatrix)
-        rotateWorldMatrix=cmds.xform(IK_Wrist, q=1, ro=1)
-        cmds.xform(FK_Wrist, ro=rotateWorldMatrix)
-
-    def ikToFK_Leg(self, arg=None):
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        if "_R_" in getSel:
-            IkHeel=getAsset+"Footheel_IK_R_Ctrl"
-            FKHeel=getAsset+"footheelRight_jnt"
-            IKPoleKnee=getAsset+"Knee_PoleVector_Right_Ctrl"
-            FKPoleKnee=getAsset+"legkneeRightFK_target"     
-        if "_L_" in getSel:
-            IkHeel=getAsset+"Footheel_IK_L_Ctrl"
-            FKHeel=getAsset+"footheelLeft_jnt"
-            IKPoleKnee=getAsset+"Knee_PoleVector_Left_Ctrl"
-            FKPoleKnee=getAsset+"legkneeLeftFK_target" 
-        self.xformAutoMove(IkHeel, FKHeel)
-        self.xformAutoMove(IKPoleKnee, FKPoleKnee)
-        
-    def fkToIK_Leg(self, arg=None):
-        try:
-            getSel=cmds.ls(sl=1)[0]
-            pass
-        except:
-            print "select something"
-        getParent=getSel.split(":")
-        getAsset= ':'.join(getParent[:-1])+":"
-        print getAsset
-        if "_R_" in getSel:
-            IK_Hip=cmds.ls(getAsset+"leghipRightIK_jnt")
-            IK_Knee=cmds.ls(getAsset+"legkneeRightIK_jnt")            
-            IK_Ankle=cmds.ls(getAsset+"foottalusRightIK_jnt")
-            FK_Hip=cmds.ls(getAsset+"Hip_R_Ctrl")
-            FK_Knee=cmds.ls(getAsset+"Knee_R_Ctrl")
-            FK_Ankle=cmds.ls(getAsset+"Talus_R_Ctrl")
-        if "_L_" in getSel:
-            IK_Hip=cmds.ls(getAsset+"leghipLeftIK_jnt")
-            IK_Knee=cmds.ls(getAsset+"legkneeLeftIK_jnt")            
-            IK_Ankle=cmds.ls(getAsset+"foottalusLeftIK_jnt")
-            FK_Hip=cmds.ls(getAsset+"Hip_L_Ctrl")
-            FK_Knee=cmds.ls(getAsset+"Knee_L_Ctrl")
-            FK_Ankle=cmds.ls(getAsset+"Talus_L_Ctrl")
-        rotateWorldMatrix=cmds.xform(IK_Hip, q=1, ro=1)
-        cmds.xform(FK_Hip, ro=rotateWorldMatrix) 
-        rotateWorldMatrix=cmds.xform(IK_Knee, q=1, ro=1)
-        cmds.xform(FK_Knee, ro=rotateWorldMatrix)
-        rotateWorldMatrix=cmds.xform(IK_Ankle, q=1, ro=1)
-        cmds.xform(FK_Ankle, ro=rotateWorldMatrix)
-
-    def buildIK(self):
-        getSelObj=cmds.ls(sl=1)
-        getController=getSelObj[2]
-        getParent=getSelObj[0]
-        getChild=getSelObj[1]
-        self.fixIK_callup(getController, getParent, getChild)
-        
-    def fixIK_callup(self, getController, getParent, getChild):
-#         getChild=cmds.listRelatives(getParent, ad=1, typ="joint")
-        cmds.joint( getParent, e=1, children=1, zso=1, oj='xyz', sao='yup', spa=1)  
-        createHandle=cmds.ikHandle(n=getParent+"_ik", sj=getParent, ee=getChild, sol="ikSCsolver")#create IK handle
-        cmds.parent(getParent+"_ik", getController)
-
-    def switchArmIKConst(self, arg=None):
-        winName = "constraint set"
-        global typeMenu
+    def _quickCconnect_window(self, arg=None):
+        getSel=cmds.ls(sl=1)  
+        getFirst=getSel[0]      
+        getSecond=getSel[1] 
+        global attributeFirstSel
+        global attributeSecondSel        
+        getFirstAttr=cmds.listAttr (getFirst)      
+        getFirstAttr=sorted(getFirstAttr)
+        getSecondAttr=cmds.listAttr (getSecond)
+        getSecondAttr=sorted(getSecondAttr)         
+        winName = "Quick connect attributes"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
 
-#         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=150, h=100 )
-        window = cmds.window(winName, title=winTitle, tbm=1, w=200, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
 
         cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=200)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         
@@ -3081,60 +728,383 @@ class BaseClass():
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(120, 20))
-        typeMenu=cmds.optionMenu( label='constriant')
-        cmds.menuItem( label="on" )
-        cmds.menuItem( label="World" )
-        cmds.menuItem( label="Main" )           
-        cmds.button (label='Change Selection', p='listBuildButtonLayout', command = lambda *args:self.switchArmIKConstFunct())
-        cmds.showWindow(window)
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=cmds.optionMenu( label='From')
+        for each in getFirstAttr:
+            cmds.menuItem( label=each) 
+        attributeSecondSel=cmds.optionMenu( label='To')               
+        for each in getSecondAttr:
+            cmds.menuItem( label=each)                    
+        cmds.button (label='Go', p='listBuildButtonLayout', command = self._quickCconnect)
+        cmds.showWindow(window)   
+          
+    def _quickCconnect(self, arg=None):
+        getFirstattr=cmds.optionMenu(attributeFirstSel, q=1, v=1)          
+        getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
+        getSel=cmds.ls(sl=1)  
+        getFirst=getSel[0]      
+        getSecond=getSel[1]         
+        cmds.connectAttr(getSecond+"."+getSecondattr, getFirst+"."+getFirstattr, f=1)
 
-    def switchArmIKConstFunct(self):
-        queryType=cmds.optionMenu(typeMenu, q=1, sl=1)
-        getArm=cmds.ls(sl=1)
-        colour=6
-        if queryType==1:
-            attributeType=0
-        elif queryType==2:
-            attributeType=1
-        elif queryType==3:
-            attributeType=2
-        self.getLoc(getArm, colour)
-        cmds.pickWalk(d="up")
-        getLocation=cmds.ls(sl=1)
-        cmds.setAttr(getArm[0]+".ArmFollow", attributeType)
-        matrix=cmds.xform(getLocation, q=1, ws=1, m=1)
-        cmds.xform(getArm, ws=1, m=matrix)   
-        cmds.select(getArm)        
-        cmds.setKeyframe()   
-        cmds.delete(getLocation) 
 
-    def xformAutoMove(self, aim, target):
-        '''move to matrix'''
-        matrix=cmds.xform(target, q=1, ws=1, m=1)
-        cmds.xform(aim, ws=1, m=matrix)  
 
-    def xformAutoMatch(self, aim, target):
-        '''move to transform and rotation relative'''
-        transformWorldMatrix=cmds.xform(target, q=1, t=1)
-        rotateWorldMatrix=cmds.xform(target, q=1, ro=1) 
-
-    def xformAutoTran(self, aim, target):
-        '''move to transform and rotation'''
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.xform(aim, ws=1, t=transformWorldMatrix)
-        cmds.xform(aim, ws=1, ro=rotateWorldMatrix)
         
-    def xformAutoTranWrist(self, aim, target):
-        '''move to transform and rotation'''
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )   
-        
-             
+    def _createAlias_window(self, arg=None):
+        getSel=ls(sl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr        
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick connect attributes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
 
-    def keyRange(self):
-        '''plots a keyframe at each frame in a timeline'''
-        for each in range(67):
-            maya.mel.eval( "playButtonStepForward;" )
-            cmds.setKeyframe()
-            
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+        makeAttr=textField()
+        button (label='Go', p='listBuildButtonLayout', command = self._create_alias)
+        showWindow(window)   
+          
+    def _create_alias(self, arg=None):
+        getSel=ls(sl=1)
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)       
+        floater=textField(makeAttr, q=1, text=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)  
+        for each in getFirst:
+            get=cmds.keyframe(each+'.'+getFirstattr, q=1, kc=1)
+            if get>0:
+                getSource=connectionInfo(each+'.'+getFirstattr, sfd=1) 
+                connectAttr(getSource, getSecond+"."+floater, f=1)
+            else:
+                pass        
+            connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
+
+    def _transfer_anim_attr(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                    if get>0:
+                        getSource=connectionInfo(each+'.'+item, sfd=1) 
+                        connectAttr(getSource, getSecond+"."+item, f=1)
+                    else:
+                        pass
+                    
+    def _remove_anim(self, arg=None):
+        self._reset() 
+        self._erase_anim()
+       
+
+    def _erase_anim(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                    if get>0:
+                        getSource=connectionInfo(each+'.'+item, sfd=1) 
+                        delete(getSource.split(".")[0])
+                    else:
+                        pass
+
+    def _reset(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel
+        for each in getFirst:
+            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    if "scaleX" not in item and "scaleY" not in item and "scaleZ" not in item:
+                        get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+                        if get>0:
+                            setAttr(each+'.'+item, 0)
+                    else:
+                        setAttr(each+'.'+item, 1)
+  
+                    
+                        
+    def _copy_into_grp(self, arg=None):
+        getSel=ls(sl=1)
+        getFirst=getSel[:-1]
+        getGrp=getSel[-1]
+        for each in getFirst:
+            newDupe=duplicate(each)
+            parent(newDupe, getGrp)
+            rename(newDupe[0], each)
+
+    def _createSDK_alias_window(self, arg=None):
+        getSel=ls(sl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr   
+        global firstMinValue
+        global firstMaxValue
+        global secondMinValue
+        global secondMaxValue
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick SDK alias"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+        makeAttr=textField()
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
+        cmds.text(label="1st min/max", w=80, h=25) 
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
+        cmds.text(label="2nd min/max", w=80, h=25) 
+        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._create_SDK_alias())
+        showWindow(window)   
+          
+    def _create_SDK_alias(self, arg=None):
+        getSel=ls(sl=1)
+        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
+        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+        floater=textField(makeAttr, q=1, text=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        Controller=getSecond+"."+floater
+        for each in getFirst:
+            Child=each+"."+getFirstattr
+            setAttr(Child, lock=0) 
+            setAttr(Controller, secondMinValue)
+            setAttr(Child,firstMinValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMaxValue)
+            setAttr(Child, firstMaxValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMinValue)
+            setAttr(Child, lock=1)        
+
+    def _switch_driven_key_window(self, arg=None):
+        getSel=cmds.ls(sl=1)        
+        global attributeSel
+        geteattr=cmds.listAttr (getSel[0], ud=1)        
+        winName = "select attribute to link the switch constraint driven key to"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeSel=cmds.optionMenu( label='user attribute')
+        for each in geteattr:
+            cmds.menuItem( label=each)            
+        cmds.button (label='Go', p='listBuildButtonLayout', command = self._switch_driven_key)
+        cmds.showWindow(window)   
+                
+    def _switch_driven_key(self, arg=None):
+        getSel=cmds.ls(sl=1)
+        if getSel:
+            pass
+        else:
+            print "make sure to select a controller with a user attribute and an object with two constraints to switch between"
+            return        
+        geteattr=cmds.optionMenu(attributeSel, q=1, v=1)
+        Child=getSel[1]
+        firstValue=0
+        print firstValue
+        secondValue=1
+        print secondValue
+        Wbucket=[]
+        getChild=[(each) for each in cmds.listRelatives(Child, ad=1) if "Constraint" in each]
+        print getChild
+        for wach in getChild:
+            childGetAttr=cmds.listAttr(wach)
+            print childGetAttr
+        for item in childGetAttr:
+            if "W0" in item or "W1" in item :
+                Wbucket.append(item)
+        if Wbucket:
+            print Wbucket
+        else:
+            print "not enough constraints on child object"
+        child_one_constraint=getChild[0]+"."+Wbucket[0]  
+        child_two_constraint=getChild[0]+"."+Wbucket[1] 
+        print child_two_constraint+" is the first value"        
+        print child_one_constraint+" is the second value"
+#         geteattr=cmds.listAttr (getSel[0], ud=1, st="*IK")
+#         getIKItem=[]
+#         for item in geteattr:
+#             getIKItem=item   
+#         Controller=getSel[0]+"."+getIKItem
+#         Controller=getSel[0]+"."+geteattr[0]
+        Controller=getSel[0]+"."+geteattr
+        print Controller+ " is the Control value I hook up to"
+        Child=getChild[0]
+        print Child+" is the attribute that is being driven"
+        getClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
+
+    def _build_ik(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.buildIK()      
+        
+    def _build_joints(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.buildJointFunction_callup()   
+
+    def _exp_obj(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.expObj()
+    def _clean_mod(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.cleanModels()
+    def _constraint_maker(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass() 
+        getClass.constraintMaker()      
+    def _make_shape(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.makeShape()
+
+    def _mirror_object(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.mirrorObject()
+        
+    def _blink_sculpt(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.BlinkSculpt()
+        
+    def _curve_rig(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getit=baseFunctions_maya.BaseClass()
+        getit.curve_rig()
+        
+    def _finalling_rig(self, arg=None):
+        import FinallingRig
+        reload (FinallingRig)
+        getClass=FinallingRig.Finalling()
+        
+    def _stretch_ik(self, arg=None):
+        getSel=cmds.ls(sl=1)
+        if getSel:
+            pass
+        else:
+            print "select a controller to add an attribute and an ikHandle"        
+        Controller=getSel[0]
+        ikHandle=getSel[1]
+        import stretchIK
+        reload (stretchIK)
+        getIKClass=stretchIK.stretchIKClass()
+        getIKClass.get_ik_chain(Controller, ikHandle)
+        
+    def _stretch_ik_spline(self, arg=None):
+        getParentJoint=cmds.ls(sl=1)[0]
+        if getParentJoint:
+            pass
+        else:
+            print "select a parent joint and ik handle needs to be present"
+        import stretchIK
+        reload (stretchIK)
+        getIKClass=stretchIK.stretchIKClass()
+        getIKClass.stretchSpline(getParentJoint)
+        
+    def _sandwich_control(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.sandwichControl()
+        
+    def _grp_insert(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.createGrpCtrl()
+        
+    def _load_ssd(self, arg=None):
+        import SSD
+        reload (SSD)
+        SSD.ui()
+        
+    def _group_shapes(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.groupShapes()
+        
+inst = ToolKitUI()
+inst.create()
+
+
