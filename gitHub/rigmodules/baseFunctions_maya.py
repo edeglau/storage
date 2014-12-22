@@ -2373,11 +2373,9 @@ class BaseClass():
         getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")
         if getChildrenController==None:
             getChildrenController=([getMeshController])
-        print getChildrenController      
         getChildrenTarget=cmds.listRelatives(getMeshTarget, c=1, typ="transform")
         if getChildrenTarget==None:
             getChildrenTarget=([getMeshTarget]) 
-        print getChildrenTarget
         for eachController, eachChild in map(None, getChildrenController, getChildrenTarget):
             if eachController ==eachChild :
                 try:    
@@ -2386,7 +2384,16 @@ class BaseClass():
                     cmds.deformer(type="wrap")
                 except:
                     pass
-    
+
+    def massMove(self):
+        getSel=cmds.ls(sl=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]  
+        for each in getFirst:
+            cmds.select(getSecond)
+            cmds.select(each, add=1)
+            cmds.parentConstraint(getSecond, each, mo=0, n="deleteme")
+            cmds.delete("deleteme")        
 
                                  
     def lockRightWeights(self, arg=None):
