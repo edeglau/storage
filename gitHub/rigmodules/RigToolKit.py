@@ -139,6 +139,7 @@ class ToolKitUI(object):
         cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
         cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
         cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
         cmds.button (label='Trans Anim Attr', ann="transfers animated attributes to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Trans Mult Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.text(label="Modelling")          
@@ -790,16 +791,21 @@ class ToolKitUI(object):
         getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)       
         floater=textField(makeAttr, q=1, text=1)
         getFirst=getSel[:-1]
-        getSecond=getSel[-1]
-        addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)  
+        getSecond=getSel[-1]  
         for each in getFirst:
             get=cmds.keyframe(each+'.'+getFirstattr, q=1, kc=1)
             if get>0:
                 getSource=connectionInfo(each+'.'+getFirstattr, sfd=1) 
+                addAttr([getSecond], ln=floater, at="double", k=1, nn=floater)
                 connectAttr(getSource, getSecond+"."+floater, f=1)
+                connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
             else:
-                pass        
-            connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
+                getValue=getattr(each,getFirstattr).get()
+                addAttr([getSecond], ln=floater, at="double", k=1, nn=floater)
+                connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
+                getChangeAttr=getattr(getSecond,floater)
+                getChangeAttr.set(getValue)
+#                setAttr(getSecond+"."+floater, getValue)
 
     def _transfer_anim_attr(self, arg=None):
         getSel=ls(sl=1)
@@ -932,6 +938,91 @@ class ToolKitUI(object):
             setAttr(Controller, secondMinValue)
             setAttr(Child, lock=1)        
 
+
+    def _connSDK_alias_window(self, arg=None):
+        getSel=ls(sl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return       
+
+        global attributeFirstSel
+        global makeAttr   
+        global firstMinValue
+        global firstMaxValue
+        global secondMinValue
+        global secondMaxValue
+
+
+        getSel=cmds.ls(sl=1)  
+        getFirst=getSel[0]      
+        getSecond=getSel[1]      
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)     
+        getFirstAttr=sorted(getFirstAttr)
+        getSecondAttr=cmds.listAttr (getSecond)
+        getSecondAttr=sorted(getSecondAttr)         
+        winName = "Quick SDK alias"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+            
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+#        makeAttr=textField()
+        makeAttr=cmds.optionMenu( label='To')               
+        for each in getSecondAttr:
+            cmds.menuItem( label=each)   
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
+        cmds.text(label="1st min/max", w=80, h=25) 
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
+        cmds.text(label="2nd min/max", w=80, h=25) 
+        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._conn_SDK_alias())
+        showWindow(window)   
+          
+    def _conn_SDK_alias(self, arg=None):
+        getSel=ls(sl=1)
+        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
+        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+        floater=optionMenu(makeAttr, q=1, v=1)
+        getFirst=getSel[:-1]
+        getSecond=getSel[-1]
+        #anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        Controller=getSecond+"."+floater
+        print Controller
+        for each in getFirst:
+            Child=each+"."+getFirstattr
+            setAttr(Child, lock=0) 
+            setAttr(Controller, secondMinValue)
+            setAttr(Child,firstMinValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMaxValue)
+            setAttr(Child, firstMaxValue)
+            setDrivenKeyframe(Child, cd=Controller)
+            setAttr(Controller, secondMinValue)
+            setAttr(Child, lock=1)  
+            
     def _switch_driven_key_window(self, arg=None):
         getSel=cmds.ls(sl=1)        
         global attributeSel
