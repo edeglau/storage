@@ -124,7 +124,8 @@ class ToolKitUI(object):
         cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
-        cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)                               
+        cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
+        cmds.button (label='Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
         cmds.text(label="Controllers")
         cmds.text(label="")           
         cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)
@@ -819,8 +820,18 @@ class ToolKitUI(object):
                     if get>0:
                         getSource=connectionInfo(each+'.'+item, sfd=1) 
                         connectAttr(getSource, getSecond+"."+item, f=1)
+#                        connectAttr(getSecond+"."+item, each+"."+item, f=1)
                     else:
-                        pass
+                        getValue=getattr(each,item).get()
+#                        connectAttr(getSecond+"."+item, each+"."+item, f=1)
+                        getChangeAttr=getattr(getSecond,item)
+                        getChangeAttr.set(getValue)
+
+                        
+#                        getSource=connectionInfo(each+'.'+item, sfd=1) 
+#                        connectAttr(getSource, getSecond+"."+item, f=1)
+#                    else:
+#                        pass
                     
     def _remove_anim(self, arg=None):
         self._reset() 
@@ -1183,6 +1194,12 @@ class ToolKitUI(object):
         reload (baseFunctions_maya)
         getClass=baseFunctions_maya.BaseClass()
         getClass.createGrpCtrl()
+    def _mass_movecstr(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.massMove()
+
         
     def _load_ssd(self, arg=None):
         import SSD
@@ -1197,5 +1214,4 @@ class ToolKitUI(object):
         
 inst = ToolKitUI()
 inst.create()
-
 
