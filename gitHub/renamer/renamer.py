@@ -23,7 +23,6 @@ class myUI:
     def __init__(self, winName="namereplace"):
         self.winTitle = "Bulk Custom Renamer"
         self.winName = winName
-
         if cmds.window(self.winName, exists=True):
             cmds.deleteUI(self.winName)
 
@@ -46,7 +45,7 @@ class myUI:
         cmds.separator()
         cmds.textField(self.relname, edit=True, enterCommand=('cmds.setFocus(\"' + self.relname + '\")'))
         cmds.separator()
-        cmds.button (label='Check for bad names', command = "badname()") 
+        cmds.button (label='Check for bad names', command = self.badname) 
 
         cmds.setParent ('rColumn2')
         cmds.text("Replace name portion")
@@ -57,7 +56,7 @@ class myUI:
         cmds.text("New")
         global new
         new=cmds.textField()
-        cmds.button (label='Replace selected', command = "replacr()")    
+        cmds.button (label='Replace selected', command = self.replacr)    
         cmds.button (label='Replace all', command = self._replace_all)    
         cmds.textField(old, edit=True, enterCommand=('cmds.setFocus(\"' + new + '\")') )
         cmds.textField(new, edit=True, enterCommand=('cmds.setFocus(\"' + old + '\")'))        
@@ -142,9 +141,63 @@ class myUI:
     def rnmbrs(self, arg=None):
         nodName=cmds.ls(sl=True)
         for item in range (len(nodName)):
+            #===========================================================
+            # remove numbers at end
+            #===========================================================
+#            sub_Name=re.sub("\d+$", "", lognm)         
+            #===========================================================
+            # remove numbers at beginning
+            #===========================================================
+#            s = re.sub(r"(^|\W)\d+", "", s)
+            #===========================================================
+            # remove all numbers
+            #===========================================================
+#            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
             sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
             cmds.rename(nodName[item] ,sub_Name)
-            
+
+    def rMid_nmbrs(self, arg=None):
+        nodName=cmds.ls(sl=True)
+        for item in range (len(nodName)):
+            #===========================================================
+            # remove numbers at end
+            #===========================================================
+#            sub_Name=re.sub("\d+$", "", lognm)         
+            #===========================================================
+            # remove numbers at beginning
+            #===========================================================
+#            s = re.sub(r"(^|\W)\d+", "", s)
+            #===========================================================
+            # remove all numbers
+            #===========================================================
+#            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
+            sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
+            cmds.rename(nodName[item] ,sub_Name)
+    def rBeg_nmbrs(self, arg=None):
+        nodName=cmds.ls(sl=True)
+        for item in range (len(nodName)):
+            #===========================================================
+            # remove numbers at end
+            #===========================================================
+#            sub_Name=re.sub("\d+$", "", lognm)         
+            #===========================================================
+            # remove numbers at beginning
+            #===========================================================
+#            s = re.sub(r"(^|\W)\d+", "", s)
+            #===========================================================
+            # remove all numbers
+            #===========================================================
+#            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
+            sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
+            cmds.rename(nodName[item] ,sub_Name)
+    def rEnd_nmbrs(self, arg=None):
+        nodName=cmds.ls(sl=True)
+        for item in range (len(nodName)):
+            #===========================================================
+            # remove numbers at end
+            #===========================================================
+            sub_Name=re.sub("\d+$", "", nodName[item])         
+            cmds.rename(nodName[item] ,sub_Name)
     def runders(self, arg=None):
         undrsc=cmds.ls(sl=True)
         for item in range (len(undrsc)):
