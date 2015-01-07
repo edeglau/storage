@@ -126,6 +126,7 @@ class ToolKitUI(object):
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
         cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
         cmds.button (label='Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
+        cmds.text(label="") 
         cmds.text(label="Controllers")
         cmds.text(label="")           
         cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)
@@ -136,13 +137,14 @@ class ToolKitUI(object):
         cmds.text(label="")  
         cmds.text(label="Attributes")          
         cmds.text(label="")  
-        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
-        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connects attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
-        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creats a float alias attributes from first selection to second",  p='listBuildButtonLayout',command = self._createAlias_window)                  
-        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
-        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK(if in case 0-1 is not feasible for a max/min)",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
-        cmds.button (label='Trans Anim Attr', ann="transfers animated attributes to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
-        cmds.button (label='Trans Mult Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple 0-1 float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connect attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
+        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creates a float alias attributes from first selection to second(no min/max)",  p='listBuildButtonLayout',command = self._createAlias_window)                  
+        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
+        cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
+        cmds.button (label='Trans Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
+        cmds.button (label='Trans Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -706,11 +708,15 @@ class ToolKitUI(object):
         
     def _quickCconnect_window(self, arg=None):
         getSel=cmds.ls(sl=1)  
-        getFirst=getSel[0]      
-        getSecond=getSel[1] 
+        getFirst=getSel[:-1]
+        print getFirst
+        getSecond=getSel[-1] 
+        print getSecond        
+#        getFirst=getSel[0]      
+#        getSecond=getSel[1] 
         global attributeFirstSel
         global attributeSecondSel        
-        getFirstAttr=cmds.listAttr (getFirst)      
+        getFirstAttr=cmds.listAttr (getFirst[0])      
         getFirstAttr=sorted(getFirstAttr)
         getSecondAttr=cmds.listAttr (getSecond)
         getSecondAttr=sorted(getSecondAttr)         
@@ -725,31 +731,95 @@ class ToolKitUI(object):
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
         cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.text(label=getFirst[0])
+        cmds.text(label=getSecond)        
         attributeFirstSel=cmds.optionMenu( label='From')
         for each in getFirstAttr:
             cmds.menuItem( label=each) 
         attributeSecondSel=cmds.optionMenu( label='To')               
         for each in getSecondAttr:
             cmds.menuItem( label=each)                    
-        cmds.button (label='Go', p='listBuildButtonLayout', command = self._quickCconnect)
+        cmds.button (label='Go', p='listBuildButtonLayout', command=lambda *args:self._quickCconnect(getFirst, getSecond))
         cmds.showWindow(window)   
           
-    def _quickCconnect(self, arg=None):
+    def _quickCconnect(self, getFirst, getSecond):
         getFirstattr=cmds.optionMenu(attributeFirstSel, q=1, v=1)          
-        getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
+        getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1) 
+        getFirstAttr=getFirst[0]  
+        for each in getFirst:    
+            cmds.connectAttr(getSecond+"."+getSecondattr, each+"."+getFirstattr, f=1)
+
+    def _quickCopy_single_Attr_window(self, arg=None):
         getSel=cmds.ls(sl=1)  
-        getFirst=getSel[0]      
-        getSecond=getSel[1]         
-        cmds.connectAttr(getSecond+"."+getSecondattr, getFirst+"."+getFirstattr, f=1)
+        getChildren=getSel[1:]
+        getParent=getSel[:1]
+        global attributeFirstSel
+        global attributeSecondSel        
+        getFirstAttr=cmds.listAttr (getChildren[0])      
+        getFirstAttr=sorted(getFirstAttr)
+        getSecondAttr=cmds.listAttr (getParent)
+        getSecondAttr=sorted(getSecondAttr)         
+        winName = "Quick transfer single attribute"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
 
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
 
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.text(label=getParent[0])
+        cmds.text(label=getChildren[0])        
+        attributeFirstSel=cmds.optionMenu( label='From')
+        for each in getFirstAttr:
+            cmds.menuItem( label=each) 
+        attributeSecondSel=cmds.optionMenu( label='To')               
+        for each in getSecondAttr:
+            cmds.menuItem( label=each)                    
+        cmds.button (label='Go', p='listBuildButtonLayout', command=lambda *args:self._copy_single_attr(getChildren, getParent))
+        cmds.showWindow(window)   
+        
+    def _copy_single_attr(self, getChildren, getParent):
+        getParentAttr=cmds.optionMenu(attributeFirstSel, q=1, v=1)
+        getChildAttr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
+        getSel=cmds.ls(sl=1)  
+        getChildren=getSel[1:]
+        getParent=getSel[:1]      
+        getValue=getAttr(getParent[0]+'.'+getParentAttr)    
+        for each in getChildren:
+            get=cmds.keyframe(getParent[0]+'.'+getParentAttr, q=1, kc=1) 
+            if get!=0:
+                try:
+                    getSource=connectionInfo(getParent[0]+'.'+getParentAttr, sfd=1)
+                    newAnimSrce=duplicate(getSource) 
+                    lognm=newAnimSrce[0].replace(str(getParent[0]), str(each))
+                    #===========================================================
+                    # remove numbers at end
+                    #===========================================================
+                    newname=re.sub("\d+$", "", lognm)
+                    cmds.rename(newAnimSrce, newname)
+                    getChangeAttr=each+'.'+getChildAttr
+                    connectAttr(newname+'.output', getChangeAttr, f=1)
+                except:
+                    pass
+            else:
+                try:                    
+                    getChangeAttr=each+'.'+getChildAttr
+                    setAttr(getChangeAttr, getValue)
+                except:
+                    pass
         
     def _createAlias_window(self, arg=None):
         getSel=ls(sl=1)  
@@ -808,7 +878,7 @@ class ToolKitUI(object):
                 getChangeAttr.set(getValue)
 #                setAttr(getSecond+"."+floater, getValue)
 
-    def _transfer_anim_attr(self, arg=None):
+    def _transfer_anim_attrV1(self, arg=None):
         getSel=ls(sl=1)
         getFirst=getSel[:-1]
         getSecond=getSel[-1]
@@ -832,6 +902,29 @@ class ToolKitUI(object):
 #                        connectAttr(getSource, getSecond+"."+item, f=1)
 #                    else:
 #                        pass
+    def _transfer_anim_attr(self, arg=None):
+        getSel=ls(sl=1)
+        getChildren=getSel[1:]
+        getParent=getSel[:1]
+        for each in getChildren:
+            getFirstattr=listAttr (getParent[0], w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    get=cmds.keyframe(getParent[0]+'.'+item, q=1, kc=1) 
+                    if get!=0:
+                        try:
+                            getSource=connectionInfo(getParent[0]+'.'+item, sfd=1) 
+                            connectAttr(getSource, each+"."+item, f=1)
+                        except:
+                            pass
+                    else:
+                        try:
+                            getValue=getattr(getParent[0],item).get()
+                            getChangeAttr=getattr(each,item)
+                            getChangeAttr.set(getValue)
+                        except:
+                            pass
+
                     
     def _remove_anim(self, arg=None):
         self._reset() 
@@ -1211,7 +1304,17 @@ class ToolKitUI(object):
         reload (baseFunctions_maya)
         getClass=baseFunctions_maya.BaseClass()
         getClass.groupShapes()
-        
+
+                    #===========================================================
+                    # remove numbers at beginning
+                    #===========================================================
+#                    s = re.sub(r"(^|\W)\d+", "", s)
+                    #===========================================================
+                    # remove all numbers
+                    #===========================================================
+#                    sub_Name=re.sub(r'\d[1-9]*', '', lognm) 
+
 inst = ToolKitUI()
 inst.create()
+
 
