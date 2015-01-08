@@ -145,6 +145,7 @@ class ToolKitUI(object):
         cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
         cmds.button (label='Trans Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Trans Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.button (label='Find Attr', ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -925,7 +926,50 @@ class ToolKitUI(object):
                         except:
                             pass
 
-                    
+    def _findAttr_window(self, arg=None):
+        getSel=ls(sl=1)     
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr        
+        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick connect attributes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)
+        makeAttr=textField()
+        button (label='Go', p='listBuildButtonLayout', command = self._find_att)
+        showWindow(window)   
+        
+    def _find_att(self, arg=None):
+        getSel=ls(sl=1)
+        collectAttr=[]
+        getFirstattr=optionMenu(attributeFirstSel, q=1, ill=1)     
+        floater=textField(makeAttr, q=1, text=1)
+        for each in getFirstattr:
+            find=menuItem(each, q=1, label=1)
+            if floater in find:
+                collectAttr.append(find)
+                select(getSel[0]+'.'+find)
+                menuItem(each, e=1, bld=1, itl=1)
+
+  
     def _remove_anim(self, arg=None):
         self._reset() 
         self._erase_anim()
