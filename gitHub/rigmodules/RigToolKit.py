@@ -146,6 +146,7 @@ class ToolKitUI(object):
         cmds.button (label='Trans Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Trans Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.button (label='Find Attr', ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
+        cmds.button (label='Range Multi Attr', ann="sets each set attribute in an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -879,30 +880,6 @@ class ToolKitUI(object):
                 getChangeAttr.set(getValue)
 #                setAttr(getSecond+"."+floater, getValue)
 
-    def _transfer_anim_attrV1(self, arg=None):
-        getSel=ls(sl=1)
-        getFirst=getSel[:-1]
-        getSecond=getSel[-1]
-        for each in getFirst:
-            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
-            for item in getFirstattr:
-                if "." not in item:
-                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
-                    if get>0:
-                        getSource=connectionInfo(each+'.'+item, sfd=1) 
-                        connectAttr(getSource, getSecond+"."+item, f=1)
-#                        connectAttr(getSecond+"."+item, each+"."+item, f=1)
-                    else:
-                        getValue=getattr(each,item).get()
-#                        connectAttr(getSecond+"."+item, each+"."+item, f=1)
-                        getChangeAttr=getattr(getSecond,item)
-                        getChangeAttr.set(getValue)
-
-                        
-#                        getSource=connectionInfo(each+'.'+item, sfd=1) 
-#                        connectAttr(getSource, getSecond+"."+item, f=1)
-#                    else:
-#                        pass
     def _transfer_anim_attr(self, arg=None):
         getSel=ls(sl=1)
         getChildren=getSel[1:]
@@ -914,8 +891,17 @@ class ToolKitUI(object):
                     get=cmds.keyframe(getParent[0]+'.'+item, q=1, kc=1) 
                     if get!=0:
                         try:
-                            getSource=connectionInfo(getParent[0]+'.'+item, sfd=1) 
-                            connectAttr(getSource, each+"."+item, f=1)
+                            getSource=connectionInfo(getParent[0]+'.'+item, sfd=1)
+                            newAnimSrce=duplicate(getSource) 
+                            lognm=newAnimSrce[0].replace(str(getParent[0]), str(each))
+                            #===========================================================
+                            # remove numbers at end
+                            #===========================================================
+                            newname=re.sub("\d+$", "", lognm)
+                            cmds.rename(newAnimSrce, newname)
+                            getChangeAttr=getSecond+'.'+item                        
+                            connectAttr(newname+'.output', getChangeAttr, f=1)                             
+#                            connectAttr(getSource, each+"."+item, f=1)
                         except:
                             pass
                     else:
@@ -965,9 +951,13 @@ class ToolKitUI(object):
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
             if floater in find:
+                print find
                 collectAttr.append(find)
                 select(getSel[0]+'.'+find)
-                menuItem(each, e=1, bld=1, itl=1)
+                menuItem(each,e=1, bld=1, itl=1)
+        select(getSel[0]+'.'+collectAttr[0], r=1)
+        for each in collectAttr[1:]:
+            select(getSel[0]+'.'+each, add=1)
 
   
     def _remove_anim(self, arg=None):
@@ -1086,6 +1076,121 @@ class ToolKitUI(object):
             setAttr(Controller, secondMinValue)
             setAttr(Child, lock=1)        
 
+
+    def _range_attr_window(self, arg=None):
+        getSel=ls(sl=1, fl=1)  
+        if len(getSel)>3:
+            pass
+        else:
+            print "need to select 3 or more items" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr   
+        global firstMinValue
+        global firstMaxValue
+        getFirstAttr=[]
+        getAttrs=listAttr (getFirst, w=1, a=1, s=1,u=1) 
+        for each in getAttrs:
+            if ']' in each:
+                getNewEach=each.split('.')[-1:]
+                getFirstAttr.append(getNewEach[0])
+            else:
+                getFirstAttr.append(each)
+        getFirstAttr=sorted(getFirstAttr)        
+        winName = "Quick SDK alias"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        attributeFirstSel=optionMenu( label='From')
+        for each in getFirstAttr:
+            menuItem( label=each)                
+        makeAttr=text()
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
+        cmds.text(label="range", w=80, h=25) 
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(getSel))
+        showWindow(window)
+        
+    def _range_attr(self, getSel):
+#        getSel=ls(sl=1, fl=1)
+        getSeln=getSel[1:-1]
+        RangeSel=getSel[:-1]
+        lengetSel=len(getSel)-2
+        step=float(len(getSel)*.1)
+        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+        BucketValue=[]
+        collectNewNumbers=[]
+        findSpace=firstMaxValue
+        findRangeSpace=firstMaxValue-firstMinValue
+        percentTop=findRangeSpace*100
+        getPercentile=percentTop/len(RangeSel)  
+        collectNewNumbers.append(firstMinValue)  
+        for key, value in enumerate(getSeln):
+            percValue= (key+1)*getPercentile*.01
+            BucketValue.append(percValue)
+        for each in BucketValue:
+            getNum=firstMinValue+each
+            collectNewNumbers.append(getNum)
+        collectNewNumbers.append(firstMaxValue)
+        for each, item in map(None, getSel, collectNewNumbers):
+            getChangeAttr=each+'.'+getFirstattr
+            cmds.setAttr(getChangeAttr, item)
+
+
+    def _randomise_attrV1(self, arg=None):
+        getSel=ls(sl=1)
+        getSeln=getSel[1:-1]
+        RangeSel=getSel[:-1]
+        lengetSel=len(getSel)-2
+        step=float(len(getSel)*.1)
+        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+#        def frange(start, stop, step):
+#            i = start
+#            while i < stop:
+#                yield i
+#                i += step
+#        for i in frange(firstMinValue, firstMaxValue, step):
+#            print(i)  
+        BucketValue=[]
+        collectNewNumbers=[]
+        findSpace=firstMaxValue
+        findRangeSpace=firstMaxValue-firstMinValue
+        percentTop=findRangeSpace*100
+        getPercentile=percentTop/len(RangeSel)     
+        print getPercentile
+        for key, value in enumerate(getSeln):
+            percValue= (key+1)*getPercentile*.01
+            BucketValue.append(percValue)
+        for each in BucketValue:
+            getNum=firstMinValue+each
+            collectNewNumbers.append(getNum)
+        print collectNewNumbers
+        for each, item in map(None, getSel[1:-1], collectNewNumbers):
+#            Child=each+"."+getFirstattr
+            getChangeAttr=getattr(each,getFirstattr)
+            print getChangeAttr  
+            getChangeAttr.set(item)
+      
 
     def _connSDK_alias_window(self, arg=None):
         getSel=ls(sl=1)  
