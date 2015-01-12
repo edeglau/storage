@@ -8,6 +8,8 @@ from os  import popen
 from sys import stdin
 import subprocess
 import os
+from random import randint
+import random
 from pymel.core import *
 #import win32clipboard
 import operator
@@ -113,8 +115,9 @@ class ToolKitUI(object):
         cmds.text(label="")         
         cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
         cmds.button (label='Material tool', ann="This opens a material tool for manipulating and naming shaders and shader nodes" , bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._material_namer)  
-        cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._sets_win)           
-        cmds.button (label='Edit sets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win) 
+        cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._sets_win)
+        cmds.button (label='Edit sets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win)            
+        cmds.button (label='Edit Nsets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_nsets_win) 
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
@@ -143,10 +146,10 @@ class ToolKitUI(object):
         cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
         cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
         cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
-        cmds.button (label='Trans Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
-        cmds.button (label='Trans Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
-        cmds.button (label='Find Attr', ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
-        cmds.button (label='Range Multi Attr', ann="sets each set attribute in an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
+        cmds.button (label='Copy All Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
+        cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
+        cmds.button (label='Find Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
+        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets each set attribute in an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -283,6 +286,25 @@ class ToolKitUI(object):
         getSel=cmds.ls(sl=1)
         for each in getSel:
             cmds.sets(each, add=querySet)
+            
+    def _remove_from_set(self, arg=None):
+        querySet=cmds.optionMenu(setMenu, q=1, v=1)
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.sets(each, rm=querySet)            
+            
+    def _add_to_nset(self, dropDownData):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.select(dropDownData, add=1)
+            maya.mel.eval( 'dynamicConstraintMembership "add";' )
+
+    def _remove_from_nset(self, dropDownData):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.select(dropDownData, add=1)
+            maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
+            
     def _edit_sets_win(self, arg=None):
 #         try:
 #             getallnames=cmds.ls("*:*BodyControl")
@@ -314,18 +336,41 @@ class ToolKitUI(object):
         cmds.button (label='remove from set', p='listBuildButtonLayout', command = lambda *args:self._remove_from_set())
 
         cmds.showWindow(window)
-
-    def _remove_from_set(self, arg=None):
-        querySet=cmds.optionMenu(setMenu, q=1, v=1)
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, rm=querySet)
             
     def _material_namer(self, arg=None):
         import Material_UI
         reload (Material_UI)
         Material_UI.Mat_Namer()
+
+    def _edit_nsets_win(self, arg=None):
+        titleName="Dynamic Sets"
+        getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
+        self._sets_win(titleName, getAllSets)
+        self._set_nbuttons()
         
+        
+    def _sets_win(self, titleName, getAllSets):
+        winName = titleName
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=550, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=550)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=550, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(550, 20))
+        setMenu=cmds.optionMenu( label='joints')
+        for each in getAllSets:
+            cmds.menuItem( label=each)        
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
+        cmds.button (label='Add relatives', p='listBuildButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.button (label='remove relatives', p='listBuildButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.showWindow(window)        
+
     def _open_texture_file_gmp(self, arg=None):
         try:
             selObj=cmds.ls(sl=1, fl=1)[0]
@@ -1086,9 +1131,7 @@ class ToolKitUI(object):
             return       
         getFirst=getSel[0]
         global attributeFirstSel
-        global makeAttr   
-        global firstMinValue
-        global firstMaxValue
+        global makeAttr
         getFirstAttr=[]
         getAttrs=listAttr (getFirst, w=1, a=1, s=1,u=1) 
         for each in getAttrs:
@@ -1098,7 +1141,7 @@ class ToolKitUI(object):
             else:
                 getFirstAttr.append(each)
         getFirstAttr=sorted(getFirstAttr)        
-        winName = "Quick SDK alias"
+        winName = "Randomize/Increment Attribute on Multi Select"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
@@ -1118,78 +1161,34 @@ class ToolKitUI(object):
         attributeFirstSel=optionMenu( label='From')
         for each in getFirstAttr:
             menuItem( label=each)                
-        makeAttr=text()
+        self.randomized=checkBox(label="randomize", ann="If on, number within range is randomized. If off, numbers will increment via percentage based on selection against the range")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="range", w=80, h=25) 
         self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
         self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(getSel))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(getSel, randomized=cmds.checkBox(self.randomized,q=True, value=1), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))))
         showWindow(window)
         
-    def _range_attr(self, getSel):
-#        getSel=ls(sl=1, fl=1)
-        getSeln=getSel[1:-1]
-        RangeSel=getSel[:-1]
-        lengetSel=len(getSel)-2
-        step=float(len(getSel)*.1)
-        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-        BucketValue=[]
-        collectNewNumbers=[]
-        findSpace=firstMaxValue
-        findRangeSpace=firstMaxValue-firstMinValue
-        percentTop=findRangeSpace*100
-        getPercentile=percentTop/len(RangeSel)  
-        collectNewNumbers.append(firstMinValue)  
-        for key, value in enumerate(getSeln):
-            percValue= (key+1)*getPercentile*.01
-            BucketValue.append(percValue)
-        for each in BucketValue:
-            getNum=firstMinValue+each
-            collectNewNumbers.append(getNum)
-        collectNewNumbers.append(firstMaxValue)
-        for each, item in map(None, getSel, collectNewNumbers):
+    def _range_attr(self, getSel, randomized, getFirstattr, firstMinValue, firstMaxValue):
+        if randomized==False:
+            self._range_inc(getSel, getFirstattr, firstMinValue, firstMaxValue)
+        else:
+            self._range_random(getSel, getFirstattr, firstMinValue, firstMaxValue)
+            
+    
+    def _range_inc(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
+        BucketValue=getClass.Percentages(getSel, firstMinValue, firstMaxValue)
+        for each, item in map(None, getSel, BucketValue):
             getChangeAttr=each+'.'+getFirstattr
             cmds.setAttr(getChangeAttr, item)
 
+    def _range_random(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
+        for each in getSel:
+            getChangeAttr=each+'.'+getFirstattr
+            getVal=random.uniform(firstMinValue,firstMaxValue)
+            cmds.setAttr(getChangeAttr, getVal)
 
-    def _randomise_attrV1(self, arg=None):
-        getSel=ls(sl=1)
-        getSeln=getSel[1:-1]
-        RangeSel=getSel[:-1]
-        lengetSel=len(getSel)-2
-        step=float(len(getSel)*.1)
-        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-#        def frange(start, stop, step):
-#            i = start
-#            while i < stop:
-#                yield i
-#                i += step
-#        for i in frange(firstMinValue, firstMaxValue, step):
-#            print(i)  
-        BucketValue=[]
-        collectNewNumbers=[]
-        findSpace=firstMaxValue
-        findRangeSpace=firstMaxValue-firstMinValue
-        percentTop=findRangeSpace*100
-        getPercentile=percentTop/len(RangeSel)     
-        print getPercentile
-        for key, value in enumerate(getSeln):
-            percValue= (key+1)*getPercentile*.01
-            BucketValue.append(percValue)
-        for each in BucketValue:
-            getNum=firstMinValue+each
-            collectNewNumbers.append(getNum)
-        print collectNewNumbers
-        for each, item in map(None, getSel[1:-1], collectNewNumbers):
-#            Child=each+"."+getFirstattr
-            getChangeAttr=getattr(each,getFirstattr)
-            print getChangeAttr  
-            getChangeAttr.set(item)
       
 
     def _connSDK_alias_window(self, arg=None):
