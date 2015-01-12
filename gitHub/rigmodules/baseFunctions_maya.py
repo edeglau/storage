@@ -3144,4 +3144,22 @@ class BaseClass():
         for each in range(67):
             maya.mel.eval( "playButtonStepForward;" )
             cmds.setKeyframe()
-            
+
+
+    def Percentages(self, getSel, minValue, maxValue):
+        collectNewNumbers=[]  
+        '''add first value to bucket'''
+        collectNewNumbers.append(minValue)  
+        '''find incremental percentile to add to bucket'''
+        getSeln=getSel[1:-1]#isolate midrange selection
+        RangeSel=getSel[:-1]#isolate all but the last (full 100%) list item
+        findRangeSpace=maxValue-minValue#find difference of range            
+        percentTop=findRangeSpace*100#find the 100% value that could be added to the minimum range to reach the maximum cap amount
+        getPercentile=percentTop/len(RangeSel)#divide the cap by the ranged list length to find the incremented value
+        BucketValue=[(key+1)*getPercentile*.01 for key in range(len(getSeln))]#reference the mid list length to append the incremented value to bucket
+        for each in BucketValue:#Add each value to the minimum number to get true value to add to bucket
+            getNum=minValue+each
+            collectNewNumbers.append(getNum)
+        '''add last value to bucket'''
+        collectNewNumbers.append(maxValue)
+        return collectNewNumbers
