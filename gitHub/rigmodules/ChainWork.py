@@ -1,4 +1,6 @@
 import sys, os
+from pymel.core import *
+
 filepath= os.getcwd()
 sys.path.append(str(filepath))
 import baseFunctions_maya
@@ -41,6 +43,8 @@ class ChainRig(object):
         mainChainSection=len(mainChain)/3
         sudomainChain=mainChain[:1]+[mainChain[mainChainSection]]+mainChain[-mainChainSection-1::mainChainSection+1]+mainChain[-1:]
        
+        print "build bones"
+        
         cmds.select(cl=1)
         lastmainChainJoint=mainChain[-1:]
         for each in mainChain:
@@ -76,6 +80,7 @@ class ChainRig(object):
         ##################################
         ##################################
         ######################CONTROLLERS
+        print 'build main controllers'
         
         translations=[".tx", ".ty", ".tz"] 
         rotation=[".rx", ".ry", ".rz"]
@@ -114,6 +119,7 @@ class ChainRig(object):
         #create the Base"+mainChain+"
         transformWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, t=True)  
         rotateWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, ro=True) 
+#        scaleWorldMatrix = cmds.xform(mainChain[:1], q=True, r=1, s=True)
         name="Base"+mainName+"_Ctrl"
         grpname="Base"+mainName+"_grp"    
         size=ControllerSize
@@ -136,14 +142,14 @@ class ChainRig(object):
         cmds.setAttr(name+".sx" , keyable=0, lock=1)
         cmds.setAttr(name+".sy" , keyable=0, lock=1)
         cmds.setAttr(name+".sz", keyable=0, lock=1)
-               
+
         #create the IK controller
 
         name="End"+mainName+"IK_Ctrl"
         grpname="End"+mainName+"IK_grp"
         num=20
         colour=13
-      
+
         transformWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, t=True)  
         rotateWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, ro=True) 
         getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
@@ -247,11 +253,14 @@ class ChainRig(object):
         '''--------------------------------------
         #            create spline IK
         --------------------------------------'''
+        print 'create spline IK'
+        
         cmds.ikHandle(n=mainName+"IK", sj=mainName+"01IK_jnt", ee=str(lastmainChainJoint[0]), sol="ikSplineSolver", scv=0, ns=4, rtm=1, tws="easeIn")
         #cmds.ikHandle(n=ikname, sj=getjoints[0], ee=lastjoint[0], sol="ikSplineSolver", ccv=0, ns=4, snc=1, tws="easeIn", rtm=1, c=curvename)
         '''--------------------------------------
         #        find the spline of the IK
         --------------------------------------'''
+        print 'find the spline of the IK'
         list=cmds.listConnections(mainName+'IK', t="shape")
         cmds.rename(list, mainName+"IK_crv")
 
@@ -259,6 +268,7 @@ class ChainRig(object):
         '''--------------------------------------
         #        skinbind lowres "+mainChain+" to the spline
         --------------------------------------'''
+        print "skinbind lowres "+str(mainChain)+" to the spline"
         
         getIKCurveCVs=cmds.ls(mainName+"IK_crv.cv[*]", fl=1)
         getfirstCVs=getIKCurveCVs[1::-1]
@@ -272,37 +282,37 @@ class ChainRig(object):
             cmds.select(bone)
             cmds.select(each, add=1)
             cmds.bindSkin(each, bone, tsb=1) 
-            print  each+" is bound to "+bone
         for each in getLastCVs:  
             cmds.SmoothBindSkin(each, getlastjoint)  
-            print  each+" is bound to "+str(getlastjoint)
         for each in getfirstCVs:  
             cmds.select(clear=1)
             cmds.select(clusterSpline[0])
             cmds.select(each, add=1)
             cmds.bindSkin(each, clusterSpline[0], tsb=1)
-            print each+" is bound to "+clusterSpline[0]
         for each in getLastCVs:
             cmds.select(clear=1)
             cmds.select(getlastjoint)
             cmds.select(each, add=1)    
             #print each, getlastjoint
             cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1) 
-            print  each+" is bound to "+str(getlastjoint)
         for each in getverylastCVs:
             cmds.select(clear=1)
             cmds.select(getlastjoint)
             cmds.select(each, add=1)    
             #print each, getlastjoint
             cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1) 
-            print  each+" is bound to "+str(getlastjoint)            
 #         for each in clusterSpline:
 #             cmds.bindSkin(each,mainName+"IK_crv")
         #cmds.bindSkin(clusterSpline[0],mainChain+"IK_crv")
         
         
-        
-        
+        #=======================================================================
+        # 
+        #=======================================================================
+        print "building controllers"
+        #=======================================================================
+        # 
+        #=======================================================================
         
         #disconnectAttr |tail06_Clst_jnt.worldMatrix[0] skinCluster1.matrix[5];
         cmds.addAttr("Base"+mainName+"_Ctrl", ln=mainName+"FK_IK", min=0, max=1, at="double",en="FK:IK:", k=1, nn=mainName+"FK_IK")
@@ -452,20 +462,18 @@ class ChainRig(object):
 
         #cmds.parent(mainName+"IK","End"+mainName+"IK_Ctrl")
         cmds.parent(mainName+"Parent_nod_grp", bindmainChain[0])
-
-             
-
-            
-
-
+        #===============================================================================
+        # 
+        #===============================================================================
+        print "linking main controls for influence"
+        #===============================================================================
+        # 
+        #===============================================================================
         getMidClstr=cmds.ls(mainName+"*_Clst_jnt_grp")
-
-        firstpart, secondpart = getMidClstr[:len(getMidClstr)/2], getMidClstr[len(getMidClstr)/2:]       
-        BucketValue=[]
-        getPercentile=100/len(secondpart)            
-        for key, value in enumerate(secondpart):
-            percValue= (key+1)*getPercentile*.01
-            BucketValue.append(percValue)
+        firstpart, secondpart = getMidClstr[:len(getMidClstr)/2], getMidClstr[len(getMidClstr)/2:] 
+        minWeightValue=0.0 
+        maxWeightValue=1.0
+        BucketValue=getClass.Percentages(secondpart, minWeightValue, maxWeightValue)
         for eachCluser, weighted in map(None,secondpart, BucketValue):
             cmds.parentConstraint( "End"+mainName+"IK_Ctrl", eachCluser, mo=1, w=weighted)  
         for eachCluser, weighted in map(None, reversed(secondpart), BucketValue):
@@ -473,19 +481,19 @@ class ChainRig(object):
         
         
         firstlist=(firstpart)
-        firstlist= reversed(firstlist)        
+        reversedBucket=[]
+        firstlist= reversed(firstlist)
+        for each in firstlist:
+            reversedBucket.append(each)
+        print reversedBucket
         #beginning
-        BucketValue=[]
-        getPercentile=100/len(firstpart)
-        for key, value in enumerate(firstpart):
-            percValue= (key+1)*getPercentile*.01
-            BucketValue.append(percValue)
-        for eachCluser, weighted in map(None, firstlist, BucketValue):
+        minWeightValue=0.0 
+        maxWeightValue=1.0
+        BucketValue=getClass.Percentages(reversedBucket, minWeightValue, maxWeightValue)
+        for eachCluser, weighted in map(None, reversedBucket, BucketValue):
             cmds.parentConstraint( "Base"+mainName+"_Ctrl", eachCluser, mo=1, w=weighted) 
-        for eachCluser, weighted in map(None, firstpart, BucketValue):
-            cmds.parentConstraint( mainName+"Secondary_IK_Ctrl", eachCluser, mo=1, w=weighted)    
-#         cmds.parentConstraint("End"+mainName+"IK_Ctrl", mainName+"Secondary_IK_Ctrl_grp", mo=1, w=.5)
-#         cmds.parentConstraint("Base"+mainName+"_Ctrl" ,mainName+"Secondary_IK_Ctrl_grp",   mo=1, w=.5)
+        for eachCluser, weighted in map(None, reversed(reversedBucket), BucketValue):
+            cmds.parentConstraint( mainName+"Secondary_IK_Ctrl", eachCluser, mo=1, w=weighted) 
 
         
         
@@ -519,3 +527,4 @@ class ChainRig(object):
             cmds.rename(each, getname)        
 #             
         cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
+
