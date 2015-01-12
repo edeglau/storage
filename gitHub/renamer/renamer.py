@@ -67,6 +67,9 @@ class myUI:
         cmds.separator()
         cmds.button (label='Number Suffix', command = self.nmbrs)
         cmds.button (label='Remove numbers', command = self.rnmbrs)
+        cmds.button (label='Remove start numbers', command = self.rBeg_nmbrs)
+        cmds.button (label='Remove mid numbers', command = self.rMid_nmbrs)
+        cmds.button (label='Remove end numbers', command = self.rEnd_nmbrs)                
         cmds.button (label='Remove underscores', command = self.runders)
         
         
@@ -79,12 +82,33 @@ class myUI:
         global sufname
         sufname=cmds.textField()
         cmds.button (label='Add suf', command = self.suff)
-        cmds.textField(prefname, edit=True, enterCommand=('cmds.setFocus(\"' + prefname + '\")'))
-        cmds.textField(sufname, edit=True, enterCommand=('cmds.setFocus(\"' + sufname + '\")'))
-        
-                
+
+
+        cmds.setParent ('rColumn3')
+        cmds.text("Shift")
+        cmds.separator()
+        self.breakName=cmds.textField(text="enter the partial name")
+        self.breakPoint=cmds.textField(text="enter a breakpoint EG:'_")
+        cmds.button (label='move to beginning', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1)))
+        cmds.button (label='move to end', command = lambda *args:self._shift_end(breakName=textField(self.breakName, q=1, text=1)))   
+        cmds.button (label='Shift >>', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1), breakPoint=textField(self.breakPoint, q=1, text=1)))
+        cmds.button (label='<< Shift', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1), breakPoint=textField(self.breakPoint, q=1, text=1)))
         cmds.window(self.window, e=1, w=430, h=103)
         cmds.showWindow(self.window)   
+
+    def _shift_beg(self, breakName):
+        selObj=cmds.ls(sl = True, fl=1)
+        for each in selObj:
+            eachName=each.split(str(breakName))
+            newname=breakName+''.join(eachName)
+            aNewString=cmds.rename(each, each.replace( '%s'%each, '%s'%newFullName))        
+
+    def _shift_end(self, breakName):
+        selObj=cmds.ls(sl = True, fl=1)
+        for each in selObj:
+            eachName=each.split(str(breakName))
+            newname=''.join(eachName)+breakName
+            aNewString=cmds.rename(each, each.replace( '%s'%each, '%s'%newFullName))  
 
         
     def eyedropper(self, arg=None):
@@ -173,6 +197,7 @@ class myUI:
 #            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
             sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
             cmds.rename(nodName[item] ,sub_Name)
+            
     def rBeg_nmbrs(self, arg=None):
         nodName=cmds.ls(sl=True)
         for item in range (len(nodName)):
@@ -188,8 +213,9 @@ class myUI:
             # remove all numbers
             #===========================================================
 #            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
-            sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
+            sub_Name=re.sub(r"(^|\W)\d+", "", nodName[item])
             cmds.rename(nodName[item] ,sub_Name)
+            
     def rEnd_nmbrs(self, arg=None):
         nodName=cmds.ls(sl=True)
         for item in range (len(nodName)):
@@ -198,6 +224,7 @@ class myUI:
             #===========================================================
             sub_Name=re.sub("\d+$", "", nodName[item])         
             cmds.rename(nodName[item] ,sub_Name)
+            
     def runders(self, arg=None):
         undrsc=cmds.ls(sl=True)
         for item in range (len(undrsc)):
