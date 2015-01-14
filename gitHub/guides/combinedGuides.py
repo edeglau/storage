@@ -6,6 +6,7 @@ import maya.mel
 import os, subprocess, sys, platform
 from os  import popen
 from sys import stdin
+from pymel.core import *
 #import win32clipboard
 import operator
 
@@ -18,7 +19,7 @@ __version__ = 1.00
 colour1=13
 colour2=6
 colour3=27  
-pipelineguides="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\guides\\"
+pipelineguides="//usr//people//elise-d//maya//projects//default//data"
 filepath= os.getcwd()
 
 sys.path.append(str(filepath))
@@ -783,24 +784,92 @@ class GuideUI(object):
            
 
     def build_tail_guides(self, arg=None):
+        axisList=["X", "Y", "Z"]  
+        winName = "create tail guides"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        direction=optionMenu( label='Axis')
+        for each in axisList:
+            menuItem( label=each)         
+        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")          
+        self.amount=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
+        self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
+        cmds.text(label="range", w=80, h=25) 
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.create_tail_guides(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), amount=int(textField(self.amount,q=1, text=1)), size=int(textField(self.size,q=1, text=1)), namefield=textField(self.namefield,q=1, text=1), direction=optionMenu(direction, q=1, v=1)))
+        showWindow(window)
+
+    def create_tail_guides(self, firstMinValue, firstMaxValue, amount, size, namefield, direction):
+        nameBucket=[]
+        for each in range(amount):
+            numbername=each+1
+            stringname=str(numbername)
+            numbername=[each for each in stringname]
+            if len(numbername)==1:
+                newname=namefield+'0'+stringname+"_guide"
+            elif len(numbername)>1:
+                newname=namefield+stringname+"_guide"
+            nameBucket.append(newname)  
+        getSelected=range(amount)
+        BucketValue=getClass.Percentages(getSelected, firstMinValue, firstMaxValue)
+        guideDict={}
+        for eachName, eachValue in map(None, nameBucket, BucketValue):
+            if direction=="X":
+                nrx=eachValue
+                nry=0
+                nrz=0  
+            if direction=="Y":
+                nrx=0
+                nry=eachValue
+                nrz=0   
+            if direction=="Z":
+                nrx=0
+                nry=0
+                nrz=eachValue            
+            getValueBucket=(nrx, nry, nrz)
+            print getValueBucket
+            lineData={eachName:getValueBucket}       
+            guideDict.update(lineData)  
         Ggrp=cmds.CreateEmptyGroup()
-        cmds.rename(Ggrp, "Guides_Tail_grp")
-        guideDict= {
-                    'tail01_guide':[-0.0027999122373705276, 101.81306847273903, -12.802453296847265],
-                    'tail02_guide':[-0.002799912237366739, 108.5464318918672, -14.738674607817812],
-                    'tail03_guide':[-0.0027999122373669749, 113.58638894781204, -16.017880050963289],
-                    'tail04_guide':[0.013779694044587801, 117.7259074130272, -18.154366850164259],
-                    'tail05_guide':[0.013779694044602008, 122.0401413938731, -20.217515750401468],
-                    'tail06_guide':[0.013779694044633962, 125.7192721232971, -21.368741829687444],
-                    'tail07_guide':[0.041299145700635309, 130.33603197336751, -23.093919309815135],
-                    'tail08_guide':[-0.0012049298241505538, 134.57698119414135, -23.567714955561129],
-                    'tail09_guide':[-0.052538731083116019, 140.42369406499478, -22.999857579413948],
-                    'tail10_guide':[-0.012650158967222359, 146.41747041660048, -21.545746695423997]}
-#         colour1, colour2, colour3=17, 17, 17
+        cmds.rename(Ggrp, "Guides_"+namefield+"_grp")
         for key, value in guideDict.items():
             Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
             cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
-            cmds.parent(key,"Guides_Tail_grp")
+            cmds.parent(key,"Guides_"+namefield+"_grp")
+
+
+            
+#                   
+#        Ggrp=cmds.CreateEmptyGroup()
+#        cmds.rename(Ggrp, "Guides_Tail_grp")
+#        guideDict= {
+#                    'tail01_guide':[-0.0027999122373705276, 101.81306847273903, -12.802453296847265],
+#                    'tail02_guide':[-0.002799912237366739, 108.5464318918672, -14.738674607817812],
+#                    'tail03_guide':[-0.0027999122373669749, 113.58638894781204, -16.017880050963289],
+#                    'tail04_guide':[0.013779694044587801, 117.7259074130272, -18.154366850164259],
+#                    'tail05_guide':[0.013779694044602008, 122.0401413938731, -20.217515750401468],
+#                    'tail06_guide':[0.013779694044633962, 125.7192721232971, -21.368741829687444],
+#                    'tail07_guide':[0.041299145700635309, 130.33603197336751, -23.093919309815135],
+#                    'tail08_guide':[-0.0012049298241505538, 134.57698119414135, -23.567714955561129],
+#                    'tail09_guide':[-0.052538731083116019, 140.42369406499478, -22.999857579413948],
+#                    'tail10_guide':[-0.012650158967222359, 146.41747041660048, -21.545746695423997]}
+#        for key, value in guideDict.items():
+#            Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
+#            cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
+#            cmds.parent(key,"Guides_Tail_grp")
 
     def build_previs_face_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
