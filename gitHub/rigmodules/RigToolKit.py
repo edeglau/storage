@@ -116,20 +116,21 @@ class ToolKitUI(object):
         cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
         cmds.button (label='Material tool', ann="This opens a material tool for manipulating and naming shaders and shader nodes" , bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._material_namer)  
         cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._sets_win)
-        cmds.button (label='Edit sets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win)            
-        cmds.button (label='Edit Nsets', ann="This opens a menu that you can add and subtract selected objects from a set in a list drop down menu", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_nsets_win) 
+        cmds.button (label='Edit sets', ann="Add and subtract selected objects/verts from a set", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win)            
+        cmds.button (label='Edit Dyn sets', ann="Add and subtract selected objects/verts from a dynamic set", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_nsets_win) 
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
         cmds.button (label='Create Edit Grps', ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
-        cmds.button (label='Wrap Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_grp)
+        cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
         cmds.button (label='Wipe Anim From Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
         cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
         cmds.button (label='Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
+        cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
         cmds.text(label="") 
         cmds.text(label="Controllers")
         cmds.text(label="")           
@@ -218,7 +219,7 @@ class ToolKitUI(object):
         reload (ChainWork)
         result = cmds.promptDialog( 
                     title='Building a chainrig', 
-                    message="Enter dimentions for chain - EG:", 
+                    message="Enter dimensions for chain - EG:", 
                     text="name, Y, 10", 
                     button=['Continue','Cancel'],
                     defaultButton='Continue', 
@@ -432,11 +433,6 @@ class ToolKitUI(object):
         import renamer
         reload (renamer)
         renamer.myUI()    
-        
-    def _defEditGrp(self, arg=None):
-        import DefEditGrps
-        reload (DefEditGrps)
-        DefEditGrps.myGrps()   
             
     def _change_limit_values(self, arg=None):
         import LimitValues
@@ -1454,11 +1450,25 @@ class ToolKitUI(object):
         getClass=baseFunctions_maya.BaseClass()
         getClass.groupShapes()
 
-    def _wrap_grp(self, arg=None):
+    def _plot_vert(self, arg=None):
+        import baseFunctions_maya
+        reload (baseFunctions_maya)
+        getClass=baseFunctions_maya.BaseClass()
+        getClass.plot_vert()
+
+
+    def _defEditGrp(self, arg=None):
         import DefEditGrps
         reload (DefEditGrps)
-        selObj=ls(sl=1)
-        DefEditGrps.grab_grp(selObj[0], selObj[1])   
+        getgrp=DefEditGrps.myGrps() 
+        getgrp.ta_grps()
+        
+    def _wrap_ta_grp(self, arg=None):
+        import DefEditGrps
+        reload (DefEditGrps)
+        getgrp=DefEditGrps.myGrps()
+        getgrp.grab_grp()  
+        
                     #===========================================================
                     # remove numbers at beginning
                     #===========================================================
