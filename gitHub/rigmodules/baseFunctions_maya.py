@@ -3135,16 +3135,47 @@ class BaseClass():
     def xformAutoTranWrist(self, aim, target):
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )   
-        
-             
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )
 
-    def keyRange(self):
-        '''plots a keyframe at each frame in a timeline'''
-        for each in range(67):
+    def median_find(self, lst):
+        even = (0 if len(lst) % 2 else 1) + 1
+        half = (len(lst) - 1) / 2
+        mysum= sum(sorted(lst)[half:half + even]) / float(even)
+        return mysum         
+
+    def plot_vert(self):
+        '''plots a locator to a vertice or face per keyframe in a timeline'''
+        selObj=cmds.ls(sl=1, fl=1)       
+        if len(selObj)==1:
+            pass
+        else:
+            print "Select 1 object" 
+            return     
+        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+        getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+        getloc=cmds.spaceLocator(n=selObj[0]+"_lctr")
+        cmds.normalConstraint(selObj[0], getloc[0])
+        placeloc=cmds.spaceLocator(n=selObj[0]+"_lctr")
+        for each in range(getRange):
+            transform=cmds.xform(selObj[0], q=True, ws=1, t=True)
+            if len(transform)<4:
+                pass
+            else:
+                posBucket=[]
+                posBucket.append(self.median_find(transform[0::3]))
+                posBucket.append(self.median_find(transform[1::3]))
+                posBucket.append(self.median_find(transform[2::3]))
+                transform=posBucket
+            cmds.xform(getloc[0], ws=1, t=transform)  
+            cmds.SetKeyTranslate(getloc[0])
+            cmds.xform(placeloc[0], ws=1, t=transform)
+            cmds.SetKeyTranslate(placeloc[0])               
+            rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+            cmds.xform(placeloc[0], ws=1, ro=rotate)  
+            cmds.SetKeyRotate(placeloc[0])
             maya.mel.eval( "playButtonStepForward;" )
-            cmds.setKeyframe()
-
+        cmds.delete(getloc[0])
+                
 
     def Percentages(self, getSel, minValue, maxValue):
         collectNewNumbers=[]  
