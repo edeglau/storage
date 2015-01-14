@@ -121,8 +121,9 @@ class ToolKitUI(object):
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
-        cmds.button (label='Create Edit Grps', ann="Creates edit groups.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='Create Edit Grps', ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
+        cmds.button (label='Wrap Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_grp)
         cmds.button (label='Wipe Anim From Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
         cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
@@ -146,10 +147,10 @@ class ToolKitUI(object):
         cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
         cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
         cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
+        cmds.button (label='Find Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
+        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.button (label='Copy All Attr', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between  objects with attributes to other objects you want to transfer to. Useful to swap or transfer SDK",  p='listBuildButtonLayout', command = self._tran_att)                                                         
-        cmds.button (label='Find Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
-        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets each set attribute in an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.text(label="Modelling")          
         cmds.text(label="")               
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
@@ -957,52 +958,56 @@ class ToolKitUI(object):
                         except:
                             pass
 
-    def _findAttr_window(self, arg=None):
+    def _findAttr_window(self, arg=None):  
         getSel=ls(sl=1)     
         getFirst=getSel[0]
         global attributeFirstSel
         global makeAttr        
         getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
         getFirstAttr=sorted(getFirstAttr)        
-        winName = "Quick connect attributes"
+        winName = "find attributes"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-
         window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100 )
-
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
-
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
         rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
-        attributeFirstSel=optionMenu( label='From')
+        gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))
+        attributeFirstSel=optionMenu( label='Find')
         for each in getFirstAttr:
             menuItem( label=each)
-        makeAttr=textField()
-        button (label='Go', p='listBuildButtonLayout', command = self._find_att)
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(225, 20))
+        findAttr=textField(AttributeName, text="use a full or partial name EG:'translate'")
+        button (label='Find', p='listBuildButtonLayout', command = lambda *args:self._find_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
+        makeAttr=textField(text="fill with number EG:'50' and applt attribute")
+        button (label='Apply', p='listBuildButtonLayout', command = lambda *args:self._apply_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ils=1), makeAttr=textField(makeAttr, q=1, text=1)))
         showWindow(window)   
         
-    def _find_att(self, arg=None):
-        getSel=ls(sl=1)
+    def _find_att(self, getSel, getFirstattr, attribute):
         collectAttr=[]
-        getFirstattr=optionMenu(attributeFirstSel, q=1, ill=1)     
-        floater=textField(makeAttr, q=1, text=1)
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
-            if floater in find:
-                print find
+            if attribute in find:
                 collectAttr.append(find)
-                select(getSel[0]+'.'+find)
-                menuItem(each,e=1, bld=1, itl=1)
+                select(getSel[0]+'.'+find)         
+                optionMenu(attributeFirstSel, e=1, v=find)     
         select(getSel[0]+'.'+collectAttr[0], r=1)
         for each in collectAttr[1:]:
             select(getSel[0]+'.'+each, add=1)
+
+    def _apply_att(self,getSel, getFirstattr, makeAttr):
+        getAttri=optionMenu(attributeFirstSel, q=1, v=1)
+        getChangeAttr=getattr(getSel[0],getAttri)
+        try:
+            makeAttr=float(makeAttr)
+        except:
+            print "field must have number"
+        getChangeAttr.set(makeAttr)        
 
   
     def _remove_anim(self, arg=None):
@@ -1124,7 +1129,7 @@ class ToolKitUI(object):
 
     def _range_attr_window(self, arg=None):
         getSel=ls(sl=1, fl=1)  
-        if len(getSel)>3:
+        if len(getSel)>2:
             pass
         else:
             print "need to select 3 or more items" 
@@ -1145,14 +1150,10 @@ class ToolKitUI(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
@@ -1453,6 +1454,11 @@ class ToolKitUI(object):
         getClass=baseFunctions_maya.BaseClass()
         getClass.groupShapes()
 
+    def _wrap_grp(self, arg=None):
+        import DefEditGrps
+        reload (DefEditGrps)
+        selObj=ls(sl=1)
+        DefEditGrps.grab_grp(selObj[0], selObj[1])   
                     #===========================================================
                     # remove numbers at beginning
                     #===========================================================
