@@ -58,3 +58,63 @@ faceTongue02_guide:[1.999999856394652e-06, 109.53932817579798, 1.258378006877365
 faceTongue03_guide:[0.21653302099723604, 110.66061902385435, 2.8572037269408446]:[64.99999999999999, 0.0, 0.0]
 faceTongue04_guide:[0.21653302099723604, 111.10769364773783, 4.629074884485468]:[87.00000000000001, 0.0, 0.0]
 faceTongue05_guide:[0.21653302099723604, 111.13297025688654, 7.34287880047511]:[91.0, 0.0, 0.0]
+
+
+
+
+import maya.cmds as cmds
+from pymel.core import *
+class myGrps():
+    def __init__(self):
+        getGroups=["INPUT_GRP", "OUTPUT_GRP", "DEFORMERS_GRP"]
+        getSel=ls(sl=1, fl=1)
+        getGrps=[]
+        for each in getGroups:
+            cmds.CreateEmptyGroup()
+            newGrp=cmds.ls(sl=1)
+            rename(newGrp[0], each)
+            getGrps.append(each)
+            for item in getSel:
+                newDupe=duplicate(item)
+                parent(newDupe, each)
+                rename(newDupe[0], item)
+        self.predefined_DEF_OUT()
+
+    def predefined_DEF_OUT(self):
+        if cmds.ls("DEFORMERS_GRP"):
+            getMeshController=cmds.ls("DEFORMERS_GRP")[0]        
+        else:
+            print "deformer group missing"
+            return
+        if cmds.ls("OUTPUT_GRP"):
+            getMeshTarget=cmds.ls("OUTPUT_GRP")[0]
+        else:
+            print "output group missing"
+            return
+        getChildrenController=[(each) for each in cmds.ls(cmds.listRelatives(getMeshController, c=1, typ="transform")) if "DEFORM" in each]
+        if getChildrenController==None:
+            getChildrenController=([getMeshController])
+        getChildrenTarget=[(each) for each in cmds.ls(cmds.listRelatives(getMeshTarget, c=1, typ="transform")) if "OUTPUT" in each]     
+        if getChildrenTarget==None:
+            getChildrenTarget=([getMeshTarget])
+        self.create_wrap_callup(getChildrenController, getChildrenTarget)
+            
+    def create_wrap_callup(self, getChildrenController, getChildrenTarget):            
+        for eachCtrl, eachTgt in map(None, getChildrenController, getChildrenTarget):
+            getCtrlItemName=eachCtrl.split("|")
+            getTgtItemName=eachTgt.split("|")      
+            if getCtrlItemName[-1:] ==getTgtItemName[-1:]:
+                deformer(eachTgt, type="wrap")
+                select(eachTgt, r=1)
+                select(eachCtrl, add=1)
+                cmds.AddWrapInfluence()
+                
+            
+    def grab_grp(self, Select1, Select2):            
+        getChildrenController=[(each) for each in cmds.ls(cmds.listRelatives(getMeshController, c=1, typ="transform")) if Select1 in each]
+        if getChildrenController==None:
+            getChildrenController=([getMeshController])
+        getChildrenTarget=[(each) for each in cmds.ls(cmds.listRelatives(getMeshTarget, c=1, typ="transform")) if Select2 in each]     
+        if getChildrenTarget==None:
+            getChildrenTarget=([getMeshTarget])
+        self.create_wrap_callup(getChildrenController, getChildrenTarget)
