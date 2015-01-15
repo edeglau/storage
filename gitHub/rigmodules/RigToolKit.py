@@ -34,7 +34,12 @@ filepath= os.getcwd()
 sys.path.append(str(filepath))
 import baseFunctions_maya
 reload (baseFunctions_maya)
-getClass=baseFunctions_maya.BaseClass()
+getBaseClass=baseFunctions_maya.BaseClass()
+
+sys.path.append(str(filepath))
+import Tools
+reload (Tools)
+toolClass=Tools.ToolFunctions()
 
 gtepiece=getfilePath.split("/")
 getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
@@ -88,23 +93,24 @@ class ToolKitUI(object):
         cmds.text(label="Rig setup")          
         cmds.text(label="")  
         cmds.button (label='Guides Tool', ann="This is the guide tool menu to build the guides that creates the MG rig system", bgc=[0.7, 0.7, 0.7],p='listBuildButtonLayout', command = self._guides)
-        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='listBuildButtonLayout', command = self._rig_biped)
+#        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='listBuildButtonLayout', command = self._rig_biped)
         cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_biped_mirror)
         cmds.button (label='Build Quad', ann="This is the Quad MG rig system", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_quad)
         cmds.button (label='Face Hugger', ann="This is the Face Hugger rig", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._rig_face)                
         cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._skinning)        
+        cmds.text(label="") 
         cmds.text(label="Mini rigs")          
         cmds.text(label="")              
-        cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Joints that control CVs along a curve. Create a guide chain and use this to create a curve rig", p='listBuildButtonLayout', command = self._curve_rig)    
-        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute", p='listBuildButtonLayout', command = self.chain_rig)    
+        cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Isolated joints that control CVs along a curve with no IK or FK dependencies. Create a guide chain then use this to create a curve rig. USES: Tongue, worm, eyelash line rig", p='listBuildButtonLayout', command = self._curve_rig)    
+        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='listBuildButtonLayout', command = self.chain_rig)    
         cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
-        cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object",  p='listBuildButtonLayout', command = self._grp_insert)          
+        cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._grp_insert)          
         cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
-        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. adds selected object to rivet.", p='listBuildButtonLayout', command = self._rivet_obj)             
-        cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator", p='listBuildButtonLayout', command = self._bone_rivet) 
-        cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides", p='listBuildButtonLayout', command = self._build_joints) 
-        cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller", p='listBuildButtonLayout', command = self._build_ik)         
-        cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute", p='listBuildButtonLayout', command = self._stretch_ik)    
+        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. Adds selected object to a new created rivet. Select two edges of one object and then the object you want to rivet to the first. USES: buttons", p='listBuildButtonLayout', command = self._rivet_obj)             
+        cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator for skinning geometry to. USES: eyelashes", p='listBuildButtonLayout', command = self._bone_rivet) 
+        cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides. USES: insect leg chains with no prebuilt rig", p='listBuildButtonLayout', command = self._build_joints) 
+        cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller.", p='listBuildButtonLayout', command = self._build_ik)         
+        cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute.", p='listBuildButtonLayout', command = self._stretch_ik)    
         cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='listBuildButtonLayout', command = self._stretch_ik_spline)    
         cmds.button (label='ConstraintMaker',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
@@ -121,16 +127,16 @@ class ToolKitUI(object):
         cmds.button (label='SDKAny', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
-        cmds.button (label='Create Edit Grps', ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='**Create Edit Grps', bgc=[0.33, 0.27, 0.30], ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
         cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
-        cmds.button (label='Wipe Anim From Asset', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
-        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
-        cmds.button (label='Nullify object', ann="Hides object and makes unkeyable", p='listBuildButtonLayout', command = self._disappear)                               
-        cmds.button (label='Cleanup asset', ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
-        cmds.button (label='Cleanup rig', ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
-        cmds.button (label='Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
+        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
+        cmds.button (label='Nullify object', ann="Hides object and makes unkeyable. USES: hide locators from animators", p='listBuildButtonLayout', command = self._disappear)                               
+        cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
         cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
+#        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
+#        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
+#        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
         cmds.text(label="") 
         cmds.text(label="Controllers")
         cmds.text(label="")           
@@ -169,175 +175,33 @@ class ToolKitUI(object):
         cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
         cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
-        
-        
+
+    def _rivet(self, arg=None):
+        maya.mel.eval( "rivet;" )
+
+    def _revert(self, arg=None):
+        maya.mel.eval( "revert();" )
+
+    def _mirror_blend(self, arg=None): 
+        getBaseClass.mirrorBlendshape()
         
     def _set_any(self, arg=None):
         import FaceRig
         reload (FaceRig)
-        getClass=FaceRig.FaceSetup()    
-        getClass.TR_SDKKeys()   
+        getBaseClass=FaceRig.FaceSetup()    
+        getBaseClass.TR_SDKKeys()   
                 
     def _bone_rivet(self, arg=None): 
-        global RivetName
-        winName = "Bone Rivets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(200, 20))
-        RivetName=cmds.textField(w=120, h=25, p='listBuildButtonLayout')    
-        cmds.button (label='Create Lash Rivet', p='listBuildButtonLayout', command = lambda *args:self._add_bone_rivet())        
-
-    def _add_bone_rivet(self, arg=None):
-        queryRivet=cmds.textField(RivetName, q=1, text=1)       
-        selObj=cmds.ls(sl=1, fl=1)
-        getLists=zip(selObj[::2], selObj[1::2])
-        for each in getLists:
-            cmds.select(each[0])
-            cmds.select(each[1], add=1)
-            maya.mel.eval( "rivet;" )
-            getRiv=cmds.ls(sl=1)
-            cmds.rename(getRiv[0], queryRivet)
-            getNewRiv=cmds.ls(sl=1)
-            getClass.makeJoint()
-            cmds.parent(getNewRiv[0]+"_jnt", getNewRiv[0]) 
+        toolClass._bone_rivet()
         
     def chain_rig(self, arg=None):
-        import ChainWork
-        reload (ChainWork)
-        result = cmds.promptDialog( 
-                    title='Building a chainrig', 
-                    message="Enter dimensions for chain - EG:", 
-                    text="name, Y, 10", 
-                    button=['Continue','Cancel'],
-                    defaultButton='Continue', 
-                    cancelButton='Cancel', 
-                    dismissString='Cancel' )
-        if result == 'Continue':
-            resultInfo=cmds.promptDialog(q=1)
-            if resultInfo:
-                pass
-            else:
-                print "nothing collected"
-            getInfo=resultInfo.split(', ')
-            getDir=getInfo[1]
-            mainName=getInfo[0]
-            if getDir=="X":
-                nrx=1
-                nry=0
-                nrz=0  
-            if getDir=="Y":
-                nrx=0
-                nry=1
-                nrz=0   
-            if getDir=="Z":
-                nrx=0
-                nry=0
-                nrz=1
-            ControllerSize=int(getInfo[2])
-            getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
+        toolClass.chain_rig()
             
     def _sets_win(self, arg=None):
-        try:
-            getallnames=cmds.ls("*:*BodyControl")
-        except:
-            print "No BodyControl set is present"
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "BodyControl" in each]
-        global setMenu
-        winName = "Sets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(200, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set())
-
-        cmds.showWindow(window)
-        
-    def _mirror_blend(self, arg=None): 
-        getBaseClass.mirrorBlendshape()       
-
-    def _add_to_set(self, arg=None):
-        querySet=cmds.optionMenu(setMenu, q=1, v=1)
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, add=querySet)
-            
-    def _remove_from_set(self, arg=None):
-        querySet=cmds.optionMenu(setMenu, q=1, v=1)
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, rm=querySet)            
-            
-    def _add_to_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "add";' )
-
-    def _remove_from_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
+        toolClass._sets_win()  
             
     def _edit_sets_win(self, arg=None):
-#         try:
-#             getallnames=cmds.ls("*:*BodyControl")
-#         except:
-#             print "No BodyControl set is present"
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
-        global setMenu
-        winName = "Sets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(200, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set())
-        cmds.button (label='remove from set', p='listBuildButtonLayout', command = lambda *args:self._remove_from_set())
-
-        cmds.showWindow(window)
+        toolClass._edit_sets_win()
             
     def _material_namer(self, arg=None):
         import Material_UI
@@ -345,83 +209,16 @@ class ToolKitUI(object):
         Material_UI.Mat_Namer()
 
     def _edit_nsets_win(self, arg=None):
-        titleName="Dynamic Sets"
-        getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        self._sets_win(titleName, getAllSets)
-        self._set_nbuttons()
-        
-        
-    def _sets_win(self, titleName, getAllSets):
-        winName = titleName
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=550, h=100 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=550)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=550, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(550, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
-        cmds.button (label='Add relatives', p='listBuildButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove relatives', p='listBuildButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.showWindow(window)        
+        toolClass._edit_nsets_win()  
 
     def _open_texture_file_gmp(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-            return
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)   
-                    subprocess.Popen([gimp, getValue])
-        else:
-            print "need to select a texture node"
-    def _open_work_folder(self, arg=None):
-        destImagePath=folderPath
-        print destImagePath
-        self.get_path(destImagePath)    
+        toolClass._open_texture_file_gmp()
         
-    def get_path(self, path):
-        print path
-        if '\\\\' in path:
-            newpath=re.sub(r'\\\\',r'\\', path)
-            os.startfile(r'\\'+newpath[1:])    
-        else:
-            os.startfile(path)            
+    def _open_work_folder(self, arg=None):
+        toolClass._open_work_folder()           
             
     def _open_texture_file_ps(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)   
-                    getpath=getValue.split("/")
-                    getpPath="\\".join(getpath[:-1])
-                    getFile=getpath[-1:]
-                    getValue=getpPath+"\\"+getFile[0]
-                    getValue = r"%s"%getValue           
-                    subprocess.Popen([photoshop, getValue])
-        else:
-            print "need to select a texture node"
+        toolClass._open_texture_file_ps()
 
         
     def _guides(self, arg=None):
@@ -440,214 +237,27 @@ class ToolKitUI(object):
         LimitValues.ValueClass()
         
     def _eye_directions(self, arg=None):
-        cmds.file(BbxFilepath, i=1,  type="mayaAscii", iv=1, mnc=0, gr=1, gn="FaceRig", op=1, rpr="ControlBox")
-        try:
-            getBox=cmds.ls("BigBox_CC_grp") 
-        except:
-            getBox=cmds.ls("*:BigBox_CC_grp")  
-        getTranslation, getRotation=getClass.locationXForm(getHeadCtrl)
-        cmds.move(getTranslation[0]+40, getTranslation[1], getTranslation[2], getBox)
-        cmds.parentConstraint(getHeadCtrl,getBox, mo=1)
-        print "Eye Direction Present"
+        toolClass._eye_directions()
         
     def addEyeDir(self, arg=None):
-        '''this sandwitches a circle control to another control for an easy override switch(face controllers for SDK keys)'''
-        colour=6
-        size=1 
-        selObj=("EyeOrient_L_jnt", "EyeOrient_R_jnt")
-        for each in selObj:
-            selObjParent=cmds.listRelatives( each, allParents=True )
-            transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)        
-            nrx, nry, nrz = 0.0, 0.0, 1.0 
-            getcolour=cmds.getAttr(each+".overrideColor")
-            name=each.split("_jnt")[0]+"_dir"
-            grpname=each.split("_jnt")[0]+"_dir_grp"
-            getClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
-            cmds.parent(name, each)      
-    def _rivet(self, arg=None):
-        maya.mel.eval( "rivet;" )
-#        getSel=cmds.ls(sl=1)[0]
-#        for each in trans:
-#            cmds.setAttr(getSel+each, l=1)
-#            cmds.setAttr(getSel+each, k=0)
+        toolClass.addEyeDir()        
+
     def _rivet_obj(self, arg=None): 
-        selObj=cmds.ls(sl=1, fl=1)
-        getFirst=selObj[:-1]
-        constrainObj=selObj[-1]
-        maya.mel.eval( "rivet" )
-        getRiv=cmds.ls(sl=1)
-        cmds.parent(constrainObj, getRiv)
+        toolClass._rivet_obj()
+        
     def _disappear(self, arg=None):
-        getSel=cmds.ls(sl=1)
-        for item in getSel:
-            for each in trans:
-#                 cmds.setAttr(item+each, l=1)
-                cmds.setAttr(item+each, k=0)
-                cmds.setAttr(item+".visibility", 0)
+        toolClass._disappear()
                 
     def char_light_cleanup(self):
-        try:    
-            cmds.pointConstraint("*:Master_Ctrl", "*:LA0095_CharBaseLighting_Master:Lights", mo=1)
-        except:
-            print "no CharBased lighting present. Passing on relinking it."
-            pass        
-        try:
-            if cmds.ls("*:LA0095_CharBaseLighting_Master:LightCtrl"):
-                getLightObj=cmds.ls("*:LA0095_CharBaseLighting_Master:LightCtrl")
-                for each in getLightObj:
-                    getChildConstraint=[(each) for each in cmds.listRelatives(each, ad=1, typ="parentConstraint")]
-                    if len(getChildConstraint)>0:
-                        cmds.delete(getChildConstraint[0])
-        except:
-            pass        
-    def _clean_up(self, arg=None): 
-        self.char_light_cleanup()
-        if cmds.ls("*Skirtvtx*jnt") :                      
-            getSel=cmds.ls("*Skirtvtx*jnt") 
-            for item in getSel:
-                    cmds.setAttr(item+"_parentConstraint1.interpType", 0 )    
-                    print item+" -set joint interpolation type to No Flip"    
-        if cmds.ls("*Dressvtx*jnt") :                      
-            getSel=cmds.ls("*Dressvtx*jnt") 
-            for item in getSel:
-                    cmds.setAttr(item+"_parentConstraint1.interpType", 0 )    
-                    print item+" -set joint interpolation type to No Flip"    
-        if cmds.ls(typ="locator") :                      
-            getSel=cmds.ls(typ="locator")
-            for item in getSel:
-                getTransform=cmds.listRelatives(item, ap=1)[0]
-                for each in trans:
-                    try:
-                        cmds.setAttr(getTransform+each, k=0)
-                    except:
-                        print "cannot set keyable state in this file for "+getTransform+each
-                        pass
-                    try:
-                        cmds.setAttr(item+".visibility", 0)
-                    except:
-                        print "unable to set visibility on shape node of locator: " +getTransform
-                        pass        
-        if cmds.ls("Lash*RIV"):
-            getSel=cmds.ls("Lash*RIV")
-            getSel.append("Lash_attribute_holder")
-            for item in getSel:
-                for each in trans:
-                    try:
-                        cmds.setAttr(item+each, k=0)
-                        print "keyframe ability turned off for : "+item+each
-                    except:
-                        pass
-                    try:
-                        cmds.setAttr(item+".visibility", 0)
-                        print "hid "+item
-                    except:
-                        pass
-        if cmds.ls("Eye_*_scptStretchOrigin"):
-            getSel=cmds.ls("Eye_*_scptStretchOrigin") 
-            for item in getSel:
-                for each in trans:
-                    cmds.setAttr(item+each, k=0)
-                    print "keyframe ability turned off for : "+item+each
-                    cmds.setAttr(item+".visibility", 0)   
-            getSel=cmds.ls("Eye_*_scpt.en") 
-            for item in getSel:                 
-                cmds.setAttr(item, l=1)  
-                print "locked "+item
-        if cmds.ls("Eyes_txt_CC") :                      
-            getSel=cmds.ls("Eyes_txt_CC")  
-            getEye=cmds.ls("Eyes_select")  
-            getSel=getSel+getEye
-            for item in getSel:
-                for each in trans:
-                    cmds.setAttr(item+each, k=0)
-                    print "keyframe ability turned off for : "+item+each
-                    cmds.setAttr(item+".visibility", 0)    
-                    print "hid "+item            
-#         if cmds.ls("rivet*") :                      
-#             getSel=cmds.ls("rivet*") 
-#             for item in getSel:
-#                 for each in trans:
-#                     cmds.setAttr(item+each, k=0)
-#                     print "keyframe ability turned off for : "+item+each
-#                     cmds.setAttr(item+".visibility", 0)    
-#                     print "hid "+item            
-        if cmds.nodeType(typ="locator") :                      
-            getSel=mds.nodeType(typ="locator")
-            for item in getSel:
-                print item
-                for each in trans:
-                    cmds.setAttr(item+each, k=0)
-                    print "keyframe ability turned off for : "+item+each
-                    cmds.setAttr(item+".visibility", 0)      
-                    print "hid "+item  
+        toolClass.char_light_cleanup()
+               
+    def _clean_up(self, arg=None):
+        toolClass._clean_up
                             
     def _clean_up_rig(self, arg=None):
-        getTransShoulder=[".tx", ".ty", ".tz"]
-        if cmds.ls("Shoulder_*_Ctrl"):
-            getSel=cmds.ls("Shoulder_*_Ctrl")
-            for item in getSel:
-                for each in getTransShoulder:
-                    cmds.setAttr(item+each, cb=0)
-                    cmds.setAttr(item+each, l=1)
-                    cmds.setAttr(item+each, k=0)
-        if cmds.ls("Hips_Ctrl"):
-            getSel=cmds.ls("Hips_Ctrl")   
-            for item in getSel: 
-                cmds.setAttr(item+".spineFK_IK", 0)                
-        if cmds.ls(typ="locator") :                      
-            getSel=cmds.ls(typ="locator")
-            for item in getSel:
-                getTransform=cmds.listRelatives(item, ap=1)[0]
-                for each in trans:
-                    try:
-                        cmds.setAttr(getTransform+each, k=0)
-                        print "keyframe ability turned off for : "+getTransform+each
-                    except:
-                        print "cannot set keyable state in this file"
-                        pass
-                    try:
-                        cmds.setAttr(item+".visibility", 0)
-                        print "hid "+item
-                    except:
-                        print "unable to set visibility on shape node of locator: " +getTransform
-                        pass        
-        if cmds.ls("Hand_*_Fingers_Ctrl"):
-            selObj=cmds.ls("Hand_*_Fingers_Ctrl")
-            for each in selObj:
-                cmds.addAttr(each+".SpreadFingers", e=1, min=-0, max=90)
-                print "reset " +each+".SpreadFingers"
-                cmds.addAttr(each+".CurlFingers", e=1, min=-160, max=0)
-                print "reset " +each+".CurlFingers"
-        if cmds.ls("*_Finger_*_Ctrl"):
-            selObj=cmds.ls("*_Finger_*_Ctrl")
-            for each in selObj:
-                if "|" not in each:
-                    cmds.addAttr(each+".MiddleJoint", e=1, min=-160, max=0)
-                    print "reset " +each+".MiddleJoint"
-                    cmds.addAttr(each+".LastJoint", e=1, min=-160, max=0)
-                    print "reset " +each+".LastJoint"
-                    cmds.addAttr(each+".FingerFullCurl", e=1, min=-160, max=0)  
-                    print "reset " +each+".FingerFullCurl"     
-        Side=["Right", "Left"]
-        for eachSide in Side:
-            try:
-                SDK_Fingers=("Index_Finger_"+eachSide+"_M_Ctrl.rotateY",
-                            "Mid_Finger_"+eachSide+"_M_Ctrl.rotateY",
-                            "Ring_Finger_"+eachSide+"_M_Ctrl.rotateY",
-                            "Pinky_Finger_"+eachSide+"_M_Ctrl.rotateY",
-                            "Thumbmid_"+eachSide+"_M_Ctrl.rotateY",
-                            "Thumbbase_"+eachSide+"_M_Ctrl.rotateY",
-                            "Index_Finger_"+eachSide+"_M_Ctrl.ry")
-                for each in SDK_Fingers:
-                    cmds.setAttr(each, lock=1) 
-                    print each+" attribute has been locked"
-            except:
-                pass    
+        toolClass._clean_up_rig()
 
-        
-    def _revert(self, arg=None):
-        maya.mel.eval( "revert();" )
-        
+
     def _change_colours(self, arg=None):
         import Colours
         reload (Colours)
@@ -682,7 +292,7 @@ class ToolKitUI(object):
     def _skinning(self, arg=None):
         import Skinner_UI
         reload (Skinner_UI)
-        getClass=Skinner_UI.SkinningUI()        
+        getBaseClass=Skinner_UI.SkinningUI()        
 
     def _select_array(self, arg=None):
         import selectArray
@@ -690,753 +300,105 @@ class ToolKitUI(object):
         selectArray.SelectionPalettUI()         
         
     def _tran_att(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.massTransfer()      
+        getBaseClass.massTransfer()      
 
     def _reset_asset(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.clearAnim()    
+        getBaseClass.clearAnim()    
         self.char_light_cleanup()    
 
     def _fast_float(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.fastFloat()
+        getBaseClass.fastFloat()
 
     def _blend_colour_window(self, arg=None):
-        getSel=cmds.ls(sl=1)        
-        global attributeSel
-        geteattr=cmds.listAttr (getSel[0], ud=1)        
-        winName = "select attribute to link the switch constraint driven key to"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeSel=cmds.optionMenu( label='user attribute')
-        for each in geteattr:
-            cmds.menuItem( label=each)            
-        cmds.button (label='Go', p='listBuildButtonLayout', command = self._blend_colour)
-        cmds.showWindow(window)   
-          
-    def _blend_colour(self, arg=None):
-        geteattr=cmds.optionMenu(attributeSel, q=1, v=1)          
-        selObj=cmds.ls(sl=1)
-        if len(selObj)>3:
-            pass
-        else:
-            print "select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object"
-            return
-        Controller=selObj[0]
-        firstChild=selObj[1]
-        secondChild=selObj[2]
-        thirdChild=selObj[3]  
-        Controller=Controller+"."+geteattr      
-        getClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
+        toolClass._blend_colour_window()
         
     def _quickCconnect_window(self, arg=None):
-        getSel=cmds.ls(sl=1)  
-        getFirst=getSel[:-1]
-        print getFirst
-        getSecond=getSel[-1] 
-        print getSecond        
-#        getFirst=getSel[0]      
-#        getSecond=getSel[1] 
-        global attributeFirstSel
-        global attributeSecondSel        
-        getFirstAttr=cmds.listAttr (getFirst[0])      
-        getFirstAttr=sorted(getFirstAttr)
-        getSecondAttr=cmds.listAttr (getSecond)
-        getSecondAttr=sorted(getSecondAttr)         
-        winName = "Quick connect attributes"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        cmds.text(label=getFirst[0])
-        cmds.text(label=getSecond)        
-        attributeFirstSel=cmds.optionMenu( label='From')
-        for each in getFirstAttr:
-            cmds.menuItem( label=each) 
-        attributeSecondSel=cmds.optionMenu( label='To')               
-        for each in getSecondAttr:
-            cmds.menuItem( label=each)                    
-        cmds.button (label='Go', p='listBuildButtonLayout', command=lambda *args:self._quickCconnect(getFirst, getSecond))
-        cmds.showWindow(window)   
-          
-    def _quickCconnect(self, getFirst, getSecond):
-        getFirstattr=cmds.optionMenu(attributeFirstSel, q=1, v=1)          
-        getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1) 
-        getFirstAttr=getFirst[0]  
-        for each in getFirst:    
-            cmds.connectAttr(getSecond+"."+getSecondattr, each+"."+getFirstattr, f=1)
+        toolClass._quickCconnect_window()
 
     def _quickCopy_single_Attr_window(self, arg=None):
-        getSel=cmds.ls(sl=1)  
-        getChildren=getSel[1:]
-        getParent=getSel[:1]
-        global attributeFirstSel
-        global attributeSecondSel        
-        getFirstAttr=cmds.listAttr (getChildren[0])      
-        getFirstAttr=sorted(getFirstAttr)
-        getSecondAttr=cmds.listAttr (getParent)
-        getSecondAttr=sorted(getSecondAttr)         
-        winName = "Quick transfer single attribute"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        cmds.text(label=getParent[0])
-        cmds.text(label=getChildren[0])        
-        attributeFirstSel=cmds.optionMenu( label='From')
-        for each in getFirstAttr:
-            cmds.menuItem( label=each) 
-        attributeSecondSel=cmds.optionMenu( label='To')               
-        for each in getSecondAttr:
-            cmds.menuItem( label=each)                    
-        cmds.button (label='Go', p='listBuildButtonLayout', command=lambda *args:self._copy_single_attr(getChildren, getParent))
-        cmds.showWindow(window)   
-        
-    def _copy_single_attr(self, getChildren, getParent):
-        getParentAttr=cmds.optionMenu(attributeFirstSel, q=1, v=1)
-        getChildAttr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
-        getSel=cmds.ls(sl=1)  
-        getChildren=getSel[1:]
-        getParent=getSel[:1]      
-        getValue=getAttr(getParent[0]+'.'+getParentAttr)    
-        for each in getChildren:
-            get=cmds.keyframe(getParent[0]+'.'+getParentAttr, q=1, kc=1) 
-            if get!=0:
-                try:
-                    getSource=connectionInfo(getParent[0]+'.'+getParentAttr, sfd=1)
-                    newAnimSrce=duplicate(getSource) 
-                    lognm=newAnimSrce[0].replace(str(getParent[0]), str(each))
-                    #===========================================================
-                    # remove numbers at end
-                    #===========================================================
-                    newname=re.sub("\d+$", "", lognm)
-                    cmds.rename(newAnimSrce, newname)
-                    getChangeAttr=each+'.'+getChildAttr
-                    connectAttr(newname+'.output', getChangeAttr, f=1)
-                except:
-                    pass
-            else:
-                try:                    
-                    getChangeAttr=each+'.'+getChildAttr
-                    setAttr(getChangeAttr, getValue)
-                except:
-                    pass
+        toolClass._quickCopy_single_Attr_window()
         
     def _createAlias_window(self, arg=None):
-        getSel=ls(sl=1)  
-        if len(getSel)>1:
-            pass
-        else:
-            print "need to select 2 or more items" 
-            return       
-        getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr        
-        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
-        getFirstAttr=sorted(getFirstAttr)        
-        winName = "Quick connect attributes"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
-        for each in getFirstAttr:
-            menuItem( label=each)                
-        makeAttr=textField()
-        button (label='Go', p='listBuildButtonLayout', command = self._create_alias)
-        showWindow(window)   
-          
-    def _create_alias(self, arg=None):
-        getSel=ls(sl=1)
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)       
-        floater=textField(makeAttr, q=1, text=1)
-        getFirst=getSel[:-1]
-        getSecond=getSel[-1]  
-        for each in getFirst:
-            get=cmds.keyframe(each+'.'+getFirstattr, q=1, kc=1)
-            if get>0:
-                getSource=connectionInfo(each+'.'+getFirstattr, sfd=1) 
-                addAttr([getSecond], ln=floater, at="double", k=1, nn=floater)
-                connectAttr(getSource, getSecond+"."+floater, f=1)
-                connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
-            else:
-                getValue=getattr(each,getFirstattr).get()
-                addAttr([getSecond], ln=floater, at="double", k=1, nn=floater)
-                connectAttr(getSecond+"."+floater, each+"."+getFirstattr, f=1)
-                getChangeAttr=getattr(getSecond,floater)
-                getChangeAttr.set(getValue)
-#                setAttr(getSecond+"."+floater, getValue)
+        toolClass._createAlias_window()
 
     def _transfer_anim_attr(self, arg=None):
-        getSel=ls(sl=1)
-        getChildren=getSel[1:]
-        getParent=getSel[:1]
-        for each in getChildren:
-            getFirstattr=listAttr (getParent[0], w=1, a=1, s=1, u=1, m=0)
-            for item in getFirstattr:
-                if "." not in item:
-                    get=cmds.keyframe(getParent[0]+'.'+item, q=1, kc=1) 
-                    if get!=0:
-                        try:
-                            getSource=connectionInfo(getParent[0]+'.'+item, sfd=1)
-                            newAnimSrce=duplicate(getSource) 
-                            lognm=newAnimSrce[0].replace(str(getParent[0]), str(each))
-                            #===========================================================
-                            # remove numbers at end
-                            #===========================================================
-                            newname=re.sub("\d+$", "", lognm)
-                            cmds.rename(newAnimSrce, newname)
-                            getChangeAttr=getSecond+'.'+item                        
-                            connectAttr(newname+'.output', getChangeAttr, f=1)                             
-#                            connectAttr(getSource, each+"."+item, f=1)
-                        except:
-                            pass
-                    else:
-                        try:
-                            getValue=getattr(getParent[0],item).get()
-                            getChangeAttr=getattr(each,item)
-                            getChangeAttr.set(getValue)
-                        except:
-                            pass
+        toolClass._transfer_anim_attr()
 
     def _findAttr_window(self, arg=None):  
-        getSel=ls(sl=1)     
-        getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr        
-        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
-        getFirstAttr=sorted(getFirstAttr)        
-        winName = "find attributes"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100 )
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))
-        attributeFirstSel=optionMenu( label='Find')
-        for each in getFirstAttr:
-            menuItem( label=each)
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(225, 20))
-        findAttr=textField(AttributeName, text="use a full or partial name EG:'translate'")
-        button (label='Find', p='listBuildButtonLayout', command = lambda *args:self._find_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
-        makeAttr=textField(text="fill with number EG:'50' and applt attribute")
-        button (label='Apply', p='listBuildButtonLayout', command = lambda *args:self._apply_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ils=1), makeAttr=textField(makeAttr, q=1, text=1)))
-        showWindow(window)   
-        
-    def _find_att(self, getSel, getFirstattr, attribute):
-        collectAttr=[]
-        for each in getFirstattr:
-            find=menuItem(each, q=1, label=1)
-            if attribute in find:
-                collectAttr.append(find)
-                select(getSel[0]+'.'+find)         
-                optionMenu(attributeFirstSel, e=1, v=find)     
-        select(getSel[0]+'.'+collectAttr[0], r=1)
-        for each in collectAttr[1:]:
-            select(getSel[0]+'.'+each, add=1)
+        toolClass._findAttr_window()
 
-    def _apply_att(self,getSel, getFirstattr, makeAttr):
-        getAttri=optionMenu(attributeFirstSel, q=1, v=1)
-        getChangeAttr=getattr(getSel[0],getAttri)
-        try:
-            makeAttr=float(makeAttr)
-        except:
-            print "field must have number"
-        getChangeAttr.set(makeAttr)        
-
-  
     def _remove_anim(self, arg=None):
-        self._reset() 
-        self._erase_anim()
-       
+        toolClass._reset() 
+        toolClass._erase_anim()
 
     def _erase_anim(self, arg=None):
-        getSel=ls(sl=1)
-        getFirst=getSel
-        for each in getFirst:
-            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
-            for item in getFirstattr:
-                if "." not in item:
-                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
-                    if get>0:
-                        getSource=connectionInfo(each+'.'+item, sfd=1) 
-                        delete(getSource.split(".")[0])
-                    else:
-                        pass
+        toolClass._erase_anim()
 
     def _reset(self, arg=None):
-        getSel=ls(sl=1)
-        getFirst=getSel
-        for each in getFirst:
-            getFirstattr=listAttr (each, w=1, a=1, s=1, u=1, m=0)
-            for item in getFirstattr:
-                if "." not in item:
-                    if "scaleX" not in item and "scaleY" not in item and "scaleZ" not in item:
-                        get=cmds.keyframe(each+'.'+item, q=1, kc=1)
-                        if get>0:
-                            setAttr(each+'.'+item, 0)
-                    else:
-                        setAttr(each+'.'+item, 1)
-  
-                    
+        toolClass._reset()          
                         
     def _copy_into_grp(self, arg=None):
-        getSel=ls(sl=1)
-        getFirst=getSel[:-1]
-        getGrp=getSel[-1]
-        for each in getFirst:
-            newDupe=duplicate(each)
-            parent(newDupe, getGrp)
-            rename(newDupe[0], each)
+        toolClass._copy_into_grp()
 
     def _createSDK_alias_window(self, arg=None):
-        getSel=ls(sl=1)  
-        if len(getSel)>1:
-            pass
-        else:
-            print "need to select 2 or more items" 
-            return       
-        getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr   
-        global firstMinValue
-        global firstMaxValue
-        global secondMinValue
-        global secondMaxValue
-        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
-        getFirstAttr=sorted(getFirstAttr)        
-        winName = "Quick SDK alias"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
-        for each in getFirstAttr:
-            menuItem( label=each)                
-        makeAttr=textField()
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
-        cmds.text(label="1st min/max", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
-        cmds.text(label="2nd min/max", w=80, h=25) 
-        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
-        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._create_SDK_alias())
-        showWindow(window)   
-          
-    def _create_SDK_alias(self, arg=None):
-        getSel=ls(sl=1)
-        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
-        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-        floater=textField(makeAttr, q=1, text=1)
-        getFirst=getSel[:-1]
-        getSecond=getSel[-1]
-        anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
-        Controller=getSecond+"."+floater
-        for each in getFirst:
-            Child=each+"."+getFirstattr
-            setAttr(Child, lock=0) 
-            setAttr(Controller, secondMinValue)
-            setAttr(Child,firstMinValue)
-            setDrivenKeyframe(Child, cd=Controller)
-            setAttr(Controller, secondMaxValue)
-            setAttr(Child, firstMaxValue)
-            setDrivenKeyframe(Child, cd=Controller)
-            setAttr(Controller, secondMinValue)
-            setAttr(Child, lock=1)        
+        toolClass._createSDK_alias_window()     
 
 
     def _range_attr_window(self, arg=None):
-        getSel=ls(sl=1, fl=1)  
-        if len(getSel)>2:
-            pass
-        else:
-            print "need to select 3 or more items" 
-            return       
-        getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr
-        getFirstAttr=[]
-        getAttrs=listAttr (getFirst, w=1, a=1, s=1,u=1) 
-        for each in getAttrs:
-            if ']' in each:
-                getNewEach=each.split('.')[-1:]
-                getFirstAttr.append(getNewEach[0])
-            else:
-                getFirstAttr.append(each)
-        getFirstAttr=sorted(getFirstAttr)        
-        winName = "Randomize/Increment Attribute on Multi Select"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
-        for each in getFirstAttr:
-            menuItem( label=each)                
-        self.randomized=checkBox(label="randomize", ann="If on, number within range is randomized. If off, numbers will increment via percentage based on selection against the range")
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
-        cmds.text(label="range", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
-        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(getSel, randomized=cmds.checkBox(self.randomized,q=True, value=1), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))))
-        showWindow(window)
-        
-    def _range_attr(self, getSel, randomized, getFirstattr, firstMinValue, firstMaxValue):
-        if randomized==False:
-            self._range_inc(getSel, getFirstattr, firstMinValue, firstMaxValue)
-        else:
-            self._range_random(getSel, getFirstattr, firstMinValue, firstMaxValue)
-            
-    
-    def _range_inc(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
-        BucketValue=getClass.Percentages(getSel, firstMinValue, firstMaxValue)
-        for each, item in map(None, getSel, BucketValue):
-            getChangeAttr=each+'.'+getFirstattr
-            cmds.setAttr(getChangeAttr, item)
-
-    def _range_random(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
-        for each in getSel:
-            getChangeAttr=each+'.'+getFirstattr
-            getVal=random.uniform(firstMinValue,firstMaxValue)
-            cmds.setAttr(getChangeAttr, getVal)
-
-      
+        toolClass._range_attr_window()
 
     def _connSDK_alias_window(self, arg=None):
-        getSel=ls(sl=1)  
-        if len(getSel)>1:
-            pass
-        else:
-            print "need to select 2 or more items" 
-            return       
-
-        global attributeFirstSel
-        global makeAttr   
-        global firstMinValue
-        global firstMaxValue
-        global secondMinValue
-        global secondMaxValue
-
-
-        getSel=cmds.ls(sl=1)  
-        getFirst=getSel[0]      
-        getSecond=getSel[1]      
-        getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)     
-        getFirstAttr=sorted(getFirstAttr)
-        getSecondAttr=cmds.listAttr (getSecond)
-        getSecondAttr=sorted(getSecondAttr)         
-        winName = "Quick SDK alias"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-            
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
-        for each in getFirstAttr:
-            menuItem( label=each)                
-#        makeAttr=textField()
-        makeAttr=cmds.optionMenu( label='To')               
-        for each in getSecondAttr:
-            cmds.menuItem( label=each)   
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
-        cmds.text(label="1st min/max", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
-        cmds.text(label="2nd min/max", w=80, h=25) 
-        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
-        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._conn_SDK_alias())
-        showWindow(window)   
-          
-    def _conn_SDK_alias(self, arg=None):
-        getSel=ls(sl=1)
-        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
-        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-        floater=optionMenu(makeAttr, q=1, v=1)
-        getFirst=getSel[:-1]
-        getSecond=getSel[-1]
-        #anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
-        Controller=getSecond+"."+floater
-        print Controller
-        for each in getFirst:
-            Child=each+"."+getFirstattr
-            setAttr(Child, lock=0) 
-            setAttr(Controller, secondMinValue)
-            setAttr(Child,firstMinValue)
-            setDrivenKeyframe(Child, cd=Controller)
-            setAttr(Controller, secondMaxValue)
-            setAttr(Child, firstMaxValue)
-            setDrivenKeyframe(Child, cd=Controller)
-            setAttr(Controller, secondMinValue)
-            setAttr(Child, lock=1)  
-            
-    def _switch_driven_key_window(self, arg=None):
-        getSel=cmds.ls(sl=1)        
-        global attributeSel
-        geteattr=cmds.listAttr (getSel[0], ud=1)        
-        winName = "select attribute to link the switch constraint driven key to"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeSel=cmds.optionMenu( label='user attribute')
-        for each in geteattr:
-            cmds.menuItem( label=each)            
-        cmds.button (label='Go', p='listBuildButtonLayout', command = self._switch_driven_key)
-        cmds.showWindow(window)   
+        toolClass._connSDK_alias_window()
                 
-    def _switch_driven_key(self, arg=None):
-        getSel=cmds.ls(sl=1)
-        if getSel:
-            pass
-        else:
-            print "make sure to select a controller with a user attribute and an object with two constraints to switch between"
-            return        
-        geteattr=cmds.optionMenu(attributeSel, q=1, v=1)
-        Child=getSel[1]
-        firstValue=0
-        print firstValue
-        secondValue=1
-        print secondValue
-        Wbucket=[]
-        getChild=[(each) for each in cmds.listRelatives(Child, ad=1) if "Constraint" in each]
-        print getChild
-        for wach in getChild:
-            childGetAttr=cmds.listAttr(wach)
-            print childGetAttr
-        for item in childGetAttr:
-            if "W0" in item or "W1" in item :
-                Wbucket.append(item)
-        if Wbucket:
-            print Wbucket
-        else:
-            print "not enough constraints on child object"
-        child_one_constraint=getChild[0]+"."+Wbucket[0]  
-        child_two_constraint=getChild[0]+"."+Wbucket[1] 
-        print child_two_constraint+" is the first value"        
-        print child_one_constraint+" is the second value"
-#         geteattr=cmds.listAttr (getSel[0], ud=1, st="*IK")
-#         getIKItem=[]
-#         for item in geteattr:
-#             getIKItem=item   
-#         Controller=getSel[0]+"."+getIKItem
-#         Controller=getSel[0]+"."+geteattr[0]
-        Controller=getSel[0]+"."+geteattr
-        print Controller+ " is the Control value I hook up to"
-        Child=getChild[0]
-        print Child+" is the attribute that is being driven"
-        getClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
-
+    def _switch_driven_key_window(self, arg=None):
+        toolClass._switch_driven_key()
+        
     def _build_ik(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.buildIK()      
+        getBaseClass.buildIK()      
         
     def _build_joints(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.buildJointFunction_callup()   
+        getBaseClass.buildJointFunction_callup()   
 
     def _exp_obj(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.expObj()
+        getBaseClass.expObj()
+        
     def _clean_mod(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.cleanModels()
+        getBaseClass.cleanModels()
+        
     def _constraint_maker(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass() 
-        getClass.constraintMaker()      
+        getBaseClass.constraintMaker()  
+            
     def _make_shape(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.makeShape()
+        getBaseClass.makeShape()
 
     def _mirror_object(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.mirrorObject()
+        getBaseClass.mirrorObject()
         
     def _blink_sculpt(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.BlinkSculpt()
+        getBaseClass.BlinkSculpt()
         
     def _curve_rig(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getit=baseFunctions_maya.BaseClass()
-        getit.curve_rig()
+        getBaseClass.curve_rig()
         
     def _finalling_rig(self, arg=None):
         import FinallingRig
         reload (FinallingRig)
-        getClass=FinallingRig.Finalling()
+        getBaseClass=FinallingRig.Finalling()
         
     def _stretch_ik(self, arg=None):
-        getSel=cmds.ls(sl=1)
-        if getSel:
-            pass
-        else:
-            print "select a controller to add an attribute and an ikHandle"        
-        Controller=getSel[0]
-        ikHandle=getSel[1]
-        import stretchIK
-        reload (stretchIK)
-        getIKClass=stretchIK.stretchIKClass()
-        getIKClass.get_ik_chain(Controller, ikHandle)
+        toolClass._stretch_ik()
         
     def _stretch_ik_spline(self, arg=None):
-        getParentJoint=cmds.ls(sl=1)[0]
-        if getParentJoint:
-            pass
-        else:
-            print "select a parent joint and ik handle needs to be present"
-        import stretchIK
-        reload (stretchIK)
-        getIKClass=stretchIK.stretchIKClass()
-        getIKClass.stretchSpline(getParentJoint)
+        toolClass._stretch_ik_spline()
         
     def _sandwich_control(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.sandwichControl()
+        getBaseClass.sandwichControl()
         
     def _grp_insert(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.createGrpCtrl()
+        getBaseClass.createGrpCtrl()
+        
     def _mass_movecstr(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.massMove()
+        getBaseClass.massMove()
 
         
     def _load_ssd(self, arg=None):
@@ -1445,16 +407,10 @@ class ToolKitUI(object):
         SSD.ui()
         
     def _group_shapes(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.groupShapes()
+        getBaseClass.groupShapes()
 
     def _plot_vert(self, arg=None):
-        import baseFunctions_maya
-        reload (baseFunctions_maya)
-        getClass=baseFunctions_maya.BaseClass()
-        getClass.plot_vert()
+        getBaseClass.plot_vert()
 
 
     def _defEditGrp(self, arg=None):
