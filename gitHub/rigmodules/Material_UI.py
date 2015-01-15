@@ -1,7 +1,7 @@
 import maya.cmds as cmds
 from functools import partial
 from string import *
-import re, os, subprocess
+import re, os, subprocess, sys
 import maya.mel
 __author__ = "Elise Deglau"
 __version__ = 1.00
@@ -13,6 +13,12 @@ gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.8.exe"
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
+
+
+import Tools
+reload (Tools)
+toolClass=Tools.ToolFunctions()
+
 class Mat_Namer(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
     Interface Layout
@@ -47,7 +53,7 @@ class Mat_Namer(object):
         cmds.menuItem( label='Mouth' )        
         cmds.menuItem( label='Other' )    
         cmds.menuItem( label='Costume' )             
-        cmds.button (label='Mat ID', p='listBuildButtonLayout', command = self._add_id)
+        cmds.button (label='Mat ID', p='listBuildButtonLayout', command =lambda *args:self._add_id(queryColor=cmds.optionMenu(colMenu, q=1, sl=1)))
         cmds.button (label='Add CH Pref', p='listBuildButtonLayout', command = self._add_pref)
         cmds.button (label='Add type Suf', p='listBuildButtonLayout', command = self._add_suf)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
@@ -62,161 +68,39 @@ class Mat_Namer(object):
         cmds.showWindow(self.window)
     def _file_texture_manager(self, arg=None):
         maya.mel.eval( "FileTextureManager;" )
+        
     def _open_texture_file_ps(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)   
-                    getpath=getValue.split("/")
-                    getpPath="\\".join(getpath[:-1])
-                    getFile=getpath[-1:]
-                    getValue=getpPath+"\\"+getFile[0]
-                    getValue = r"%s"%getValue           
-                    subprocess.Popen([photoshop, getValue])
-        else:
-            print "need to select a texture node"
+        toolClass._open_texture_file_ps()
+        
     def _open_texture_folder(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-            return
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)  
-                    getpath=getValue.split("/")
-                    getpPath="\\".join(getpath[:-1])+"\\"
-                    print getpPath
-                    self.get_path(getpPath)
-        else:
-            print "need to select a texture node"
+        toolClass._open_texture_folder()
+        
     def _open_work_folder(self, arg=None):
-        destImagePath=folderPath
-        print destImagePath
-        self.get_path(destImagePath)  
-    def get_path(self, path):
-        print path
-        if '\\\\' in path:
-            newpath=re.sub(r'\\\\',r'\\', path)
-            os.startfile(r'\\'+newpath[1:])    
-        else:
-            os.startfile(path)            
+        toolClass._open_work_folder()
+           
     def _open_texture_file_gmp(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-            return
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)   
-                    subprocess.Popen([gimp, getValue])
-        else:
-            print "need to select a texture node"
-    def _add_id(self, arg=None):
-        '''----------------------------------------------------------------------------------
-        Common add to list function
-        ----------------------------------------------------------------------------------'''  
-        queryColor=cmds.optionMenu(colMenu, q=1, sl=1)
-        if queryColor==1:
-            color=int(1)      
-        elif queryColor==2:
-            color=int(6)  
-        elif queryColor==3:
-            color=int(7)
-        elif queryColor==4:
-            color=int(8)
-        elif queryColor==5:
-            color=int(9)
-        elif queryColor==6:
-            color=int(10  ) 
-        elif queryColor==7:
-            color=int(16)
-        elif queryColor==8:
-            color=int(20)
-        elif queryColor==9:
-            color=int(30)
-        selObj=cmds.ls(sl=1)
-        for each in range(len(selObj)):
-            try:
-                cmds.vray("addAttributesFromGroup", selObj[each], "vray_material_id", 1)
-            except:
-                pass
-            try:
-                cmds.setAttr (selObj[each]+".vrayMaterialId", color+each)
-            except:
-                pass        
+        toolClass._open_texture_file_gmp()
+        
+    def _add_id(self, queryColor):
+        toolClass._add_id(queryColor)
+
             
     def _vray_gamma(self, arg=None):
-        selObj=cmds.ls(sl=1)
-        for each in selObj:
-            getNodeType=cmds.nodeType(each)
-            if getNodeType=="file":           
-                try:
-                    cmds.vray("addAttributesFromGroup", each, "vray_file_gamma", 1)
-                except:
-                    pass       
+        toolClass._vray_gamma() 
 
     def _add_suf(self, arg=None):
-        selObj=cmds.ls(sl=1)
-        for each in selObj:
-            getNode=cmds.nodeType(each)
-            if "shadingEngine" in getNode:
-                getNode="SG"
-            elif "VRay" in getNode or "phong" in getNode or "blinn" in getNode:
-                getNode="Shader"
-            elif "file" in getNode:
-                getNode="FileTexture"
-            else:
-                getNode=getNode
-            if getNode not in each:
-                getnewname=each+'_'+getNode
-                cmds.rename(each, getnewname)
+        toolClass._add_suf()
                 
                 
     def _shade_network(self, arg=None):
-        selObj=cmds.ls(sl=1)[0]
-        cmds.hyperShade(selObj, smn=1)
-        maya.mel.eval('hyperShadePanelGraphCommand("hyperShadePanel1", "showUpAndDownstream");')
+        toolClass._shade_network()
+
             
     def _add_pref(self, arg=None):
-        selObj=cmds.ls(sl=1)        
-        getMeshController=cmds.ls("Mesh")[0]
-        getChildrenController=cmds.listRelatives(getMeshController, c=1, typ="transform")[0]
-        cutName=getChildrenController.split("_")[0:2]
-        getNewName='_'.join(cutName)
-        for each in selObj:
-            if getNewName not in each:
-                getnewname=getNewName+'_'+each
-                cmds.rename(each, getnewname)
+        toolClass._add_pref()
+        
     def _select_nonID(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)
-            pass
-        except:
-            print "nothing selected"  
-        Attr=[(each) for each in selObj if "vrayMaterialId" not in cmds.listAttr(each)]    
-        if Attr:
-            cmds.select(Attr[0])            
-            for each in Attr[1:]:
-                cmds.select(each, add=1)
-        else:
-            print "no missing material ID"
+        toolClass._select_nonID()
 
 
 inst = Mat_Namer()
