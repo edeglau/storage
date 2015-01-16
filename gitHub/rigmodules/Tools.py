@@ -132,37 +132,7 @@ class ToolFunctions(object):
                 nrz=1
             ControllerSize=int(getInfo[2])
             getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
-            
-    def _sets_win(self, arg=None):
-        try:
-            getallnames=cmds.ls("*:*BodyControl")
-        except:
-            print "No BodyControl set is present"
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "BodyControl" in each]
-        global setMenu
-        winName = "Sets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
 
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(200, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set())
-
-        cmds.showWindow(window)
                
 
     def _add_to_set(self, querySet):
@@ -186,68 +156,57 @@ class ToolFunctions(object):
         for each in getSel:
             cmds.select(dropDownData, add=1)
             maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
-            
-    def _edit_sets_win(self, arg=None):
-#         try:
-#             getallnames=cmds.ls("*:*BodyControl")
-#         except:
-#             print "No BodyControl set is present"
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
-        winName = "Sets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=400)
-
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
-        cmds.rowLayout  (' rMainRow ', w=400, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(200, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.button (label='Add to set', p='listBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove from set', p='listBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
-
-        cmds.showWindow(window)
-
 
     def _edit_nsets_win(self, arg=None):
         titleName="Dynamic Sets"
         getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        self._sets_win(titleName, getAllSets)
-        self._set_nbuttons()
+        self._dynsets_win(titleName, getAllSets)
         
-        
-    def _sets_win(self, titleName, getAllSets):
+    def _dynsets_win(self, titleName, getAllSets):
         winName = titleName
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=550, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=100 )
         cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=550)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=550, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(550, 20))
+        cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
+        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='windowMenuRow')
+        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
+        cmds.setParent ('windowMenuColumn')
+        cmds.separator(h=10, p='windowMenuColumn')
+        cmds.gridLayout('listBuildLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 20))
         setMenu=cmds.optionMenu( label='joints')
         for each in getAllSets:
             cmds.menuItem( label=each)        
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
-        cmds.button (label='Add relatives', p='listBuildButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove relatives', p='listBuildButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.showWindow(window)        
+        cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
+        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.showWindow(window)  
 
+
+    def _edit_sets_win(self, arg=None):
+        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
+        winName = "Sets"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+            cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout (' windowMenuRow ', nr=1, w=400)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
+        cmds.rowLayout (' rMainRow ', w=400, numberOfColumns=6, p='windowMenuRow')
+        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
+        cmds.setParent ('windowMenuColumn')
+        cmds.separator(h=10, p='windowMenuColumn')
+        cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(200, 20))
+        setMenu=cmds.optionMenu( label='joints')
+        for each in getAllSets:
+            cmds.menuItem( label=each)
+        cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
+        cmds.button (label='remove from set', p='setBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
+        cmds.showWindow(window)
+        
     def _open_texture_file_gmp(self, arg=None):
         try:
             selObj=cmds.ls(sl=1, fl=1)[0]
@@ -263,8 +222,9 @@ class ToolFunctions(object):
                     getValue=cmds.getAttr(selObj+'.'+each)   
                     if "Windows" in OSplatform:
                         subprocess.Popen([gimp, getValue])
-                    if "Linux" in OSplatform:  
-                        os.system('gimp "%s"' % getValue)                  
+                    if "Linux" in OSplatform: 
+                        subprocess.Popen('gimp "%s"' % getValue, stdout=subprocess.PIPE, shell=True)                     
+#                        os.system('gimp "%s"' % getValue)                  
         else:
             print "need to select a texture node"
 
