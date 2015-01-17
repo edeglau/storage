@@ -3,7 +3,7 @@ from functools import partial
 from string import *
 import re
 import maya.mel
-import os, subprocess, sys, platform, logging, signal, PyQt4, webbrowser, urllib, re, getpass, datetime
+import os, subprocess, sys, platform, logging, signal, webbrowser, urllib, re, getpass, datetime
 from os  import popen
 from sys import stdin
 import subprocess
@@ -66,6 +66,211 @@ class ToolFunctions(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
     Interface Layout
     --------------------------------------------------------------------------------------------------------------------------------------'''          
+    '''==========================================================================================================================================
+    BOTTOM BUTTON FUNCTIONS
+    =========================================================================================================================================='''          
+    
+    def _dynsets_win(self, titleName, getAllSets):
+        winName = "Dynamic sets"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
+        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='windowMenuRow')
+        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
+        cmds.setParent ('windowMenuColumn')
+        cmds.separator(h=10, p='windowMenuColumn')
+        cmds.gridLayout('listBuildLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 20))
+        setMenu=cmds.optionMenu( label='Dynamic sets')
+        for each in getAllSets:
+            cmds.menuItem( label=each)        
+        self.listCountLabel=cmds.text (label='Selection list', p='listBuildLayout')             
+        cmds.gridLayout('listLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 200))       
+        self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='listLayout')            
+        cmds.gridLayout('calcButtonLayout', p='windowMenuColumn', numberOfColumns=8, cellWidthHeight=(40, 20))
+        cmds.button (label='clr', p='calcButtonLayout', command = lambda *args:self._clear_list())
+        cmds.button (label='+', p='calcButtonLayout', command = lambda *args:self._add_selected_to_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
+        cmds.button (label='-', p='calcButtonLayout', command = lambda *args:self._remove_from_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
+        cmds.button (label='><', p='calcButtonLayout', ann='swap out selected in list with selected in scene', command = lambda *args:self._swap_with_selected(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1),listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
+        cmds.button (label='sel all', p='calcButtonLayout', w=50, ann='select all', command = lambda *args:self._select_all_in_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
+        cmds.button (label='sel- ', p='calcButtonLayout', w=40, ann='select none', command = lambda *args:self._clear_selection())
+        cmds.button (label='sort', p='calcButtonLayout', w=40, ann='sort alphabetically-numerally', command = lambda *args:self._sort_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
+        cmds.button (label='set', p='calcButtonLayout', w=40, ann='create set from selected in list', command = lambda *args:self._make_set_from_selection_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
+        cmds.gridLayout('sep', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(600, 20))
+        cmds.separator(h=10, p='sep')        
+        cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
+        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
+        cmds.showWindow(window)  
+    '''==========================================================================================================================================
+    COMMON LIST FUNCTIONS
+    =========================================================================================================================================='''          
+     
+    def count_objects_in_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        Gets the length of list items and any selected items function
+        ----------------------------------------------------------------------------------'''          
+        countObj=cmds.textScrollList(self.nodeList, q=1, ni=1)
+        countSelObj=cmds.textScrollList(self.nodeList, q=1, nsi=1)
+        cmds.text (self.listCountLabel, e=1, label='Selection list    '+ str(countObj)+' Items    '+str(countSelObj)+' Selected list items' )                               
+    
+    def add_to_list_function(self, eachSortedObj):
+        '''----------------------------------------------------------------------------------
+        Common add to list function
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, a=eachSortedObj)
+        self.count_objects_in_list()
+        
+    def select_list_item_function(self, eachSortedObj):
+        '''----------------------------------------------------------------------------------
+        Common select in list function
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, si=eachSortedObj) 
+        self.count_objects_in_list()
+        
+    def repopulate_list(self, eachSortedObj):
+        '''----------------------------------------------------------------------------------
+        Common refill the list function
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, ra=1)
+        cmds.textScrollList(self.nodeList, e=1, append=eachSortedObj[0::1])
+        self.count_objects_in_list()     
+        
+    def _clear_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        this clears the list
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, ra=1)
+        self.count_objects_in_list() 
+
+    def deselect_in_list_function(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        Common deselect in list function
+        ----------------------------------------------------------------------------------'''              
+        cmds.textScrollList(self.nodeList, e=1, da=1)
+        self.count_objects_in_list()
+             
+    def adding_to_list_function_main(self, selectedObject, foundExistantListObj):
+        '''----------------------------------------------------------------------------------
+        Main populate list function
+        ----------------------------------------------------------------------------------'''              
+        if selectedObject>1:
+            sortObjects=sorted(selectedObject, key=lower)
+        if len(selectedObject)==1:
+            sortObjects=selectedObject                                       
+        if foundExistantListObj:
+            for eachObject in sortObjects:
+                if eachObject in foundExistantListObj:
+                    self.deselect_in_list_function()
+                    self.already_in_list_error(eachObject)
+                    self.select_list_item_function(eachObject)                                           
+                else:
+                    self.add_to_list_function(eachObject) 
+        else:
+            for eachObject in sortObjects:
+                self.add_to_list_function(eachObject)        
+        
+    def _add_selected_to_list(self, listArray):
+        '''----------------------------------------------------------------------------------
+        Adds selected objects to the list
+        ----------------------------------------------------------------------------------'''          
+        selectedObject=cmds.ls(sl=1, fl=1)
+        if selectedObject:
+            self.adding_to_list_function_main(selectedObject, listArray)  
+            
+    def _remove_from_list(self, selectedListItems):
+        '''----------------------------------------------------------------------------------
+        This removes the selected item in the list from the list
+        ----------------------------------------------------------------------------------'''          
+        if selectedListItems<1:
+            print 'Select item to subtract from list.'
+        else:
+            cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+            self.count_objects_in_list() 
+    
+    def _swap_with_selected(self, selectedListItems, listArray):
+        '''----------------------------------------------------------------------------------
+        This swaps the selected list item with the selected object
+        ----------------------------------------------------------------------------------'''          
+        selectedObject=cmds.ls(sl=1, fl=1)
+        if selectedObject:
+            if selectedObject[0] in listArray:
+                cmds.textScrollList(self.nodeList, e=1, si=selectedObject)
+                self.already_in_list_error(selectedObject)
+            else:
+                cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+                cmds.textScrollList(self.nodeList, e=1, a=selectedObject[0::1])
+                self.count_objects_in_list()         
+        else:
+            print 'Select list item first and then object to swap with.'
+    
+    def _select_all_in_list(self, listArray):
+        '''----------------------------------------------------------------------------------
+        This selects all items in list
+        ----------------------------------------------------------------------------------'''          
+        if listArray:
+            self.select_list_item_function(listArray)
+            cmds.select(listArray)           
+        else:
+            print "List is empty."
+            
+    def _clear_selection(self):
+        '''----------------------------------------------------------------------------------
+        This clears the selection of the items in the list
+        ----------------------------------------------------------------------------------'''          
+        self.deselect_in_list_function()
+    
+    def _sort_list(self, listArray):
+        '''----------------------------------------------------------------------------------
+        This sorts the list by alphabetical and numerical
+        ----------------------------------------------------------------------------------'''          
+        if listArray:
+            sortedObjList=sorted(listArray, key=lower)
+            self.repopulate_list(sortedObjList)                              
+        else:
+            print "Check that list is present."
+            
+    def _move_up(self, listArray):
+        '''----------------------------------------------------------------------------------
+        This sorts the list by alphabetical and numerical
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        selectedObject=cmds.ls(sl=1, fl=1)
+        if selectedObject:
+            self.adding_to_list_function_main(selectedObject, listArray) 
+            
+    def _make_set_from_selection_list(self,selectedListItems):
+        '''----------------------------------------------------------------------------------
+        This create a set from selected items in list
+        ----------------------------------------------------------------------------------'''          
+        if selectedListItems:
+            result = cmds.promptDialog( 
+                title='Confirm', 
+                message='Name of set:', 
+                button=['Continue','Cancel'],
+                defaultButton='Continue', 
+                cancelButton='Cancel', 
+                dismissString='Cancel' )
+            if result == 'Continue':
+                text = cmds.promptDialog(query=True, text=True)
+                cmds.sets(n=text)
+            else:
+                print "create set cancelled"
+                return
+        else:
+            print "Select something from selection list."
+            
+    def list_item_selectability(self):
+        '''----------------------------------------------------------------------------------
+        This selects items in scene from list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        cmds.select(selectedListItems, r=1)
+        self.count_objects_in_list()
+        print selectedListItems
                 
     def _bone_rivet(self, arg=None): 
         winName = "Bone Rivets"
@@ -162,12 +367,12 @@ class ToolFunctions(object):
         getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
         self._dynsets_win(titleName, getAllSets)
         
-    def _dynsets_win(self, titleName, getAllSets):
+    def _dynsets_winV1(self, titleName, getAllSets):
         winName = titleName
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
@@ -179,6 +384,17 @@ class ToolFunctions(object):
         setMenu=cmds.optionMenu( label='joints')
         for each in getAllSets:
             cmds.menuItem( label=each)        
+        cmds.gridLayout('listLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 200))
+        self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='listLayout')            
+        cmds.gridLayout('listArrangmentButtonLayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(40, 20))
+        cmds.button (label='clr', command = self._clear_list, p='listArrangmentButtonLayout')
+        cmds.button (label='+', command = self._add_selected_to_list, p='listArrangmentButtonLayout')
+        cmds.button (label='-', command = self._remove_from_list, p='listArrangmentButtonLayout')
+        cmds.button (label='><', command = self._swap_with_selected, p='listArrangmentButtonLayout', ann='swap out selected in list with selected in scene')
+        cmds.button (label='sel all', command = self._select_all_in_list, p='listArrangmentButtonLayout', w=50, ann='select all')
+        cmds.button (label='sel- ', command = self._clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
+        cmds.button (label='sort', command = self._sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
+        cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create set from selected in list')
         cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
         cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
         cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
