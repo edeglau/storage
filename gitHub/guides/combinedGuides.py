@@ -789,7 +789,7 @@ class GuideUI(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -801,8 +801,10 @@ class GuideUI(object):
         direction=optionMenu( label='Axis')
         for each in axisList:
             menuItem( label=each)         
-        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")          
+        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")   
+        cmds.text(label="amount", w=80, h=25)        
         self.amount=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
+        cmds.text(label="size", w=80, h=25) 
         self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="range", w=80, h=25) 

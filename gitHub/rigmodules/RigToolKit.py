@@ -13,6 +13,7 @@ import random
 from pymel.core import *
 #import win32clipboard
 import operator
+OSplatform=platform.platform()
 trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]  
 
 '''MG rigging modules'''
@@ -41,7 +42,14 @@ import Tools
 reload (Tools)
 toolClass=Tools.ToolFunctions()
 
-gtepiece=getfilePath.split("/")
+# 
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+if "Linux" in OSplatform: 
+    gtepiece=getfilePath.split("/")                    
+
+
+gtepiece=getfilePath.split("\\")
 getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
 sys.path.append(str(getguideFilepath))
 
