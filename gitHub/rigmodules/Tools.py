@@ -64,30 +64,14 @@ sys.path.append(str(getToolArrayPath))
 
 class ToolFunctions(object):
                
-    def _sets_win(self, titleName, getAllSets, listName):
+    def list_array(self, titleName, windowName, listBuildLayout, listLayout, windowColumnLayout, listName):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This is the common shared list array interface used in set assignment
-        --------------------------------------------------------------------------------------------------------------------------------------'''   
-        winName = titleName
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-        theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
-        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='windowMenuRow')
-        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
-        cmds.setParent ('windowMenuColumn')
-        cmds.separator(h=10, p='windowMenuColumn')
-        cmds.gridLayout('listBuildLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 20))
-        self.setMenu=cmds.optionMenu( label=listName)
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        self.listCountLabel=cmds.text (label='Selection list', p='listBuildLayout')             
-        cmds.gridLayout('listLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 200))       
-        self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='listLayout')            
-        cmds.gridLayout('calcButtonLayout', p='windowMenuColumn', numberOfColumns=10, cellWidthHeight=(40, 20))
+        --------------------------------------------------------------------------------------------------------------------------------------'''  
+        self.listCountLabel=cmds.text (label='Selection list', p=listBuildLayout)             
+        cmds.gridLayout(listLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 200))       
+        self.nodeList=cmds.textScrollList(listName, numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p=listLayout)            
+        cmds.gridLayout('calcButtonLayout', p=windowColumnLayout, numberOfColumns=10, cellWidthHeight=(40, 20))
         cmds.button (label='clr', p='calcButtonLayout', command = lambda *args:self._clear_list())
         cmds.button (label='+', p='calcButtonLayout', command = lambda *args:self._add_selected_to_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
         cmds.button (label='-', p='calcButtonLayout', command = lambda *args:self._remove_from_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
@@ -96,14 +80,43 @@ class ToolFunctions(object):
         cmds.button (label='sel- ', p='calcButtonLayout', w=40, ann='select none', command = lambda *args:self._clear_selection())
         cmds.button (label='sort', p='calcButtonLayout', w=40, ann='sort alphabetically-numerally', command = lambda *args:self._sort_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
         cmds.button (label='set', p='calcButtonLayout', w=40, ann='create set from selected in list', command = lambda *args:self._make_set_from_selection_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
-        cmds.gridLayout('sep', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(600, 20))
-        cmds.separator(h=10, p='sep')        
-        return theWindow
+        cmds.gridLayout('sep', p=windowColumnLayout, numberOfColumns=2, cellWidthHeight=(600, 20))
+        cmds.separator(h=10, p='sep')
+    
+    def _sets_win(self, titleName, getAllSets, windowName):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This is the sets window interface
+        --------------------------------------------------------------------------------------------------------------------------------------'''   
+        winName = titleName
+        winTitle = winName
+        listLayout='setslistLayout'
+        rowColumnLayout='windowMenuRow'
+        windowColumnLayout='windowMenuColumn'
+        listBuildLayout='listBuildLayout'
+        listName='mySets'        
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (rowColumnLayout, nr=1, w=600)
+        cmds.frameLayout('frameLayout', label='', lv=0, nch=1, borderStyle='out', bv=1, p=rowColumnLayout)
+        cmds.rowLayout  ('rowLayout', w=600, numberOfColumns=6, p=rowColumnLayout)
+        cmds.columnLayout (windowColumnLayout, p= 'rowLayout')
+#         cmds.setParent (windowColumnLayout)
+        cmds.separator(h=10, p=windowColumnLayout)
+        cmds.gridLayout(listBuildLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 20))
+        self.setMenu=cmds.optionMenu( label=windowName)
+        for each in getAllSets:
+            cmds.menuItem( label=each)    
+        return theWindow    
 
 
     def _edit_sets_win(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This detects all the blendshape sets in a scene to allow easier add and remove for selections
+        --------------------------------------------------------------------------------------------------------------------------------------'''   
         titleName="BlendShape Membership Sets"
-        listName="Sets"
+        Name="Sets"
         getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
         collectBlendSets=[]
         for each in getAllSets:
@@ -113,30 +126,52 @@ class ToolFunctions(object):
                     collectBlendSets.append(each)
             except:
                 pass
-        theWindow=self._sets_win(titleName, collectBlendSets, listName)
+        theWindow=self._sets_win(titleName, collectBlendSets, Name)
         self.set_buttons()
         cmds.showWindow(theWindow)
         
     def set_buttons(self):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        set buttons interface
+        --------------------------------------------------------------------------------------------------------------------------------------'''   
         cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
         cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
         cmds.button (label='remove from set', p='setBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
 
     def _add_to_set(self, querySet):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, add=querySet)
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This adds the current selection to the current blendshape set membership in the drop down menu
+        --------------------------------------------------------------------------------------------------------------------------------------''' 
+        querySet=self.query_set(querySet)
+        getSel=self.selection_grab()
+        if getSel and querySet:
+            for each in getSel:
+                cmds.sets(each, add=querySet)
+        else:
+            print self.default_error()
+            return
             
     def _remove_from_set(self, querySet):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, rm=querySet)    
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This removes the current selection to the current blendshape set membership in the drop down menu
+        --------------------------------------------------------------------------------------------------------------------------------------'''           
+        querySet=self.query_set(querySet)
+        getSel=self.selection_grab()
+        if getSel and querySet:
+            for each in getSel:
+                cmds.sets(each, rm=querySet)
+        else:
+            print self.default_error()
+            return            
 
     def _edit_nsets_win(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This detects all the Dynamic sets in a scene to allow easier add and remove for selections
+        --------------------------------------------------------------------------------------------------------------------------------------'''   
         titleName="Dynamic Member Sets"
-        listName="Sets"
+        Name="Dyn Sets"                          
         getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        theWindow=self._sets_win(titleName, getAllSets, listName)
+        theWindow=self._sets_win(titleName, getAllSets, Name)
         self.nset_buttons()
         cmds.showWindow(theWindow)
         
@@ -146,16 +181,36 @@ class ToolFunctions(object):
         cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
             
     def _add_to_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
+        getSel=self.selection_grab()
         for each in getSel:
             cmds.select(dropDownData, add=1)
             maya.mel.eval( 'dynamicConstraintMembership "add";' )
 
     def _remove_from_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
+        getSel=self.selection_grab()
         for each in getSel:
             cmds.select(dropDownData, add=1)
             maya.mel.eval( 'dynamicConstraintMembership "remove";' )
+            
+    def selection_grab(self):
+        getSel=cmds.ls(sl=1, fl=1)
+        if getSel:
+            pass
+        else:
+            print "You need to make a selection for this tool to operate on."
+            return
+        return getSel
+    
+    def query_set(self, querySet):
+        if querySet:
+            pass
+        else:
+            print "No set of this kind has been found in scene."    
+        return querySet
+    
+    def default_error(self):
+        my_message="Something went wrong: See script editor for error messages"
+        return my_message
             
     '''==========================================================================================================================================
     COMMON LIST FUNCTIONS
