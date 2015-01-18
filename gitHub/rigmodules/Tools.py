@@ -66,7 +66,7 @@ class ToolFunctions(object):
                
     def list_array(self, titleName, windowName, listBuildLayout, listLayout, windowColumnLayout, listName):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        This is the common shared list array interface used in set assignment
+        This is a list array interface. Intended interface addon
         --------------------------------------------------------------------------------------------------------------------------------------'''  
         self.listCountLabel=cmds.text (label='Selection list', p=listBuildLayout)             
         cmds.gridLayout(listLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 200))       
@@ -132,7 +132,7 @@ class ToolFunctions(object):
         
     def set_buttons(self):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        set buttons interface
+        blendshape set button interface addon
         --------------------------------------------------------------------------------------------------------------------------------------'''   
         cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
         cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
@@ -153,7 +153,7 @@ class ToolFunctions(object):
             
     def _remove_from_set(self, querySet):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        This removes the current selection to the current blendshape set membership in the drop down menu
+        This removes the current selection from the current blendshape set membership in the drop down menu
         --------------------------------------------------------------------------------------------------------------------------------------'''           
         querySet=self.query_set(querySet)
         getSel=self.selection_grab()
@@ -176,23 +176,35 @@ class ToolFunctions(object):
         cmds.showWindow(theWindow)
         
     def nset_buttons(self):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Dynamic set button interface addon
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
         cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
         cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
             
     def _add_to_nset(self, dropDownData):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This adds the current selection to the current dynamic set membership in the drop down menu
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         getSel=self.selection_grab()
         for each in getSel:
             cmds.select(dropDownData, add=1)
             maya.mel.eval( 'dynamicConstraintMembership "add";' )
 
     def _remove_from_nset(self, dropDownData):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This removes the current selection from the current dynamic set membership in the drop down menu
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         getSel=self.selection_grab()
         for each in getSel:
             cmds.select(dropDownData, add=1)
             maya.mel.eval( 'dynamicConstraintMembership "remove";' )
             
     def selection_grab(self):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Common selection query
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         getSel=cmds.ls(sl=1, fl=1)
         if getSel:
             pass
@@ -202,6 +214,9 @@ class ToolFunctions(object):
         return getSel
     
     def query_set(self, querySet):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Common set query(queries interface drop down menu)
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         if querySet:
             pass
         else:
@@ -209,7 +224,10 @@ class ToolFunctions(object):
         return querySet
     
     def default_error(self):
-        my_message="Something went wrong: See script editor for error messages"
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Common default error prompting user to check script editor for details
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
+        my_message="Something went wrong. See script editor for error messages"
         return my_message
             
     '''==========================================================================================================================================
@@ -288,7 +306,7 @@ class ToolFunctions(object):
         '''----------------------------------------------------------------------------------
         Adds selected objects to the list
         ----------------------------------------------------------------------------------'''          
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=self.selection_grab()
         if selectedObject:
             self.adding_to_list_function_main(selectedObject, listArray)  
             
@@ -379,6 +397,9 @@ class ToolFunctions(object):
      
         
     def _bone_rivet(self, arg=None): 
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Bone rivet interface: This creates a rivet at selection and parents a bone to the rivet
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         winName = "Bone Rivets"
         winTitle = winName
         if cmds.window(winName, exists=True):
@@ -397,7 +418,10 @@ class ToolFunctions(object):
         cmds.showWindow(window)
         
     def _add_bone_rivet(self, queryRivet):
-        selObj=cmds.ls(sl=1, fl=1)
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Bone rivet function: This creates a rivet at selection and parents a bone to the rivet
+        --------------------------------------------------------------------------------------------------------------------------------------'''         
+        selObj=self.selection_grab()
         getLists=zip(selObj[::2], selObj[1::2])
         for each in getLists:
             cmds.select(each[0])
@@ -410,11 +434,14 @@ class ToolFunctions(object):
             cmds.parent(getNewRiv[0]+"_jnt", getNewRiv[0]) 
         
     def chain_rig(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Creates a full IK/FK chain rig based on guides setup in scene
+        --------------------------------------------------------------------------------------------------------------------------------------'''         
         import ChainWork
         reload (ChainWork)
         result = cmds.promptDialog( 
                     title='Building a chainrig', 
-                    message="Enter dimensions for chain - EG:", 
+                    message="Details for chain - EG: name, direction, controller size", 
                     text="name, Y, 10", 
                     button=['Continue','Cancel'],
                     defaultButton='Continue', 
@@ -445,6 +472,9 @@ class ToolFunctions(object):
             getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
 
     def _open_texture_file_gmp(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This opens the texture within selected file node in Gimp(if windows, set details above for path)
+        --------------------------------------------------------------------------------------------------------------------------------------'''                 
         try:
             selObj=cmds.ls(sl=1, fl=1)[0]
             pass
@@ -466,6 +496,9 @@ class ToolFunctions(object):
             print "need to select a texture node"
 
     def _view_texture_file(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This opens the texture view(opens in default image viewer as set on windows or linux)
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         try:
             selObj=cmds.ls(sl=1, fl=1)[0]
             pass
@@ -503,6 +536,9 @@ class ToolFunctions(object):
             print "need to select a texture node"
             
     def _open_work_folder(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This opens the workfolder for the current saved file - file must be saved for query. untitled will not prompt an open folder.
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
@@ -510,7 +546,6 @@ class ToolFunctions(object):
             print "windows"
             folderPath=re.sub(r'/',r'\\', folderPath)
             os.startfile(folderPath)
-        
         if "Linux" in OSplatform:
             print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)
