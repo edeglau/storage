@@ -63,19 +63,16 @@ getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
 sys.path.append(str(getToolArrayPath))
 
 class ToolFunctions(object):
-    '''--------------------------------------------------------------------------------------------------------------------------------------
-    Interface Layout
-    --------------------------------------------------------------------------------------------------------------------------------------'''          
-    '''==========================================================================================================================================
-    BOTTOM BUTTON FUNCTIONS
-    =========================================================================================================================================='''          
-    
-    def _dynsets_win(self, titleName, getAllSets):
-        winName = "Dynamic sets"
+               
+    def _sets_win(self, titleName, getAllSets, listName):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This is the common shared list array interface used in set assignment
+        --------------------------------------------------------------------------------------------------------------------------------------'''   
+        winName = titleName
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
+        theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
@@ -84,13 +81,13 @@ class ToolFunctions(object):
         cmds.setParent ('windowMenuColumn')
         cmds.separator(h=10, p='windowMenuColumn')
         cmds.gridLayout('listBuildLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 20))
-        setMenu=cmds.optionMenu( label='Dynamic sets')
+        self.setMenu=cmds.optionMenu( label=listName)
         for each in getAllSets:
             cmds.menuItem( label=each)        
         self.listCountLabel=cmds.text (label='Selection list', p='listBuildLayout')             
         cmds.gridLayout('listLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 200))       
         self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='listLayout')            
-        cmds.gridLayout('calcButtonLayout', p='windowMenuColumn', numberOfColumns=8, cellWidthHeight=(40, 20))
+        cmds.gridLayout('calcButtonLayout', p='windowMenuColumn', numberOfColumns=10, cellWidthHeight=(40, 20))
         cmds.button (label='clr', p='calcButtonLayout', command = lambda *args:self._clear_list())
         cmds.button (label='+', p='calcButtonLayout', command = lambda *args:self._add_selected_to_list(listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)))
         cmds.button (label='-', p='calcButtonLayout', command = lambda *args:self._remove_from_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
@@ -101,10 +98,65 @@ class ToolFunctions(object):
         cmds.button (label='set', p='calcButtonLayout', w=40, ann='create set from selected in list', command = lambda *args:self._make_set_from_selection_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
         cmds.gridLayout('sep', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(600, 20))
         cmds.separator(h=10, p='sep')        
+        return theWindow
+
+
+    def _edit_sets_win(self, arg=None):
+        titleName="BlendShape Membership Sets"
+        listName="Sets"
+        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
+        collectBlendSets=[]
+        for each in getAllSets:
+            try:
+                keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) if cmds.nodeType(connectedObj) =="blendShape"]
+                if keepEach:
+                    collectBlendSets.append(each)
+            except:
+                pass
+        theWindow=self._sets_win(titleName, collectBlendSets, listName)
+        self.set_buttons()
+        cmds.showWindow(theWindow)
+        
+    def set_buttons(self):
+        cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
+        cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
+        cmds.button (label='remove from set', p='setBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
+
+    def _add_to_set(self, querySet):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.sets(each, add=querySet)
+            
+    def _remove_from_set(self, querySet):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.sets(each, rm=querySet)    
+
+    def _edit_nsets_win(self, arg=None):
+        titleName="Dynamic Member Sets"
+        listName="Sets"
+        getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
+        theWindow=self._sets_win(titleName, getAllSets, listName)
+        self.nset_buttons()
+        cmds.showWindow(theWindow)
+        
+    def nset_buttons(self):
         cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
-        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.showWindow(window)  
+        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
+        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
+            
+    def _add_to_nset(self, dropDownData):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.select(dropDownData, add=1)
+            maya.mel.eval( 'dynamicConstraintMembership "add";' )
+
+    def _remove_from_nset(self, dropDownData):
+        getSel=cmds.ls(sl=1)
+        for each in getSel:
+            cmds.select(dropDownData, add=1)
+            maya.mel.eval( 'dynamicConstraintMembership "remove";' )
+            
     '''==========================================================================================================================================
     COMMON LIST FUNCTIONS
     =========================================================================================================================================='''          
@@ -138,6 +190,10 @@ class ToolFunctions(object):
         cmds.textScrollList(self.nodeList, e=1, ra=1)
         cmds.textScrollList(self.nodeList, e=1, append=eachSortedObj[0::1])
         self.count_objects_in_list()     
+
+    '''==========================================================================================================================================
+    BOTTOM BUTTON FUNCTIONS
+    =========================================================================================================================================='''  
         
     def _clear_list(self, arg=None):
         '''----------------------------------------------------------------------------------
@@ -233,15 +289,6 @@ class ToolFunctions(object):
         else:
             print "Check that list is present."
             
-    def _move_up(self, listArray):
-        '''----------------------------------------------------------------------------------
-        This sorts the list by alphabetical and numerical
-        ----------------------------------------------------------------------------------'''          
-        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        selectedObject=cmds.ls(sl=1, fl=1)
-        if selectedObject:
-            self.adding_to_list_function_main(selectedObject, listArray) 
-            
     def _make_set_from_selection_list(self,selectedListItems):
         '''----------------------------------------------------------------------------------
         This create a set from selected items in list
@@ -271,7 +318,11 @@ class ToolFunctions(object):
         cmds.select(selectedListItems, r=1)
         self.count_objects_in_list()
         print selectedListItems
-                
+
+    '''==========================================================================================================================================
+    =========================================================================================================================================='''          
+     
+        
     def _bone_rivet(self, arg=None): 
         winName = "Bone Rivets"
         winTitle = winName
@@ -338,91 +389,6 @@ class ToolFunctions(object):
             ControllerSize=int(getInfo[2])
             getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
 
-               
-
-    def _add_to_set(self, querySet):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, add=querySet)
-            
-    def _remove_from_set(self, querySet):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.sets(each, rm=querySet)            
-            
-    def _add_to_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "add";' )
-
-    def _remove_from_nset(self, dropDownData):
-        getSel=cmds.ls(sl=1)
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
-
-    def _edit_nsets_win(self, arg=None):
-        titleName="Dynamic Sets"
-        getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        self._dynsets_win(titleName, getAllSets)
-        
-    def _dynsets_winV1(self, titleName, getAllSets):
-        winName = titleName
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' windowMenuRow ', nr=1, w=600)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
-        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='windowMenuRow')
-        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
-        cmds.setParent ('windowMenuColumn')
-        cmds.separator(h=10, p='windowMenuColumn')
-        cmds.gridLayout('listBuildLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)        
-        cmds.gridLayout('listLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(600, 200))
-        self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='listLayout')            
-        cmds.gridLayout('listArrangmentButtonLayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(40, 20))
-        cmds.button (label='clr', command = self._clear_list, p='listArrangmentButtonLayout')
-        cmds.button (label='+', command = self._add_selected_to_list, p='listArrangmentButtonLayout')
-        cmds.button (label='-', command = self._remove_from_list, p='listArrangmentButtonLayout')
-        cmds.button (label='><', command = self._swap_with_selected, p='listArrangmentButtonLayout', ann='swap out selected in list with selected in scene')
-        cmds.button (label='sel all', command = self._select_all_in_list, p='listArrangmentButtonLayout', w=50, ann='select all')
-        cmds.button (label='sel- ', command = self._clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
-        cmds.button (label='sort', command = self._sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
-        cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create set from selected in list')
-        cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
-        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=optionMenu(setMenu, q=1, v=1)))
-        cmds.showWindow(window)  
-
-
-    def _edit_sets_win(self, arg=None):
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
-        winName = "Sets"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-            cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=400, h=100 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout (' windowMenuRow ', nr=1, w=400)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='windowMenuRow')
-        cmds.rowLayout (' rMainRow ', w=400, numberOfColumns=6, p='windowMenuRow')
-        cmds.columnLayout ('windowMenuColumn', parent = 'rMainRow')
-        cmds.setParent ('windowMenuColumn')
-        cmds.separator(h=10, p='windowMenuColumn')
-        cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=1, cellWidthHeight=(200, 20))
-        setMenu=cmds.optionMenu( label='joints')
-        for each in getAllSets:
-            cmds.menuItem( label=each)
-        cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
-        cmds.button (label='remove from set', p='setBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(setMenu, q=1, v=1)))
-        cmds.showWindow(window)
-        
     def _open_texture_file_gmp(self, arg=None):
         try:
             selObj=cmds.ls(sl=1, fl=1)[0]
