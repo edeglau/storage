@@ -83,7 +83,7 @@ class ToolFunctions(object):
         cmds.gridLayout('sep', p=windowColumnLayout, numberOfColumns=2, cellWidthHeight=(600, 20))
         cmds.separator(h=10, p='sep')
     
-    def _sets_win(self, titleName, getAllSets, windowName):
+    def _sets_win(self, titleName, getAllSets, windowName, annot):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This is the sets window interface
         --------------------------------------------------------------------------------------------------------------------------------------'''   
@@ -96,7 +96,7 @@ class ToolFunctions(object):
         listName='mySets'        
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-        theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=400 )
+        theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=150 )
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (rowColumnLayout, nr=1, w=600)
         cmds.frameLayout('frameLayout', label='', lv=0, nch=1, borderStyle='out', bv=1, p=rowColumnLayout)
@@ -105,7 +105,7 @@ class ToolFunctions(object):
 #         cmds.setParent (windowColumnLayout)
         cmds.separator(h=10, p=windowColumnLayout)
         cmds.gridLayout(listBuildLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 20))
-        self.setMenu=cmds.optionMenu( label=windowName)
+        self.setMenu=cmds.optionMenu( label=windowName, ann=annot)
         for each in getAllSets:
             cmds.menuItem( label=each)    
         return theWindow    
@@ -117,6 +117,7 @@ class ToolFunctions(object):
         --------------------------------------------------------------------------------------------------------------------------------------'''   
         titleName="BlendShape Membership Sets"
         Name="Sets"
+        annot="Select vertices and then select blendshape set from drop down. Select add to or remove from set"
         getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
         collectBlendSets=[]
         for each in getAllSets:
@@ -126,11 +127,11 @@ class ToolFunctions(object):
                     collectBlendSets.append(each)
             except:
                 pass
-        theWindow=self._sets_win(titleName, collectBlendSets, Name)
-        self.set_buttons()
+        theWindow=self._sets_win(titleName, collectBlendSets, Name, annot)
+        self.set_buttons(annot)
         cmds.showWindow(theWindow)
         
-    def set_buttons(self):
+    def set_buttons(self, annot):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         blendshape set button interface addon
         --------------------------------------------------------------------------------------------------------------------------------------'''   
@@ -169,13 +170,14 @@ class ToolFunctions(object):
         This detects all the Dynamic sets in a scene to allow easier add and remove for selections
         --------------------------------------------------------------------------------------------------------------------------------------'''   
         titleName="Dynamic Member Sets"
-        Name="Dyn Sets"                          
+        Name="Dyn Sets"      
+        annot="Select vertices then select dynamic constraint from drop down, select add to or remove from set."                    
         getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        theWindow=self._sets_win(titleName, getAllSets, Name)
-        self.nset_buttons()
+        theWindow=self._sets_win(titleName, getAllSets, Name, annot)
+        self.nset_buttons(annot)
         cmds.showWindow(theWindow)
         
-    def nset_buttons(self):
+    def nset_buttons(self, annot):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         Dynamic set button interface addon
         --------------------------------------------------------------------------------------------------------------------------------------'''        
@@ -628,12 +630,25 @@ class ToolFunctions(object):
         cmds.parent(constrainObj, getRiv)
         
     def _disappear(self, arg=None):
-        getSel=cmds.ls(sl=1)
+        getSel=self.selection_grab()
         for item in getSel:
+            get_V_Value=getAttr(item+".visibility") 
             for each in trans:
-#                 cmds.setAttr(item+each, l=1)
-                cmds.setAttr(item+each, k=0)
-                cmds.setAttr(item+".visibility", 0)
+                if get_V_Value==1:
+                    cmds.setAttr(item+each, l=1)                    
+                    cmds.setAttr(item+each, k=0)
+                    cmds.setAttr(item+".visibility", 0)
+                else:
+                    cmds.setAttr(item+each, l=0)                    
+                    cmds.setAttr(item+each, k=1)
+                    cmds.setAttr(item+".visibility", 1)
+
+#                getValue=getattr(item,each).get()
+#                getChangeAttr=getattr(item,each)
+#                if getValue==0:
+#                    getChangeAttr.set(0)
+#                else:
+#                    getChangeAttr.set(1)
                 
     def char_light_cleanup(self):
         try:    
@@ -1569,3 +1584,41 @@ class ToolFunctions(object):
                 cmds.select(each, add=1)
         else:
             print "no missing material ID"
+
+    def TR_SDKKeys(self):
+        '''this sets sdk keys for selected'''
+        selObj=cmds.ls(sl=1)
+        Controller=selObj[0]
+        #getAttrBucket=[]
+        getAttr=cmds.listAttr(Controller, k=1, v=1)
+        winName = "SDK"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+        window = cmds.window(winName, title=winTitle, tbm=1, w=200, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(110, 20))
+        colMenu=cmds.optionMenu( label='Attributes')
+        for each in getAttr:
+            cmds.menuItem( label=each)            
+        cmds.button (label='setSDKkeys', p='listBuildButtonLayout', command = lambda *args:self.TR_SDKKeys_funct(queryAttr=cmds.optionMenu(colMenu, q=1, v=1) ))
+        cmds.showWindow(window)    
+        
+    def TR_SDKKeys_funct(self, queryAttr):
+        selObj=cmds.ls(sl=1)
+        Controller=selObj[0]
+        ChildAttributes=(".tx", ".ty", ".tz" , ".rx", ".ry", ".rz") 
+        ControllerAttributesHz="."+str(queryAttr)    
+        for Child in selObj[1:]:
+            for attribute in ChildAttributes:
+                cmds.setDrivenKeyframe(Child+attribute, cd=Controller+ControllerAttributesHz)
