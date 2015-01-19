@@ -37,10 +37,10 @@ class myGrps():
     def grps_defined(self, getMeshController, getMeshTarget):
         getChildrenController=[(each) for each in getMeshController.getChildren() if getMeshController.name() == each.getParent() and each.type()=="transform" for item in each.getChildren() if item.type() =="mesh"]        
         if getChildrenController==None:
-            getChildrenController=([Select1])
+            getChildrenController=([getChildrenController])
         getChildrenTarget=[(each) for each in getMeshTarget.getChildren() if getMeshTarget.name() == each.getParent() and each.type()=="transform" for item in each.getChildren() if item.type() =="mesh"]     
         if getChildrenTarget==None:
-            getChildrenTarget=([Select2])
+            getChildrenTarget=([getChildrenTarget])
         self.create_wrap_callup(getChildrenController, getChildrenTarget)
 
     def create_wrap_callup(self, getChildrenController, getChildrenTarget):            
