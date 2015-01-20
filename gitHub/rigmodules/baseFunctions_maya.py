@@ -1303,22 +1303,6 @@ class BaseClass():
         yCircmake=cmds.circle(n=name, r=size, nrx=nrx, nry=nry, nrz=nrz)
         self.locationEcho(yCircmake[0], grpname, colour, transformWorldMatrix, rotateWorldMatrix)         
     
-    def locationXForm(self, each):
-        transform=cmds.xform(each , q=True, ws=1, t=True)
-        if transform==[0, 0, 0]:
-            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
-        else:
-            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
-        return  transformWorldMatrix, rotateWorldMatrix
-
-    def forcedlocationXForm(self, each):
-        transform=cmds.xform(each , q=True, ws=1, t=True)
-        transformWorldMatrix = cmds.xform(each, q=True, r=1, sp=True)  
-        rotateWorldMatrix = cmds.xform(each, q=True, r=1, ro=True)  
-        return  transformWorldMatrix, rotateWorldMatrix
-    
     
     def fullMatrixXform(self, each):
         transform=cmds.xform(each , q=True, ws=1, m=True)
@@ -1964,21 +1948,20 @@ class BaseClass():
         else:
             print "nothing collected"    
             
-
-            
     def makeShape(self):
         '''this builds controller shapes'''
         titleText=('Controller'), 
         messageText=("enter controller type"), 
         textText=("sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
         mainName=self.makeDialog(titleText, messageText, textText)
-        selectionCheck=cmds.ls(sl=1)
+        selectionCheck=self.selection_grab()
         if selectionCheck:
+#            for each in selectionCheck:
             self.CreateShapeFunction(selectionCheck, mainName)
         else:
             selectionCheck=None
-            self.CreateShapeFunction(selectionCheck, mainName)   
-            
+            self.CreateShapeFunction(selectionCheck, mainName)  
+             
     def CreateShapeFunction(self, selectionCheck, mainName):
         if mainName=="sphere":
             colour=self.fetchColour()
@@ -2028,22 +2011,22 @@ class BaseClass():
         num0, num1, num2, num3=numberBucket[0],numberBucket[1],numberBucket[2],numberBucket[3]
         if selectionCheck:
             for each in selectionCheck:
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)          
                 self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)  
             self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
-            
+
     def getcircle(self, selectionCheck, colour):            
         nrx, nry, nrz = self.fetchDirection() 
         size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)            
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)            
                 self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
         else:
             each=None
@@ -2056,7 +2039,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)            
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)            
                 self.squareI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2074,7 +2057,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.rectI(name, grpname, numlen, numwid, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2087,7 +2070,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.PrimI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2099,7 +2082,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.TriI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2111,7 +2094,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.cubeI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)    
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2124,7 +2107,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.JackI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2134,7 +2117,7 @@ class BaseClass():
     def getJoint(self, selectionCheck):
         if selectionCheck:
             for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.buildJoint(each, transformWorldMatrix, rotateWorldMatrix)
         else:
             name, grpname="name", "name_grp"
@@ -2146,7 +2129,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_loc", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.buildLoc(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_loc", "name_grp"
@@ -2158,7 +2141,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)                                                        
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)                                                        
                 self.ballArrowI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -2170,7 +2153,7 @@ class BaseClass():
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)           
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
                 self.handleI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
         else:
             name, grpname="name_Ctrl", "name_grp"
@@ -3116,26 +3099,7 @@ class BaseClass():
         cmds.setKeyframe()   
         cmds.delete(getLocation) 
 
-    def xformAutoMove(self, aim, target):
-        '''move to matrix'''
-        matrix=cmds.xform(target, q=1, ws=1, m=1)
-        cmds.xform(aim, ws=1, m=matrix)  
 
-    def xformAutoMatch(self, aim, target):
-        '''move to transform and rotation relative'''
-        transformWorldMatrix=cmds.xform(target, q=1, t=1)
-        rotateWorldMatrix=cmds.xform(target, q=1, ro=1) 
-
-    def xformAutoTran(self, aim, target):
-        '''move to transform and rotation'''
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.xform(aim, ws=1, t=transformWorldMatrix)
-        cmds.xform(aim, ws=1, ro=rotateWorldMatrix)
-        
-    def xformAutoTranWrist(self, aim, target):
-        '''move to transform and rotation'''
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )
 
     def median_find(self, lst):
         even = (0 if len(lst) % 2 else 1) + 1
@@ -3194,3 +3158,73 @@ class BaseClass():
         '''add last value to bucket'''
         collectNewNumbers.append(maxValue)
         return collectNewNumbers
+    
+    def selection_grab(self):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Common selection query
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
+        getSel=ls(sl=1, fl=1)
+        if getSel:
+            pass
+        else:
+            print "You need to make a selection for this tool to operate on."
+            return
+        return getSel
+
+    def selection_location_type(self, selection):
+        if objectType(selection)=="transform":
+            selection=ls(selection)
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selection)
+#            for item in selection.getPoints():
+#                posBucket=[]
+#                posBucket.append(self.median_find(item[0::3]))
+#                posBucket.append(self.median_find(item[1::3]))
+#                posBucket.append(self.median_find(item[2::3]))
+#            transformWorldMatrix=posBucket 
+#            selection=ls(selection)
+#            rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
+        else:
+            transforms = listTransforms(selection.node())
+            transform = transforms[0]
+            maintransformWorldMatrix, mainrotateWorldMatrix=self.locationXForm(transforms)           
+            transformWorldVertex=selection.getPosition()
+            rotateWorldMatrix=[0, 0, 0]    
+            transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
+        return transformWorldMatrix, rotateWorldMatrix        
+    
+    def locationXForm(self, each):
+        transform=cmds.xform(each , q=True, ws=1, t=True)
+        if transform==[0, 0, 0]:
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
+        else:
+            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
+        return  transformWorldMatrix, rotateWorldMatrix
+
+    def forcedlocationXForm(self, each):
+        transform=cmds.xform(each , q=True, ws=1, t=True)
+        transformWorldMatrix = cmds.xform(each, q=True, r=1, sp=True)  
+        rotateWorldMatrix = cmds.xform(each, q=True, r=1, ro=True)  
+        return  transformWorldMatrix, rotateWorldMatrix
+    
+    def xformAutoMove(self, aim, target):
+        '''move to matrix'''
+        matrix=cmds.xform(target, q=1, ws=1, m=1)
+        cmds.xform(aim, ws=1, m=matrix)  
+
+    def xformAutoMatch(self, aim, target):
+        '''move to transform and rotation relative'''
+        transformWorldMatrix=cmds.xform(target, q=1, t=1)
+        rotateWorldMatrix=cmds.xform(target, q=1, ro=1) 
+
+    def xformAutoTran(self, aim, target):
+        '''move to transform and rotation'''
+        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
+        cmds.xform(aim, ws=1, t=transformWorldMatrix)
+        cmds.xform(aim, ws=1, ro=rotateWorldMatrix)
+        
+    def xformAutoTranWrist(self, aim, target):
+        '''move to transform and rotation'''
+        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    
