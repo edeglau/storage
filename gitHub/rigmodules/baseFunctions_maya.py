@@ -3175,21 +3175,24 @@ class BaseClass():
         if objectType(selection)=="transform":
             selection=ls(selection)
             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selection)
-#            for item in selection.getPoints():
-#                posBucket=[]
-#                posBucket.append(self.median_find(item[0::3]))
-#                posBucket.append(self.median_find(item[1::3]))
-#                posBucket.append(self.median_find(item[2::3]))
-#            transformWorldMatrix=posBucket 
-#            selection=ls(selection)
-#            rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
+#             for item in selection.vtx:
+#                 transform=item.getPosition()
+#                 posBucket=[]
+#                 posBucket.append(self.median_find(transform[0::3]))
+#                 posBucket.append(self.median_find(transform[1::3]))
+#                 posBucket.append(self.median_find(transform[2::3]))
+#             transformWorldMatrix=posBucket 
+#             selection=ls(selection)
+#             rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
         else:
-            transforms = listTransforms(selection.node())
-            transform = transforms[0]
-            maintransformWorldMatrix, mainrotateWorldMatrix=self.locationXForm(transforms)           
-            transformWorldVertex=selection.getPosition()
-            rotateWorldMatrix=[0, 0, 0]    
-            transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
+#             transforms = listTransforms(selection.node())
+#             transform = transforms[0]
+#             maintransformWorldMatrix, mainrotateWorldMatrix=self.locationXForm(transforms)           
+#             transformWorldVertex=selection.getPosition()
+#             rotateWorldMatrix=[0, 0, 0]    
+#             transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
+            transformWorldMatrix=selection.getPosition()
+            rotateWorldMatrix=[0, 0, 0] 
         return transformWorldMatrix, rotateWorldMatrix        
     
     def locationXForm(self, each):
