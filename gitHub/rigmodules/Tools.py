@@ -1150,64 +1150,61 @@ class ToolFunctions(object):
             rename(newDupe[0], each)
 
     def _createSDK_alias_window(self, arg=None):
-        getSel=ls(sl=1)  
+        getSel=ls(sl=1, fl=1)  
         if len(getSel)>1:
             pass
         else:
             print "need to select 2 or more items" 
             return       
         getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr   
-        global firstMinValue
-        global firstMaxValue
-        global secondMinValue
-        global secondMaxValue
+#        global attributeFirstSel
+#        global makeAttr   
+#        global firstMinValue
+#        global firstMaxValue
+#        global secondMinValue
+#        global secondMaxValue
         getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
         getFirstAttr=sorted(getFirstAttr)        
         winName = "Quick SDK alias"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
+#        setParent ('selectArrayColumn')
+#        separator(h=10, p='selectArrayColumn')
         gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
+        self.attributeFirstSel=optionMenu( label='From', p='listBuildButtonLayout')
         for each in getFirstAttr:
-            menuItem( label=each)                
-        makeAttr=textField()
+            menuItem( label=each)  
+        self.makeAttr=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="attribute name")                          
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
-        cmds.text(label="1st min/max", w=80, h=25) 
+        cmds.text(label="1st min/max", w=80, h=25, p='txvaluemeter',) 
         self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
         self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
-        cmds.text(label="2nd min/max", w=80, h=25) 
+        cmds.text(label="2nd min/max", w=80, h=25, p='txvaluemeter') 
         self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
         self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._create_SDK_alias(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), secondMinValue=float(textField(self.secondMinValue,q=1, text=1)), secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1)), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), floater=optionMenu(makeAttr, q=1, v=1)))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._create_SDK_alias(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), secondMinValue=float(textField(self.secondMinValue,q=1, text=1)), secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1)), getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1), floater=textField(self.makeAttr, q=1, text=1)))
         showWindow(window)   
           
     def _create_SDK_alias(self, firstMinValue, firstMaxValue, secondMinValue, secondMaxValue, getFirstattr, floater):
         getSel=ls(sl=1)
-        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
-        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
-        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-        floater=textField(makeAttr, q=1, text=1)
+        print firstMinValue, firstMaxValue, secondMinValue, secondMaxValue, getFirstattr, floater
+#        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
+#        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
+#        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
+#        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
+#        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
+#        floater=textField(makeAttr, q=1, text=1)
         getFirst=getSel[:-1]
         getSecond=getSel[-1]
-        anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
+        anAttr=addAttr([getSecond], ln=floater, at="double", k=1, nn=floater)
         Controller=getSecond+"."+floater
         for each in getFirst:
             Child=each+"."+getFirstattr
@@ -1329,13 +1326,13 @@ class ToolFunctions(object):
             cmds.menuItem( label=each)   
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="1st min/max", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
+        firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
         cmds.text(label="2nd min/max", w=80, h=25) 
-        self.secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
-        self.secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        secondMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0")
+        secondMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._conn_SDK_alias(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), secondMinValue=float(textField(self.secondMinValue,q=1, text=1)), secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1)), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), floater=optionMenu(makeAttr, q=1, v=1)))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._conn_SDK_alias(firstMinValue=float(textField(firstMinValue,q=1, text=1)), firstMaxValue=float(textField(firstMaxValue,q=1, text=1)), secondMinValue=float(textField(secondMinValue,q=1, text=1)), secondMaxValue=float(textField(secondMaxValue,q=1, text=1)), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), floater=optionMenu(makeAttr, q=1, v=1)))
         showWindow(window)   
           
     def _conn_SDK_alias(self, firstMinValue, firstMaxValue, secondMinValue, secondMaxValue, getFirstattr, floater):
