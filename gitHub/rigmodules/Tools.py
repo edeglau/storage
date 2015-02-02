@@ -914,9 +914,7 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
@@ -926,17 +924,27 @@ class ToolFunctions(object):
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        cmds.text(label=getParent[0])
-        cmds.text(label=getChildren[0])        
-        attributeFirstSel=cmds.optionMenu( label='From')
+        self.theParent=cmds.text(label=getParent[0])
+        self.theChild=cmds.text(label=getChildren[0])        
+        self.attributeFirstSel=cmds.optionMenu( label='From', cc=lambda *args:self._change_second_attr_menu())
         for each in getFirstAttr:
             cmds.menuItem( label=each) 
-        attributeSecondSel=cmds.optionMenu( label='To')               
+        self.attributeSecondSel=cmds.optionMenu( label='To')               
         for each in getSecondAttr:
             cmds.menuItem( label=each)                    
         cmds.button (label='Go', p='listBuildButtonLayout', command=lambda *args:self._copy_single_attr(getChildren, getParent))
         cmds.showWindow(window)   
-        
+
+    def _change_second_attr_menu(self):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------''' 
+        getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)  
+        try:
+            getSecondattr=optionMenu(self.attributeSecondSel, e=1, v=getFirstattr)
+        except:
+            print "this attribute cannot be found in second menu"
+            pass
+
     def _copy_single_attr(self, getChildren, getParent):
         getParentAttr=cmds.optionMenu(attributeFirstSel, q=1, v=1)
         getChildAttr=cmds.optionMenu(attributeSecondSel, q=1, v=1)
@@ -1079,15 +1087,16 @@ class ToolFunctions(object):
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))      
-        self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
-        for each in getFirstAttr:
-            menuItem( label=each)
+   
         gridLayout('valuebuttonlayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(150, 20))
         text(label="Att Value:", p='valuebuttonlayout', align="left")
         self.attrVal=text(label="Select from drop down", p='valuebuttonlayout')
         button (label='Refresh Selection', p='valuebuttonlayout', command = lambda *args:self._refresh())
 #        button (label='Get Current Value', p='valuebuttonlayout', command = lambda *args:self._get_attr(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)))
+        gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))   
+        self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
+        for each in getFirstAttr:
+            menuItem( label=each)
         gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(150, 20))
         text(label="Change Value:", align="left", w=50)        
         makeAttr=textField(w=150, text="enter value EG:'50'")
@@ -1105,7 +1114,7 @@ class ToolFunctions(object):
         getListAttr=listAttr (getSel[0], w=1, a=1, s=1,u=1) 
         optionMenu(self.attributeFirstSel, e=1) 
         for each in getListAttr:
-            menuItem( label=each)     
+            menuItem(label=each)     
                 
     def _get_attr(self, getFirstattr):
         getSel=ls(sl=1, fl=1)        
