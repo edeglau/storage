@@ -1056,18 +1056,22 @@ class ToolFunctions(object):
                         except:
                             pass
 
-    def _findAttr_window(self, arg=None):  
-        getSel=ls(sl=1)     
-        getFirst=getSel[0]
-        global attributeFirstSel
-        global makeAttr        
+    def _findAttr_window(self, arg=None): 
+        try:
+            getSel=ls(sl=1)     
+            getFirst=getSel[0]
+        except:
+            print "must select something"
+            return
+#        global attributeFirstSel
+#        global makeAttr        
         getFirstAttr=listAttr (getFirst, w=1, a=1, s=1,u=1)      
         getFirstAttr=sorted(getFirstAttr)        
-        winName = "find attributes"
+        winName = "Fetch Attributes"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100)
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -1076,39 +1080,80 @@ class ToolFunctions(object):
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
         gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))      
-        attributeFirstSel=optionMenu( label='Find')
+        self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
         for each in getFirstAttr:
             menuItem( label=each)
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(225, 20))
-        findAttr=textField(AttributeName, text="use a full or partial name EG:'translate'")
-        button (label='Find', p='listBuildButtonLayout', command = lambda *args:self._find_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
-        makeAttr=textField(text="fill with number EG:'50' and apply attribute")
-        button (label='Apply', p='listBuildButtonLayout', command = lambda *args:self._apply_att(getSel, getFirstattr=optionMenu(attributeFirstSel, q=1, ils=1), makeAttr=textField(makeAttr, q=1, text=1)))
+        gridLayout('valuebuttonlayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(150, 20))
+        text(label="Att Value:", p='valuebuttonlayout', align="left")
+        self.attrVal=text(label="Select from drop down", p='valuebuttonlayout')
+        button (label='Refresh Selection', p='valuebuttonlayout', command = lambda *args:self._refresh())
+#        button (label='Get Current Value', p='valuebuttonlayout', command = lambda *args:self._get_attr(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)))
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(150, 20))
+        text(label="Change Value:", align="left", w=50)        
+        makeAttr=textField(w=150, text="enter value EG:'50'")
+        button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=textField(makeAttr, q=1, text=1)))
+        text(label="Search:", align="left", w=50) 
+        findAttr=textField(AttributeName, text="Enter name EG:'translate'")
+        button (label='Fetch Attribute Name', bgc=[0.55, 0.35, 0.20], p='listBuildButtonLayout', command = lambda *args:self._find_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
         showWindow(window)   
+
+    def _refresh(self, arg=None):
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getSel=ls(sl=1, fl=1)
+        getListAttr=listAttr (getSel[0], w=1, a=1, s=1,u=1) 
+        optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            menuItem( label=each)     
+                
+    def _get_attr(self, getFirstattr):
+        getSel=ls(sl=1, fl=1)        
+        newAttr=getattr(getSel[0],getFirstattr)
+        getChangeAttr=getattr(getSel[0],getFirstattr).get()
+        select(newAttr, add=1)
+        self.count_attr_output(getChangeAttr) 
+        print newAttr, getChangeAttr
         
-    def _find_att(self, getSel, getFirstattr, attribute):
+    def _find_att(self, getFirstattr, attribute):
+        getSel=ls(sl=1, fl=1)        
         collectAttr=[]
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
             if attribute in find:
-                print find
-                collectAttr.append(find)
-#                select(getSel[0]+'.'+find)         
-                optionMenu(attributeFirstSel, e=1, v=find) 
-                getChangeAttr=getattr(getSel[0],find).get()
-                print getChangeAttr
-#        select(getSel[0]+'.'+collectAttr[0], r=1)
-#        for each in collectAttr[1:]:
-#            select(getSel[0]+'.'+each, add=1)
+                collectAttr.append(find) 
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
+        self.count_attr_output(getChangeAttr) 
+        print newAttr, getChangeAttr
 
-    def _apply_att(self,getSel, getFirstattr, makeAttr):
-        getAttri=optionMenu(attributeFirstSel, q=1, v=1)
-        getChangeAttr=getattr(getSel[0],getAttri)
+    def count_attr_output(self, getChangeAttr):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------''' 
+        cmds.text(self.attrVal, e=1, label=getChangeAttr )
+
+    def change_attr_output(self):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------''' 
+        getSel=ls(sl=1, fl=1)
+        getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)  
+        newAttr=getattr(getSel[0],getFirstattr)
+        getChangeAttr=getattr(getSel[0],getFirstattr).get()               
+        cmds.text(self.attrVal, e=1, label=getChangeAttr )
+        
+    def _apply_att(self, getFirstattr, makeAttr):
+        getSel=ls(sl=1, fl=1)        
+#        getAttri=optionMenu(attributeFirstSel, q=1, v=1)
+        getChangeAttr=getattr(getSel[0],getFirstattr)
         try:
             makeAttr=float(makeAttr)
         except:
             print "field must have number"
         getChangeAttr.set(makeAttr)
+        getChangeAttr=getattr(getSel[0],getFirstattr).get()
+        self.count_attr_output(getChangeAttr) 
        
 
     def _erase_anim(self, arg=None):
