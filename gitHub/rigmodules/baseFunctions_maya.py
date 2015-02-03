@@ -2208,12 +2208,35 @@ class BaseClass():
             cmds.move(-translate[0], translate[1], translate[2], eachChild)
             cmds.rotate(-rotated[0], -rotated[1], rotated[2], eachChild)   
              
-    def massTransfer(self):
+    def massTransferV1(self):
         selObj=cmds.ls(sl=1)
         for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
             cmds.select(eachController)    
             cmds.select(eachChild, add=1)
             cmds.copyAttr(values=1, inConnections=1, outConnections=1, keepSourceConnections=1)
+
+    def massTransfer(self):
+#        selObj=self.selection_grab()
+        selObj=cmds.ls(sl=1)
+        if len(selObj)<2:
+            print "select more than one object"
+        else:
+            pass
+        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
+            getControllerListAttr=listAttr (eachController, w=1, a=1, s=1, u=1)
+            getChildListAttr=listAttr (eachChild, w=1, a=1, s=1, u=1)
+            for eachControllerAttr, eachChildAttr in map(None, getControllerListAttr, getChildListAttr):
+                if eachControllerAttr == eachChildAttr:
+                    try:
+                        getChildObj=ls(eachChild)[0]
+                        getChildAttrToChange=getattr(getChildObj, eachChildAttr)
+                        getParentObj=ls(eachController)[0]
+                        getChangeAttr=getattr(getParentObj,eachControllerAttr).get()
+                        print "setting"+ eachChild, eachChildAttr, getChangeAttr                    
+                        getChildAttrToChange.set(getChangeAttr)
+                    except:
+                        print eachChild, eachChildAttr+" skipped (locked or otherwise)"
+                        pass
 
     def mirrorSelection(self):
         selObj=cmds.ls(sl=1)
@@ -2230,6 +2253,7 @@ class BaseClass():
         cmds.select(getSelected[0])
         for each in getSelected[1:]:
             cmds.select(each, add=1)
+            
     def combineSelect(self):
         selObj=cmds.ls(sl=1)
         getSelected=[]
@@ -3175,24 +3199,21 @@ class BaseClass():
         if objectType(selection)=="transform":
             selection=ls(selection)
             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selection)
-#             for item in selection.vtx:
-#                 transform=item.getPosition()
-#                 posBucket=[]
-#                 posBucket.append(self.median_find(transform[0::3]))
-#                 posBucket.append(self.median_find(transform[1::3]))
-#                 posBucket.append(self.median_find(transform[2::3]))
-#             transformWorldMatrix=posBucket 
-#             selection=ls(selection)
-#             rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
+#            for item in selection.getPoints():
+#                posBucket=[]
+#                posBucket.append(self.median_find(item[0::3]))
+#                posBucket.append(self.median_find(item[1::3]))
+#                posBucket.append(self.median_find(item[2::3]))
+#            transformWorldMatrix=posBucket 
+#            selection=ls(selection)
+#            rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
         else:
-#             transforms = listTransforms(selection.node())
-#             transform = transforms[0]
-#             maintransformWorldMatrix, mainrotateWorldMatrix=self.locationXForm(transforms)           
-#             transformWorldVertex=selection.getPosition()
-#             rotateWorldMatrix=[0, 0, 0]    
-#             transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
-            transformWorldMatrix=selection.getPosition()
-            rotateWorldMatrix=[0, 0, 0] 
+            transforms = listTransforms(selection.node())
+            transform = transforms[0]
+            maintransformWorldMatrix, mainrotateWorldMatrix=self.locationXForm(transforms)           
+            transformWorldVertex=selection.getPosition()
+            rotateWorldMatrix=[0, 0, 0]    
+            transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
         return transformWorldMatrix, rotateWorldMatrix        
     
     def locationXForm(self, each):
