@@ -273,37 +273,33 @@ class ChainRig(object):
         getIKCurveCVs=cmds.ls(mainName+"IK_crv.cv[*]", fl=1)
         getfirstCVs=getIKCurveCVs[1::-1]
         getLastCVs= getIKCurveCVs[-2::1]
-        getverylastCVs=getIKCurveCVs[-1:]
+        getverylastCVs=getIKCurveCVs[-2:]
         getlastjoint=clusterSpline[-1:]
-#         print getlastjoint
         for each, bone in map(None, getIKCurveCVs[2:-2], clusterSpline[1:-1]):  
-#         for each , bone in map(None, getIKCurveCVs[:-1], clusterSpline[:-1]):
             cmds.select(clear=1)
             cmds.select(bone)
             cmds.select(each, add=1)
             cmds.bindSkin(each, bone, tsb=1) 
-        for each in getLastCVs:  
-            cmds.SmoothBindSkin(each, getlastjoint)  
         for each in getfirstCVs:  
             cmds.select(clear=1)
             cmds.select(clusterSpline[0])
             cmds.select(each, add=1)
             cmds.bindSkin(each, clusterSpline[0], tsb=1)
-        for each in getLastCVs:
-            cmds.select(clear=1)
-            cmds.select(getlastjoint)
-            cmds.select(each, add=1)    
-            #print each, getlastjoint
-            cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1) 
         for each in getverylastCVs:
             cmds.select(clear=1)
+            cmds.select(each, add=1) 
+            getNewClust=cmds.cluster(n="endChainCluster")
             cmds.select(getlastjoint)
             cmds.select(each, add=1)    
-            #print each, getlastjoint
-            cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1) 
-#         for each in clusterSpline:
-#             cmds.bindSkin(each,mainName+"IK_crv")
-        #cmds.bindSkin(clusterSpline[0],mainChain+"IK_crv")
+            cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1)
+            cmds.parent(getNewClust[1], getlastjoint)
+        getconn=[(item) for item in cmds.listConnections(getlastjoint, d=1) if cmds.nodeType(item)=="skinCluster"]
+        if getconn:
+            for each in getconn:
+                try:
+                    cmds.delete(each)
+                except:
+                    pass        
         
         
         #=======================================================================
@@ -528,3 +524,7 @@ class ChainRig(object):
 #             
         cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
 
+        cmds.addAttr("Base"+mainName+"_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
+        cmds.connectAttr("Base"+mainName+"_Ctrl.Roll", mainName+"IK.roll")
+        cmds.addAttr("Base"+mainName+"_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
+        cmds.connectAttr("Base"+mainName+"_Ctrl.Twist", mainName+"IK.twist")
