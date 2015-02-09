@@ -82,8 +82,17 @@ class ToolFunctions(object):
         cmds.button (label='set', p='calcButtonLayout', w=40, ann='create set from selected in list', command = lambda *args:self._make_set_from_selection_list(selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)))
         cmds.gridLayout('sep', p=windowColumnLayout, numberOfColumns=2, cellWidthHeight=(600, 20))
         cmds.separator(h=10, p='sep')
+
+
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
     
-    def _sets_win(self, titleName, getAllSets, windowName, annot):
+    def _sets_win(self, titleName, windowName, annot):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This is the sets window interface
         --------------------------------------------------------------------------------------------------------------------------------------'''   
@@ -105,36 +114,59 @@ class ToolFunctions(object):
 #         cmds.setParent (windowColumnLayout)
         cmds.separator(h=10, p=windowColumnLayout)
         cmds.gridLayout(listBuildLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 20))
+        self.getSetTyp=optionMenu( label='SetType', cc=lambda *args:self.change_set(), w=120, ann="Select set type to edit(Dynamic ncloth constraints or Blenshape memberships)")
+        menuItem( label="Blendshape sets")
+        menuItem( label="Dynamic sets")
         self.setMenu=cmds.optionMenu( label=windowName, ann=annot)
-        for each in getAllSets:
-            cmds.menuItem( label=each)    
+#        for each in getAllSets:
+#            cmds.menuItem( label=each)    
         return theWindow    
+
+    def change_set(self):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------''' 
+        getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
+        if getSetType=="Dynamic sets":
+            menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
+            if menuItems:
+                cmds.deleteUI(menuItems)             
+            getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
+            cmds.optionMenu(self.setMenu, e=1)
+            for each in getAllSets:
+                cmds.menuItem( label=each)   
+        elif getSetType=="Blendshape sets":
+            menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
+            if menuItems:
+                cmds.deleteUI(menuItems)             
+            getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
+            collectBlendSets=[]
+            for each in getAllSets:
+                try:
+                    keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) if cmds.nodeType(connectedObj) =="blendShape"]
+                    if keepEach:
+                        collectBlendSets.append(each)
+                except:
+                    pass
+            cmds.optionMenu(self.setMenu, e=1)
+            for each in collectBlendSets:
+                cmds.menuItem( label=each)
 
 
     def _edit_sets_win(self, arg=None):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This detects all the blendshape sets in a scene to allow easier add and remove for selections
         --------------------------------------------------------------------------------------------------------------------------------------'''   
-        titleName="BlendShape Membership Sets"
+        titleName="Membership Sets"
         Name="Sets"
-        annot="Select vertices and then select blendshape set from drop down. Select add to or remove from set"
-        getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
-        collectBlendSets=[]
-        for each in getAllSets:
-            try:
-                keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) if cmds.nodeType(connectedObj) =="blendShape"]
-                if keepEach:
-                    collectBlendSets.append(each)
-            except:
-                pass
-        theWindow=self._sets_win(titleName, collectBlendSets, Name, annot)
+        annot="Select vertices and then select set from drop down. Select add to or remove from set"
+        theWindow=self._sets_win(titleName, Name, annot)
         self.set_buttons(annot)
         cmds.showWindow(theWindow)
         
     def set_buttons(self, annot):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         blendshape set button interface addon
-        --------------------------------------------------------------------------------------------------------------------------------------'''   
+        --------------------------------------------------------------------------------------------------------------------------------------'''  
         cmds.gridLayout('setBuildButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
         cmds.button (label='Add to set', p='setBuildButtonLayout', command = lambda *args:self._add_to_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
         cmds.button (label='remove from set', p='setBuildButtonLayout', command = lambda *args:self._remove_from_set(querySet=cmds.optionMenu(self.setMenu, q=1, v=1)))
@@ -142,67 +174,48 @@ class ToolFunctions(object):
     def _add_to_set(self, querySet):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This adds the current selection to the current blendshape set membership in the drop down menu
-        --------------------------------------------------------------------------------------------------------------------------------------''' 
-        querySet=self.query_set(querySet)
+        --------------------------------------------------------------------------------------------------------------------------------------'''
+        getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         getSel=self.selection_grab()
-        if getSel and querySet:
+        if getSetType=="Dynamic sets":
             for each in getSel:
-                cmds.sets(each, add=querySet)
-        else:
-            print self.default_error()
-            return
+                cmds.select(querySet, add=1)
+                maya.mel.eval( 'dynamicConstraintMembership "add";' )              
+        elif getSetType=="Blendshape sets":   
+            if getSel and querySet:
+                for each in getSel:
+                    cmds.sets(each, add=querySet)
+            else:
+                print self.default_error()
+                return
             
     def _remove_from_set(self, querySet):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         This removes the current selection from the current blendshape set membership in the drop down menu
-        --------------------------------------------------------------------------------------------------------------------------------------'''           
-        querySet=self.query_set(querySet)
+        --------------------------------------------------------------------------------------------------------------------------------------'''
+        getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         getSel=self.selection_grab()
-        if getSel and querySet:
+        if getSetType=="Dynamic sets":
             for each in getSel:
-                cmds.sets(each, rm=querySet)
-        else:
-            print self.default_error()
-            return            
+                cmds.select(querySet, add=1)
+                maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
+        elif getSetType=="Blendshape sets":            
+            if getSel and querySet:
+                for each in getSel:
+                    cmds.sets(each, rm=querySet)
+            else:
+                print self.default_error()
+                return            
 
-    def _edit_nsets_win(self, arg=None):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        This detects all the Dynamic sets in a scene to allow easier add and remove for selections
-        --------------------------------------------------------------------------------------------------------------------------------------'''   
-        titleName="Dynamic Member Sets"
-        Name="Dyn Sets"      
-        annot="Select vertices then select dynamic constraint from drop down, select add to or remove from set."                    
-        getAllSets=[(each) for each in cmds.ls(typ="dynamicConstraint")]
-        theWindow=self._sets_win(titleName, getAllSets, Name, annot)
-        self.nset_buttons(annot)
-        cmds.showWindow(theWindow)
-        
-    def nset_buttons(self, annot):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        Dynamic set button interface addon
-        --------------------------------------------------------------------------------------------------------------------------------------'''        
-        cmds.gridLayout('nsetButtonLayout', p='windowMenuColumn', numberOfColumns=2, cellWidthHeight=(275, 20))
-        cmds.button (label='Add relatives', p='nsetButtonLayout', command = lambda *args:self._add_to_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
-        cmds.button (label='remove relatives', p='nsetButtonLayout', command = lambda *args:self._remove_from_nset(dropDownData=cmds.optionMenu(self.setMenu, q=1, v=1)))
             
-    def _add_to_nset(self, dropDownData):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        This adds the current selection to the current dynamic set membership in the drop down menu
-        --------------------------------------------------------------------------------------------------------------------------------------'''        
-        getSel=self.selection_grab()
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "add";' )
-
-    def _remove_from_nset(self, dropDownData):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        This removes the current selection from the current dynamic set membership in the drop down menu
-        --------------------------------------------------------------------------------------------------------------------------------------'''        
-        getSel=self.selection_grab()
-        for each in getSel:
-            cmds.select(dropDownData, add=1)
-            maya.mel.eval( 'dynamicConstraintMembership "remove";' )
-            
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+    ###########################################################################
+                
     def selection_grab(self):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         Common selection query
@@ -214,16 +227,6 @@ class ToolFunctions(object):
             print "You need to make a selection for this tool to operate on."
             return
         return getSel
-    
-    def query_set(self, querySet):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        Common set query(queries interface drop down menu)
-        --------------------------------------------------------------------------------------------------------------------------------------'''        
-        if querySet:
-            pass
-        else:
-            print "No set of this kind has been found in scene."    
-        return querySet
     
     def default_error(self):
         '''--------------------------------------------------------------------------------------------------------------------------------------
