@@ -1463,6 +1463,12 @@ class BaseClass():
             values.append(translate)
         self.buildCurves(values, curvename, getKnotValue)  #build top curve    
         self.buildJointClusters(getTopOpenGuides, curvename)#build controllers and the bound joints for the top lid curve(this pulls into shapes)
+        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
+        cmds.parent(mainName+"01_Clst_jnt", getRigGrp)
+        cmds.parent(mainName+"_crv", getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls("name*_grp")]
+        for each in getFreeStuff: 
+            cmds.parent(each, getRigGrp)        
     def buildCurves(self, values, name, getKnotValue):
         getKnotValueList = list(range(getKnotValue))
         getKnotValueList.insert(0, 0)
