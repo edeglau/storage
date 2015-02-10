@@ -528,3 +528,14 @@ class ChainRig(object):
         cmds.connectAttr("Base"+mainName+"_Ctrl.Roll", mainName+"IK.roll")
         cmds.addAttr("Base"+mainName+"_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
         cmds.connectAttr("Base"+mainName+"_Ctrl.Twist", mainName+"IK.twist")
+
+        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
+        cmds.parent(mainName+"IK", getRigGrp)
+        cmds.parent(mainName+"IK_crv", getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="joint"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="transform"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        cmds.parent("IK_grp", getRigGrp)
