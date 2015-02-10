@@ -189,7 +189,7 @@ class ChainRig(object):
         rotateWorldMatrix = cmds.xform(mainChain[0], q=True, wd=1, ro=True)          
         getClass.buildCtrl(mainChain[0], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
 
-
+        cmds.group( em=True, name='IK_grp' )
         
         #create the main controller
         
@@ -404,7 +404,7 @@ class ChainRig(object):
         ControllerFirstValue=0
         Child=mainName+"01IK_jnt_cond.operation"
         Controller="Base"+mainName+"_Ctrl.Stretch"+mainName
-        defaultSet=1
+        defaultSet=0
         getClass.controlFirstValueChildOn(Controller, 
                                            Child, 
                                            defaultSet, 
@@ -528,14 +528,3 @@ class ChainRig(object):
         cmds.connectAttr("Base"+mainName+"_Ctrl.Roll", mainName+"IK.roll")
         cmds.addAttr("Base"+mainName+"_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
         cmds.connectAttr("Base"+mainName+"_Ctrl.Twist", mainName+"IK.twist")
-
-
-        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
-        cmds.parent(mainName+"IK", getRigGrp)
-        cmds.parent(mainName+"IK_crv", getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls("name*_Clst_jnt")]
-        for each in getFreeStuff: 
-            cmds.parent(each, getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls("name*_Clst_jnt_grp")]
-        for each in getFreeStuff: 
-            cmds.parent(each, getRigGrp)          
