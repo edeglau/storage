@@ -1196,10 +1196,8 @@ class ToolFunctions(object):
     def _reset(self, arg=None):
         getSel=cmds.ls(sl=1, fl=1)
         for each in getSel:
-            print each
             getFirstattr=[(item) for item in cmds.listAttr (each, w=1, a=1, s=1, u=1, k=1, v=1, m=0) if "visibility" not in item and "scaleX" not in item and "scaleY" not in item and "scaleZ" not in item] 
             for item in getFirstattr:
-                print item
                 if "." not in item:
                     get=cmds.keyframe(each+'.'+item, q=1, kc=1)
                     if get>0:
@@ -1534,33 +1532,8 @@ class ToolFunctions(object):
                     self.get_path(getpPath)
         else:
             print "need to select a texture node"
-    def _open_work_folder(self, arg=None):
-        destImagePath=folderPath
-        print destImagePath
-        self.get_path(destImagePath)  
-    def get_path(self, path):
-        print path
-        if '\\\\' in path:
-            newpath=re.sub(r'\\\\',r'\\', path)
-            os.startfile(r'\\'+newpath[1:])    
-        else:
-            os.startfile(path)            
-    def _open_texture_file_gmp(self, arg=None):
-        try:
-            selObj=cmds.ls(sl=1, fl=1)[0]
-            pass
-        except:
-            print "nothing selected"
-            return
-        getNodeType=cmds.nodeType(selObj)
-        if getNodeType=="file":
-            Attr=cmds.listAttr(selObj)
-            for each in Attr:
-                if "fileTextureName" in each and "Pattern" not in each:
-                    getValue=cmds.getAttr(selObj+'.'+each)   
-                    subprocess.Popen([gimp, getValue])
-        else:
-            print "need to select a texture node"
+           
+
     def _add_id(self, queryColor):
         '''----------------------------------------------------------------------------------
         Common add to list function
