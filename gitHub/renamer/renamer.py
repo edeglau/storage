@@ -32,6 +32,7 @@ class myUI:
         cmds.columnLayout ('rColumn2', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
         cmds.columnLayout ('rColumn3', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
         cmds.columnLayout ('rColumn4', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
+        cmds.columnLayout ('rColumn5', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
       
         cmds.setParent ('rColumn1')
         cmds.text( label='Naming' )
@@ -61,18 +62,6 @@ class myUI:
         cmds.textField(old, edit=True, enterCommand=('cmds.setFocus(\"' + new + '\")') )
         cmds.textField(new, edit=True, enterCommand=('cmds.setFocus(\"' + old + '\")'))        
         
-        
-        cmds.setParent ('rColumn4')
-        cmds.text( label='Numbers' )
-        cmds.separator()
-        cmds.button (label='Number Suffix', command = self.nmbrs)
-        cmds.button (label='Remove numbers', command = self.rnmbrs)
-        cmds.button (label='Remove start numbers', command = self.rBeg_nmbrs)
-        cmds.button (label='Remove mid numbers', command = self.rMid_nmbrs)
-        cmds.button (label='Remove end numbers', command = self.rEnd_nmbrs)                
-        cmds.button (label='Remove underscores', command = self.runders)
-        
-        
         cmds.setParent ('rColumn3')
         cmds.text("Custom Prefix and Suffix")
         cmds.separator()
@@ -84,33 +73,107 @@ class myUI:
         cmds.button (label='Add suf', command = self.suff)
 
 
-        cmds.setParent ('rColumn3')
+        cmds.setParent ('rColumn4')
         cmds.text("Shift")
         cmds.separator()
         self.breakName=cmds.textField(text="enter the partial name")
-        self.breakPoint=cmds.textField(text="enter a breakpoint EG:'_")
-        cmds.button (label='move to beginning', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1)))
-        cmds.button (label='move to end', command = lambda *args:self._shift_end(breakName=textField(self.breakName, q=1, text=1)))   
-        cmds.button (label='Shift >>', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1), breakPoint=textField(self.breakPoint, q=1, text=1)))
-        cmds.button (label='<< Shift', command = lambda *args:self._shift_beg(breakName=textField(self.breakName, q=1, text=1), breakPoint=textField(self.breakPoint, q=1, text=1)))
+#        self.breakPoint=cmds.textField(text="enter a breakpoint EG:'_")
+        cmds.button (label='move to beginning', command = lambda *args:self._shift_beg(breakName=cmds.textField(self.breakName, q=1, text=1)))
+        cmds.button (label='move to end', command = lambda *args:self._shift_end(breakName=cmds.textField(self.breakName, q=1, text=1)))   
+        cmds.button (label='Shift >>', command = lambda *args:self._shift_right(breakName=cmds.textField(self.breakName, q=1, text=1)))
+        cmds.button (label='<< Shift', command = lambda *args:self._shift_left(breakName=cmds.textField(self.breakName, q=1, text=1)))
+        
+        cmds.setParent ('rColumn5')
+        cmds.text( label='Numbers' )
+        cmds.separator()
+        cmds.button (label='Number Suffix', command = self.nmbrs)
+        cmds.button (label='Remove numbers', command = self.rnmbrs)
+        cmds.button (label='Remove mid numbers', command = self.rMid_nmbrs)
+        cmds.button (label='Remove end numbers', command = self.rEnd_nmbrs)                
+        cmds.button (label='Remove underscores', command = self.runders)
+                
+    
         cmds.window(self.window, e=1, w=430, h=103)
         cmds.showWindow(self.window)   
 
     def _shift_beg(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
+        findNumber=False        
         for each in selObj:
-            eachName=each.split(str(breakName))
-            newname=breakName+''.join(eachName)
-            aNewString=cmds.rename(each, each.replace( '%s'%each, '%s'%newFullName))        
-
+            if breakName in each:            
+                ffile=re.sub(breakName, '', each)
+                try:
+                    getAnInt=int(breakName)
+                    if getAnInt:
+                        findNumber=True
+                except:
+                    pass  
+                if findNumber==True: 
+                    print "Cannot shift. A number cannot be at the beginning of a name."
+                else:             
+                    newname=breakName+ffile
+                    aNewString=cmds.rename(each, newname)  
+            
     def _shift_end(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
+        findNumber=False        
         for each in selObj:
-            eachName=each.split(str(breakName))
-            newname=''.join(eachName)+breakName
-            aNewString=cmds.rename(each, each.replace( '%s'%each, '%s'%newFullName))  
+            if breakName in each:
+                ffile=re.sub(breakName, '', each)
+                try:
+                    getAnInt=int(breakName)
+                    if getAnInt:
+                        findNumber=True
+                except:
+                    pass  
+                if findNumber==True: 
+                    print "Cannot shift. A number cannot be at the beginning of a name."
+                else:                   
+                    newname=ffile+breakName
+                    aNewString=cmds.rename(each, newname)        
 
-        
+    def _shift_left(self, breakName):
+        selObj=cmds.ls(sl = True, fl=1)
+        findNumber=False  
+        hasDigits=False      
+        for each in selObj:
+            if breakName in each:
+                eachName=each.split(str(breakName))
+                beginningPortion=eachName[0]
+                endportion=eachName[1]
+                try:
+                    getAnInt=int(breakName)
+                    if getAnInt:
+                        findNumber=True
+                except:
+                    pass   
+                if findNumber==True and len(beginningPortion)==1:
+                    print "Cannot shift. A number cannot be at the beginning of a name."
+                else:
+                    newname=beginningPortion[:-1]+breakName+beginningPortion[-1:]+endportion
+                    aNewString=cmds.rename(each, newname)
+
+    def _shift_right(self, breakName):
+        selObj=cmds.ls(sl = True, fl=1)
+        findNumber=False
+        for each in selObj:
+            if breakName in each:
+                eachName=each.split(str(breakName))
+                beginningPortion=eachName[0]
+                endportion=eachName[1]
+                try:
+                    getAnInt=int(endportion)
+                    if getAnInt:
+                        findNumber=True
+                except:
+                    pass   
+                if findNumber==True and len(beginningPortion)<1:
+                    print "Cannot shift. A number has gotten in the way. A number cannot be at the beginning of a name."
+                else:
+                    newname=beginningPortion+endportion[:1]+breakName+endportion[1:]     
+                    aNewString=cmds.rename(each, newname)                   
+                    
+                
     def eyedropper(self, arg=None):
         selectedObject=cmds.ls(sl=1)
         objListLength=len(selectedObject)
@@ -182,37 +245,15 @@ class myUI:
 
     def rMid_nmbrs(self, arg=None):
         nodName=cmds.ls(sl=True)
-        for item in range (len(nodName)):
-            #===========================================================
-            # remove numbers at end
-            #===========================================================
-#            sub_Name=re.sub("\d+$", "", lognm)         
-            #===========================================================
-            # remove numbers at beginning
-            #===========================================================
-#            s = re.sub(r"(^|\W)\d+", "", s)
-            #===========================================================
-            # remove all numbers
-            #===========================================================
-#            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
-            sub_Name=re.sub(r'\d[1-9]*', '', nodName[item])
-            cmds.rename(nodName[item] ,sub_Name)
+        for item in nodName:   
+            each=item[:-4]
+            sub_Name=re.sub(r'\d[1-9]*', '', each)
+            newSub_Name=item[:3]+sub_Name+item[-3:]
+            cmds.rename(item ,newSub_Name)
             
     def rBeg_nmbrs(self, arg=None):
         nodName=cmds.ls(sl=True)
-        for item in range (len(nodName)):
-            #===========================================================
-            # remove numbers at end
-            #===========================================================
-#            sub_Name=re.sub("\d+$", "", lognm)         
-            #===========================================================
-            # remove numbers at beginning
-            #===========================================================
-#            s = re.sub(r"(^|\W)\d+", "", s)
-            #===========================================================
-            # remove all numbers
-            #===========================================================
-#            sub_Name=re.sub(r'\d[1-9]*', '', lognm)                
+        for item in range (len(nodName)):             
             sub_Name=re.sub(r"(^|\W)\d+", "", nodName[item])
             cmds.rename(nodName[item] ,sub_Name)
             
