@@ -66,7 +66,7 @@ class myUI:
         cmds.textField(old, edit=True, enterCommand=('cmds.setFocus(\"' + new + '\")') )
         cmds.textField(new, edit=True, enterCommand=('cmds.setFocus(\"' + old + '\")'))        
         
-        cmds.setParent ('rColumn4')
+        cmds.setParent ('rColumn3')
         cmds.text("Custom Prefix and Suffix")
         cmds.separator()
         global prefname
@@ -77,7 +77,7 @@ class myUI:
         cmds.button (label='Add suf', command = self.suff)
 
 
-        cmds.setParent ('rColumn3')
+        cmds.setParent ('rColumn4')
         cmds.text("Shift")
         cmds.separator()
         self.breakName=cmds.textField(text="enter the partial name")
@@ -87,6 +87,7 @@ class myUI:
         cmds.button (label='Shift >>', command = lambda *args:self._shift_right(breakName=cmds.textField(self.breakName, q=1, text=1)))
         cmds.button (label='<< Shift', command = lambda *args:self._shift_left(breakName=cmds.textField(self.breakName, q=1, text=1)))
         cmds.button (label='Number>>', command = lambda *args:self._insertNumberRight(breakName=cmds.textField(self.breakName, q=1, text=1)))
+        cmds.button (label='<<Number', command = lambda *args:self._insertNumberLeft(breakName=cmds.textField(self.breakName, q=1, text=1)))
 
         
         cmds.setParent ('rColumn5')
@@ -94,11 +95,12 @@ class myUI:
         cmds.separator()
         cmds.gridLayout('listArrangmentButtonLayout', p='rColumn5', numberOfColumns=2, cellWidthHeight=(75, 20))
         self.padding=cmds.optionMenu(p="listArrangmentButtonLayout")
+        self.startRange=cmds.textField(text="1")
         cmds.menuItem( label="padding")
-        for each in range(5)[1:]:
+        for each in range(6)[1:]:
             cmds.menuItem( label=each)
-        cmds.button (label='Number Suffix', command = self.nmbrs, p="listArrangmentButtonLayout")
-        cmds.gridLayout('listButtonLayout', p='rColumn5', numberOfColumns=1, cellWidthHeight=(150, 20))
+        cmds.gridLayout('listButtonLayout', p='rColumn5', numberOfColumns=1, cellWidthHeight=(150, 20))            
+        cmds.button (label='Number Suffix', command = self.nmbrs, p="listButtonLayout")
         cmds.button (label='Remove numbers', command = self.rnmbrs, p='listButtonLayout')
         cmds.button (label='Remove non-tail numbers', command = self.rMid_nmbrs, p="listButtonLayout")
         cmds.button (label='Remove tail numbers', command = self.rEnd_nmbrs, p="listButtonLayout")
@@ -108,89 +110,76 @@ class myUI:
         cmds.window(self.window, e=1, w=430, h=103)
         cmds.showWindow(self.window)   
 
-    def _shift_beg(self, breakName):
-        selObj=cmds.ls(sl = True, fl=1)
-        findNumber=False        
-        for each in selObj:
-            if breakName in each:            
-                ffile=re.sub(breakName, '', each)
-                try:
-                    getAnInt=int(breakName[0])
-                    if getAnInt:
-                        findNumber=True
-                except:
-                    pass  
-                if breakName[0]=="0":
-                    findNumber=True                 
-                if findNumber==True: 
-                    print "Cannot shift. A number cannot be at the beginning of a name."
-                else:             
-                    newname=breakName+ffile
-                    aNewString=cmds.rename(each, newname)  
+    def error_message_num(self):
+        getError= "Cannot name. A number cannot be at the beginning of a name."     
+        return getError
+
+    def checkName(self, newName):
+        findNumber=False
+        try:
+            getAnInt=int(newName[0])
+            if getAnInt:
+                findNumber=True
+        except:
+            pass  
+        if newName[0]=="0":
+            findNumber=True
+        return findNumber
             
     def _shift_end(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
-        findNumber=False        
         for each in selObj:
             if breakName in each:
-                ffile=re.sub(breakName, '', each)
-                try:
-                    getAnInt=int(ffile[0])
-                    if getAnInt:
-                        findNumber=True
-                except:
-                    pass  
-                if ffile[0]=="0":
-                    findNumber=True               
-                if findNumber==True: 
-                    print "Cannot shift. A number cannot be at the beginning of a name."
-                else:                   
-                    newname=ffile+breakName
-                    aNewString=cmds.rename(each, newname)        
+                ffile=re.sub(breakName, '', each)     
+                newname=ffile+breakName
+                findNumber=self.checkName(newname) 
+                if findNumber==True:
+                    print self.error_message_num()
+                    return
+                else:
+                    aNewString=cmds.rename(each, newname) 
+
+                     
+                                
+    def _shift_beg(self, breakName):
+        selObj=cmds.ls(sl = True, fl=1)
+        for each in selObj:
+            if breakName in each:            
+                ffile=re.sub(breakName, '', each)     
+                newname=breakName+ffile
+                findNumber=self.checkName(newname)  
+                if findNumber==True:
+                     print self.error_message_num()
+                else:
+                    aNewString=cmds.rename(each, newname)  
+      
 
     def _shift_left(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
-        findNumber=False  
-        hasDigits=False      
         for each in selObj:
             if breakName in each:
                 eachName=each.split(str(breakName))
                 beginningPortion=eachName[0]
                 endportion=eachName[1]
-                try:
-                    getAnInt=int(breakName[0])
-                    if getAnInt:
-                        findNumber=True
-                except:
-                    pass   
-                if breakName[0]=="0":
-                    findNumber=True                 
-                if findNumber==True and len(beginningPortion)==1:
-                    print "Cannot shift. A number cannot be at the beginning of a name."
-                else:
-                    newname=beginningPortion[:-1]+breakName+beginningPortion[-1:]+endportion
+                newname=beginningPortion[:-1]+breakName+beginningPortion[-1:]+endportion
+                findNumber=self.checkName(newname)  
+                if findNumber==True:
+                    print self.error_message_num()
+                else:                
                     aNewString=cmds.rename(each, newname)
 
     def _shift_right(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
-        findNumber=False
         for each in selObj:
             if breakName in each:
                 eachName=each.split(str(breakName))
                 beginningPortion=eachName[0]
                 endportion=eachName[1]
-                try:
-                    getAnInt=int(endportion[:1])
-                    if getAnInt:
-                        findNumber=True
-                except:
-                    pass   
-                if endportion[:1]=="0":
-                    findNumber=True                  
-                if findNumber==True and len(beginningPortion)<1:
-                    print "Cannot shift. A number has gotten in the way. A number cannot be at the beginning of a name."
-                else:
-                    newname=beginningPortion+endportion[:1]+breakName+endportion[1:]     
+                newname=beginningPortion+endportion[:1]+breakName+endportion[1:]
+                findNumber=self.checkName(newname)  
+                if findNumber==True:
+                    print self.error_message_num()
+                else:                
                     aNewString=cmds.rename(each, newname)                   
                     
                 
@@ -219,24 +208,13 @@ class myUI:
             
     def rename(self, arg=None):
         selObj=cmds.ls(sl = True)  
-        findNumber=False  
         new_String=cmds.textField(self.relname, q=True, text=True)
-        try:
-            getAnInt=int(new_String[0])
-            if getAnInt:
-                findNumber=True
-        except:
-            pass  
-        if endportion[:1]=="0":
-            findNumber=True   
-        if findNumber==True: 
-            print "A number cannot be at the beginning of a name."
-            return
-        else:   
-            pass
-#         new_String=cmds.textField(relname, q=True, text=True)
-        for item in selObj:
-            cmds.rename(item, new_String)
+        findNumber=self.checkName(new_String)  
+        if findNumber==True:
+            print self.error_message_num()
+        else:
+            for item in selObj:
+                cmds.rename(item, new_String)
     
     def preff(self, arg=None):
         selObj=cmds.ls(sl = True)
@@ -254,7 +232,8 @@ class myUI:
     
     def _insertNumberRight(self, breakName):
         getPadd=cmds.optionMenu(self.padding, q=1, v=1)
-        findNumber=False
+        getstartRange=cmds.textField(self.startRange, q=1, text=1)
+        getstartRange=int(getstartRange)
         selObj=cmds.ls(sl=True)
         if getPadd=="padding":
             print "select a padding for your number" 
@@ -263,37 +242,45 @@ class myUI:
             pass         
         for index, each in enumerate(selObj):
             if breakName in each:  
+                getRange=index+getstartRange
+                getPadding=self.getpadd(getRange)                
                 eachName=each.split(str(breakName))
                 beginningPortion=eachName[0]
                 endportion=eachName[1]                 
-                try:
-                    getAnInt=int(beginningPortion[0])
-                    if getAnInt:
-                        findNumber=True
-                except:
-                    pass   
-                if beginningPortion[0]=="0":
-                    findNumber=True                 
-                if findNumber==True and len(beginningPortion)==1:
-                    print "Cannot shift. A number cannot be at the beginning of a name."                 
-                getPadding=self.getpadd(index) 
-                nmbrname=beginningPortion+str(breakName)+str(getPadding)+endportion                 
-                aNewString=cmds.rename(each, nmbrname) 
+                nmbrname=beginningPortion+str(breakName)+str(getPadding)+endportion
+                findNumber=self.checkName(nmbrname)  
+                if findNumber==True:
+                    print self.error_message_num()
+                else:                                  
+                    aNewString=cmds.rename(each, nmbrname) 
                 
-    def checkNumBeg(self):
-        findNumber=False        
-        try:
-            getAnInt=int(beginningPortion[0])
-            if getAnInt:
-                findNumber=True
-        except:
-            pass   
-        if beginningPortion[0]=="0":
-            findNumber=True                 
-        if findNumber==True and len(beginningPortion)==1:
-            print "Cannot shift. A number cannot be at the beginning of a name."          
+    def _insertNumberLeft(self, breakName):
+        getPadd=cmds.optionMenu(self.padding, q=1, v=1)
+        getstartRange=cmds.textField(self.startRange, q=1, text=1)
+        getstartRange=int(getstartRange)
+        selObj=cmds.ls(sl=True)
+        if getPadd=="padding":
+            print "select a padding for your number" 
+            return  
+        else:
+            pass         
+        for index, each in enumerate(selObj):
+            if breakName in each:  
+                getRange=index+getstartRange
+                getPadding=self.getpadd(getRange)                
+                eachName=each.split(str(breakName))
+                beginningPortion=eachName[0]
+                endportion=eachName[1]                 
+                nmbrname=beginningPortion+str(getPadding)+str(breakName)+endportion
+                findNumber=self.checkName(nmbrname)  
+                if findNumber==True:
+                    print self.error_message_num()
+                else:                                  
+                    aNewString=cmds.rename(each, nmbrname) 
 
     def nmbrs(self, arg=None):
+        getstartRange=cmds.textField(self.startRange, q=1, text=1)
+        getstartRange=int(getstartRange)
         getPadd=cmds.optionMenu(self.padding, q=1, v=1)
         fleName=cmds.ls(sl=True)
         if getPadd=="padding":
@@ -302,8 +289,9 @@ class myUI:
         else:
             pass       
         for index, item in enumerate(fleName):
-#            ffile=re.sub(r'\d[1-9]*', '', fleName[item])          
-            getPadding=self.getpadd(index)
+#            ffile=re.sub(r'\d[1-9]*', '', fleName[item]) 
+            getRange=getstartRange+index      
+            getPadding=self.getpadd(getRange)
             nmbrname=item+str(getPadding)
             cmds.rename(item, nmbrname)
             
@@ -317,6 +305,8 @@ class myUI:
             getNum="%03d" % (index,)
         elif getPadd=="4":
             getNum="%04d" % (index,)
+        elif getPadd=="5":
+            getNum="%05d" % (index,)
         else:
             getNum=index
         return getNum
@@ -345,9 +335,7 @@ class myUI:
             getPortions=re.split(r'(\d+)', item)
             if len(getPortions[-1:][0])<1:
                 each=''.join(getPortions[:-2])
-    #            each=item[:-3]
                 sub_Name=re.sub(r'\d[1-9]*', '', each)
-    #            newSub_Name=item[:3]+sub_Name+item[-3:]
                 getEndNumbs=''.join(getPortions[-2:])
                 newSub_Name=sub_Name+getEndNumbs
             else:
