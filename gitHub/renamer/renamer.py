@@ -15,7 +15,11 @@ from functools import partial
 from string import *
 import re
 
-
+badNameList=[
+             "pSphere", 
+             "curve", 
+             "polySurface"
+             ]
 
 class myUI:
     
@@ -82,6 +86,8 @@ class myUI:
         cmds.button (label='move to end', command = lambda *args:self._shift_end(breakName=cmds.textField(self.breakName, q=1, text=1)))   
         cmds.button (label='Shift >>', command = lambda *args:self._shift_right(breakName=cmds.textField(self.breakName, q=1, text=1)))
         cmds.button (label='<< Shift', command = lambda *args:self._shift_left(breakName=cmds.textField(self.breakName, q=1, text=1)))
+        cmds.button (label='Number>>', command = lambda *args:self._insertNumberRight(breakName=cmds.textField(self.breakName, q=1, text=1)))
+
         
         cmds.setParent ('rColumn5')
         cmds.text( label='Numbers' )
@@ -94,8 +100,8 @@ class myUI:
         cmds.button (label='Number Suffix', command = self.nmbrs, p="listArrangmentButtonLayout")
         cmds.gridLayout('listButtonLayout', p='rColumn5', numberOfColumns=1, cellWidthHeight=(150, 20))
         cmds.button (label='Remove numbers', command = self.rnmbrs, p='listButtonLayout')
-        cmds.button (label='Remove mid numbers', command = self.rMid_nmbrs, p="listButtonLayout")
-        cmds.button (label='Remove end numbers', command = self.rEnd_nmbrs, p="listButtonLayout")
+        cmds.button (label='Remove non-tail numbers', command = self.rMid_nmbrs, p="listButtonLayout")
+        cmds.button (label='Remove tail numbers', command = self.rEnd_nmbrs, p="listButtonLayout")
         cmds.button (label='Remove underscores', command = self.runders, p="listButtonLayout")
                 
     
@@ -221,7 +227,7 @@ class myUI:
                 findNumber=True
         except:
             pass  
-        if new_String[0]=="0":
+        if endportion[:1]=="0":
             findNumber=True   
         if findNumber==True: 
             print "A number cannot be at the beginning of a name."
@@ -245,7 +251,48 @@ class myUI:
         for item in range (len(selObj)):
             newpref=selObj[item]+new_String
             cmds.rename(selObj[item], newpref)
-            
+    
+    def _insertNumberRight(self, breakName):
+        getPadd=cmds.optionMenu(self.padding, q=1, v=1)
+        findNumber=False
+        selObj=cmds.ls(sl=True)
+        if getPadd=="padding":
+            print "select a padding for your number" 
+            return  
+        else:
+            pass         
+        for index, each in enumerate(selObj):
+            if breakName in each:  
+                eachName=each.split(str(breakName))
+                beginningPortion=eachName[0]
+                endportion=eachName[1]                 
+                try:
+                    getAnInt=int(beginningPortion[0])
+                    if getAnInt:
+                        findNumber=True
+                except:
+                    pass   
+                if beginningPortion[0]=="0":
+                    findNumber=True                 
+                if findNumber==True and len(beginningPortion)==1:
+                    print "Cannot shift. A number cannot be at the beginning of a name."                 
+                getPadding=self.getpadd(index) 
+                nmbrname=beginningPortion+str(breakName)+str(getPadding)+endportion                 
+                aNewString=cmds.rename(each, nmbrname) 
+                
+    def checkNumBeg(self):
+        findNumber=False        
+        try:
+            getAnInt=int(beginningPortion[0])
+            if getAnInt:
+                findNumber=True
+        except:
+            pass   
+        if beginningPortion[0]=="0":
+            findNumber=True                 
+        if findNumber==True and len(beginningPortion)==1:
+            print "Cannot shift. A number cannot be at the beginning of a name."          
+
     def nmbrs(self, arg=None):
         getPadd=cmds.optionMenu(self.padding, q=1, v=1)
         fleName=cmds.ls(sl=True)
@@ -255,7 +302,7 @@ class myUI:
         else:
             pass       
         for index, item in enumerate(fleName):
-            #ffile=re.sub(r'\d[1-9]*', '', fleName[item])          
+#            ffile=re.sub(r'\d[1-9]*', '', fleName[item])          
             getPadding=self.getpadd(index)
             nmbrname=item+str(getPadding)
             cmds.rename(item, nmbrname)
@@ -333,22 +380,24 @@ class myUI:
         if cmds.objExists("badNames")==True:
             cmds.delete("badNames")
         cmds.sets(n="badNames", co=5)
+        for each in badNameList:
+            if cmds.objExists(each+'*'):
+                cmds.select (each+'*', hierarchy=False, add=True)    
+                cmds.sets( fe="badNames")
+                              
+#        if cmds.objExists('pSphere*'):
+#            cmds.select ('pSphere*', hierarchy=False, add=True)    
+#            cmds.sets( fe="badNames")
+#            
+#        if cmds.objExists('curve*'):
+#            cmds.select ('curve*', hierarchy=False, add=True)
+#            cmds.sets( fe="badNames")
+#        
+#            
+#        if cmds.objExists('polySurface*'):
+#            cmds.select ('polySurface*', hierarchy=False, add=True)
+#            cmds.sets( fe="badNames")
         
-        
-        if cmds.objExists('pSphere*'):
-            cmds.select ('pSphere*', hierarchy=False, add=True)    
-            cmds.sets( fe="badNames")
-            
-        if cmds.objExists('curve*'):
-            cmds.select ('curve*', hierarchy=False, add=True)
-            cmds.sets( fe="badNames")
-        
-            
-        if cmds.objExists('polySurface*'):
-            cmds.select ('polySurface*', hierarchy=False, add=True)
-            cmds.sets( fe="badNames")
-        
-    
         if cmds.objExists('badNames'):
             cmds.select('badNames', r=True, ne=True)
             shoo=cmds.ls(sl=True)
