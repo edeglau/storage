@@ -29,7 +29,11 @@ gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
 BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
-getfilePath=str('__file__')
+from inspect import getsourcefile
+from os.path import abspath
+
+getfilePath=str(abspath(getsourcefile(lambda _: None)))
+#getfilePath=str('__file__')
 filepath= os.getcwd()
 
 sys.path.append(str(filepath))
@@ -143,6 +147,7 @@ class ToolKitUI(object):
         cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
         cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
         cmds.button (label='MatchMatrix', p='listBuildButtonLayout', ann="This will match the exact matrix of the first selection", command = self._match_matrix)
+        cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
@@ -187,6 +192,9 @@ class ToolKitUI(object):
         cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
 
+    def _mirror_transform(self, arg=None): 
+        getBaseClass.mirrorXform()
+        
     def _reset_selected(self, arg=None):
         toolClass._reset()
         
