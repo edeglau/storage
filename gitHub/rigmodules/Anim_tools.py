@@ -151,6 +151,7 @@ class AnimMoveTools(object):
         getClass.mirrorController()    
           
     def _match_transform(self, arg=None):
+#         getBaseClass.xformmove() 
         getBaseClass.xformmatch()     
     def _match_matrix(self, arg=None):
         getBaseClass.xformmove()     

@@ -292,9 +292,9 @@ class ToolKitUI(object):
         Colours.ColourPalet()
         
     def _anim_tools(self, arg=None):
-        import Anim_Tools
-        reload (Anim_Tools)
-        Anim_Tools.AnimMoveTools()
+        import Anim_tools
+        reload (Anim_tools)
+        Anim_tools.AnimMoveTools()
 
         
     def _rig_biped(self, arg=None):

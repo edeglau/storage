@@ -9,6 +9,7 @@ from sys import stdin
 import sys
 #import win32clipboard
 import operator
+from pymel.core import *
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
@@ -16,6 +17,7 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
+#printFolder="D:\\myGraphics\\temp\\"+filename+"_TRN.txt"
 filepath= os.getcwd()
 sys.path.append(str(filepath))
 import baseFunctions_maya
@@ -27,9 +29,10 @@ import stretchIK
 reload (stretchIK)
 getIKClass = stretchIK.stretchIKClass()  
 BbxName="ControlBox"
-BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\ControlBox\\"+BbxName+".ma"
+
+BbxFilepath="D:\\myGraphics\\Polly\\ControlBox\\"+BbxName+".ma"
 LashFile="EyeLash"
-LashPath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\eyelash\\"+LashFile+".ma"
+LashPath="D:\\myGraphics\\Polly\\eyelash\\"+LashFile+".ma"
 
 getFace=[(each) for each in cmds.ls("face*_guide",) if "Teeth" not in each and "Tongue" not in each and "Brow" not in each]
 # try:
@@ -343,7 +346,6 @@ class FaceSetup(object):
             filename=cmds.promptDialog(q=1)
         else:
             print "nothing collected"
-        printFolder="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\guides\\FaceLayout\\"+filename+"_TRN.txt"
         getGuides=cmds.ls("*_TRN")
         inp=open(printFolder, 'w+')
         for each in getGuides:
@@ -524,7 +526,7 @@ class FaceSetup(object):
         cmds.parent("faceJaw_R_grp", getJaw)
         cmds.parent("faceJaw_L_grp", getJaw)
 
-        Controller=str(getChin[0])+".translateY"
+        Controller=str(getChin)+".translateY"
         Child="Jaw_R_SDK_grp.translateX"
         cmds.setAttr(Controller, 0)
         cmds.setAttr(Child,0)
@@ -535,7 +537,7 @@ class FaceSetup(object):
         cmds.setAttr(Controller, 0)
         cmds.setAttr(Child, lock=1)
             
-        Controller=str(getChin[0])+".translateY"
+        Controller=str(getChin)+".translateY"
         Child="Jaw_L_SDK_grp.translateX"
         cmds.setAttr(Controller, 0)
         cmds.setAttr(Child,0)
@@ -545,6 +547,8 @@ class FaceSetup(object):
         cmds.setDrivenKeyframe(Child, cd=Controller)
         cmds.setAttr(Controller, 0)
         cmds.setAttr(Child, lock=1) 
+        
+        
         cmds.select("Chin_TRN_lctr")
         cmds.select("*:Chin_SDK", add=1)
         cmds.copyAttr(values=1, inConnections=1, containerParentChild=1)
