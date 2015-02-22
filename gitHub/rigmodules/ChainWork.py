@@ -24,7 +24,7 @@ __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
-
+guide="_guide"
 import maya.cmds as cmds
 import maya.mel
 class ChainRig(object):
@@ -149,12 +149,12 @@ class ChainRig(object):
         if len(clstrSplineCtrl)>5:        
             fiveclstrSplineCtrl=mainChain[4::5]
             #create clusters for IK chain
-            getLastLeg=int(re.sub("\D", "", getit[-1:][0]))
+            getLastLeg=int(re.sub("\D", "", fiveclstrSplineCtrl[-1:][0]))
             for each in fiveclstrSplineCtrl:
                 name=each.split("_guide")[0]+"_mid_Ctrl"
                 grpname=name+"_grp"    
                 fivesize=ControllerSize/3
-                colour=23
+                colour=29
                 transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
                 rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
                 getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
@@ -167,22 +167,22 @@ class ChainRig(object):
                 getCurNumber=int(re.sub("\D", "", current_item))
                 getNextNumber=int(re.sub("\D", "", next_item))
                 for each in range(getCurNumber, getNextNumber):
-                    print main+str(each)+guide      
+                    print mainName+str(each)+guide      
                 for each in range(1, 11):
-                    print main+str(each)+guide 
-                for each in range(getLastLeg, len(selObj)+1):
-                    print main+str(each)+guide                 
+                    print mainName+str(each)+guide 
+                for each in range(getLastLeg, len(fiveclstrSplineCtrl)+1):
+                    print mainName+str(each)+guide                 
 
         '''x10 controllers'''
         if len(clstrSplineCtrl)>10:
             tenclstrSplineCtrl=mainChain[9::10]     
             #create clusters for IK chain
-            getLastLeg=int(re.sub("\D", "", getit[-1:][0]))
+            getLastLeg=int(re.sub("\D", "", tenclstrSplineCtrl[-1:][0]))
             for each in tenclstrSplineCtrl:
                 name=each.split("_guide")[0]+"_max_Ctrl"
                 grpname=name+"_grp"     
                 tensize=ControllerSize/2
-                colour=25
+                colour=31
                 transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
                 rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
                 getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, tensize, colour, nrx, nry, nrz)
@@ -195,11 +195,11 @@ class ChainRig(object):
                 getCurNumber=int(re.sub("\D", "", current_item))
                 getNextNumber=int(re.sub("\D", "", next_item))
                 for each in range(getCurNumber, getNextNumber):
-                    print main+str(each)+guide      
+                    print mainName+str(each)+guide      
                 for each in range(1, 11):
-                    print main+str(each)+guide 
-                for each in range(getLastLeg, len(selObj)+1):
-                    print main+str(each)+guide 
+                    print mainName+str(each)+guide 
+                for each in range(getLastLeg, len(tenclstrSplineCtrl)+1):
+                    print mainName+str(each)+guide 
 
         #create the IK controller
 
