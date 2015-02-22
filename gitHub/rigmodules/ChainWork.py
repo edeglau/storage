@@ -127,6 +127,8 @@ class ChainRig(object):
         getClass.buildCtrl(mainChain[:1], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
         mainChainFK_Ctrls.append("Base"+mainName+"_Ctrl")    
         #"+mainChain+"FK_Ctrls.append(clstrCtrl)4
+        
+        '''middle main IK controller'''
 
         clstrSplineCtrl=mainChain[ len(mainChain) / 2 ]                 
         #create clusters for IK chain
@@ -142,6 +144,62 @@ class ChainRig(object):
         cmds.setAttr(name+".sx" , keyable=0, lock=1)
         cmds.setAttr(name+".sy" , keyable=0, lock=1)
         cmds.setAttr(name+".sz", keyable=0, lock=1)
+                    
+        '''x5 controllers'''
+        if len(clstrSplineCtrl)>5:        
+            fiveclstrSplineCtrl=mainChain[4::5]
+            #create clusters for IK chain
+            getLastLeg=int(re.sub("\D", "", getit[-1:][0]))
+            for each in fiveclstrSplineCtrl:
+                name=each.split("_guide")[0]+"_mid_Ctrl"
+                grpname=name+"_grp"    
+                fivesize=ControllerSize/3
+                colour=23
+                transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
+                rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
+                getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
+                clstrCtrl.append(name)
+                cmds.setAttr(name+".sx" , keyable=0, lock=1)
+                cmds.setAttr(name+".sy" , keyable=0, lock=1)
+                cmds.setAttr(name+".sz", keyable=0, lock=1)
+            for eachctrl in xrange(len(fiveclstrSplineCtrl) - 1):
+                current_item, next_item = fiveclstrSplineCtrl[eachctrl], fiveclstrSplineCtrl[eachctrl + 1]   
+                getCurNumber=int(re.sub("\D", "", current_item))
+                getNextNumber=int(re.sub("\D", "", next_item))
+                for each in range(getCurNumber, getNextNumber):
+                    print main+str(each)+guide      
+                for each in range(1, 11):
+                    print main+str(each)+guide 
+                for each in range(getLastLeg, len(selObj)+1):
+                    print main+str(each)+guide                 
+
+        '''x10 controllers'''
+        if len(clstrSplineCtrl)>10:
+            tenclstrSplineCtrl=mainChain[9::10]     
+            #create clusters for IK chain
+            getLastLeg=int(re.sub("\D", "", getit[-1:][0]))
+            for each in tenclstrSplineCtrl:
+                name=each.split("_guide")[0]+"_max_Ctrl"
+                grpname=name+"_grp"     
+                tensize=ControllerSize/2
+                colour=25
+                transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
+                rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
+                getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, tensize, colour, nrx, nry, nrz)
+                clstrCtrl.append(name)
+                cmds.setAttr(name+".sx" , keyable=0, lock=1)
+                cmds.setAttr(name+".sy" , keyable=0, lock=1)
+                cmds.setAttr(name+".sz", keyable=0, lock=1)
+            for eachctrl in xrange(len(tenclstrSplineCtrl) - 1):
+                current_item, next_item = tenclstrSplineCtrl[eachctrl], tenclstrSplineCtrl[eachctrl + 1]   
+                getCurNumber=int(re.sub("\D", "", current_item))
+                getNextNumber=int(re.sub("\D", "", next_item))
+                for each in range(getCurNumber, getNextNumber):
+                    print main+str(each)+guide      
+                for each in range(1, 11):
+                    print main+str(each)+guide 
+                for each in range(getLastLeg, len(selObj)+1):
+                    print main+str(each)+guide 
 
         #create the IK controller
 

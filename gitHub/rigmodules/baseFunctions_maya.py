@@ -1187,6 +1187,7 @@ class BaseClass():
                 tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
                 self.JackI(tempname, tempgrpname, tempsize, transformWorldMatrixNext, rotateWorldMatrixNext, tempcolour)
                 cmds.select(tempname, r=1)
+                getDelete=cmds.ls(sl=1, fl=1)
                 cmds.select(getNewGuide[0], add=1)
                 cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
                 cmds.delete(tempname)
@@ -1387,25 +1388,10 @@ class BaseClass():
         '''move to transform and rotation relative'''
         selObj=cmds.ls(sl=1)
         for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            transformWorldMatrix,rotateWorldMatrix=self.locationXForm(eachController)
-#             transformWorldMatrix=cmds.xform(eachController, q=1, t=1)
-#             rotateWorldMatrix=cmds.xform(eachController, q=1, ro=1)
-            cmds.xform(eachChild, ws=1, t=transformWorldMatrix)
-            cmds.xform(eachChild, ws=1, ro=rotateWorldMatrix) 
-            
-    def locationXForm(self, each):
-        getObj=ls(each)[0]
-        transform=getObj.getTranslation()
-#         transform=cmds.xform(each , q=True, ws=1, t=True)
-        if transform==[0.0, 0.0, 0.0]:
-            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
-        #transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
-        else:
-            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
-#             transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
-            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
-        return  transformWorldMatrix, rotateWorldMatrix
+            transformWorldMatrix=cmds.xform(eachController, q=1, t=1)
+            rotateWorldMatrix=cmds.xform(eachController, q=1, ro=1)
+            cmds.xform(eachChild, r=1, t=transformWorldMatrix)
+            cmds.xform(eachChild, r=1, ro=rotateWorldMatrix) 
         
     def rigJoints(self, each, jointsuf):
         '''build joints for rig'''
@@ -3248,7 +3234,26 @@ class BaseClass():
             transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
         return transformWorldMatrix, rotateWorldMatrix        
     
+    def locationXForm(self, each):
+        transform=cmds.xform(each , q=True, ws=1, t=True)
+        if transform==[0, 0, 0]:
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
+        else:
+#            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
+        return  transformWorldMatrix, rotateWorldMatrix
 
+    def locationXFormV1(self, each):
+        transform=cmds.xform(each , q=True, ws=1, t=True)
+        if transform==[0, 0, 0]:
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True) 
+        else:
+            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
+        return  transformWorldMatrix, rotateWorldMatrix
 
     def forcedlocationXForm(self, each):
         transform=cmds.xform(each , q=True, ws=1, t=True)
@@ -3275,4 +3280,4 @@ class BaseClass():
     def xformAutoTranWrist(self, aim, target):
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )
