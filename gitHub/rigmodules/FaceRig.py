@@ -17,7 +17,6 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
-#printFolder="D:\\myGraphics\\temp\\"+filename+"_TRN.txt"
 filepath= os.getcwd()
 sys.path.append(str(filepath))
 import baseFunctions_maya
@@ -347,6 +346,7 @@ class FaceSetup(object):
         else:
             print "nothing collected"
         getGuides=cmds.ls("*_TRN")
+        printFolder="D:\\myGraphics\\temp\\"+filename+"_TRN.txt"
         inp=open(printFolder, 'w+')
         for each in getGuides:
             transform=cmds.xform(each , q=True, ws=1, t=True)
@@ -1519,13 +1519,22 @@ class FaceSetup(object):
         cmds.setAttr("Blink_R_BS_Mesh.visibility", 0)
         cmds.setAttr("*:EyeMask_Ctrl.Blink_Right", 0)  
         cmds.group(n="BlendShapes") 
-        cmds.parent("BlendShapes", getFaceRigGrp) 
-        cmds.parent("Blink_R_BS_Mesh","BlendShapes") 
+        try:
+            cmds.parent("BlendShapes", getFaceRigGrp)
+        except:
+            pass
+        try: 
+            cmds.parent("Blink_R_BS_Mesh","BlendShapes")
+        except:
+            pass 
         topTeethmesh=cmds.ls("*:*_Teeth_T")    
-        botTeethmesh=cmds.ls("*:*_Teeth_B")        
-        cmds.blendShape("Blink_L_BS_Mesh", "Blink_R_BS_Mesh", selObj[0],  n="Blink_Blend", foc=1)
-        cmds.connectAttr("*:EyeMask_Ctrl.Blink_Left", "Blink_Blend.Blink_L_BS_Mesh", f=1)
-        cmds.connectAttr("*:EyeMask_Ctrl.Blink_Right", "Blink_Blend.Blink_R_BS_Mesh", f=1)
+        botTeethmesh=cmds.ls("*:*_Teeth_B")   
+        try:    
+            cmds.blendShape("Blink_L_BS_Mesh", "Blink_R_BS_Mesh", selObj[0],  n="Blink_Blend", foc=1)
+            cmds.connectAttr("*:EyeMask_Ctrl.Blink_Left", "Blink_Blend.Blink_L_BS_Mesh", f=1)
+            cmds.connectAttr("*:EyeMask_Ctrl.Blink_Right", "Blink_Blend.Blink_R_BS_Mesh", f=1)
+        except:
+            pass
 #         getFace=cmds.ls("face*_jnt")
         getFace=[(each) for each in cmds.ls("face*_jnt") if "Pivot" not in str(each) and "Teeth" not in each and "Chin" not in each]
         for each in selObj:
@@ -1541,7 +1550,10 @@ class FaceSetup(object):
             cmds.select(item)
             #cmds.dagPose(bp=1, sl=1, a=1, n=selObj[0]+"Pose_DG")
 #             jointName=each.split("_guide",)[0]+"_jnt"
-            cmds.skinCluster(skinID, e=1, ai=item, lw=1, wt=0)        
+            try:
+                cmds.skinCluster(skinID, e=1, ai=item, lw=1, wt=0)
+            except:
+                pass        
         getOldEyes=(cmds.ls("*:Eye_*_TBlink_jnt"), cmds.ls("*:Eye_*_BBlink_jnt"), cmds.ls("*:TopLid_*_jnt"), cmds.ls("*:BottomLid_*_jnt"), cmds.ls("faceTongue*_Clst_jnt"))
         for each in getOldEyes:
             for item in each:
@@ -1617,14 +1629,20 @@ class FaceSetup(object):
                 pass                
         tongueJoints=cmds.ls("faceTongue*_Clst_jnt")
         #skinClustertongue=cmds.ls("*:*_TongueShapeDeformed")
-        tonguemesh=cmds.ls("*:*Tongue")[0]
+        if cmds.ls("*:*EyeSpecA_L"):
+            tonguemesh=cmds.ls("*Tongue")[0]
+        elif cmds.ls("*:*Eyespeca_L"):
+            tonguemesh=cmds.ls("*:*Tongue")[0]
         try:
             cmds.skinCluster(tonguemesh, e=1, ub=1)
             print "unskinned tongue"
         except:
             pass
-        cmds.skinCluster(tonguemesh,"faceTongue01_Clst_jnt")
-        print "reskinned tongue"
+        try:
+            cmds.skinCluster(tonguemesh,"faceTongue01_Clst_jnt")
+            print "reskinned tongue"
+        except:
+            pass
         for each in tongueJoints[1:]:
             try:
                 cmds.skinCluster(tonguemesh, e=1, ai=each)
