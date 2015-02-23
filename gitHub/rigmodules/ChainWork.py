@@ -25,6 +25,8 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 guide="_guide"
+clstrctrl="_Clst_jnt_Ctrl"
+
 import maya.cmds as cmds
 import maya.mel
 class ChainRig(object):
@@ -149,7 +151,6 @@ class ChainRig(object):
         if len(clstrSplineCtrl)>5:        
             fiveclstrSplineCtrl=mainChain[4::5]
             #create clusters for IK chain
-            getLastLeg=int(re.sub("\D", "", fiveclstrSplineCtrl[-1:][0]))
             for each in fiveclstrSplineCtrl:
                 name=each.split("_guide")[0]+"_mid_Ctrl"
                 grpname=name+"_grp"    
@@ -167,17 +168,20 @@ class ChainRig(object):
                 getCurNumber=int(re.sub("\D", "", current_item))
                 getNextNumber=int(re.sub("\D", "", next_item))
                 for each in range(getCurNumber, getNextNumber):
-                    print mainName+str(each)+guide      
-                for each in range(1, 11):
-                    print mainName+str(each)+guide 
-                for each in range(getLastLeg, len(fiveclstrSplineCtrl)+1):
-                    print mainName+str(each)+guide                 
+                    getNum="%02d" % (each,)
+                    theController=mainName+str(getNum)+clstrctrl
+                    thegrp=theController.split("_Ctrl")[1]+"_grp"
+                    print thegrp
+                    #cmds.parentConstraint(name, thegrp, w=1)
+                print "done"     
+            for each in range(1, 6):
+                getNum="%02d" % (each,)
+                print mainName+str(getNum)+clstrctrl+" first5"      
 
         '''x10 controllers'''
         if len(clstrSplineCtrl)>10:
             tenclstrSplineCtrl=mainChain[9::10]     
             #create clusters for IK chain
-            getLastLeg=int(re.sub("\D", "", tenclstrSplineCtrl[-1:][0]))
             for each in tenclstrSplineCtrl:
                 name=each.split("_guide")[0]+"_max_Ctrl"
                 grpname=name+"_grp"     
@@ -195,11 +199,11 @@ class ChainRig(object):
                 getCurNumber=int(re.sub("\D", "", current_item))
                 getNextNumber=int(re.sub("\D", "", next_item))
                 for each in range(getCurNumber, getNextNumber):
-                    print mainName+str(each)+guide      
-                for each in range(1, 11):
-                    print mainName+str(each)+guide 
-                for each in range(getLastLeg, len(tenclstrSplineCtrl)+1):
-                    print mainName+str(each)+guide 
+                    getNum="%02d" % (each,)
+                    print mainName+str(getNum)+clstrctrl+" middle10"
+            for each in range(1, 10):
+                getNum="%02d" % (each,)
+                print mainName+str(getNum)+clstrctrl+" first10"
 
         #create the IK controller
 
