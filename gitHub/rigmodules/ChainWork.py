@@ -628,6 +628,7 @@ class ChainRig(object):
         '''x10 controllers'''
         influencedCtrl=cmds.ls(mainName+"*_mid_Ctrl_grp")
         controlSuff="_max_Ctrl"
+        print mainName+"this is mainname"
         self.DropOffControls(1, 2, 3, 31, 2, getSortedclusterSpline, ControllerSize, mainChain, mainName, nrx, nry, nrz, influencedCtrl, controlSuff)
         
     def DropOffControls(self, lowspan, span, highspan, colour, size, getSortedclusterSpline, ControllerSize, mainChain, mainName, nrx, nry, nrz, influencedCtrl, controlSuff):
@@ -636,44 +637,57 @@ class ChainRig(object):
             pairedParentControllers=[]  
             fiveclstrSplineCtrl=influencedCtrl[lowspan::span]
             #create clusters for IK chain
-            for each in xrange(len(fiveclstrSplineCtrl) - 1):
-                current_ctrl_item, next_ctrl_item = fiveclstrSplineCtrl[each], fiveclstrSplineCtrl[each + 1]  
-                name=current_ctrl_item.split("_guide")[0]+controlSuff
+            for each in influencedCtrl[1::2]:
+                name=each.split("_mid_Ctrl")[0]+controlSuff
                 grpname=name+"_grp"    
                 fivesize=ControllerSize/size
                 colour=colour
-                transformWorldMatrix = cmds.xform(current_ctrl_item, q=True, wd=1, t=True)  
-                rotateWorldMatrix = cmds.xform(current_ctrl_item, q=True, wd=1, ro=True) 
-                getClass.buildCtrl(current_ctrl_item, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
+                transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
+                rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
+                getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
                 parentControllers.append(name)
                 cmds.setAttr(name+".sx" , keyable=0, lock=1)
                 cmds.setAttr(name+".sy" , keyable=0, lock=1)
                 cmds.setAttr(name+".sz", keyable=0, lock=1)
-        getTheNewControllers=cmds.ls(str(mainName)+"*"+str(controlSuff))
-        firstCtrl=getTheNewControllers[:1]
-        BucketValue=getClass.Percentages(influencedCtrl, 1.0, 0.0)    
-        for each in xrange(len(getTheNewControllers) - 1):
-            current_ctrl_item, next_ctrl_item = getTheNewControllers[each], getTheNewControllers[each + 1]                      
-        for child, weighted in map(None, influencedCtrl, BucketValue):  
-            try:      
-                cmds.parentConstraint(current_ctrl_item, child, mo=1, w=weighted)
-            except:
-                pass
-        reversedBucketValue=reversed(BucketValue)
-        for child, weighted in map(None, influencedCtrl, reversedBucketValue):
-            try:      
-                cmds.parentConstraint(next_ctrl_item, child, mo=1, w=weighted)
-            except:
-                pass
-        getLastChildren=influencedCtrl[-highspan:]
-        getFirstChildren=influencedCtrl[:span]    
-        print firstCtrl[0], getFirstChildren
-        self.bucketConstraint(firstCtrl[0], getFirstChildren, 0.0, 1.0)
-        getBaseControl=cmds.ls("Basename_Ctrl")
-        self.bucketConstraint(getBaseControl[0], getFirstChildren, 1.0, 0.0)  
-        getEndControl=cmds.ls("EndnameIK_Ctrl")
-        self.bucketConstraint(getEndControl, getLastChildren, 0.0, 1.0)   
-        self.bucketConstraint(getTheNewControllers[-1:], getLastChildren, 1.0, 0.0)   
+#             getNewControls=cmds.ls(mainName+"*_max_Ctrl_grp")
+            bag=[]
+            for each in xrange(len(influencedCtrl) - 1):
+                prev_item, current_ctrl_item, next_ctrl_item =  influencedCtrl[each - 1], influencedCtrl[each], influencedCtrl[each + 1] 
+                if prev_item!=influencedCtrl[-1:][0]:
+                    bag.append([prev_item, current_ctrl_item, next_ctrl_item])
+            for eachPContrl, item in map(None, parentControllers, bag):
+                FIRST=item[:1][0]
+                SECOND=item[1:2][0]
+                THIRD=item[-1:][0]
+                print eachPContrl, FIRST, SECOND, THIRD
+                cmds.parentConstraint(eachPContrl, FIRST, mo=1, w=.5)
+                cmds.parentConstraint(eachPContrl, SECOND, mo=1, w=1.0)
+                cmds.parentConstraint(eachPContrl, THIRD, mo=1, w=.5)
+#         getTheNewControllers=cmds.ls(str(mainName)+"*"+str(controlSuff))
+#         firstCtrl=getTheNewControllers[:1]
+#         BucketValue=getClass.Percentages(influencedCtrl, 1.0, 0.0)    
+#         for each in xrange(len(getTheNewControllers) - 1):
+#             current_ctrl_item, next_ctrl_item = getTheNewControllers[each], getTheNewControllers[each + 1]                      
+#         for child, weighted in map(None, influencedCtrl, BucketValue):  
+#             try:      
+#                 cmds.parentConstraint(current_ctrl_item, child, mo=1, w=weighted)
+#             except:
+#                 pass
+#         reversedBucketValue=reversed(BucketValue)
+#         for child, weighted in map(None, influencedCtrl, reversedBucketValue):
+#             try:      
+#                 cmds.parentConstraint(next_ctrl_item, child, mo=1, w=weighted)
+#             except:
+#                 pass
+#         getLastChildren=influencedCtrl[-highspan:]
+#         getFirstChildren=influencedCtrl[:span]    
+#         print firstCtrl[0], getFirstChildren
+#         self.bucketConstraint(firstCtrl[0], getFirstChildren, 0.0, 1.0)
+#         getBaseControl=cmds.ls("Basename_Ctrl")
+#         self.bucketConstraint(getBaseControl[0], getFirstChildren, 1.0, 0.0)  
+#         getEndControl=cmds.ls("EndnameIK_Ctrl")
+#         self.bucketConstraint(getEndControl, getLastChildren, 0.0, 1.0)   
+#         self.bucketConstraint(getTheNewControllers[-1:], getLastChildren, 1.0, 0.0)   
         
         
     def bucketConstraint(self, controller, children, valone, valtwo):
