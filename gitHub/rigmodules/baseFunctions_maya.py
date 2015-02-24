@@ -3280,4 +3280,4 @@ class BaseClass():
     def xformAutoTranWrist(self, aim, target):
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    

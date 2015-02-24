@@ -9,6 +9,7 @@ from sys import stdin
 from pymel.core import *
 #import win32clipboard
 import operator
+OSplatform=platform.platform()
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
@@ -121,7 +122,7 @@ class GuideUI(object):
                 name=getName.split("_jnt")[0]+"_guide"
             transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)
             getClass.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3) 
+#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3)
 #             cmds.move(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide,r=1, rpr=1 )
 #             cmds.rotate(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide )  
     def _clean_guide(self, arg=None):
@@ -559,20 +560,27 @@ class GuideUI(object):
             os.startfile(path)
                      
     def _save_guide_function(self):
-        filename=cmds.file(q=1, location=1)
-        if getScenePath =="unknown":
+        fileSavePath=cmds.file(q=1, location=1)
+        getPath= '/'.join(fileSavePath.split('/')[:-1])+'/'
+        print getPath+" file save path"
+        if fileSavePath =="unknown":
             print "This file has not been saved into a location yet. Cannot determine where you want to put this."
             return
         else:
             pass        
         filename=cmds.textField(fileName, q=1, text=True)
+        print filename
         if filename:
             pass
         else:
             print "you need to give it a name"
-            return    
-        printFolder=guideFolderPath+filename+".txt"
-        if not os.path.exists(guideFolderPath): os.makedirs(guideFolderPath)         
+            return   
+        if "Windows" in OSplatform:
+            printFolder=getPath+filename+".txt"
+            if not os.path.exists(printFolder): os.makedirs(printFolder) 
+        if "Linux" in OSplatform:
+            printFolder=getPath+filename+".txt"   
+            if not os.path.exists(printFolder):open(printFolder, 'w')
         self.guide_writer(printFolder)
         
     def _save_to_pipeline(self):
@@ -586,7 +594,7 @@ class GuideUI(object):
         self.guide_writer(printFolder)
         
     def guide_writer(self, printFolder):
-        getGuides=cmds.ls("*guide")
+        getGuides=cmds.ls("*_guide")
         inp=open(printFolder, 'w+')
         for each in getGuides:
             transform=cmds.xform(each , q=True, ws=1, t=True)
@@ -706,16 +714,21 @@ class GuideUI(object):
         else:
             print "no path entered"
             return
-        filename=cmds.optionMenu(fileDropName, q=1, v=1)
-        printFolder=getPath+"\\"+filename
+        try:
+            filename=cmds.optionMenu(fileDropName, q=1, v=1)
+            printFolder=getPath+"\\"+filename
+        except:
+            if "\\" in getPath:
+                filename=getPath.split("\\")[-1:][0]
+            elif "/" in getPath:
+                filename=getPath.split("/")[-1:][0]        
+            printFolder=getPath
 #         if fileSaveName:
 #             printFolder=fileSaveName
 #         else:
 #             printFolder=folderPath+filename
-        print printFolder
         Ggrp=cmds.CreateEmptyGroup()
         getName=filename.split(".")[0]
-        print getName
         cmds.rename(Ggrp, "Guides_"+getName+"_grp")
         inp=open(printFolder, 'r')
         
@@ -781,7 +794,6 @@ class GuideUI(object):
             getDeleted=cmds.ls("*_guide1")
             for each in getDeleted:
                 cmds.delete(each) 
-           
 
     def build_tail_guides(self, arg=None):
         axisList=["X", "Y", "Z"]  
@@ -791,9 +803,9 @@ class GuideUI(object):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
         menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')      
+        rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
@@ -801,8 +813,10 @@ class GuideUI(object):
         direction=optionMenu( label='Axis')
         for each in axisList:
             menuItem( label=each)         
-        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")   
-        cmds.text(label="amount", w=80, h=25)        
+        cmds.text(label="", w=80, h=25)            
+        cmds.text(label="name", w=80, h=25)             
+        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")          
+        cmds.text(label="amount", w=80, h=25) 
         self.amount=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
         cmds.text(label="size", w=80, h=25) 
         self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")

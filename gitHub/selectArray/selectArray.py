@@ -11,12 +11,8 @@ from string import *
 import re
 import maya.mel
 __author__ = "Elise Deglau"
-
-'''Select Array'''
-__author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 
 '''----------------------------------------------------------INSTALL:make a shelf button with the following python code:
@@ -43,7 +39,6 @@ objectCommonalityWarning=[
                           ]
 
 closeWindow=[
-            'hyperGraphPanel*',
             'CommandWindow', 
             'MayaWindow', 
             'scriptEditorPanel1Window', 
@@ -94,23 +89,21 @@ class SelectionPalettUI(object):
         cmds.menuItem  (label='select all scene by type and add to list', command = self._add_list_by_all_node)
         cmds.button (label='All Name', p='listBuildButtonLayout', command = self._create_list_by_all_name)
         cmds.popupMenu(button=1)
-        cmds.menuItem  ( label='select all scene by name and make list', command = self._create_list_by_all_name)
-#         cmds.setFocus()
+        cmds.menuItem  (label='select all scene by name and make list', command = self._create_list_by_all_name)
         cmds.menuItem  (label='select all scene by name and add to list', command = self._add_list_by_all_name)
         cmds.text (label='Name or node type field',  p='selectArrayColumn')
-        cmds.gridLayout('searchLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 25))
+        cmds.gridLayout('searchLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(270, 25))
         self.nodeName=cmds.textField(w=250, h=25, p='searchLayout')
-        cmds.gridLayout('ButtonSearchLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 25))
-        cmds.button (label='Find Name', command = self._find_in_list, p='ButtonSearchLayout', w=80, ann='find this name in list below')          
+        cmds.button (label='Find', command = self._find_in_list, p='searchLayout', w=50, ann='find this name in list below')          
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='Select in list only', command = self._find_in_list)
         cmds.menuItem  (label='Select in list and scene', command = self._find_in_list_and_select)
-        cmds.button (label='Find Type', command = self._find_in_list_type, p='ButtonSearchLayout', w=80, ann='make list from type')      
+        cmds.button (label='Find Type', command = self._find_in_list_type, p='searchLayout', w=20, ann='make list from type')      
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='Select in list only', command = self._find_in_list_type)
         cmds.menuItem  (label='Select in list and scene', command = self._find_in_list_and_select_type)
-        cmds.button (label='FilterSelect', command = self._make_select_list, p='ButtonSearchLayout', w=20, ann='make list from selected')  
-        cmds.button (label='Refresh', command = self._refresh_list, p='ButtonSearchLayout', w=20, ann='refresh list')     
+        cmds.button (label='Filter', command = self._make_select_list, p='searchLayout', w=20, ann='make list from selected')  
+        cmds.button (label='Refresh', command = self._refresh_list, p='searchLayout', w=20, ann='refresh list')     
         self.listCountLabel=cmds.text (label='Selection list', p='selectArrayColumn')
         self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='selectArrayColumn')
         cmds.gridLayout('listArrangmentButtonLayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(40, 20))
@@ -122,7 +115,6 @@ class SelectionPalettUI(object):
         cmds.button (label='sel- ', command = self._clear_selection, p='listArrangmentButtonLayout', w=40, ann='select none')
         cmds.button (label='sort', command = self._sort_list, p='listArrangmentButtonLayout', w=40, ann='sort alphabetically-numerally')
         cmds.button (label='set', command = self._make_set_from_selection_list, p='listArrangmentButtonLayout', w=40, ann='create set from selected in list')
-        #cmds.button (label='^', command = self._move_up, p='listArrangmentButtonLayout', w=40)
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')
         cmds.text (label="elisedeglau.wordpress.com/2014/03/25/select-palette/", hl=1, w=300, al='left', p='selectArrayColumn')
         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
@@ -584,15 +576,6 @@ class SelectionPalettUI(object):
         else:
             print "Check that list is present."
             
-    def _move_up(self, arg=None):
-        '''----------------------------------------------------------------------------------
-        This sorts the list by alphabetical and numerical
-        ----------------------------------------------------------------------------------'''          
-        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        selectedObject=cmds.ls(sl=1, fl=1)
-        if selectedObject:
-            self.adding_to_list_function_main(selectedObject, listArray) 
-            
     def _make_set_from_selection_list(self, arg=None):
         '''----------------------------------------------------------------------------------
         This create a set from selected items in list
@@ -617,6 +600,3 @@ class SelectionPalettUI(object):
 
 inst = SelectionPalettUI()
 inst.create_select_array_window()
-      
-
-
