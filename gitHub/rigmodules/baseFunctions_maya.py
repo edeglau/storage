@@ -1136,7 +1136,7 @@ class BaseClass():
         for each in getEyecurves:
             cmds.setAttr(each+".overrideDisplayType", 2)
             
-    def buildGrp(self, each):
+    def buildGrpV1(self, each):
         '''this partners with the createGrpCtrl is the create group function'''
         selObjParent=cmds.listRelatives( each, allParents=True )
         cmds.CreateEmptyGroup(each+'_grp')
@@ -1152,7 +1152,25 @@ class BaseClass():
         cmds.parent(each, each+'_grp')
         Child=cmds.listRelatives(each+'_grp', ad=1, typ="transform") 
         cmds.makeIdentity(Child, a=True, t=1, n=0)  
-        
+
+
+    def buildGrp(self, each):
+        '''this partners with the createGrpCtrl is the create group function'''
+        selObjParent=cmds.listRelatives( each, allParents=True )
+        cmds.CreateEmptyGroup(each+'_grp')
+        grpObj=cmds.ls(sl=1)
+        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+        #worldMatrix = cmds.xform(selObj[0], q=True, ws=1, m=True)
+        #cmds.xform(grpObj[0], ws=1,  m=worldMatrix )
+        cmds.xform(grpObj[0], ws=1, t=transformWorldMatrix)
+        cmds.xform(grpObj[0], ws=1, ro=rotateWorldMatrix)         
+        cmds.rename(grpObj[0], each+'_grp')      
+        if selObjParent:
+            cmds.parent(each+'_grp', selObjParent[0] )
+        cmds.parent(each, each+'_grp')
+        Child=cmds.listRelatives(each+'_grp', ad=1, typ="transform") 
+        cmds.makeIdentity(Child, a=True, t=1, n=0) 
+
     def buildGrpIsolated(self, each, grpName):
         selObjParent=cmds.listRelatives( each, allParents=True )
         cmds.CreateEmptyGroup()
@@ -1165,11 +1183,43 @@ class BaseClass():
         cmds.xform(grpObj[0], ws=1, ro=rotateWorldMatrix)     
         if selObjParent:
             cmds.parent(grpName, selObjParent[0] )
-        cmds.parent(each, grpName)
+#        cmds.parent(each, grpName)
         Child=cmds.listRelatives(grpName, ad=1, typ="transform") 
-        cmds.makeIdentity(Child, a=True, t=1, n=0)        
-                            
+        cmds.makeIdentity(Child, a=True, t=1, n=0)     
+           
     def makeGuide(self):
+        '''This is the initate buildguide function'''
+        selectionCheck=cmds.ls(sl=1, fl=1)
+        colour1=13
+        colour2=6
+        colour3=27         
+        guideName=self.fetchName()
+        if selectionCheck:
+            for indexNumber, eachPoint in enumerate(xrange(len(selectionCheck) - 1)):
+                incrementals=indexNumber+1
+                getNum="%02d" % (incrementals,)
+                each, next_item = selectionCheck[eachPoint], selectionCheck[eachPoint + 1]             
+#            for each in selectionCheck:
+                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+                transformWorldMatrixNext, rotateWorldMatrixNext=self.locationXForm(next_item)
+                name=guideName+getNum+"_guide"            
+                self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
+                getNewGuide=cmds.ls(sl=1, fl=1)
+                tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
+                self.JackI(tempname, tempgrpname, tempsize, transformWorldMatrixNext, rotateWorldMatrixNext, tempcolour)
+                cmds.select(tempname, r=1)
+                getDelete=cmds.ls(sl=1, fl=1)
+                cmds.select(getNewGuide[0], add=1)
+                cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
+                cmds.delete(tempname)
+                cmds.delete(tempgrpname)
+        else:
+            each="name_guide"
+            transformWorldMatrix=(0, 0, 0) 
+            rotateWorldMatrix=(0, 0, 0)           
+            self.guideBuild(each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
+                         
+    def makeGuideV1(self):
         '''This is the initate buildguide function'''
         selectionCheck=cmds.ls(sl=1, fl=1)
         colour1=13
@@ -1540,36 +1590,48 @@ class BaseClass():
         '''this builds a constraint on a group of selected items to the first selected item'''
         result = cmds.promptDialog( 
                     title='Define Constraint', 
-                    message="Enter dimensions for constraint:", 
-                    text="orient, aim, parent, point", 
+                    message="Enter dimensions for multi function:", 
+                    text="orient_constraint, aim_constraint, parent_constraint, point_constraint, extrude_tube, xform", 
                     button=['Continue','Cancel'],
                     defaultButton='Continue', 
                     cancelButton='Cancel', 
                     dismissString='Cancel' )
         if result == 'Continue':
             ConstraintType=cmds.promptDialog(q=1)  
-            if ConstraintType=="orient":
+            if ConstraintType=="orient_constraint":
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
                 for each in getObj[1:]:
                     cmds.orientConstraint(getParent, each, mo=1)               
-            elif ConstraintType=="aim":
+            elif ConstraintType=="aim_constraint":
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
                 for each in getObj[1:]:
                     cmds.aimConstraint(getParent, each, mo=1)   
-            elif ConstraintType=="parent":
+            elif ConstraintType=="parent_constraint":
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
                 for each in getObj[1:]:
                     cmds.parentConstraint(getParent, each, mo=1)   
-            elif ConstraintType=="point":
+            elif ConstraintType=="point_constraint":
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
                 for each in getObj[1:]:
                     cmds.pointConstraint(getParent, each, mo=1)              
+            elif ConstraintType=="extrude_tube":
+                getObj=cmds.ls(sl=1)
+                getParent=getObj[0]
+                for each in getObj[1:]:
+                    extrude(getParent, each, ch=1, rn=0, po=1, et=2, ucp=1, fpt=1, upn=1, rotation=0, scale=1, rsp=1)   
+            elif ConstraintType=="xform":
+                getObj=cmds.ls(sl=1)
+                getParent=getObj[0]
+                for each in getObj[1:]:
+                    getTranslation, getRotation=self.locationXForm(getParent)
+                    each.setTranslation(getTranslation)
+                    each.setTranslation(getRotation)
             else:
-                print "nothing constrained"
+                print "nothing performed"
 
                     
     def buildStarSphereClusterControl(self, Guides, joints):
@@ -1840,6 +1902,11 @@ class BaseClass():
             cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
             cmds.parent(buildCube[0], each)
             
+    def cubeCala(self, name, grpname, transformWorldMatrix, rotateWorldMatrix):
+        buildCube=cmds.polyCube(n=name+"calaCube", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
+        cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
+        cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
+            
     def groupShapes(self):
         selObj=cmds.ls(sl=1, fl=1)
         for item in selObj:
@@ -1970,7 +2037,7 @@ class BaseClass():
         '''this builds controller shapes'''
         titleText=('Controller'), 
         messageText=("enter controller type"), 
-        textText=("sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
+        textText=("cube, sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
         mainName=self.makeDialog(titleText, messageText, textText)
         selectionCheck=self.selection_grab()
         if selectionCheck:
@@ -2009,7 +2076,10 @@ class BaseClass():
             self.getJoint(selectionCheck)      
         if mainName=="ballarrow":
             colour=self.fetchColour()
-            self.getballarrow(selectionCheck, colour)   
+            self.getballarrow(selectionCheck, colour) 
+        if mainName=="cube":
+            colour=self.fetchColour()
+            self.getCubeCala(selectionCheck, colour)   
         if mainName=="handle":
             colour=self.fetchColour()
             self.gethandle(selectionCheck, colour)                                 
@@ -2166,6 +2236,18 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)                 
             self.ballArrowI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
+
+    def getCubeCala(self, selectionCheck, colour):   
+        if selectionCheck:
+            for each in selectionCheck:
+                name, grpname=each+"_Ctrl", each+"_grp"
+                transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)                                                        
+                self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix)
+        else:
+            name, grpname="name_Ctrl", "name_grp"
+            transformWorldMatrix=(0, 0, 0) 
+            rotateWorldMatrix=(0, 0, 0)                 
+            self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix)
             
     def gethandle(self, selectionCheck, colour):
         if selectionCheck:
@@ -2219,6 +2301,13 @@ class BaseClass():
         size=self.makeDialog(titleText, messageText, textText)
         return float(size)  
 
+    def fetchName(self, arg=None):
+        titleText=('Define name'),                        
+        messageText=("Enter name"), 
+        textText=("name"), 
+        name=self.makeDialog(titleText, messageText, textText)
+        return name
+    
     def mirrorController(self):
         selObj=cmds.ls(sl=1)
         for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
@@ -2920,6 +3009,12 @@ class BaseClass():
         for each in remove:
             cmds.delete(each)
             
+    def selectNthCV(self):
+        getit=ls(sl=1, fl=1)
+        for each in getit:
+            for item in each.cv:
+                print item.getPosition()   
+                
     def mirrorObject(self, arg=None):
         titleText=('Define Sides'),                        
         messageText=("Enter Enter sides or leave blank, will add 'opp' to new object"), 
@@ -3234,7 +3329,7 @@ class BaseClass():
             transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
         return transformWorldMatrix, rotateWorldMatrix        
     
-    def locationXForm(self, each):
+    def locationXFormV2(self, each):
         transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0, 0, 0]:
             transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
@@ -3244,6 +3339,36 @@ class BaseClass():
             transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)  
             rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
         return  transformWorldMatrix, rotateWorldMatrix
+
+    def duplicateMove(self):
+        getSel=cmds.ls(sl=1, fl=1)
+        parentObj=getSel[0]
+        for number, each in enumerate(getSel[1:]):
+            getParent=cmds.listRelatives(each, p=1)  
+            getobj=ls(each)
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)
+            #transformWorldMatrix=getobj[0].getScalePivot(ws=1)[:3]
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)
+            newObj=cmds.duplicate(parentObj,n=parentObj+str(number))
+            cmds.xform(newObj[0], ws=1, t=transformWorldMatrix)
+            cmds.xform(newObj[0], ws=1, ro=rotateWorldMatrix)  
+            cmds.select(parentObj, r=1)
+            cmds.select(newObj[0], add=1)      
+            cmds.parent(newObj[0],getParent)
+    
+    def locationXForm(self, each):
+        getObj=ls(each)[0]
+        #transform=getObj.getTranslation()
+        transform=cmds.xform(each , q=True, ws=1, t=True)
+        if transform==[0.0, 0.0, 0.0]:
+            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
+            #transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)
+            rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True)
+        else:
+#            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
+            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)
+        return transformWorldMatrix, rotateWorldMatrix
 
     def locationXFormV1(self, each):
         transform=cmds.xform(each , q=True, ws=1, t=True)
