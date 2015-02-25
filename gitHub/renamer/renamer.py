@@ -399,4 +399,3 @@ class myUI:
             cmds.delete(shoo)
 
 inst=myUI()
-      
