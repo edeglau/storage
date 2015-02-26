@@ -1038,6 +1038,7 @@ class ToolFunctions(object):
 #                setAttr(getSecond+"."+floater, getValue)
 
     def _transfer_anim_attr(self, arg=None):
+        '''This copies values and animcurve nodes of a first selection to all secondary selections'''
         getSel=ls(sl=1)
         getChildren=getSel[1:]
         getParent=getSel[:1]
@@ -1056,7 +1057,7 @@ class ToolFunctions(object):
                             #===========================================================
                             newname=re.sub("\d+$", "", lognm)
                             cmds.rename(newAnimSrce, newname)
-                            getChangeAttr=getSecond+'.'+item                        
+                            getChangeAttr=each+'.'+item                        
                             connectAttr(newname+'.output', getChangeAttr, f=1)                             
 #                            connectAttr(getSource, each+"."+item, f=1)
                         except:
