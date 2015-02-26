@@ -523,7 +523,6 @@ class ChainRig(object):
             parentControllers=[]
             pairedParentControllers=[]  
             fiveclstrSplineCtrl=mainChain[4::5]
-            print fiveclstrSplineCtrl
             getFirstOne=mainChain[:1]
             getlastOne=mainChain[-1:]
             makeEnds=[getFirstOne[0]]+[getlastOne[0]]
@@ -554,22 +553,22 @@ class ChainRig(object):
 #        lastChild=getSortedclusterSpline[-1:]
 #        cmds.parentConstraint(lastCtrl, lastChild, mo=1, w=1.0)
         for eachCntrl in xrange(len(getMidControllers[:-1]) - 1):
-            previous_ctrl_item, current_ctrl_item, next_ctrl_item =getMidControllers[eachCntrl - 1], getMidControllers[eachCntrl], getMidControllers[eachCntrl + 1] 
+            current_ctrl_item, next_ctrl_item = getMidControllers[eachCntrl], getMidControllers[eachCntrl + 1] 
             getCurNumber=int(re.sub("\D", "", current_ctrl_item))
             getNextNumber=int(re.sub("\D", "", next_ctrl_item)) 
             getChildren=[] 
-            for item in range(previous_ctrl_item, getNextNumber):
+            for item in range(getCurNumber, getNextNumber):
                 getNum="%02d" % (item,)
                 theController=mainName+str(getNum)+clstrctrl
                 thegrp=theController.split("_Ctrl")[0]+"_grp"
                 getChildren.append(thegrp)
-            print getChildren
             BucketValue=getClass.Percentages(getChildren, 1.0, 0.0)                
             for child, weighted in map(None, getChildren, BucketValue):         
                 cmds.parentConstraint(current_ctrl_item, child, mo=1, w=weighted)
             reversedBucketValue=reversed(BucketValue)
             for child, weighted in map(None, getChildren, reversedBucketValue):
                 cmds.parentConstraint(next_ctrl_item, child, mo=1, w=weighted)
+        print firstCtrlgrp
         cmds.parent(firstCtrlgrp, "Base"+mainName+"_Ctrl")
         cmds.parent(getSortedclusterSpline, getMidControllers[0])
         cmds.parent(mainName+"01_jnt",getSortedclusterCtrl[0])
@@ -683,4 +682,6 @@ class ChainRig(object):
                     if str(THIRD) != lastInf[0]:
                         cmds.parentConstraint(eachPContrl, THIRD, mo=1, w=.5)
                 except:
-                    pass           
+                    pass            
+
+

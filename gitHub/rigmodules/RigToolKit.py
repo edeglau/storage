@@ -124,7 +124,7 @@ class ToolKitUI(object):
         cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller.", p='listBuildButtonLayout', command = self._build_ik)         
         cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute.", p='listBuildButtonLayout', command = self._stretch_ik)    
         cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='listBuildButtonLayout', command = self._stretch_ik_spline)    
-        cmds.button (label='ConstraintMaker',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
+        cmds.button (label='Multi functions',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
         cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode):select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
         cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
@@ -148,7 +148,9 @@ class ToolKitUI(object):
         cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
         cmds.button (label='MatchMatrix', p='listBuildButtonLayout', ann="This will match the exact matrix of the first selection", command = self._match_matrix)
         cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
+        cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
+        cmds.button (label='Undos back on', p='listBuildButtonLayout', command = self._turn_on_undo) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
@@ -191,6 +193,7 @@ class ToolKitUI(object):
         cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
         cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
+
 
     def _mirror_transform(self, arg=None): 
         getBaseClass.mirrorXform()
@@ -292,9 +295,9 @@ class ToolKitUI(object):
         Colours.ColourPalet()
         
     def _anim_tools(self, arg=None):
-        import Anim_tools
-        reload (Anim_tools)
-        Anim_tools.AnimMoveTools()
+        import Anim_Tools
+        reload (Anim_Tools)
+        Anim_Tools.AnimMoveTools()
 
         
     def _rig_biped(self, arg=None):
@@ -336,6 +339,9 @@ class ToolKitUI(object):
 
     def _fast_float(self, arg=None):
         getBaseClass.fastFloat()
+        
+    def _dup_move(self, arg=None):
+        getBaseClass.duplicateMove()
 
     def _blend_colour_window(self, arg=None):
         toolClass._blend_colour_window()
@@ -428,6 +434,9 @@ class ToolKitUI(object):
     def _mass_movecstr(self, arg=None):
         getBaseClass.massMove()
 
+
+    def _turn_on_undo(self, arg=None):
+        toolClass.turn_on_undo()
         
     def _load_ssd(self, arg=None):
         import SSD

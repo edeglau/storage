@@ -607,6 +607,7 @@ class ToolFunctions(object):
         cmds.parentConstraint(getHeadCtrl,getBox, mo=1)
         print "Eye Direction Present"
         
+
     def addEyeDir(self, arg=None):
         '''this sandwitches a circle control to another control for an easy override switch(face controllers for SDK keys)'''
         colour=6
@@ -1198,12 +1199,13 @@ class ToolFunctions(object):
         for each in getSel:
             getFirstattr=[(item) for item in cmds.listAttr (each, w=1, a=1, s=1, u=1, k=1, v=1, m=0) if "visibility" not in item and "scaleX" not in item and "scaleY" not in item and "scaleZ" not in item] 
             for item in getFirstattr:
-                if "." not in item:
-                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
-                    if get>0:
-                        setAttr(each+'.'+item, 0)
-                    else:
-                        setAttr(each+'.'+item, 1)
+                setAttr(each+'.'+item, 0)
+#                if "." not in item:
+#                    get=cmds.keyframe(each+'.'+item, q=1, kc=1)
+#                    if get>0:
+#                        setAttr(each+'.'+item, 0)
+#                    else:
+#                        setAttr(each+'.'+item, 1)
   
                     
                         
@@ -1318,23 +1320,32 @@ class ToolFunctions(object):
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
         gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        attributeFirstSel=optionMenu( label='From')
+        self.attributeFirstSel=optionMenu( label='From')
         for each in getFirstAttr:
             menuItem( label=each)                
         self.randomized=checkBox(label="randomize", ann="If on, number within range is randomized. If off, numbers will increment via percentage based on selection against the range")
+        self.relative=checkBox(label="relative", ann="If on, number within range is randomized. If off, numbers will increment in relative position only as opposed to absolute(default)")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="range", w=80, h=25) 
         self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
         self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(getSel, randomized=cmds.checkBox(self.randomized,q=True, value=1), getFirstattr=optionMenu(attributeFirstSel, q=1, v=1), firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self._range_attr(randomized=cmds.checkBox(self.randomized,q=True, value=1), relative=cmds.checkBox(self.relative,q=True, value=1), getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1), firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))))
         showWindow(window)
+   
         
-    def _range_attr(self, getSel, randomized, getFirstattr, firstMinValue, firstMaxValue):
-        if randomized==False:
-            self._range_inc(getSel, getFirstattr, firstMinValue, firstMaxValue)
+    def _range_attr(self, randomized, relative, getFirstattr, firstMinValue, firstMaxValue):
+        getSel=ls(sl=1, fl=1)        
+        if relative==False:
+            if randomized==False:
+                self._range_inc(getSel, getFirstattr, firstMinValue, firstMaxValue)
+            else:
+                self._range_random(getSel, getFirstattr, firstMinValue, firstMaxValue)
         else:
-            self._range_random(getSel, getFirstattr, firstMinValue, firstMaxValue)
+            if randomized==False:
+                self._range_relative(getSel, getFirstattr, firstMinValue, firstMaxValue)
+            else:
+                self._range_rel_random(getSel, getFirstattr, firstMinValue, firstMaxValue)
             
     
     def _range_inc(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
@@ -1343,13 +1354,30 @@ class ToolFunctions(object):
             getChangeAttr=each+'.'+getFirstattr
             cmds.setAttr(getChangeAttr, item)
 
+
     def _range_random(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
         for each in getSel:
             getChangeAttr=each+'.'+getFirstattr
             getVal=random.uniform(firstMinValue,firstMaxValue)
             cmds.setAttr(getChangeAttr, getVal)
 
-      
+    def _range_relative(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
+        BucketValue=getClass.Percentages(getSel, firstMinValue, firstMaxValue)
+        for each, item in map(None, getSel, BucketValue):
+            getChangeAttr=each+'.'+getFirstattr
+            getValue=cmds.getAttr(each+'.'+getFirstattr)
+            newValue=getValue+item
+            print newValue
+            cmds.setAttr(getChangeAttr, newValue)
+
+    def _range_rel_random(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
+        for each in getSel:
+            getChangeAttr=each+'.'+getFirstattr
+            getValue=cmds.getAttr(each+'.'+getFirstattr)
+            getVal=random.uniform(firstMinValue,firstMaxValue)
+            newValue=getValue+getVal
+            print newValue             
+            cmds.setAttr(getChangeAttr, newValue)      
 
     def _connSDK_alias_window(self, arg=None):
         getSel=ls(sl=1)  
@@ -1662,3 +1690,7 @@ class ToolFunctions(object):
         for Child in selObj[1:]:
             for attribute in ChildAttributes:
                 cmds.setDrivenKeyframe(Child+attribute, cd=Controller+ControllerAttributesHz)
+                
+                
+    def turn_on_undo(self, arg=None):
+        cmds.undoInfo(state=1)

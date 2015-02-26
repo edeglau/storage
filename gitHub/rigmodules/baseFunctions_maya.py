@@ -3340,21 +3340,37 @@ class BaseClass():
             rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)  
         return  transformWorldMatrix, rotateWorldMatrix
 
-    def locationXFormV(self, each):
+    def duplicateMove(self):
+        getSel=cmds.ls(sl=1, fl=1)
+        parentObj=getSel[0]
+        for number, each in enumerate(getSel[1:]):
+            getParent=cmds.listRelatives(each, p=1)  
+            getobj=ls(each)
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)
+            #transformWorldMatrix=getobj[0].getScalePivot(ws=1)[:3]
+            rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)
+            newObj=cmds.duplicate(parentObj,n=parentObj+str(number))
+            cmds.xform(newObj[0], ws=1, t=transformWorldMatrix)
+            cmds.xform(newObj[0], ws=1, ro=rotateWorldMatrix)  
+            cmds.select(parentObj, r=1)
+            cmds.select(newObj[0], add=1)      
+            cmds.parent(newObj[0],getParent)
+    
+    def locationXForm(self, each):
         getObj=ls(each)[0]
-        transform=getObj.getTranslation()
-        # transform=cmds.xform(each , q=True, ws=1, t=True)
+        #transform=getObj.getTranslation()
+        transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0.0, 0.0, 0.0]:
             transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
             #transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)
             rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True)
         else:
-            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
-            # transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)
+#            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
+            transformWorldMatrix = cmds.xform(each, q=True, ws=1, t=True)
             rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)
         return transformWorldMatrix, rotateWorldMatrix
 
-    def locationXForm(self, each):
+    def locationXFormV1(self, each):
         transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0, 0, 0]:
             transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
@@ -3389,4 +3405,4 @@ class BaseClass():
     def xformAutoTranWrist(self, aim, target):
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )   
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    
