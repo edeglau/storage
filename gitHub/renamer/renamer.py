@@ -89,7 +89,7 @@ class myUI:
         cmds.button (label='Number>>', command = lambda *args:self._insertNumberRight(breakName=cmds.textField(self.breakName, q=1, text=1)))
         cmds.button (label='<<Number', command = lambda *args:self._insertNumberLeft(breakName=cmds.textField(self.breakName, q=1, text=1)))
 
-        
+         
         cmds.setParent ('rColumn5')
         cmds.text( label='Numbers' )
         cmds.separator()
@@ -399,3 +399,4 @@ class myUI:
             cmds.delete(shoo)
 
 inst=myUI()
+      
