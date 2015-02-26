@@ -320,11 +320,11 @@ class SelectionPalettUI(object):
         This selects everything in scene by the matched name in field
         ----------------------------------------------------------------------------------'''          
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
-        if nameFieldText:
-            allObject=cmds.ls(sn=1)
-            selectedObject=[(each)for each in allObject if nameFieldText in each]
-            if selectedObject:
-                self.repopulate_list(selectedObject)
+        if nameFieldText:       
+            allObject=cmds.ls(str(nameFieldText), sn=1)
+#            selectedObject=[(each)for each in allObject if nameFieldText in each]
+            if allObject:
+                self.repopulate_list(allObject)
             else:
                 self.selection_field_error()             
         else:
@@ -338,10 +338,9 @@ class SelectionPalettUI(object):
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
         listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
         if nameFieldText:
-            allObject=cmds.ls(sn=1)
-            selectedObject=[(each)for each in allObject if nameFieldText in each]
-            if selectedObject:
-                self.adding_to_list_function_main(selectedObject, listArray)
+            allObject=cmds.ls(str(nameFieldText), sn=1)
+            if allObject:
+                self.adding_to_list_function_main(allObject, listArray)
             else:
                 self.selection_field_error()                                              
         else:
@@ -600,3 +599,5 @@ class SelectionPalettUI(object):
 
 inst = SelectionPalettUI()
 inst.create_select_array_window()
+      
+
