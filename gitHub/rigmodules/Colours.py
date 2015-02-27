@@ -24,7 +24,7 @@ class ColourPalet(object):
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
 
-        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=150, h=100 )
+        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=300, h=100 )
 
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
@@ -35,18 +35,28 @@ class ColourPalet(object):
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(100, 20))
-        colMenu=cmds.optionMenu( label='Colors')
-        cmds.menuItem( label='Red' )
-        cmds.menuItem( label='Blue' )
-        cmds.menuItem( label='Green' )
-        cmds.menuItem( label='Yellow' )
-        cmds.menuItem( label='DarkYellow' )    
-        cmds.menuItem( label='ForestGreen' )        
-        cmds.menuItem( label='DarkRed' )        
-        cmds.menuItem( label='Maroon' )    
-        cmds.menuItem( label='Torquise' )             
-        cmds.button (label='Change Selection', p='listBuildButtonLayout', command = self._change_colour)
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        colMenu=cmds.optionMenu( label='Colors', w=150)
+        cmds.menuItem( label='Bright Red' )#1
+        cmds.menuItem( label='Bright Blue' )#2
+        cmds.menuItem( label='Bright Green' )#3
+        cmds.menuItem( label='Bright Yellow' )#4
+        cmds.menuItem( label='Dark Yellow' )#5    
+        cmds.menuItem( label='Dark Green' )#6     
+        cmds.menuItem( label='Dark Red' )#7    
+        cmds.menuItem( label='Maroon' )#8
+        cmds.menuItem( label='Torquise' )#9             
+        cmds.menuItem( label='Light Pink' )  
+        cmds.menuItem( label='Skin' )         
+        cmds.menuItem( label='Light Brown' )
+        cmds.menuItem( label='Forest Green' )
+        cmds.menuItem( label='Teal Green' )
+        cmds.menuItem( label='Purple' )
+        cmds.menuItem( label='Light Blue' )
+        cmds.menuItem( label='Dark Blue' )
+        cmds.menuItem( label='Darkest Blue' )
+        cmds.menuItem( label='Brown' )
+        cmds.button (label='Change Selection', w=150, p='listBuildButtonLayout', command = self._change_colour)
         cmds.showWindow(self.window)
 
     def _change_colour(self, arg=None):
@@ -64,15 +74,35 @@ class ColourPalet(object):
         elif queryColor==4:
             color=22
         elif queryColor==5:
-            color=25
+            color=25#Dark Yellow
         elif queryColor==6:
-            color=23    
+            color=23#Dark Green
         elif queryColor==7:
-            color=4
+            color=4#Dark Red
         elif queryColor==8:
             color=31
         elif queryColor==9:
-            color=28          
+            color=28#Sky Blue    
+        elif queryColor==10:
+            color=20#Pink
+        elif queryColor==11:
+            color=21#Orange       
+        elif queryColor==12:
+            color=24#LBrown
+        elif queryColor==13:
+            color=26#Forest Green
+        elif queryColor==14:
+            color=27#Light Teal
+        elif queryColor==15:
+            color=30#Purple
+        elif queryColor==16:
+            color=29#Light Blue
+        elif queryColor==17:
+            color=15#Dark Blue
+        elif queryColor==18:
+            color=5#Darkest Blue            
+        elif queryColor==19:
+            color=10#Brown
         for each in getSel:
             cmds.setAttr(each+".overrideEnabled", 1)
             cmds.setAttr(each+".overrideColor", color)            
