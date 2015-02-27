@@ -1196,13 +1196,11 @@ class BaseClass():
         guideName=self.fetchName()
         if selectionCheck:
             for indexNumber, eachPoint in enumerate(xrange(len(selectionCheck) - 1)):
-                incrementals=indexNumber+1
-                getNum="%02d" % (incrementals,)
+                name=self.guide_names(indexNumber, guideName)               
                 each, next_item = selectionCheck[eachPoint], selectionCheck[eachPoint + 1]             
 #            for each in selectionCheck:
                 transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
                 transformWorldMatrixNext, rotateWorldMatrixNext=self.locationXForm(next_item)
-                name=guideName+getNum+"_guide"            
                 self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
                 getNewGuide=cmds.ls(sl=1, fl=1)
                 tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
@@ -1218,7 +1216,13 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)           
             self.guideBuild(each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-                         
+
+    def guide_names(self, indexNumber, guideName):                
+        incrementals=indexNumber+1
+        getNum="%02d" % (incrementals,)
+        name=guideName+getNum+"_guide"  
+        return name                
+                
     def makeGuideV1(self):
         '''This is the initate buildguide function'''
         selectionCheck=cmds.ls(sl=1, fl=1)
