@@ -1,0 +1,9 @@
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+if nodeType(getit[0])=="transform":
+    for each in getit:
+        for item in each.cv[1]:
+            delete(item)
+elif nodeType(getit[0])=="nurbsCurve":
+    for each in getit[1]:
+        delete(each)
