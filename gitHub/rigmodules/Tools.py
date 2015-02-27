@@ -1320,10 +1320,12 @@ class ToolFunctions(object):
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
-        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(150, 20))
         self.attributeFirstSel=optionMenu( label='From')
         for each in getFirstAttr:
-            menuItem( label=each)                
+            menuItem( label=each)
+        gridLayout('checkboxlayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 20))                
+        cmds.text(label="options", w=80, h=25)
         self.randomized=checkBox(label="randomize", ann="If on, number within range is randomized. If off, numbers will increment via percentage based on selection against the range")
         self.relative=checkBox(label="relative", ann="If on, number within range is randomized. If off, numbers will increment in relative position only as opposed to absolute(default)")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
@@ -1379,6 +1381,69 @@ class ToolFunctions(object):
             newValue=getValue+getVal
             print newValue             
             cmds.setAttr(getChangeAttr, newValue)      
+
+
+
+    def cv_remove_window(self, arg=None):
+        getSel=ls(sl=1, fl=1)  
+        if len(getSel)>0:
+            pass
+        else:
+            print "need to select something" 
+            return       
+        getFirst=getSel[0]
+        global attributeFirstSel
+        global makeAttr
+        getFirstAttr=[]
+        getAttrs=listAttr (getFirst, w=1, a=1, s=1,u=1) 
+        for each in getAttrs:
+            if ']' in each:
+                getNewEach=each.split('.')[-1:]
+                getFirstAttr.append(getNewEach[0])
+            else:
+                getFirstAttr.append(each)
+        getFirstAttr=sorted(getFirstAttr)  
+        winName = "Cull CV"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
+        cmds.text(label="every",  p='txvaluemeter', w=80, h=25)         
+        cmds.text(label="every other",  p='txvaluemeter', w=80, h=25) 
+        self.remove=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        self.removeNth=cmds.textField(w=40, h=25, p='txvaluemeter', text="2")  
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 20))             
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.removeCV(remove=int(textField(self.remove,q=1, text=1))))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=int(textField(self.removeNth,q=1, text=1))))
+        showWindow(window)
+        
+                
+    def remove_Nth(self, removeNth):  
+        getSel=ls(sl=1, fl=1)     
+        if nodeType(getSel[0])=="transform":
+            for each in getSel:
+                for item in each.cv[::removeNth]:
+                    delete(item)
+        elif nodeType(getSel[0])=="nurbsCurve":
+            for each in getSel[::removeNth]:
+                delete(each)
+
+    def removeCV(self, remove):
+        getSel=ls(sl=1, fl=1)
+        if nodeType(getSel[0])=="transform":         
+            for each in getSel:
+                for item in each.cv[remove]:
+                    delete(item)
+        elif nodeType(getSel[0])=="nurbsCurve":                
+            for each in getSel:
+                delete(each.cv[remove])
 
     def _connSDK_alias_window(self, arg=None):
         getSel=ls(sl=1)  
