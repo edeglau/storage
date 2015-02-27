@@ -142,7 +142,7 @@ class ToolKitUI(object):
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
         cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
         cmds.button (label='ResetSelected', p='listBuildButtonLayout', ann="This will reset the selected to 0.0(transforms only - will not affect control box attributes)", command = self._reset_selected)
-        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='listBuildButtonLayout', command = self._remove_anim)   
+        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='listBuildButtonLayout', command = self._erase_anim)   
         cmds.button (label='Toggle Nullify object', ann="Hides object and makes unkeyable. USES: hide locators from animators", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
         cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
@@ -150,6 +150,7 @@ class ToolKitUI(object):
         cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
         cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
+        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV) 
         cmds.button (label='Undos back on', p='listBuildButtonLayout', command = self._turn_on_undo) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
@@ -357,14 +358,17 @@ class ToolKitUI(object):
 
     def _transfer_anim_attr(self, arg=None):
         toolClass._transfer_anim_attr()
+        
+    def _remove_CV(self, arg=None):
+        toolClass.cv_remove_window()
 
     def _findAttr_window(self, arg=None):  
         toolClass._findAttr_window()
 
     def _remove_anim(self, arg=None):
-        toolClass._reset() 
         toolClass._erase_anim()
-
+        toolClass._reset() 
+        
     def _erase_anim(self, arg=None):
         toolClass._erase_anim()
 
