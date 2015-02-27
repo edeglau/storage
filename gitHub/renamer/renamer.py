@@ -13,7 +13,21 @@ __version__ = 1.00
 import maya.cmds as cmds
 from functools import partial
 from string import *
-import re
+import re, sys, os
+from inspect import getsourcefile
+from os.path import abspath
+getfilePath=str(abspath(getsourcefile(lambda _: None)))
+#getfilePath=str('__file__')
+filepath= os.getcwd()
+
+gtepiece=getfilePath.split("\\")
+getguideFilepath='/'.join(gtepiece[:-2])+"/rigModules/"
+sys.path.append(str(getguideFilepath))
+
+import baseFunctions_maya
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+
 
 badNameList=[
              "pSphere", 
@@ -49,6 +63,7 @@ class myUI:
         cmds.button (label='Rename', command = self.rename)
         cmds.separator()
         cmds.textField(self.relname, edit=True, enterCommand=('cmds.setFocus(\"' + self.relname + '\")'))
+        cmds.button (label='Guide names',bgc=[0.8, 0.75, 0.6], command = self.guide_name) 
         cmds.separator()
         cmds.button (label='Check for bad names', command = self.badname) 
 
@@ -89,7 +104,7 @@ class myUI:
         cmds.button (label='Number>>', command = lambda *args:self._insertNumberRight(breakName=cmds.textField(self.breakName, q=1, text=1)))
         cmds.button (label='<<Number', command = lambda *args:self._insertNumberLeft(breakName=cmds.textField(self.breakName, q=1, text=1)))
 
-         
+        
         cmds.setParent ('rColumn5')
         cmds.text( label='Numbers' )
         cmds.separator()
@@ -139,8 +154,15 @@ class myUI:
                 else:
                     aNewString=cmds.rename(each, newname) 
 
-                     
-                                
+    def guide_name(self, arg=None):
+        selectionCheck=cmds.ls(sl=1, fl=1)         
+        guideName=getClass.fetchName()
+        if selectionCheck:
+            for indexNumber, eachSelObj in enumerate(xrange(len(selectionCheck) - 1)):
+                newname=getClass.guide_names(indexNumber, guideName)
+                print newname
+                cmds.rename(selectionCheck[eachSelObj], newname)
+                
     def _shift_beg(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
         for each in selObj:
@@ -149,7 +171,7 @@ class myUI:
                 newname=breakName+ffile
                 findNumber=self.checkName(newname)  
                 if findNumber==True:
-                     print self.error_message_num()
+                    print self.error_message_num()
                 else:
                     aNewString=cmds.rename(each, newname)  
       
