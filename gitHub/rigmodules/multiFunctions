@@ -27,7 +27,7 @@ class MultiFunctionClass(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=300, h=100 )
 
         cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         
@@ -35,15 +35,15 @@ class MultiFunctionClass(object):
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        colMenu=cmds.optionMenu( label='Multi-Function', w=150)
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
+        colMenu=cmds.optionMenu( label='Functions', w=300)
         cmds.menuItem( label="orient_constraint" )#1
         cmds.menuItem( label="aim_constraint")#2
         cmds.menuItem( label="parent_constraint")#3
         cmds.menuItem( label="point_constraint" )#4
         cmds.menuItem( label="extrude_tube")#5    
         cmds.menuItem( label="xform")#6 
-        cmds.button (label='Change Selection', w=150, p='listBuildButtonLayout', command = self.perform_multi_function)
+        cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = self.perform_multi_function)
         cmds.showWindow(self.window)
 
 
@@ -74,4 +74,4 @@ class MultiFunctionClass(object):
                 print "nothing performed"         
             
 inst = MultiFunctionClass()
-inst.multi_function_win
+inst.multi_function_window()
