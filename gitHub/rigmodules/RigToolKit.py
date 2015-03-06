@@ -37,6 +37,11 @@ getfilePath=str(abspath(getsourcefile(lambda _: None)))
 filepath= os.getcwd()
 
 sys.path.append(str(filepath))
+# gtepiece=getfilePath.split("\\")
+# getEndPath='/'.join(gtepiece[:-2])
+# print getEndPath
+# sys.path.append(str(getEndPath))
+
 import baseFunctions_maya
 reload (baseFunctions_maya)
 getBaseClass=baseFunctions_maya.BaseClass()
@@ -109,13 +114,14 @@ class ToolKitUI(object):
         cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_biped_mirror)
         cmds.button (label='Build Quad', ann="This is the Quad MG rig system", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_quad)
         cmds.button (label='Face Hugger', ann="This is the Face Hugger rig", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._rig_face)                
-        cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._skinning)        
+        cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._skinning)       
         cmds.text(label="") 
         cmds.text(label="Mini rigs")          
         cmds.text(label="")              
         cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Isolated joints that control CVs along a curve with no IK or FK dependencies. Create a guide chain then use this to create a curve rig. USES: Tongue, worm, eyelash line rig", p='listBuildButtonLayout', command = self._curve_rig)    
         cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='listBuildButtonLayout', command = self.chain_rig)    
         cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
+        cmds.button (label='Multi functions',bgc=[0.45, 0.5, 0.5],ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._grp_insert)          
         cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
         cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. Adds selected object to a new created rivet. Select two edges of one object and then the object you want to rivet to the first. USES: buttons", p='listBuildButtonLayout', command = self._rivet_obj)             
@@ -124,10 +130,9 @@ class ToolKitUI(object):
         cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller.", p='listBuildButtonLayout', command = self._build_ik)         
         cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute.", p='listBuildButtonLayout', command = self._stretch_ik)    
         cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='listBuildButtonLayout', command = self._stretch_ik_spline)    
-        cmds.button (label='Multi functions',ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
-        cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode):select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
-        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains): Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
+        cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode)select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
+        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
         cmds.text(label="") 
         cmds.text(label="Tools")
         cmds.text(label="")         
@@ -154,7 +159,7 @@ class ToolKitUI(object):
         cmds.button (label='Undos back on', p='listBuildButtonLayout', command = self._turn_on_undo) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
-#        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                               
+#        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
         cmds.text(label="") 
         cmds.text(label="Controllers")
         cmds.text(label="")           
@@ -163,6 +168,20 @@ class ToolKitUI(object):
         cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_colours)    
         cmds.button (label='Limits', ann="An interface for creating limits on rigs. Can globally set, load or reset a rig.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._change_limit_values)    
         cmds.button (label='Combine Shapes', ann="Combines selected curves into a single shape", p='listBuildButtonLayout', command = self._group_shapes)   
+        cmds.text(label="")  
+        cmds.text(label="Attributes")          
+        cmds.text(label="")  
+        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple 0-1 float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connect attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
+        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creates a float alias attributes from first selection to second(no min/max)",  p='listBuildButtonLayout',command = self._createAlias_window)                  
+        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
+        cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
+        cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
+        cmds.button (label='Fetch Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
+        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
+        cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
+        cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
         cmds.text(label="")  
         cmds.text(label="Attributes")          
         cmds.text(label="")  
@@ -190,10 +209,7 @@ class ToolKitUI(object):
         cmds.button (label='Open Image Gimp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
         cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
         cmds.button (label='Add Revert', ann="Adds the revert (mel - Author: NextDesign - from Highend/Creative crash) script to the File drop down in Maya.", p='listBuildButtonLayout', command = self._revert)          
-        cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)  
-        cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
-        cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', p='selectArrayColumn')      
-        cmds.text (label='available: https://github.com/edeglau/storage/tree/master/gitHub/',w=500, al='left', p='selectArrayColumn')      
+        cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)     
         cmds.showWindow(self.window)
 
 
@@ -405,8 +421,11 @@ class ToolKitUI(object):
         getBaseClass.cleanModels()
         
     def _constraint_maker(self, arg=None):
-        getBaseClass.constraintMaker()  
-            
+        #getBaseClass.constraintMaker()  
+        import multiFunctions
+        reload (multiFunctions)
+        multiFunctions.MultiFunctionClass() 
+
     def _make_shape(self, arg=None):
         getBaseClass.makeShape()
 
