@@ -1426,14 +1426,15 @@ class ToolFunctions(object):
         
                 
     def remove_Nth(self, removeNth):  
-        getSel=ls(sl=1, fl=1)     
+        getSel=ls(sl=1, fl=1)   
+        getSel=getSel[:1]  
         if nodeType(getSel[0])=="transform":
             for each in getSel:
                 for item in each.cv[::removeNth]:
                     delete(item)
         elif nodeType(getSel[0])=="nurbsCurve":
-            for each in getSel[::removeNth]:
-                delete(each)
+            for each in getSel[::removeNth]:         
+        		delete(each)
 
     def removeCV(self, remove):
         getSel=ls(sl=1, fl=1)
