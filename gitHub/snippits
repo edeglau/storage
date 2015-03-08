@@ -1652,6 +1652,27 @@ for each in getSel:
         pgetCVpos=item.getPosition(space='preTransform')
         getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
         getParam=each.getParamAtPoint(getpoint, space='preTransform')
-        pathAnimation -fractionMode true -follow true -followAxis x -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+        pathAnimation(fractionMode=1, follow=1, followAxis x, upAxis=y, worldUpType= "vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)
         setAttr "motionPath1.uValue" getParam;
         disconnectAttr motionPath1_uValue.output motionPath1.uValue;
+
+        
+        
+getSel=ls(sl=1)
+stuff=ls("name*_Clst_jnt_grp")
+
+
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+        pgetCVpos=eachCV.getPosition(space='preTransform')
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(each, add=1)
+        try:
+	        pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)
+	        disconnectAttr("motionPath1_uValue.output", "motionPath1.uValue")
+	        setAttr("motionPath1.uValue", getParam)
+	    except:
+	    	pass
+
