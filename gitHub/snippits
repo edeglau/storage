@@ -1638,3 +1638,20 @@ for eachCurve in medLeadCurve:
 select("micro_lead_crv", r=1)
 wire(w="med_lead_crv", n="wire_def", gw=0, en=1.000000, ce=0.000000, li=1.000000, dds=[(0, 500)] )
 
+
+
+
+
+
+
+
+
+getSel=ls(sl=1)
+for each in getSel:
+    for item in each.cv:
+        pgetCVpos=item.getPosition(space='preTransform')
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        pathAnimation -fractionMode true -follow true -followAxis x -upAxis y -worldUpType "vector" -worldUpVector 0 1 0 -inverseUp false -inverseFront false -bank false -startTimeU `playbackOptions -query -minTime` -endTimeU  `playbackOptions -query -maxTime`;
+        setAttr "motionPath1.uValue" getParam;
+        disconnectAttr motionPath1_uValue.output motionPath1.uValue;
