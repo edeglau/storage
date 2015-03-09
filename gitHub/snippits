@@ -1740,3 +1740,85 @@ for each in getSel:
         getpth=str(motionPath)
         setAttr(motionPath+".fractionMode", False)
         setAttr(motionPath+".uValue", getParam)            
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+filepath="D:\\code\\git\\myGit\\gitHub\\rigmodules\\"
+sys.path.append(str(filepath))
+import baseFunctions_maya
+import re
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+from pymel.core import *
+getIKCurveCVs=cmds.ls("nameIK_crv", fl=1)
+CVbucket=[]
+microLeadCurve=cmds.duplicate("nameIK_crv", n="micro_lead_crv")
+for eachCurve in microLeadCurve:
+    getCurve=ls(eachCurve)[0]
+    for eachCV in getCurve.cv:
+        CVbucket.append(eachCV)
+getNum=len(CVbucket)-2
+medLeadCurveNum=getNum/3
+CVbucket=CVbucket[:1]+CVbucket[2:]
+CVbucket=CVbucket[:-2]+CVbucket[-1:]
+getObjects=cmds.ls("name*_Clst_jnt_grp", fl=1)
+medLeadCurve=cmds.duplicate("micro_lead_crv", n="med_lead_crv")
+cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
+size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0 
+for eachCurve in medLeadCurve:
+    getCurve=ls(eachCurve)[0]
+    for eachCV in getCurve.cv:
+        getNum=re.sub("\D", "", str(eachCV))
+        getNum=int(getNum)
+        getNum="%02d" % (getNum,)
+        name, grpname="name"+str(getNum)+"_med_Ctrl", "name"+str(getNum)+"_med_grp"
+        CVbucket.append(eachCV)
+        transformWorldMatrix=eachCV.getPosition()
+        rotateWorldMatrix=[0.0, 0.0, 0.0]
+        select(eachCV, r=1)
+        getNewClust=cmds.cluster()
+        getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
+select("micro_lead_crv", r=1)
+wire(w="med_lead_crv", n="wire_def", gw=0, en=1.000000, ce=0.000000, li=1.000000, dds=[(0, 500)] )
+
+
+getSel=ls(sl=1)
+curvestuff=getSel[0]
+stuff=ls("name*_Clst_jnt_grp")
+CVbucket=[]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+        CVbucket.append(eachCV)
+CVbucket=CVbucket[:1]+CVbucket[2:]
+CVbucket=CVbucket[:-2]+CVbucket[-1:]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, CVbucket, stuff):
+        print eachCV
+        print eachCtrlGro
+        pgetCVpos=eachCV.getPosition(space='preTransform')
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(getSel[0], add=1)
+        motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+        disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+        getpth=str(motionPath)
+        setAttr(motionPath+".fractionMode", False)
+        setAttr(motionPath+".uValue", getParam)    
