@@ -1676,3 +1676,67 @@ for each in getSel:
 	    except:
 	    	pass
 
+
+
+
+getSel=ls(sl=1)
+curvestuff=getSel[0]
+stuff=ls("name*_Clst_jnt_grp")
+for each in getSel:
+for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+    pgetCVpos=eachCV.getPosition(space='preTransform')
+    getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+    getParam=each.getParamAtPoint(getpoint, space='preTransform')
+    select(eachCtrlGro, r=1)
+    select(getSel[0], add=1)
+    motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)
+    setAttr(motionPath[0]+".uValue", getParam)        
+    disconnectAttr(motionPath[0]+"_uValue.output", "motionPath1.uValue")
+    
+    
+getSel=ls(sl=1)
+curvestuff=getSel[0]
+stuff=ls("name*_Clst_jnt_grp")
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, each.cv[:-1], stuff[:-1]):
+        pgetCVpos=eachCV.getPosition(space='preTransform')
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(getSel[0], add=1)
+        try:
+            motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)
+            setAttr(motionPath+".uValue", getParam)        
+            disconnectAttr(motionPath+"_uValue.output", "motionPath1.uValue")
+        except:
+            pass
+            
+            
+            
+            
+            
+            
+            
+getSel=ls(sl=1)
+curvestuff=getSel[0]
+stuff=ls("name*_Clst_jnt_grp")
+CVbucket=[]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+        CVbucket.append(eachCV)
+CVbucket=CVbucket[:1]+CVbucket[2:]
+CVbucket=CVbucket[:-2]+CVbucket[-1:]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, CVbucket, stuff):
+        print eachCV
+        print eachCtrlGro
+        pgetCVpos=eachCV.getPosition(space='preTransform')
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(getSel[0], add=1)
+        motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+        disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+        getpth=str(motionPath)
+        setAttr(motionPath+".fractionMode", False)
+        setAttr(motionPath+".uValue", getParam)            
