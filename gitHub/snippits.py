@@ -1,5 +1,15 @@
 from pymel.core import *
 getit=ls(sl=1, fl=1)
+for each in getit:
+    print each.getTranslation()
+
+selected_polygons = [p for p in mesh.polygons if p.select]
+selected_edges = [e for e in mesh.vertices if e.select]
+selected_vertices = [v for v in mesh.vertices if v.select]
+
+
+from pymel.core import *
+getit=ls(sl=1, fl=1)
 if nodeType(getit[0])=="transform":
     for each in getit:
         for item in each.cv[1]:
@@ -1821,4 +1831,94 @@ for each in getSel:
         disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
         getpth=str(motionPath)
         setAttr(motionPath+".fractionMode", False)
-        setAttr(motionPath+".uValue", getParam)    
+        setAttr(motionPath+".uValue", getParam) 
+        
+        
+        
+        
+        
+        
+medLeadCurve=cmds.duplicate("nameIK_crv", n="med_lead_crv")
+cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
+curvestuff=getSel[0]
+stuff=ls("name*_Clst_jnt_grp")
+CVbucket=[]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+        CVbucket.append(eachCV)
+CVbucket=CVbucket[:1]+CVbucket[2:]
+CVbucket=CVbucket[:-2]+CVbucket[-1:]
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, CVbucket, stuff):
+        print eachCV
+        print eachCtrlGro
+        pgetCVpos=eachCtrlGro.getTranslation()
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(getSel[0], add=1)
+        motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+        disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+        getpth=str(motionPath)
+        setAttr(motionPath+".fractionMode", False)
+        setAttr(motionPath+".uValue", getParam) 
+
+
+
+
+
+filepath="D:\\code\\git\\myGit\\gitHub\\rigmodules\\"
+sys.path.append(str(filepath))
+import baseFunctions_maya
+import re
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+from pymel.core import *
+CVbucket=[]
+microLeadCurve=ls("nameIK_crv")
+medLeadCurve=cmds.duplicate("nameIK_crv", n="med_lead_crv")
+stuff=ls("name*_Clst_jnt_grp")
+CVbucket=[]
+for eachCurve in microLeadCurve:
+    getCurve=ls(eachCurve)[0]
+    for eachCV in getCurve.cv:
+        CVbucket.append(eachCV)
+getNum=len(CVbucket)-2
+medLeadCurveNum=getNum/6
+cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
+size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0 
+CVbucket=[]
+for eachCurve in medLeadCurve:
+    getCurve=ls(eachCurve)[0]
+    for eachCV in getCurve.cv:
+        getNum=re.sub("\D", "", str(eachCV))
+        getNum=int(getNum)
+        getNum="%02d" % (getNum,)
+        name, grpname="name"+str(getNum)+"_med_Ctrl", "name"+str(getNum)+"_med_grp"
+        CVbucket.append(eachCV)
+        transformWorldMatrix=eachCV.getPosition()
+        rotateWorldMatrix=[0.0, 0.0, 0.0]
+        select(eachCV, r=1)
+        getNewClust=cmds.cluster()
+        getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
+for each in microLeadCurve:
+    for eachCV, eachCtrlGro in map(None, each.cv, stuff):
+        CVbucket.append(eachCV)
+CVbucket=CVbucket[:1]+CVbucket[2:]
+CVbucket=CVbucket[:-2]+CVbucket[-1:]
+getSel=ls(medLeadCurve)
+for each in getSel:
+    for eachCV, eachCtrlGro in map(None, CVbucket, stuff):
+        print eachCV
+        print eachCtrlGro
+        pgetCVpos=eachCtrlGro.getTranslation()
+        getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+        getParam=each.getParamAtPoint(getpoint, space='preTransform')
+        select(eachCtrlGro, r=1)
+        select(getSel[0], add=1)
+        motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+        disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+        getpth=str(motionPath)
+        setAttr(motionPath+".fractionMode", False)
+        setAttr(motionPath+".uValue", getParam) 
