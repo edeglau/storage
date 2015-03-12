@@ -1,0 +1,131 @@
+###print attribute, frame number and values to file
+
+
+import maya.cmds as cmds
+jok=cmds.currentTime(q=1)
+myFileObject=open('/drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt', 'w')
+print "Is currently being written to /drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt :"
+myAtF=[]
+noatt=['controlPoints.xValue', 'controlPoints.yValue', 'controlPoints.zValue', 'colorSet.clamped', 'colorSet.representation', 'uvSet.uvSetName', 'colorSet.colorName']
+flepath=cmds.file(q=1, exn=1)
+myFileObject.writelines( "%s"%flepath +'\n')
+flepath=cmds.file(q=1, exn=1)
+myFileObject.writelines( "values as of frame"+" "+"%s"%jok +'\n')
+print "values as of frame "+" "+ "%s"%jok
+print flepath
+n_str=cmds.ls(sl=1, s=0)
+for k in range (len(n_str)):
+    ijop=cmds.listAttr(n_str[k], k=1, v=1)
+    for o in range (len(noatt)):
+        if noatt[o] in ijop:
+            ijop.remove(noatt[o])
+    myFileObject.writelines( '________________________' +'\n')
+    print '________________________'
+    print n_str[k]
+    myFileObject.writelines( '%s'%n_str[k] +'\n')
+    for i in range (len(ijop)):
+        getTatt=cmds.getAttr(n_str[k]+'.'+ijop[i])
+        myFileObject.writelines( '%s'%ijop[i]+'\n' )
+        myFileObject.writelines( '%s'%getTatt+'\n' )
+        print ijop[i]
+        print getTatt
+    myFileObject.writelines( '>>>' +'\n')
+    print '>>>'
+myFileObject.close()
+
+
+
+
+
+
+################################################################################
+################################################################################
+
+################################################################################
+
+################################################################################
+####name only
+
+import maya.cmds as cmds
+myFileObject=open('/drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt', 'w')#change this to a stored empty txt file of your choice
+print "Is currently being written to /drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt :"
+flepath=cmds.file(q=1, exn=1)
+myFileObject.writelines( "%s"%flepath +'\n')
+print flepath
+n_str=cmds.ls(sl=1)
+for y in range(len(n_str)):
+    myFileObject.writelines( '________________________' +'\n')
+    print '________________________'
+    print n_str[y]
+    myFileObject.writelines( '%s'%n_str[y] +'\n')
+    myFileObject.writelines( '>>>' +'\n')
+    print '>>>'
+    ls_str=cmds.attributeInfo( n_str[y], all=1 )
+    for r in range(len(ls_str)):
+        if "cf" in ls_str[r]:
+            myAtF.append(ls_str[r])
+    for item in myAtF:
+        print item
+        myFileObject.writelines( '%s'%item +'\n')
+        myAtF=[]
+myFileObject.close()
+
+
+import maya.cmds as cmds
+myFileObject=open('/drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt', 'w')
+print "Is currently being written to /drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt :"
+flepath=cmds.file(q=1, exn=1)
+myFileObject.writelines( "%s"%flepath +'\n')
+print flepath
+myFileObject.writelines( '__' +'\n')
+print "--"
+myFileObject.writelines( 'Controller(s) selected:' +'\n')
+myFileObject.writelines( '__' +'\n')
+n_str=cmds.ls(sl=1)
+for item in n_str:
+    myFileObject.writelines("%s"%item +'\n')
+    print item
+myFileObject.writelines( '__' +'\n')
+print "--"
+myFileObject.writelines( 'Changes are:' +'\n')
+myAtF=[]
+ls_str=cmds.attributeInfo( n_str, all=1 )
+cf_att=["cf"]
+path=str(cmds.file(q=1,exn=1))
+for r in range(len(ls_str)):
+    for i in range(len(cf_att)):
+        if cf_att[i] in ls_str[r]:
+            myAtF.append(ls_str[r])
+myFileObject.writelines( "__"+'\n')
+for item in myAtF:
+    myFileObject.writelines( '%s'%item +'\n')
+    print item
+myFileObject.close()
+
+
+
+###
+import maya.cmds as cmds
+myFileObject=open('/drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt', 'w')
+print "Is currently being written to /drd/jobs/hf2/wip/depts/rig/users/elise.deglau/docs/writefolder/data1.txt :"
+flepath=cmds.file(q=1, exn=1)
+myFileObject.writelines( "%s"%flepath +'\n')
+print flepath
+myFileObject.writelines( '__' +'\n')
+print "--"
+cf_att=["cf"]
+n_str=cmds.ls(sl=1)
+for p in range (len(n_str)):
+    ls_str=cmds.attributeInfo( n_str[p], all=1 )
+    for r in range(len(ls_str)):
+        for i in range(len(cf_att)):
+            if cf_att[i] in ls_str[r]:
+                myAtF.append(ls_str[r])
+                for item in myAtF:
+                    myFileObject.writelines( '%s'%item +'\n')
+                    print item
+
+myFileObject.close()
+
+
+####

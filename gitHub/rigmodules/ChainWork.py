@@ -622,21 +622,82 @@ class ChainRig(object):
         if cmds.ls(mainName+"*_sml_Ctrl"):
            smlinfluencedCtrl=cmds.ls(mainName+"*_sml_Ctrl")
 
-#         if maxinfluencedCtrl:
-#             print "THERE ARE MAX CONTROLLERS PRESENT"
-#             getControllerBucket=maxinfluencedCtrl                      
-# #            cmds.parentConstraint("Secondary"+mainName+"_Ctrl", mo=1, w=.5)
-#         elif majinfluencedCtrl:
-#             print "THERE ARE MAJOR CONTROLLERS PRESENT"
-#             getControllerBucket=majinfluencedCtrl
-#         elif medinfluencedCtrl:
-#             print "THERE ARE MEDIUM CONTROLLERS PRESENT"  
-#             getControllerBucket=medinfluencedCtrl
-#         elif smlinfluencedCtrl:
-#             print "THERE ARE SMALL CONTROLLERS PRESENT"    
-#             getControllerBucket=smlinfluencedCtrl              
-# 
-#         print getControllerBucket
+        if maxinfluencedCtrl:
+            print "THERE ARE MAX CONTROLLERS PRESENT"
+            getControllerBucket=maxinfluencedCtrl                      
+#            cmds.parentConstraint("Secondary"+mainName+"_Ctrl", mo=1, w=.5)
+        elif majinfluencedCtrl:
+            print "THERE ARE MAJOR CONTROLLERS PRESENT"
+            getControllerBucket=majinfluencedCtrl
+        elif medinfluencedCtrl:
+            print "THERE ARE MEDIUM CONTROLLERS PRESENT"  
+            getControllerBucket=medinfluencedCtrl
+        elif smlinfluencedCtrl:
+            print "THERE ARE SMALL CONTROLLERS PRESENT"    
+            getControllerBucket=smlinfluencedCtrl              
+ 
+        print getControllerBucket
+
+        controllerType="_med_grp"
+        microLeadCurve=ls(mainName+"IK_crv")
+        childControllers=ls(mainName+"*_Clst_jnt_grp")
+        childCurve=mainName+"IK_crv"
+        parentCurve=mainName+"_med_lead_crv"
+        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
+ 
+    def macroControls(self, 
+                      mainName,
+                      controllerType,
+                      childControllers,
+                      microLeadCurve, 
+                      childCurve, 
+                      parentCurve,
+                      size, colour, nrx, nry, nrz ):
+        microLeadCurve=ls(childCurve)
+        medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
+        CVbucket=[]
+        for eachCurve in microLeadCurve:
+            getCurve=ls(eachCurve)[0]
+            for eachCV in getCurve.cv:
+                CVbucket.append(eachCV)
+        getNum=len(CVbucket)-2
+        medLeadCurveNum=getNum/6
+        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
+        CVbucket=[]
+        for eachCurve in medLeadCurve:
+            getCurve=ls(eachCurve)[0]
+            for eachCV in getCurve.cv:
+                getNum=re.sub("\D", "", str(eachCV))
+                getNum=int(getNum)
+                getNum="%02d" % (getNum,)
+                name, grpname=mainName+str(getNum)+controllerType, mainName+str(getNum)+controllerType
+                CVbucket.append(eachCV)
+                transformWorldMatrix=eachCV.getPosition()
+                rotateWorldMatrix=[0.0, 0.0, 0.0]
+                select(eachCV, r=1)
+                getNewClust=cmds.cluster()
+                getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+                cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
+        for each in microLeadCurve:
+            for eachCV, eachCtrlGro in map(None, each.cv, childControllers):
+                CVbucket.append(eachCV)
+        CVbucket=CVbucket[:1]+CVbucket[2:]
+        CVbucket=CVbucket[:-2]+CVbucket[-1:]
+        medLeadCurve=ls(medLeadCurve)
+        for each in medLeadCurve:
+            for eachCV, eachCtrlGro in map(None, CVbucket, childControllers):
+                pgetCVpos=eachCtrlGro.getTranslation()
+                getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+                getParam=each.getParamAtPoint(getpoint, space='preTransform')
+                select(eachCtrlGro, r=1)
+                select(medLeadCurve[0], add=1)
+                motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+                disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+                getpth=str(motionPath)
+                setAttr(motionPath+".fractionMode", False)
+                setAttr(motionPath+".uValue", getParam) 
+
+
 
     def DropOffControls(self, 
                         span, 
@@ -708,54 +769,3 @@ class ChainRig(object):
             connectAttr(eachLeadCV+".xValue", eachControllerObj+".translateX")
             connectAttr(eachLeadCV+".yValue", eachControllerObj+".translateY")
             connectAttr(eachLeadCV+".zValue", eachControllerObj+".translateZ")
-            
-    def macroControls(self, mainName):
-        CVbucket=[]
-        microLeadCurve=ls(mainName+"IK_crv")
-        medLeadCurve=cmds.duplicate(mainName+"IK_crv", n=mainName+"_med_lead_crv")
-        stuff=ls(mainName+"*_Clst_jnt_grp")
-        CVbucket=[]
-        for eachCurve in microLeadCurve:
-            getCurve=ls(eachCurve)[0]
-            for eachCV in getCurve.cv:
-                CVbucket.append(eachCV)
-        getNum=len(CVbucket)-2
-        medLeadCurveNum=getNum/6
-        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
-        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0 
-        CVbucket=[]
-        for eachCurve in medLeadCurve:
-            getCurve=ls(eachCurve)[0]
-            for eachCV in getCurve.cv:
-                getNum=re.sub("\D", "", str(eachCV))
-                getNum=int(getNum)
-                getNum="%02d" % (getNum,)
-                name, grpname=mainName+str(getNum)+"_med_Ctrl", mainName+str(getNum)+"_med_grp"
-                CVbucket.append(eachCV)
-                transformWorldMatrix=eachCV.getPosition()
-                rotateWorldMatrix=[0.0, 0.0, 0.0]
-                select(eachCV, r=1)
-                getNewClust=cmds.cluster()
-                getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-                cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
-        for each in microLeadCurve:
-            for eachCV, eachCtrlGro in map(None, each.cv, stuff):
-                CVbucket.append(eachCV)
-        CVbucket=CVbucket[:1]+CVbucket[2:]
-        CVbucket=CVbucket[:-2]+CVbucket[-1:]
-        getSel=ls(medLeadCurve)
-        for each in getSel:
-            for eachCV, eachCtrlGro in map(None, CVbucket, stuff):
-                print eachCV
-                print eachCtrlGro
-                pgetCVpos=eachCtrlGro.getTranslation()
-                getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
-                getParam=each.getParamAtPoint(getpoint, space='preTransform')
-                select(eachCtrlGro, r=1)
-                select(getSel[0], add=1)
-                motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
-                disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
-                getpth=str(motionPath)
-                setAttr(motionPath+".fractionMode", False)
-                setAttr(motionPath+".uValue", getParam) 
-        

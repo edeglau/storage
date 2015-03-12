@@ -1924,3 +1924,79 @@ for each in getSel:
         getpth=str(motionPath)
         setAttr(motionPath+".fractionMode", False)
         setAttr(motionPath+".uValue", getParam) 
+
+
+
+
+
+pObj=list()
+crap=list()
+import re
+pObjd = cmds.ls (sl=True)
+cmds.selectMode(object=True)
+jim=cmds.ls (sl=True)
+cmds.select(cl=True)
+if cmds.objExists("Npoles")==True:
+        cmds.delete("Npoles")
+cmds.sets(n="Npoles", co=2)
+
+if cmds.objExists("Epoles")==True:
+        cmds.delete("Epoles")
+cmds.sets(n="Epoles", co=2)
+
+if cmds.objExists("starpoles")==True:
+        cmds.delete("starpoles")
+cmds.sets(n="starpoles", co=2)
+
+
+for h in range (len(pObjd)):
+    if ':' not in (pObjd[h]):
+        pObj.append(pObjd[h])
+for r in range (len(pObjd)):
+        if ':' in (pObjd[r]):
+                crap.append(pObjd[r])
+                for p in range (len(crap)):
+                        f=crap[p].split('.')
+                        t=re.sub(r'\A[a-zA-Z]*','',f[1])
+                        edd= t[1:]
+                        str= edd[:-1]
+                        g=str.split(':')
+                        t=int(g[0])
+                        v=int(g[1])
+                        nmbr=range (t, v)
+                        for k in range(len(nmbr)):
+                            jw=('%d' %nmbr[k])
+                            kol=jim[0]+'.vtx['+jw+']'
+                            pObj.append(kol)
+cmds.select(crap)
+for y in range (len(pObj)):
+        gross = cmds.polyInfo(pObj[y], ve=True)
+        g=gross[0].split(':')
+        edgeCount=g[1].split("   ")
+        edges=edgeCount[1:]
+        if (len(edges))==3:
+                cmds.sets(pObj[y], fe='Npoles')
+        elif (len(edges))==5:
+                cmds.sets(pObj[y], fe='Epoles')
+        elif (len(edges))>5:
+                cmds.sets(pObj[y], fe='starpoles')
+
+
+cmds.select('starpoles', r=True, ne=True)
+cmds.pickWalk(d='Up')
+acksel=cmds.ls(sl=True)
+if (len(acksel))==0:
+        cmds.delete("starpoles")
+
+
+cmds.select('Npoles', r=True, ne=True)
+cmds.pickWalk(d='Up')
+acksel=cmds.ls(sl=True)
+if (len(acksel))==0:
+        cmds.delete("Npoles")
+
+cmds.select('Epoles', r=True, ne=True)
+cmds.pickWalk(d='Up')
+acksel=cmds.ls(sl=True)
+if (len(acksel))==0:
+        cmds.delete("Epoles")

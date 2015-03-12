@@ -1,0 +1,74 @@
+'''
+Created on Jun 8, 2011
+
+@author: elise.deglau
+'''
+
+import maya.cmds as cmds
+from functools import partial
+
+maya.mel.eval('source channelBoxCommand.mel')
+
+class ui():
+    def __init__(self, winName="cflctWindow"):
+        self.winTitle = "cf locator attributes"
+        self.winName = winName
+
+    def create(self):
+        if cmds.window(self.winName, exists=True):
+                cmds.deleteUI(self.winName)
+
+        self.window = cmds.window(self.winName, title=self.winTitle, w=250, h=150 )
+
+        cmds.frameLayout( label='quick add floater attribute', borderStyle='in' )
+        cmds.rowLayout  (' ctAt_MainRow ', numberOfColumns=100)
+        cmds.columnLayout('ctAt_Column1', parent = 'ctAt_MainRow', adjustableColumn=True)
+
+        cmds.setParent ('ctAt_Column1')
+        cmds.button (label='create locator at selected', command = "ctlct()")
+        global ctAt_name
+        cmds.text (label='attribute adder')
+        ctAt_name=cmds.textField(text="cf_fix_FR_type")
+        cmds.button (label='add attribute', command = "adatt()")
+        cmds.textField(ctAt_name, edit=True, enterCommand=('cmds.setFocus(\"' + ctAt_name + '\")'))
+        cmds.separator()
+        cmds.button (label='toggle lock/hide transforms', command = "hdtrn()")
+        cmds.showWindow(self.window)
+inst = ui()
+inst.create()
+
+
+##create locator
+def ctlct():
+    batman = cmds.ls(sl=True)
+    for i in range (len(batman)):
+        jack=cmds.spaceLocator()
+        scalefrog=cmds.xform(batman[i], q=True, s=True, r=True)
+        cmds.scale(scalefrog[0], scalefrog[1], scalefrog[2], jack, r=True)
+        movefrog=cmds.xform(batman[i], q=True, t=True, ws=True)
+        cmds.move(movefrog[0], movefrog[1], movefrog[2], jack, ws=True)
+        rotatefrog=cmds.xform(batman[i], q=True, ro=True, ws=True)
+        cmds.rotate(rotatefrog[0], rotatefrog[1], rotatefrog[2], jack, ws=True)
+        cmds.rename(jack, batman[i]+'_ploc')
+
+
+def adatt():
+    who=cmds.textField(ctAt_name, q=True, text=True)
+    npl=cmds.ls(sl=1)
+    cmds.addAttr(npl, ln=who, at="double", min=0, max=1, dv=0)
+    cmds.setAttr(npl[0]+"."+who, k=1)
+
+def hdtrn():
+    ijop=[".rx", ".ry", ".rz", ".sx", ".sy", ".sz", ".tx", ".ty", ".tz"]
+    npl=cmds.ls(sl=1)[0]
+    for i in range (len(ijop)):
+        getTatt=cmds.getAttr(npl+ijop[i], k=1)
+        if getTatt==1:
+            cmds.setAttr(npl+ijop[i], k=0)
+        else:
+            cmds.setAttr(npl+ijop[i], k=1)
+        getLatt=cmds.getAttr(npl+ijop[i], l=1)
+        if getLatt==0:
+            cmds.setAttr(npl+ijop[i], l=1)
+        else:
+            cmds.setAttr(npl+ijop[i], l=0)

@@ -1,0 +1,41 @@
+'''
+Created on 24/05/2011
+
+@author: edeglau
+'''
+word="influence"
+#glu='note.txt'
+import os
+import glob
+path = "C://temp/test/"
+
+for infile in glob.glob( os.path.join(path, '*.txt') ):
+    data = open(path).read("*.txt")
+    if word in data:
+        print word+ ' found in ' +path + infile
+    else:
+        print ' none found in '+path
+
+
+#    print "current file is: " + infile
+
+
+############################################################
+
+
+
+word="influence"
+glu='note.txt'
+import os
+import glob
+path = '/drd/users/elise.deglau/Downloads/test/'
+
+for infile in glob.glob( os.path.join(path, '*.txt') ):
+        data = open(path+).read('*.txt')
+        if word in data:
+                print word+ ' found in ' +infile
+        else:
+                print ' none found in '+infile
+
+
+#       print "current file is: " + infile

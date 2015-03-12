@@ -1,0 +1,48 @@
+'''
+
+Created on Jun 17, 2011
+
+@author: elise.deglau
+'''
+
+import maya.cmds as cmds
+from functools import partial
+import re
+
+
+
+class ui():
+    def __init__(self, winName="impWindow"):
+        self.winTitle = "Reference file from path"
+        self.winName = winName
+
+    def create(self):
+        if cmds.window(self.winName, exists=True):
+                cmds.deleteUI(self.winName)
+
+        self.window = cmds.window(self.winName, title=self.winTitle, w=500, h=150 )
+
+        cmds.rowLayout  (' imp_MainRow ', numberOfColumns=100)
+        cmds.columnLayout('imp_Column1', parent = 'imp_MainRow', adjustableColumn=True)
+
+        cmds.setParent ('imp_Column1')
+        global pth_name
+        cmds.text (label='edit shot number and copy to tank')
+        pth_name=cmds.textField(text='/drd/jobs/hf2/tank/production_v2/scenes/##/##_###/anim/creative', w=500)
+        cmds.textField(pth_name, edit=True, enterCommand=('cmds.setFocus(\"' + pth_name + '\")'))
+        global imp_name
+        cmds.text (label='paste tank address below: >Properties>filesystem_location')
+        imp_name=cmds.textField(w=500)
+        cmds.button (label='reference now', command = "impf()")
+        cmds.textField(imp_name, edit=True, enterCommand=('cmds.setFocus(\"' + imp_name + '\")'))
+        cmds.showWindow(self.window)
+inst = ui()
+inst.create()
+
+
+##import file
+def impf():
+    text=cmds.textField(imp_name, q=True, text=True)
+    shrt=text.split('/')
+    wrd=re.sub('(.ma)', '', shrt[-1])
+    cmds.file(text, r=1, op='v=0', typ="mayaAscii", ns=wrd)
