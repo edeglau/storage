@@ -516,8 +516,7 @@ class ChainRig(object):
         
         getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt_grp")
         getSortedclusterCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")
-        if len(getSortedclusterSpline)>10:
-            self.macroControls(mainName)
+
         
 #         print "build midrange controllers - 5"
 #                     
@@ -613,6 +612,25 @@ class ChainRig(object):
         cmds.parentConstraint("Base"+mainName+"_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
         cmds.parentConstraint("End"+mainName+"IK_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
         maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
+
+
+        controllerType="_med_grp"
+        microLeadCurve=ls(mainName+"IK_crv")
+        childControllers=ls(mainName+"*_Clst_jnt_grp")
+        childCurve=mainName+"IK_crv"
+        parentCurve=mainName+"_med_lead_crv"
+        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
+        if len(getSortedclusterSpline)>10:
+            self.macroControls(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        
+        controllerType="_med_grp"
+        microLeadCurve=ls(mainName+"IK_crv")
+        childControllers=ls(mainName+"*_Clst_jnt_grp")
+        childCurve=mainName+"IK_crv"
+        parentCurve=mainName+"_med_lead_crv"
+        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
+        self.macroControls(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+
         if cmds.ls(mainName+"*_max_Ctrl"):
            maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
         if cmds.ls(mainName+"*_maj_Ctrl"):
@@ -637,22 +655,7 @@ class ChainRig(object):
             getControllerBucket=smlinfluencedCtrl              
  
         print getControllerBucket
-
-        controllerType="_med_grp"
-        microLeadCurve=ls(mainName+"IK_crv")
-        childControllers=ls(mainName+"*_Clst_jnt_grp")
-        childCurve=mainName+"IK_crv"
-        parentCurve=mainName+"_med_lead_crv"
-        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
- 
-    def macroControls(self, 
-                      mainName,
-                      controllerType,
-                      childControllers,
-                      microLeadCurve, 
-                      childCurve, 
-                      parentCurve,
-                      size, colour, nrx, nry, nrz ):
+    def macroControls(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz ):
         microLeadCurve=ls(childCurve)
         medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
         CVbucket=[]
