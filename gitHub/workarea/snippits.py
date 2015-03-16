@@ -2000,3 +2000,112 @@ cmds.pickWalk(d='Up')
 acksel=cmds.ls(sl=True)
 if (len(acksel))==0:
         cmds.delete("Epoles")
+        
+
+
+
+
+
+
+
+
+
+
+    def DropOffControls(self, 
+                        span, 
+                        colour, 
+                        size,  
+                        ControllerSize, 
+                        nrx, nry, nrz, 
+                        influencedCtrl, 
+                        controlSuff, 
+                        buildNameFrom):
+        print influencedCtrl
+        if len(influencedCtrl)>span:
+            parentControllers=[]
+            pairedParentControllers=[] 
+            lastInf=influencedCtrl[-1:] 
+            firstInf=influencedCtrl[:1]
+            #create clusters for IK chain
+            for each in influencedCtrl[1::2]:
+                name=each.split(buildNameFrom)[0]+controlSuff
+                grpname=name+"_grp"    
+                fivesize=ControllerSize/size
+                colour=colour
+                transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
+                rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
+                getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
+                parentControllers.append(name)
+                cmds.setAttr(name+".sx" , keyable=0, lock=1)
+                cmds.setAttr(name+".sy" , keyable=0, lock=1)
+                cmds.setAttr(name+".sz", keyable=0, lock=1)
+            controllerInfDropOffBucket=[]
+            for each in xrange(len(influencedCtrl) - 1):
+                try:
+                    current_ctrl_item=influencedCtrl[1:][::2][each]
+                    prev_item=influencedCtrl[::2][each]
+                    next_ctrl_item=influencedCtrl[::2][each+1]                 
+                except:
+                    pass
+                if prev_item!=influencedCtrl[-1:][0]:
+                    controllerInfDropOffBucket.append([prev_item, current_ctrl_item, next_ctrl_item])                   
+            for eachPContrl, item in map(None, parentControllers, controllerInfDropOffBucket):
+                try:
+                    FIRST=item[:1][0]
+                    SECOND=item[1:2][0]
+                    THIRD=item[-1:][0]
+                    if str(FIRST) != firstInf[0]:
+                        cmds.parentConstraint(eachPContrl, FIRST, mo=1, w=.5)
+                    cmds.parentConstraint(eachPContrl, SECOND, mo=1, w=1.0)
+                    if str(THIRD) != lastInf[0]:
+                        cmds.parentConstraint(eachPContrl, THIRD, mo=1, w=.5)
+                except:
+                    pass            
+
+
+    def leading_curve(self):
+        getIKCurveCVs=cmds.ls("nameIK_crv", fl=1)
+        CVbucket=[]
+        microLeadCurve=cmds.duplicate("nameIK_crv", n="micro_lead_crv")
+        for eachCurve in microLeadCurve:
+            getCurve=ls(eachCurve)[0]
+            for eachCV in getCurve.cv:
+                CVbucket.append(eachCV)
+        getNum=len(CVbucket)-2
+        #CVbucket= CVbucket[:1] + CVbucket[1+1 :]
+        CVbucket=CVbucket[:1]+CVbucket[2:]
+        #CVbucket=CVbucket[:getNum] + CVbucket[getNum+1 :]
+        CVbucket=CVbucket[:-2]+CVbucket[-1:]
+        getObjects=cmds.ls("name*_Clst_jnt_grp", fl=1)
+        for eachLeadCV, eachControllerObj in map(None,CVbucket, getObjects):
+            connectAttr(eachLeadCV+".xValue", eachControllerObj+".translateX")
+            connectAttr(eachLeadCV+".yValue", eachControllerObj+".translateY")
+            connectAttr(eachLeadCV+".zValue", eachControllerObj+".translateZ")
+
+
+
+        if cmds.ls(mainName+"*_max_Ctrl"):
+           maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
+        if cmds.ls(mainName+"*_maj_Ctrl"):
+           majinfluencedCtrl=cmds.ls(mainName+"*_maj_Ctrl")
+        if cmds.ls(mainName+"*_mid_Ctrl"):
+           medinfluencedCtrl=cmds.ls(mainName+"*_mid_Ctrl")
+        if cmds.ls(mainName+"*_sml_Ctrl"):
+           smlinfluencedCtrl=cmds.ls(mainName+"*_sml_Ctrl")
+
+        if maxinfluencedCtrl:
+            print "THERE ARE MAX CONTROLLERS PRESENT"
+            getControllerBucket=maxinfluencedCtrl                      
+#            cmds.parentConstraint("Secondary"+mainName+"_Ctrl", mo=1, w=.5)
+        elif majinfluencedCtrl:
+            print "THERE ARE MAJOR CONTROLLERS PRESENT"
+            getControllerBucket=majinfluencedCtrl
+        elif medinfluencedCtrl:
+            print "THERE ARE MEDIUM CONTROLLERS PRESENT"  
+            getControllerBucket=medinfluencedCtrl
+        elif smlinfluencedCtrl:
+            print "THERE ARE SMALL CONTROLLERS PRESENT"    
+            getControllerBucket=smlinfluencedCtrl              
+ 
+        print getControllerBucket
+        

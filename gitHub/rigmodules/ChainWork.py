@@ -615,47 +615,26 @@ class ChainRig(object):
 
 
         controllerType="_med_grp"
-        microLeadCurve=ls(mainName+"IK_crv")
         childControllers=ls(mainName+"*_Clst_jnt_grp")
         childCurve=mainName+"IK_crv"
         parentCurve=mainName+"_med_lead_crv"
         size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
-        if len(getSortedclusterSpline)>10:
-            self.macroControls(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
-        
-        controllerType="_med_grp"
-        microLeadCurve=ls(mainName+"IK_crv")
-        childControllers=ls(mainName+"*_Clst_jnt_grp")
-        childCurve=mainName+"IK_crv"
-        parentCurve=mainName+"_med_lead_crv"
-        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
-        self.macroControls(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        microLeadCurve=ls(childCurve)        
+        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
 
-        if cmds.ls(mainName+"*_max_Ctrl"):
-           maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
-        if cmds.ls(mainName+"*_maj_Ctrl"):
-           majinfluencedCtrl=cmds.ls(mainName+"*_maj_Ctrl")
-        if cmds.ls(mainName+"*_mid_Ctrl"):
-           medinfluencedCtrl=cmds.ls(mainName+"*_mid_Ctrl")
-        if cmds.ls(mainName+"*_sml_Ctrl"):
-           smlinfluencedCtrl=cmds.ls(mainName+"*_sml_Ctrl")
+        controllerType="_max_grp"
+        childControllers=ls(mainName+"*_med_grp")
+        childCurve=mainName+"_med_lead_crv"
+        parentCurve=mainName+"_max_lead_crv"
+        size, colour, nrx, nry, nrz= 3, 29, 0, 1, 0
+        microLeadCurve=ls(childCurve)        
+        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        getNumNew=3
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNumNew, medLeadCurveNum)
 
-        if maxinfluencedCtrl:
-            print "THERE ARE MAX CONTROLLERS PRESENT"
-            getControllerBucket=maxinfluencedCtrl                      
-#            cmds.parentConstraint("Secondary"+mainName+"_Ctrl", mo=1, w=.5)
-        elif majinfluencedCtrl:
-            print "THERE ARE MAJOR CONTROLLERS PRESENT"
-            getControllerBucket=majinfluencedCtrl
-        elif medinfluencedCtrl:
-            print "THERE ARE MEDIUM CONTROLLERS PRESENT"  
-            getControllerBucket=medinfluencedCtrl
-        elif smlinfluencedCtrl:
-            print "THERE ARE SMALL CONTROLLERS PRESENT"    
-            getControllerBucket=smlinfluencedCtrl              
- 
-        print getControllerBucket
-    def macroControls(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz ):
+
+    def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz):
         microLeadCurve=ls(childCurve)
         medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
         CVbucket=[]
@@ -665,8 +644,10 @@ class ChainRig(object):
                 CVbucket.append(eachCV)
         getNum=len(CVbucket)-2
         medLeadCurveNum=getNum/6
+        return medLeadCurve, medLeadCurveNum, getNum
+    def macroControls(self, medLeadCurve, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz, getNum, medLeadCurveNum):
         cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
-        CVbucket=[]
+        CVbucketList=[]
         for eachCurve in medLeadCurve:
             getCurve=ls(eachCurve)[0]
             for eachCV in getCurve.cv:
@@ -674,21 +655,23 @@ class ChainRig(object):
                 getNum=int(getNum)
                 getNum="%02d" % (getNum,)
                 name, grpname=mainName+str(getNum)+controllerType, mainName+str(getNum)+controllerType
-                CVbucket.append(eachCV)
+                CVbucketList.append(eachCV)
                 transformWorldMatrix=eachCV.getPosition()
                 rotateWorldMatrix=[0.0, 0.0, 0.0]
                 select(eachCV, r=1)
                 getNewClust=cmds.cluster()
                 getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
                 cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
+        CVbucketbuckList=[]
         for each in microLeadCurve:
             for eachCV, eachCtrlGro in map(None, each.cv, childControllers):
-                CVbucket.append(eachCV)
-        CVbucket=CVbucket[:1]+CVbucket[2:]
-        CVbucket=CVbucket[:-2]+CVbucket[-1:]
+                CVbucketbuckList.append(eachCV)
+        CVbucketbuckList=CVbucketbuckList[:1]+CVbucketbuckList[2:]
+        CVbucketbuckList=CVbucketbuckList[:-2]+CVbucketbuckList[-1:]
         medLeadCurve=ls(medLeadCurve)
         for each in medLeadCurve:
-            for eachCV, eachCtrlGro in map(None, CVbucket, childControllers):
+            for eachItemCV, eachCtrlGro in map(None, CVbucketbuckList, childControllers):
+                print eachItemCV, eachCtrlGro+"hi"
                 pgetCVpos=eachCtrlGro.getTranslation()
                 getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
                 getParam=each.getParamAtPoint(getpoint, space='preTransform')
@@ -699,76 +682,3 @@ class ChainRig(object):
                 getpth=str(motionPath)
                 setAttr(motionPath+".fractionMode", False)
                 setAttr(motionPath+".uValue", getParam) 
-
-
-
-    def DropOffControls(self, 
-                        span, 
-                        colour, 
-                        size,  
-                        ControllerSize, 
-                        nrx, nry, nrz, 
-                        influencedCtrl, 
-                        controlSuff, 
-                        buildNameFrom):
-        print influencedCtrl
-        if len(influencedCtrl)>span:
-            parentControllers=[]
-            pairedParentControllers=[] 
-            lastInf=influencedCtrl[-1:] 
-            firstInf=influencedCtrl[:1]
-            #create clusters for IK chain
-            for each in influencedCtrl[1::2]:
-                name=each.split(buildNameFrom)[0]+controlSuff
-                grpname=name+"_grp"    
-                fivesize=ControllerSize/size
-                colour=colour
-                transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
-                rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
-                getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
-                parentControllers.append(name)
-                cmds.setAttr(name+".sx" , keyable=0, lock=1)
-                cmds.setAttr(name+".sy" , keyable=0, lock=1)
-                cmds.setAttr(name+".sz", keyable=0, lock=1)
-            controllerInfDropOffBucket=[]
-            for each in xrange(len(influencedCtrl) - 1):
-                try:
-                    current_ctrl_item=influencedCtrl[1:][::2][each]
-                    prev_item=influencedCtrl[::2][each]
-                    next_ctrl_item=influencedCtrl[::2][each+1]                 
-                except:
-                    pass
-                if prev_item!=influencedCtrl[-1:][0]:
-                    controllerInfDropOffBucket.append([prev_item, current_ctrl_item, next_ctrl_item])                   
-            for eachPContrl, item in map(None, parentControllers, controllerInfDropOffBucket):
-                try:
-                    FIRST=item[:1][0]
-                    SECOND=item[1:2][0]
-                    THIRD=item[-1:][0]
-                    if str(FIRST) != firstInf[0]:
-                        cmds.parentConstraint(eachPContrl, FIRST, mo=1, w=.5)
-                    cmds.parentConstraint(eachPContrl, SECOND, mo=1, w=1.0)
-                    if str(THIRD) != lastInf[0]:
-                        cmds.parentConstraint(eachPContrl, THIRD, mo=1, w=.5)
-                except:
-                    pass            
-
-
-    def leading_curve(self):
-        getIKCurveCVs=cmds.ls("nameIK_crv", fl=1)
-        CVbucket=[]
-        microLeadCurve=cmds.duplicate("nameIK_crv", n="micro_lead_crv")
-        for eachCurve in microLeadCurve:
-            getCurve=ls(eachCurve)[0]
-            for eachCV in getCurve.cv:
-                CVbucket.append(eachCV)
-        getNum=len(CVbucket)-2
-        #CVbucket= CVbucket[:1] + CVbucket[1+1 :]
-        CVbucket=CVbucket[:1]+CVbucket[2:]
-        #CVbucket=CVbucket[:getNum] + CVbucket[getNum+1 :]
-        CVbucket=CVbucket[:-2]+CVbucket[-1:]
-        getObjects=cmds.ls("name*_Clst_jnt_grp", fl=1)
-        for eachLeadCV, eachControllerObj in map(None,CVbucket, getObjects):
-            connectAttr(eachLeadCV+".xValue", eachControllerObj+".translateX")
-            connectAttr(eachLeadCV+".yValue", eachControllerObj+".translateY")
-            connectAttr(eachLeadCV+".zValue", eachControllerObj+".translateZ")
