@@ -132,35 +132,35 @@ class ChainRig(object):
         
         '''middle main IK controller'''
 
-        clstrSplineCtrl=mainChain[ len(mainChain) / 2 ]                 
-        #create clusters for IK chain
-        name=mainName+"Secondary_IK_Ctrl"
-        grpname=mainName+"Secondary_IK_grp"    
-        size=ControllerSize
-        colour=13 
-        transformWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, t=True)  
-        rotateWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, ro=True) 
-        getClass.buildCtrl(clstrSplineCtrl, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        getClass.buildGrp(name)
-        clstrCtrl.append(name)
-        cmds.setAttr(name+".sx" , keyable=0, lock=1)
-        cmds.setAttr(name+".sy" , keyable=0, lock=1)
-        cmds.setAttr(name+".sz", keyable=0, lock=1)
+        # clstrSplineCtrl=mainChain[ len(mainChain) / 2 ]                 
+        # #create clusters for IK chain
+        # name=mainName+"Secondary_IK_Ctrl"
+        # grpname=mainName+"Secondary_IK_grp"    
+        # size=ControllerSize
+        # colour=13 
+        # transformWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, t=True)  
+        # rotateWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, ro=True) 
+        # getClass.buildCtrl(clstrSplineCtrl, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        # getClass.buildGrp(name)
+        # clstrCtrl.append(name)
+        # cmds.setAttr(name+".sx" , keyable=0, lock=1)
+        # cmds.setAttr(name+".sy" , keyable=0, lock=1)
+        # cmds.setAttr(name+".sz", keyable=0, lock=1)
         
 
 
-        name="End"+mainName+"IK_Ctrl"
-        grpname="End"+mainName+"IK_grp"
-        num=20
-        colour=13
+        # name="End"+mainName+"IK_Ctrl"
+        # grpname="End"+mainName+"IK_grp"
+        # num=20
+        # colour=13
 
-        transformWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, t=True)  
-        rotateWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, ro=True) 
-        getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        #getClass.squareI(name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour)  
-        size=ControllerSize-2
-        colour=6     
-        cmds.makeIdentity("End"+mainName+"IK_Ctrl", a=True, t=1, s=1, r=1, n=0)
+        # transformWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, t=True)  
+        # rotateWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, ro=True) 
+        # getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        # #getClass.squareI(name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour)  
+        # size=ControllerSize-2
+        # colour=6     
+        # cmds.makeIdentity("End"+mainName+"IK_Ctrl", a=True, t=1, s=1, r=1, n=0)
         
         
         
@@ -496,7 +496,7 @@ class ChainRig(object):
             getname=newname.replace("ik_ctrl", "IK_Ctrl")
             cmds.rename(each, getname)        
 #             
-        cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
+        # cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
 
         cmds.addAttr("Base"+mainName+"_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
         cmds.connectAttr("Base"+mainName+"_Ctrl.Roll", mainName+"IK.roll")
@@ -517,102 +517,25 @@ class ChainRig(object):
         getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt_grp")
         getSortedclusterCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")
 
-        
-#         print "build midrange controllers - 5"
-#                     
-#         '''x5 controllers'''
-#         getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt_grp")
-#         getSortedclusterCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")
-#         if len(getSortedclusterSpline)>5:
-#             parentControllers=[]
-#             pairedParentControllers=[]  
-#             fiveclstrSplineCtrl=mainChain[4::5]
-#             getFirstOne=mainChain[:1]
-#             getlastOne=mainChain[-1:]
-#             makeEnds=[getFirstOne[0]]+[getlastOne[0]]
-#             #create clusters for IK chain
-#             for each in xrange(len(fiveclstrSplineCtrl) - 1):
-#                 current_ctrl_item, next_ctrl_item = fiveclstrSplineCtrl[each], fiveclstrSplineCtrl[each + 1]  
-#                 name=current_ctrl_item.split("_guide")[0]+"_sml_Ctrl"
-#                 grpname=name+"_grp"    
-#                 fivesize=ControllerSize/4.5
-#                 colour=22
-#                 transformWorldMatrix = cmds.xform(current_ctrl_item, q=True, wd=1, t=True)  
-#                 rotateWorldMatrix = cmds.xform(current_ctrl_item, q=True, wd=1, ro=True) 
-#                 getClass.buildCtrl(current_ctrl_item, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
-#                 parentControllers.append(name)
-#                 cmds.setAttr(name+".sx" , keyable=0, lock=1)
-#                 cmds.setAttr(name+".sy" , keyable=0, lock=1)
-#                 cmds.setAttr(name+".sz", keyable=0, lock=1)
-#             for each in makeEnds:
-#                 name=each.split("_guide")[0]+"_sml_Ctrl"
-#                 grpname=name+"_grp"            
-#                 transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
-#                 rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ro=True) 
-#                 getClass.buildCtrl(current_ctrl_item, name, grpname,transformWorldMatrix, rotateWorldMatrix, fivesize, colour, nrx, nry, nrz)
-#         getMidControllers=cmds.ls(mainName+"*_sml_Ctrl")
-#         firstCtrl=getMidControllers[:1]
-#         firstCtrlgrp=cmds.ls(mainName+"*_sml_Ctrl_grp")[:1]
-# #        lastCtrl=getMidControllers[-1:]
-# #        lastChild=getSortedclusterSpline[-1:]
-# #        cmds.parentConstraint(lastCtrl, lastChild, mo=1, w=1.0)
-#         for eachCntrl in xrange(len(getMidControllers[:-1]) - 1):
-#             current_ctrl_item, next_ctrl_item = getMidControllers[eachCntrl], getMidControllers[eachCntrl + 1] 
-#             getCurNumber=int(re.sub("\D", "", current_ctrl_item))
-#             getNextNumber=int(re.sub("\D", "", next_ctrl_item)) 
-#             getChildren=[] 
-#             for item in range(getCurNumber, getNextNumber):
-#                 getNum="%02d" % (item,)
-#                 theController=mainName+str(getNum)+clstrctrl
-#                 thegrp=theController.split("_Ctrl")[0]+"_grp"
-#                 getChildren.append(thegrp)
-#             BucketValue=getClass.Percentages(getChildren, 1.0, 0.0)                
-#             for child, weighted in map(None, getChildren, BucketValue):         
-#                 cmds.parentConstraint(current_ctrl_item, child, mo=1, w=weighted)
-#             reversedBucketValue=reversed(BucketValue)
-#             for child, weighted in map(None, getChildren, reversedBucketValue):
-#                 cmds.parentConstraint(next_ctrl_item, child, mo=1, w=weighted)
-#         print firstCtrlgrp
-#         cmds.parent(firstCtrlgrp, "Base"+mainName+"_Ctrl")
-#         cmds.parent(getSortedclusterSpline, getMidControllers[0])
-#         cmds.parent(mainName+"01_jnt",getSortedclusterCtrl[0])
-#         cmds.parent(mainName+"01FK_jnt",getSortedclusterCtrl[0])
-#         cmds.parent(mainName+"01IK_jnt",getSortedclusterCtrl[0]) 
-#         getChildString=cmds.ls(mainName+"*_Clst_jnt_grp")
-#         getLastChildren=getChildString[-6:]
-#         getFirstChildren=getChildString[:5]        
-#         secondEndBucketValue=getClass.Percentages(getLastChildren, 1.0, 0.0)
-#         for eachChild, eachBucketItem in map(None, getLastChildren, secondEndBucketValue):
-#             cmds.parentConstraint(getMidControllers[-2:-1], eachChild, mo=1, w=eachBucketItem)      
-#         secondEndBucketValue=getClass.Percentages(getLastChildren, 0.0, 1.0)
-#         for eachChild, eachBucketItem in map(None, getLastChildren, secondEndBucketValue):
-#             cmds.parentConstraint(getMidControllers[-1:], eachChild, mo=1, w=eachBucketItem)  
 
-        print "build major range controllers -10"
-        '''x10 controllers'''
-        influencedCtrl=cmds.ls(mainName+"*_sml_Ctrl_grp")
-        controlSuff="_mid_Ctrl"
-        buildNameFrom="_sml_Ctrl"
-        #self.DropOffControls(2, 31, 3, ControllerSize, nrx, nry, nrz, influencedCtrl, controlSuff, buildNameFrom)
-
-        print "build maj range controllers - 20"
-        '''x20 controllers'''
-        majinfluencedCtrl=cmds.ls(mainName+"*_mid_Ctrl_grp")
-        maxcontrolSuff="_maj_Ctrl"
-        maxbuildNameFrom="_mid_Ctrl"
-        #self.DropOffControls(2, 30, 2, ControllerSize, nrx, nry, nrz, majinfluencedCtrl, maxcontrolSuff, maxbuildNameFrom)
-
-        print "build max range controllers -30"
-        '''x30 controllers'''
-        majinfluencedCtrl=cmds.ls(mainName+"*_maj_Ctrl_grp")
-        maxcontrolSuff="_max_Ctrl"
-        maxbuildNameFrom="_maj_Ctrl"
-        #self.DropOffControls(2, 25, 1, ControllerSize, nrx, nry, nrz, majinfluencedCtrl, maxcontrolSuff, maxbuildNameFrom)
 
         cmds.parentConstraint("Base"+mainName+"_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
         cmds.parentConstraint("End"+mainName+"IK_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
         maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
 
+
+
+
+        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
+        cmds.parent(mainName+"IK", getRigGrp)
+        cmds.parent(mainName+"IK_crv", getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="joint"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="transform"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        cmds.parent("IK_grp", getRigGrp)
 
         controllerType="_med_grp"
         childControllers=ls(mainName+"*_Clst_jnt_grp")
@@ -654,7 +577,9 @@ class ChainRig(object):
                 getNum=re.sub("\D", "", str(eachCV))
                 getNum=int(getNum)
                 getNum="%02d" % (getNum,)
-                name, grpname=mainName+str(getNum)+controllerType, mainName+str(getNum)+controllerType
+                aname=controllerType.split("_grp")[0]+"_ctrl"
+                name=mainName+str(getNum)+aname
+                grpname= mainName+str(getNum)+controllerType
                 CVbucketList.append(eachCV)
                 transformWorldMatrix=eachCV.getPosition()
                 rotateWorldMatrix=[0.0, 0.0, 0.0]
