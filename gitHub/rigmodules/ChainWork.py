@@ -360,42 +360,6 @@ class ChainRig(object):
                                                ControllerFirstValue)          
         #constrain FK spin to controls
 
-            
-        #cmds.parent("+mainChain+"FK_Ctrls[0], "Base"+mainChain+"_Ctrl")
-#         cmds.pointConstraint("Base"+mainName+"_Ctrl", mainName+"01_jnt", mo=1)
-        #cmds.orientConstraint("End"+mainName+"FK_Ctrl", fkmainChain[-1], mo=1)
-
-
-        ChildActivatedValue=1
-        ChildDeactivatedValue=0
-        ControllerSecondValue=1
-        ControllerFirstValue=0
-        Child="End"+mainName+"IK_Ctrl.visibility"
-        Controller="Base"+mainName+"_Ctrl."+mainName+"FK_IK"
-        defaultSet=1
-        getClass.controlSecondValueChildOn(Controller, 
-                                           Child, 
-                                           defaultSet, 
-                                           ChildActivatedValue, 
-                                           ChildDeactivatedValue, 
-                                           ControllerSecondValue, 
-                                           ControllerFirstValue)         
-
-        
-        ChildActivatedValue=1
-        ChildDeactivatedValue=0
-        ControllerSecondValue=1
-        ControllerFirstValue=0
-        Child="End"+mainName+"FK_Ctrl.visibility"
-        Controller="Base"+mainName+"_Ctrl."+mainName+"FK_IK"
-        defaultSet=1
-        getClass.controlFirstValueChildOn(Controller, 
-                                           Child, 
-                                           defaultSet, 
-                                           ChildActivatedValue, 
-                                           ChildDeactivatedValue, 
-                                           ControllerSecondValue,
-                                           ControllerFirstValue)
         
         #stretch
         
@@ -480,7 +444,7 @@ class ChainRig(object):
         else:
             cmds.parent("End"+mainName+"FK_grp", FKCtrl[0])
             
-        cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
+        # cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
         cmds.parent("Base"+mainName+"_grp",mainName+"Main_Ctrl")
         
 
@@ -519,11 +483,6 @@ class ChainRig(object):
 
 
 
-        cmds.parentConstraint("Base"+mainName+"_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
-        cmds.parentConstraint("End"+mainName+"IK_Ctrl", mainName+"Secondary_IK_grp", mo=1, w=.5)
-        maxinfluencedCtrl=cmds.ls(mainName+"*_max_Ctrl")
-
-
 
 
         getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
@@ -541,7 +500,7 @@ class ChainRig(object):
         childControllers=ls(mainName+"*_Clst_jnt_grp")
         childCurve=mainName+"IK_crv"
         parentCurve=mainName+"_med_lead_crv"
-        size, colour, nrx, nry, nrz= 2, 22, 0, 1, 0
+        size, colour= 2, 22
         microLeadCurve=ls(childCurve)        
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
@@ -550,7 +509,7 @@ class ChainRig(object):
         childControllers=ls(mainName+"*_med_grp")
         childCurve=mainName+"_med_lead_crv"
         parentCurve=mainName+"_max_lead_crv"
-        size, colour, nrx, nry, nrz= 3, 29, 0, 1, 0
+        size, colour= 3, 29
         microLeadCurve=ls(childCurve)        
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
         getNumNew=3
@@ -596,7 +555,6 @@ class ChainRig(object):
         medLeadCurve=ls(medLeadCurve)
         for each in medLeadCurve:
             for eachItemCV, eachCtrlGro in map(None, CVbucketbuckList, childControllers):
-                print eachItemCV, eachCtrlGro+"hi"
                 pgetCVpos=eachCtrlGro.getTranslation()
                 getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
                 getParam=each.getParamAtPoint(getpoint, space='preTransform')
