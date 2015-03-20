@@ -315,10 +315,10 @@ class ChainRig(object):
         #=======================================================================
         
         #disconnectAttr |tail06_Clst_jnt.worldMatrix[0] skinCluster1.matrix[5];
-        cmds.addAttr("Base"+mainName+"_Ctrl", ln=mainName+"FK_IK", min=0, max=1, at="double",en="FK:IK:", k=1, nn=mainName+"FK_IK")
-        cmds.setAttr("Base"+mainName+"_Ctrl."+mainName+"FK_IK", 1)
-        cmds.parent(clusterSpline[0], "Base"+mainName+"_Ctrl")
-        Controller="Base"+mainName+"_Ctrl."+mainName+"FK_IK"
+        cmds.addAttr(mainName+"Main_Ctrl", ln=mainName+"FK_IK", min=0, max=1, at="double",en="FK:IK:", k=1, nn=mainName+"FK_IK")
+        cmds.setAttr(mainName+"Main_Ctrl."+mainName+"FK_IK", 1)
+        cmds.parent(clusterSpline[0], mainName+"Main_Ctrl")
+        Controller=mainName+"Main_Ctrl."+mainName+"FK_IK"
         basemainChain=[(each.split("_")[0])for each in bindmainChain]
         #IK setup
         for each in basemainChain:
@@ -347,7 +347,7 @@ class ChainRig(object):
         ChildDeactivatedValue=0
         ControllerSecondValue=1
         ControllerFirstValue=0   
-        Controller="Base"+mainName+"_Ctrl."+mainName+"FK_IK"
+        Controller=mainName+"Main_Ctrl."+mainName+"FK_IK"
         defaultSet=1           
         for each in clstrCtrl:
             Child=each+".visibility"
@@ -366,13 +366,13 @@ class ChainRig(object):
         getIKClass.stretchSpline(mainName+"01IK_jnt")
         
         
-        cmds.addAttr("Base"+mainName+"_Ctrl", ln="Stretch"+mainName, at="enum",en="on:off:", k=1, nn="Stretch"+mainName)
+        cmds.addAttr(mainName+"Main_Ctrl", ln="Stretch"+mainName, at="enum",en="on:off:", k=1, nn="Stretch"+mainName)
         ChildActivatedValue=2
         ChildDeactivatedValue=0
         ControllerSecondValue=1
         ControllerFirstValue=0
         Child=mainName+"01IK_jnt_cond.operation"
-        Controller="Base"+mainName+"_Ctrl.Stretch"+mainName
+        Controller=mainName+"Main_Ctrl.Stretch"+mainName
         defaultSet=0
         getClass.controlFirstValueChildOn(Controller, 
                                            Child, 
@@ -386,7 +386,7 @@ class ChainRig(object):
         ChildDeactivatedValue=0
         ControllerSecondValue=1
         ControllerFirstValue=0
-        Controller="Base"+mainName+"_Ctrl."+mainName+"FK_IK"
+        Controller=mainName+"Main_Ctrl."+mainName+"FK_IK"
         defaultSet=1
         for each in FKCtrl:
             Child=each+".visibility"
@@ -398,7 +398,7 @@ class ChainRig(object):
                                                ControllerSecondValue,
                                                ControllerFirstValue)
             
-            cmds.setAttr("Base"+mainName+"_Ctrl."+mainName+"FK_IK", 1)  
+            cmds.setAttr(mainName+"Main_Ctrl."+mainName+"FK_IK", 1)  
 
 
 
@@ -462,10 +462,10 @@ class ChainRig(object):
 #             
         # cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
 
-        cmds.addAttr("Base"+mainName+"_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
-        cmds.connectAttr("Base"+mainName+"_Ctrl.Roll", mainName+"IK.roll")
-        cmds.addAttr("Base"+mainName+"_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
-        cmds.connectAttr("Base"+mainName+"_Ctrl.Twist", mainName+"IK.twist")
+        cmds.addAttr(mainName+"Main_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
+        cmds.connectAttr(mainName+"Main_Ctrl.Roll", mainName+"IK.roll")
+        cmds.addAttr(mainName+"Main_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
+        cmds.connectAttr(mainName+"Main_Ctrl.Twist", mainName+"IK.twist")
 
         getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
         cmds.parent(mainName+"IK", getRigGrp)
@@ -501,22 +501,44 @@ class ChainRig(object):
         childCurve=mainName+"IK_crv"
         parentCurve=mainName+"_med_lead_crv"
         size, colour= 2, 22
-        microLeadCurve=ls(childCurve)        
-        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        microLeadCurve=ls(childCurve)
+        divNum=6        
+        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
+        cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
+        clstrCtrlrs=ls(mainName+"*_Clst_jnt_Ctrl")
+        for each in childControllers:
+            cmds.connectAttr(each+".visiblity", mainName+"Main_Ctrl.microVisible")
+
+        controllerType="_maj_grp"
+        childControllers=ls(mainName+"*_med_grp")
+        childCurve=mainName+"_med_lead_crv"
+        parentCurve=mainName+"_maj_lead_crv"
+        size, colour= 2, 29
+        microLeadCurve=ls(childCurve) 
+        divNum=20
+        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
 
         controllerType="_max_grp"
-        childControllers=ls(mainName+"*_med_grp")
-        childCurve=mainName+"_med_lead_crv"
+        childControllers=ls(mainName+"*_maj_grp")
+        childCurve=mainName+"_maj_lead_crv"
         parentCurve=mainName+"_max_lead_crv"
-        size, colour= 3, 29
-        microLeadCurve=ls(childCurve)        
-        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz)
+        size, colour= 3, 30
+        microLeadCurve=ls(childCurve)  
+        divNum=6      
+        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
         getNumNew=3
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNumNew, medLeadCurveNum)
+        getMaxCtrls=ls(mainName+"*_max_grp")
+        for each in getMaxCtrls:
+            cmds.parent(each, mainName+"Main_Ctrl")
 
+        cmds.parent(mainName+"01_jnt", getMaxCtrls[0])
+        cmds.parent(mainName+"01_FK_jnt", getMaxCtrls[0])
+        cmds.parent(mainName+"01_IK_jnt", getMaxCtrls[0])
 
-    def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz):
+    def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve, divNum):
         microLeadCurve=ls(childCurve)
         medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
         CVbucket=[]
@@ -527,6 +549,7 @@ class ChainRig(object):
         getNum=len(CVbucket)-2
         medLeadCurveNum=getNum/6
         return medLeadCurve, medLeadCurveNum, getNum
+
     def macroControls(self, medLeadCurve, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz, getNum, medLeadCurveNum):
         cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
         CVbucketList=[]
