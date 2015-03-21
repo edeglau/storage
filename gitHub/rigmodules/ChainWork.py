@@ -39,6 +39,8 @@ class ChainRig(object):
 
 
         getGuide=cmds.ls("*_guide")
+        for each in getGuide:
+            cmds.setAttr(each+".visibility", 0)
         mainChain=(cmds.ls(mainName+"*_guide"))
         neckTwist=(cmds.ls(mainName+"*_guide"))
 
@@ -119,15 +121,15 @@ class ChainRig(object):
         clstrCtrl=[]
         
         #create the Base"+mainChain+"
-        transformWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, t=True)  
-        rotateWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, ro=True) 
-#        scaleWorldMatrix = cmds.xform(mainChain[:1], q=True, r=1, s=True)
-        name="Base"+mainName+"_Ctrl"
-        grpname="Base"+mainName+"_grp"    
-        size=ControllerSize
-        colour=13   
-        getClass.buildCtrl(mainChain[:1], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        mainChainFK_Ctrls.append("Base"+mainName+"_Ctrl")    
+#         transformWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, t=True)  
+#         rotateWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, ro=True) 
+# #        scaleWorldMatrix = cmds.xform(mainChain[:1], q=True, r=1, s=True)
+#         name="Base"+mainName+"_Ctrl"
+#         grpname="Base"+mainName+"_grp"    
+#         size=ControllerSize
+#         colour=13   
+#         getClass.buildCtrl(mainChain[:1], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+#         mainChainFK_Ctrls.append("Base"+mainName+"_Ctrl")    
         #"+mainChain+"FK_Ctrls.append(clstrCtrl)4
         
         '''middle main IK controller'''
@@ -373,7 +375,7 @@ class ChainRig(object):
         ControllerFirstValue=0
         Child=mainName+"01IK_jnt_cond.operation"
         Controller=mainName+"Main_Ctrl.Stretch"+mainName
-        defaultSet=0
+        defaultSet=1
         getClass.controlFirstValueChildOn(Controller, 
                                            Child, 
                                            defaultSet, 
@@ -445,7 +447,7 @@ class ChainRig(object):
             cmds.parent("End"+mainName+"FK_grp", FKCtrl[0])
             
         # cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
-        cmds.parent("Base"+mainName+"_grp",mainName+"Main_Ctrl")
+        # cmds.parent("Base"+mainName+"_grp",mainName+"Main_Ctrl")
         
 
         getNames=cmds.ls(mainName+"*_guideFK_Ctrl")
@@ -481,21 +483,7 @@ class ChainRig(object):
         getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt_grp")
         getSortedclusterCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")
 
-
-
-
-
-        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
-        cmds.parent(mainName+"IK", getRigGrp)
-        cmds.parent(mainName+"IK_crv", getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="joint"]
-        for each in getFreeStuff:
-            cmds.parent(each, getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="transform"]
-        for each in getFreeStuff:
-            cmds.parent(each, getRigGrp)
-        cmds.parent("IK_grp", getRigGrp)
-
+        print "building medium controllers"
         controllerType="_med_grp"
         childControllers=ls(mainName+"*_Clst_jnt_grp")
         childCurve=mainName+"IK_crv"
@@ -505,11 +493,8 @@ class ChainRig(object):
         divNum=6        
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
-        cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
-        clstrCtrlrs=ls(mainName+"*_Clst_jnt_Ctrl")
-        for each in childControllers:
-            cmds.connectAttr(each+".visiblity", mainName+"Main_Ctrl.microVisible")
-
+        
+        print "building major controllers"
         controllerType="_maj_grp"
         childControllers=ls(mainName+"*_med_grp")
         childCurve=mainName+"_med_lead_crv"
@@ -520,6 +505,7 @@ class ChainRig(object):
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
 
+        print "building maximum controllers"
         controllerType="_max_grp"
         childControllers=ls(mainName+"*_maj_grp")
         childCurve=mainName+"_maj_lead_crv"
@@ -530,13 +516,28 @@ class ChainRig(object):
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
         getNumNew=3
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNumNew, medLeadCurveNum)
-        getMaxCtrls=ls(mainName+"*_max_grp")
-        for each in getMaxCtrls:
-            cmds.parent(each, mainName+"Main_Ctrl")
 
-        cmds.parent(mainName+"01_jnt", getMaxCtrls[0])
-        cmds.parent(mainName+"01_FK_jnt", getMaxCtrls[0])
-        cmds.parent(mainName+"01_IK_jnt", getMaxCtrls[0])
+        print "Tidying up"
+        self.tidyUp(mainName)
+
+    def tidyUp(self, mainName):
+        print "adding micro control visibility"
+        cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
+        clstrCtrlrs=ls(mainName+"*_Clst_jnt_Ctrl")
+        for each in clstrCtrlrs:
+            cmds.connectAttr(mainName+"Main_Ctrl.microVisible", each+".visibility", f=1)   
+        getFirstClstrCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")[0] 
+        print "adding joints to beginning controller"
+        # setParent(mainName+"01_jnt", getFirstClstrCtrl)
+        # setParent(mainName+"01FK_jnt", getFirstClstrCtrl)
+        # setParent(mainName+"01IK_jnt", getFirstClstrCtrl)
+        cmds.parent(mainName+"01_jnt", getFirstClstrCtrl)
+        cmds.parent(mainName+"01FK_jnt", getFirstClstrCtrl)
+        cmds.parent(mainName+"01IK_jnt", getFirstClstrCtrl)      
+        print "adding maximum controllers to rig"  
+        getMaxCtrls=cmds.ls(mainName+"*_max_grp")
+        for each in getMaxCtrls:
+            cmds.parent(each, mainName+"Main_Ctrl")        
 
     def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve, divNum):
         microLeadCurve=ls(childCurve)
@@ -569,6 +570,8 @@ class ChainRig(object):
                 getNewClust=cmds.cluster()
                 getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
                 cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
+                cmds.parent(grpname, mainName+"_Rig")
+                cmds.parent(getNewClust, mainName+"_Rig")
         CVbucketbuckList=[]
         for each in microLeadCurve:
             for eachCV, eachCtrlGro in map(None, each.cv, childControllers):
