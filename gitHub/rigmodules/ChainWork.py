@@ -63,9 +63,9 @@ class ChainRig(object):
             jointSuffix='IK_jnt'
             getClass.rigJoints(each, jointSuffix) 
         cmds.select(cl=1)
-        for each in mainChain:            
-            jointSuffix='_Clst_jnt'
-            getClass.rigJoints(each, jointSuffix) 
+#         for each in mainChain:            
+#             jointSuffix='_Clst_jnt'
+#             getClass.rigJoints(each, jointSuffix) 
  
 
 
@@ -110,60 +110,15 @@ class ChainRig(object):
         getsel=cmds.ls(sl=1)
         getClass.buildGrp(getsel[0])
 
-        clusterSpline=cmds.ls(mainName+"*Clst_jnt")
-        CLSmainChain=cmds.listRelatives(clusterSpline[0], ad=1, typ="joint")
+#         clusterSpline=cmds.ls(mainName+"*Clst_jnt")
+#         CLSmainChain=cmds.listRelatives(clusterSpline[0], ad=1, typ="joint")
         
         mainChainFK_Ctrls=[]
         
         mainChain=cmds.ls(mainName+"*_guide")
     
 
-        clstrCtrl=[]
-        
-        #create the Base"+mainChain+"
-#         transformWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, t=True)  
-#         rotateWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, ro=True) 
-# #        scaleWorldMatrix = cmds.xform(mainChain[:1], q=True, r=1, s=True)
-#         name="Base"+mainName+"_Ctrl"
-#         grpname="Base"+mainName+"_grp"    
-#         size=ControllerSize
-#         colour=13   
-#         getClass.buildCtrl(mainChain[:1], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-#         mainChainFK_Ctrls.append("Base"+mainName+"_Ctrl")    
-        #"+mainChain+"FK_Ctrls.append(clstrCtrl)4
-        
-        '''middle main IK controller'''
-
-        # clstrSplineCtrl=mainChain[ len(mainChain) / 2 ]                 
-        # #create clusters for IK chain
-        # name=mainName+"Secondary_IK_Ctrl"
-        # grpname=mainName+"Secondary_IK_grp"    
-        # size=ControllerSize
-        # colour=13 
-        # transformWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, t=True)  
-        # rotateWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, ro=True) 
-        # getClass.buildCtrl(clstrSplineCtrl, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        # getClass.buildGrp(name)
-        # clstrCtrl.append(name)
-        # cmds.setAttr(name+".sx" , keyable=0, lock=1)
-        # cmds.setAttr(name+".sy" , keyable=0, lock=1)
-        # cmds.setAttr(name+".sz", keyable=0, lock=1)
-        
-
-
-        # name="End"+mainName+"IK_Ctrl"
-        # grpname="End"+mainName+"IK_grp"
-        # num=20
-        # colour=13
-
-        # transformWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, t=True)  
-        # rotateWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, ro=True) 
-        # getClass.buildCtrl(each, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
-        # #getClass.squareI(name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour)  
-        # size=ControllerSize-2
-        # colour=6     
-        # cmds.makeIdentity("End"+mainName+"IK_Ctrl", a=True, t=1, s=1, r=1, n=0)
-        
+        clstrCtrl=[]        
         
         
         
@@ -198,13 +153,6 @@ class ChainRig(object):
         cmds.group( em=True, name='IK_grp' )
         
         #create the main controller
-        
-
-
-        
-        
-
-       
 
         
         OrigName="End"+mainName+"FK"
@@ -245,7 +193,6 @@ class ChainRig(object):
         mainNamTwistJnt=(cmds.ls(mainName+"*IK_jnt"))
         mainChainLow=(cmds.ls(mainName+"*FK_jnt"))
         mainChainCtrl=(cmds.ls(mainName+"*_Ctrl"))
-        #"+mainChain+"CtrlGrp=cmds.pickWalk("+mainChain+"Ctrl, d="up")
         
 #         '''--------------------------------------
 #         #            set axis for scale
@@ -255,7 +202,6 @@ class ChainRig(object):
         lastmainChainJoint=mainNamTwistJnt[-1:]
 
         
-#         allButlastmainChainJoints=mainChainJoints[:-1][0]
         '''--------------------------------------
         #            create spline IK
         --------------------------------------'''
@@ -276,38 +222,21 @@ class ChainRig(object):
         --------------------------------------'''
         print "skinbind lowres "+str(mainChain)+" to the spline"
         
+
+        clusterBucket=[]
         getIKCurveCVs=cmds.ls(mainName+"IK_crv.cv[*]", fl=1)
-        getfirstCVs=getIKCurveCVs[1::-1]
-        getLastCVs= getIKCurveCVs[-2::1]
-        getverylastCVs=getIKCurveCVs[-2:]
-        getlastjoint=clusterSpline[-1:]
-        for each, bone in map(None, getIKCurveCVs[2:-2], clusterSpline[1:-1]):  
-            cmds.select(clear=1)
-            cmds.select(bone)
-            cmds.select(each, add=1)
-            cmds.bindSkin(each, bone, tsb=1) 
-        for each in getfirstCVs:  
-            cmds.select(clear=1)
-            cmds.select(clusterSpline[0])
-            cmds.select(each, add=1)
-            cmds.bindSkin(each, clusterSpline[0], tsb=1)
-        for each in getverylastCVs:
-            cmds.select(clear=1)
-            cmds.select(each, add=1) 
-            getNewClust=cmds.cluster(n="endChainCluster")
-            cmds.select(getlastjoint)
-            cmds.select(each, add=1)    
-            cmds.SmoothBindSkin(each, getlastjoint, tsb=1, bcp=1)
-            cmds.parent(getNewClust[1], getlastjoint)
-        getconn=[(item) for item in cmds.listConnections(getlastjoint, d=1) if cmds.nodeType(item)=="skinCluster"]
-        if getconn:
-            for each in getconn:
-                try:
-                    cmds.delete(each)
-                except:
-                    pass        
-        
-        
+        for eachCV in enumerate(getIKCurveCVs):
+#             for enumerate in enumerate(getCurve.cv):
+            getNum=eachCV[0]+1
+            getCVobj=eachCV[1]                    
+            cmds.select(getCVobj, r=1)
+            aName=mainName+"IKcrv"+str(getNum)+"_clstr"
+            cmds.cluster(n=aName)
+            getClass.createGrpCtrl()
+            getClustrGrp=cmds.ls(sl=1)
+            newClstrs=getClustrGrp[0]+"_grp"
+            print newClstrs
+            clusterBucket.append(newClstrs)
         #=======================================================================
         # 
         #=======================================================================
@@ -315,32 +244,32 @@ class ChainRig(object):
         #=======================================================================
         # 
         #=======================================================================
-        
+
+
+        num0, num1, num2, num3 = 1, .5, .7, .9
+        colour=13
+        for each in clusterBucket:
+            print each
+            name=each+"_Ctrl"
+            grpname=name+"_grp"
+#             cmds.parent(each, w=1)
+            getTranslation, getRotation=getClass.locationXForm(each)
+            getClass.CCCircle(name, grpname, num0, num1, num2, num3, getTranslation, getRotation, colour)
+            cmds.parent(each, name)
+
+
         #disconnectAttr |tail06_Clst_jnt.worldMatrix[0] skinCluster1.matrix[5];
         cmds.addAttr(mainName+"Main_Ctrl", ln=mainName+"FK_IK", min=0, max=1, at="double",en="FK:IK:", k=1, nn=mainName+"FK_IK")
         cmds.setAttr(mainName+"Main_Ctrl."+mainName+"FK_IK", 1)
-        cmds.parent(clusterSpline[0], mainName+"Main_Ctrl")
+#         cmds.parent(clusterSpline[0], mainName+"Main_Ctrl")
         Controller=mainName+"Main_Ctrl."+mainName+"FK_IK"
         basemainChain=[(each.split("_")[0])for each in bindmainChain]
         #IK setup
         for each in basemainChain:
             getClass.blendColors(each, Controller) 
 
-        getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt")
-        clstrSplineCtrl=getSortedclusterSpline[ len(getSortedclusterSpline) / 2 ]          
-        #cmds.pointConstraint(clstrCtrl, clstrSplineCtrl, mo=1)
         num0, num1, num2, num3 = 1, .5, .7, .9
         colour=13
-#         /for each in getSortedclusterSpline[1:-1]:
-#        for each in getSortedclusterSpline[1:]:
-        for each in getSortedclusterSpline:
-            name=each+"_Ctrl"
-            grpname=each+"_grp"
-            cmds.parent(each, w=1)
-            getTranslation, getRotation=getClass.locationXForm(each)
-            getClass.CCCircle(name, grpname, num0, num1, num2, num3, getTranslation, getRotation, colour)
-            cmds.parentConstraint(name, each)
-
 
 
         fkmainChain=sorted(FKmainChainJoints)
@@ -419,12 +348,7 @@ class ChainRig(object):
         bindmainChain=[(each) for each in cmds.listRelatives(mainName+"01_jnt", ad=1, typ="joint") if mainName in each]
 
 
-        #cmds.connectAttr("End"+mainName+"IK_Ctrl.rotate.rotateY", mainName+"IK.twist")
 
- 
-        
-
-        #cmds.parent(mainName+"IK","End"+mainName+"IK_Ctrl")
         cmds.parent(mainName+"Parent_nod_grp", bindmainChain[0])
         #===============================================================================
         # 
@@ -446,8 +370,6 @@ class ChainRig(object):
         else:
             cmds.parent("End"+mainName+"FK_grp", FKCtrl[0])
             
-        # cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
-        # cmds.parent("Base"+mainName+"_grp",mainName+"Main_Ctrl")
         
 
         getNames=cmds.ls(mainName+"*_guideFK_Ctrl")
@@ -462,7 +384,6 @@ class ChainRig(object):
             getname=newname.replace("ik_ctrl", "IK_Ctrl")
             cmds.rename(each, getname)        
 #             
-        # cmds.parent(mainName+"Secondary_IK_grp", mainName+"Main_Ctrl")
 
         cmds.addAttr(mainName+"Main_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
         cmds.connectAttr(mainName+"Main_Ctrl.Roll", mainName+"IK.roll")
@@ -479,13 +400,10 @@ class ChainRig(object):
         for each in getFreeStuff:
             cmds.parent(each, getRigGrp)
         cmds.parent("IK_grp", getRigGrp)
-        
-        getSortedclusterSpline=cmds.ls(mainName+"*_Clst_jnt_grp")
-        getSortedclusterCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")
 
         print "building medium controllers"
         controllerType="_med_grp"
-        childControllers=ls(mainName+"*_Clst_jnt_grp")
+        childControllers=ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl_grp")
         childCurve=mainName+"IK_crv"
         parentCurve=mainName+"_med_lead_crv"
         size, colour= 2, 22
@@ -499,7 +417,7 @@ class ChainRig(object):
         childControllers=ls(mainName+"*_med_grp")
         childCurve=mainName+"_med_lead_crv"
         parentCurve=mainName+"_maj_lead_crv"
-        size, colour= 2, 29
+        size, colour= 3, 29
         microLeadCurve=ls(childCurve) 
         divNum=20
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
@@ -510,7 +428,7 @@ class ChainRig(object):
         childControllers=ls(mainName+"*_maj_grp")
         childCurve=mainName+"_maj_lead_crv"
         parentCurve=mainName+"_max_lead_crv"
-        size, colour= 3, 30
+        size, colour= 5, 30
         microLeadCurve=ls(childCurve)  
         divNum=6      
         medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
@@ -523,21 +441,19 @@ class ChainRig(object):
     def tidyUp(self, mainName):
         print "adding micro control visibility"
         cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
-        clstrCtrlrs=ls(mainName+"*_Clst_jnt_Ctrl")
+        clstrCtrlrs=ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")
         for each in clstrCtrlrs:
             cmds.connectAttr(mainName+"Main_Ctrl.microVisible", each+".visibility", f=1)   
-        getFirstClstrCtrl=cmds.ls(mainName+"*_Clst_jnt_Ctrl")[0] 
+        getFirstClstrCtrl=cmds.ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")[0] 
         print "adding joints to beginning controller"
-        # setParent(mainName+"01_jnt", getFirstClstrCtrl)
-        # setParent(mainName+"01FK_jnt", getFirstClstrCtrl)
-        # setParent(mainName+"01IK_jnt", getFirstClstrCtrl)
         cmds.parent(mainName+"01_jnt", getFirstClstrCtrl)
         cmds.parent(mainName+"01FK_jnt", getFirstClstrCtrl)
         cmds.parent(mainName+"01IK_jnt", getFirstClstrCtrl)      
         print "adding maximum controllers to rig"  
         getMaxCtrls=cmds.ls(mainName+"*_max_grp")
         for each in getMaxCtrls:
-            cmds.parent(each, mainName+"Main_Ctrl")        
+            cmds.parent(each, mainName+"Main_Ctrl")
+        cmds.parent(mainName+"02_FK_grp", mainName+"Main_Ctrl")
 
     def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve, divNum):
         microLeadCurve=ls(childCurve)
