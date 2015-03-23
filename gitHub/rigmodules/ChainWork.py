@@ -12,6 +12,18 @@ import stretchIK
 reload (stretchIK)
 getIKClass=stretchIK.stretchIKClass()
 
+
+from inspect import getsourcefile
+from os.path import abspath
+getfilePath=str(abspath(getsourcefile(lambda _: None)))
+gtepiece=getfilePath.split("/")
+getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+
+if "Windows" in OSplatform:
+    gtepiece=getRigModPath.split("\\")
+if "Linux" in OSplatform: 
+    gtepiece=getRigModPath.split("/")  
 # #name
 # mainName="neck"
 # #controllerdirection
@@ -25,17 +37,75 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 guide="_guide"
-clstrctrl="_Clst_jnt_Ctrl"
+# clstrctrl="_Clst_jnt_Ctrl"
+
+
+
 
 import maya.cmds as cmds
 import maya.mel
 class ChainRig(object):
-    def __init__(self, nrz, nry, nrx, mainName, ControllerSize):
-        self.nrz = nrz 
-        self.nry = nry
-        self.nrx = nrx
-        self.mainName =mainName
-        self.ControllerSize=ControllerSize
+
+    def build_chain(self, arg=None):
+        axisList=["X", "Y", "Z"] 
+        influenceList= ["curved", "straight"] 
+        winName = "create tail guides"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')      
+        rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        direction=optionMenu( label='Axis')
+        for each in axisList:
+            menuItem( label=each)   
+        curveInf=optionMenu( label='Curve Influence')
+        for each in influenceList:
+            menuItem( label=each)                     
+        cmds.text(label="", w=80, h=25)            
+        cmds.text(label="name", w=80, h=25)             
+        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")
+        cmds.text(label="size", w=80, h=25) 
+        self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10") 
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(100, 20))             
+        button (label='Tail guides',bgc=[0.8, 0.75, 0.6], p='BuildButtonLayout', command = lambda *args:self._tail_guides())
+        button (label='Build guides',bgc=[0.8, 0.75, 0.6], p='BuildButtonLayout', command = lambda *args:self._build_guides())
+        button (label='Build chain', p='BuildButtonLayout', command = lambda *args:self.create_Chain(ControllerSize=int(textField(self.size,q=1, text=1)), mainName=textField(self.namefield,q=1, text=1), getDir=optionMenu(direction, q=1, v=1), crvInf=optionMenu(curveInf, q=1, v=1)))
+        showWindow(window)
+
+    def _tail_guides(self, arg=None):
+        getguideFilepath='/'.join(gtepiece[:-2])+"/guides/combinedGuides.py"
+        exec(open(getguideFilepath))
+        getguideClass=GuideUI()
+        getguideClass.build_tail_guides()
+
+    def _build_guides(self, arg=None):
+        getguideFilepath='/'.join(gtepiece[:-2])+"/guides/combinedGuides.py"
+        exec(open(getguideFilepath))
+        getguideClass=GuideUI()
+        getguideClass.build_helper_guides()
+
+    def create_Chain(self, ControllerSize, mainName, getDir, crvInf):
+        if getDir=="X":
+            nrx=1
+            nry=0
+            nrz=0  
+        if getDir=="Y":
+            nrx=0
+            nry=1
+            nrz=0   
+        if getDir=="Z":
+            nrx=0
+            nry=0
+            nrz=1
+        # self.mainName =mainName
+        # self.ControllerSize=ControllerSize
 
 
         getGuide=cmds.ls("*_guide")
@@ -416,32 +486,14 @@ class ChainRig(object):
         size, colour= 2, 22
         microLeadCurve=ls(childCurve)
         CVbucket=self.getCurveCVs(microLeadCurve)  
-        medLeadCurveNum=len(CVbucket)/5
+        medLeadCurveNum=len(CVbucket)/4
         medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
-         
-        print "building major controllers"
-        controllerType="_maj_grp"
-        childControllers=ls(mainName+"*_med_grp")
-        childCurve=mainName+"_med_lead_crv"
-        parentCurve=mainName+"_maj_lead_crv"
-        size, colour= 4, 29
-        microLeadCurve=ls(childCurve) 
-        CVbucket=self.getCurveCVs(microLeadCurve)  
-        medLeadCurveNum=len(CVbucket)/5
-        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
-        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
- 
-        print "building maximum controllers"
-        controllerType="_max_grp"
-        childControllers=ls(mainName+"*_maj_grp")
-        childCurve=mainName+"_maj_lead_crv"
-        parentCurve=mainName+"_max_lead_crv"
-        size, colour= 6, 30
-        microLeadCurve=ls(childCurve)  
-        medLeadCurveNum=1
-        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
-        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
+
+        if crvInf == "curved":
+            self.curvedLine(mainName, mainChain, ControllerSize, nrx, nry, nrz)
+        elif crvInf=="straight":
+            self.straightLine(mainName, nrx, nry, nrz)
 
         print "Tidying up"
         self.tidyUp(mainName)
@@ -457,10 +509,6 @@ class ChainRig(object):
         cmds.parent(mainName+"01_jnt", getFirstClstrCtrl)
         cmds.parent(mainName+"01FK_jnt", getFirstClstrCtrl)
         cmds.parent(mainName+"01IK_jnt", getFirstClstrCtrl)      
-        print "adding maximum controllers to rig"  
-        getMaxCtrls=cmds.ls(mainName+"*_max_grp")
-        for each in getMaxCtrls:
-            cmds.parent(each, mainName+"Main_Ctrl")
         cmds.parent(mainName+"02_FK_grp", mainName+"Main_Ctrl")
 
     #getCVs
@@ -475,16 +523,31 @@ class ChainRig(object):
     #duplicating curve
     def dupCurve(self, childCurve, parentCurve, divNum):
         medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
-        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=divNum, d=3, tol=0)
+        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=divNum, d=3, tol=1e-06)
+        # cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=divNum, d=3, tol=0)        
         CVbucket=self.getCurveCVs(medLeadCurve)       
         return medLeadCurve, CVbucket
     
     #building new controllers
     def macroControls(self, medLeadCurve, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz, getNum, medLeadCurveNum):
         CVbucketList=[]
+        collectJack=[]
         for eachCurve in medLeadCurve:
             getCurve=ls(eachCurve)[0]
-            for eachCV in getCurve.cv:
+            for index, eachCV in enumerate(getCurve.cv):
+                transformWorldMatrix=eachCV.getPosition()    
+                rotateWorldMatrix=[0.0, 0.0, 0.0]                            
+                tempname=mainName+str(index)+"none"
+                tempgrpname=mainName+str(index)+"none_grp"
+                tempsize, tempcolour= 6, 6
+                getClass.JackI(tempname, tempgrpname, tempsize, transformWorldMatrix, rotateWorldMatrix, tempcolour)
+                collectJack.append(tempname)
+            for eachCV, eachJack in map(None, getCurve.cv, xrange(len(collectJack) - 1)):  
+                # transformWorldMatrixNext=next_item.getPosition()
+                try:
+                    current_item, next_item =collectJack[eachJack], collectJack[eachJack + 1]
+                except:
+                    pass                
                 getNum=re.sub("\D", "", str(eachCV))
                 getNum=int(getNum)
                 getNum="%02d" % (getNum,)
@@ -493,10 +556,18 @@ class ChainRig(object):
                 grpname= mainName+str(getNum)+controllerType
                 CVbucketList.append(eachCV)
                 transformWorldMatrix=eachCV.getPosition()
-                rotateWorldMatrix=[0.0, 0.0, 0.0]
+                rotateWorldMatrix=[0.0, 0.0, 0.0]            
                 select(eachCV, r=1)
                 getNewClust=cmds.cluster()
                 getClass.buildCtrl(eachCV, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+                getNewCtrl=cmds.ls(sl=1, fl=1)
+                try:
+                    cmds.select(next_item, r=1)
+                    cmds.select(grpname, add=1)
+                    cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
+                    cmds.delete(next_item+"_grp")
+                except:
+                    pass
                 cmds.parentConstraint(ls(name), getNewClust, mo=0, w=1)
                 cmds.parent(grpname, mainName+"_Rig")
                 cmds.parent(getNewClust, mainName+"_Rig")
@@ -520,3 +591,110 @@ class ChainRig(object):
                 getpth=str(motionPath)
                 setAttr(motionPath+".fractionMode", False)
                 setAttr(motionPath+".uValue", getParam) 
+
+    def straightLine(self, mainName,  nrx, nry, nrz):
+        print "building major controllers"
+        controllerType="_maj_grp"
+        childControllers=ls(mainName+"*_med_grp")
+        childCurve=mainName+"_med_lead_crv"
+        parentCurve=mainName+"_maj_lead_crv"
+        size, colour= 4, 29
+        microLeadCurve=ls(childCurve) 
+        CVbucket=self.getCurveCVs(microLeadCurve)  
+        medLeadCurveNum=len(CVbucket)/5
+        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
+ 
+        print "building maximum controllers"
+        controllerType="_max_grp"
+        childControllers=ls(mainName+"*_maj_grp")
+        childCurve=mainName+"_maj_lead_crv"
+        parentCurve=mainName+"_max_lead_crv"
+        size, colour= 6, 30
+        microLeadCurve=ls(childCurve)  
+        medLeadCurveNum=1
+        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
+        print "adding maximum controllers to rig"  
+        getMaxCtrls=cmds.ls(mainName+"*_max_grp")
+        for each in getMaxCtrls:
+            cmds.parent(each, mainName+"Main_Ctrl")
+
+    def curvedLine(self, mainName, mainChain, ControllerSize, nrx, nry, nrz):
+        print "adding maximum controllers to rig" 
+        clstrSplineCtrl=mainChain[ len(mainChain) / 2 ]                 
+        #create clusters for IK chain
+        name=mainName+"Secondary_IK_Ctrl"
+        grpname=mainName+"Secondary_IK_grp"    
+        size=ControllerSize
+        colour=13 
+        transformWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, t=True)  
+        rotateWorldMatrix = cmds.xform(clstrSplineCtrl, q=True, wd=1, ro=True) 
+        getClass.buildCtrl(clstrSplineCtrl, name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        getClass.buildGrp(name)
+        cmds.setAttr(name+".sx" , keyable=0, lock=1)
+        cmds.setAttr(name+".sy" , keyable=0, lock=1)
+        cmds.setAttr(name+".sz", keyable=0, lock=1)
+
+        #create the IK controller
+
+        #create the Base"+mainChain+"
+        transformWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, t=True)  
+        rotateWorldMatrix = cmds.xform(mainChain[:1], q=True, wd=1, ro=True) 
+        name="Base"+mainName+"_Ctrl"
+        grpname="Base"+mainName+"_grp"    
+        size=ControllerSize
+        colour=13   
+        getClass.buildCtrl(mainChain[:1], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)  
+
+
+        name="End"+mainName+"IK_Ctrl"
+        grpname="End"+mainName+"IK_grp"
+        num=20
+        colour=13
+
+        transformWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, t=True)  
+        rotateWorldMatrix = cmds.xform(mainChain[-1:], q=True, wd=1, ro=True) 
+        getClass.buildCtrl(mainChain[-1:], name, grpname,transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)
+        #getClass.squareI(name, grpname, num, transformWorldMatrix, rotateWorldMatrix, colour)  
+        size=ControllerSize-2
+        colour=6     
+        cmds.makeIdentity("End"+mainName+"IK_Ctrl", a=True, t=1, s=1, r=1, n=0)        
+
+        #===============================================================================
+        # 
+        #===============================================================================
+        print "linking main controls for influence"
+        #===============================================================================
+        # 
+        #===============================================================================
+        getMidClstr=cmds.ls(mainName+"*_med_grp")
+        firstpart, secondpart = getMidClstr[:len(getMidClstr)/2], getMidClstr[len(getMidClstr)/2:] 
+        minWeightValue=0.0 
+        maxWeightValue=1.0
+        BucketValue=getClass.Percentages(secondpart, minWeightValue, maxWeightValue)
+        for eachCluser, weighted in map(None,secondpart, BucketValue):
+            cmds.parentConstraint( "End"+mainName+"IK_Ctrl", eachCluser, mo=1, w=weighted)  
+        for eachCluser, weighted in map(None, reversed(secondpart), BucketValue):
+            cmds.parentConstraint( mainName+"Secondary_IK_Ctrl", eachCluser, mo=1, w=weighted) 
+        
+        
+        firstlist=(firstpart)
+        reversedBucket=[]
+        firstlist= reversed(firstlist)
+        for each in firstlist:
+            reversedBucket.append(each)
+        print reversedBucket
+        #beginning
+        minWeightValue=0.0 
+        maxWeightValue=1.0
+        BucketValue=getClass.Percentages(reversedBucket, minWeightValue, maxWeightValue)
+        for eachCluser, weighted in map(None, reversedBucket, BucketValue):
+            cmds.parentConstraint( "Base"+mainName+"_Ctrl", eachCluser, mo=1, w=weighted) 
+        for eachCluser, weighted in map(None, reversed(reversedBucket), BucketValue):
+            cmds.parentConstraint( mainName+"Secondary_IK_Ctrl", eachCluser, mo=1, w=weighted) 
+
+            
+        cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
+        cmds.parent(mainName+"Secondary_IK_Ctrl",mainName+"Main_Ctrl")
+        cmds.parent("Base"+mainName+"_Ctrl",mainName+"Main_Ctrl")        
