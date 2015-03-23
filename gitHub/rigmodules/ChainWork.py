@@ -206,7 +206,14 @@ class ChainRig(object):
         #            create spline IK
         --------------------------------------'''
         print 'create spline IK'
-        
+        getGuide=cmds.ls("*_guide")
+        valueBucket=[]
+        for each in getGuide:
+            each=ls(each)[0]
+            pgetCVpos=each.getTranslation()
+            valueBucket.append(pgetCVpos)
+#         CurveMake = cmds.curve(n=mainName+"IK_crv", d=3, p=valueBucket) 
+#         cmds.ikHandle(n=mainName+"IK", sj=mainName+"01IK_jnt", ee=str(lastmainChainJoint[0]), sol="ikSplineSolver", ccv=0, c=CurveMake, ns=4, rtm=1, tws="easeIn")
         cmds.ikHandle(n=mainName+"IK", sj=mainName+"01IK_jnt", ee=str(lastmainChainJoint[0]), sol="ikSplineSolver", scv=0, ns=4, rtm=1, tws="easeIn")
         #cmds.ikHandle(n=ikname, sj=getjoints[0], ee=lastjoint[0], sol="ikSplineSolver", ccv=0, ns=4, snc=1, tws="easeIn", rtm=1, c=curvename)
         '''--------------------------------------
@@ -295,8 +302,8 @@ class ChainRig(object):
         #stretch
         
         getIKClass.stretchSpline(mainName+"01IK_jnt")
-        
-        
+         
+         
         cmds.addAttr(mainName+"Main_Ctrl", ln="Stretch"+mainName, at="enum",en="on:off:", k=1, nn="Stretch"+mainName)
         ChildActivatedValue=2
         ChildDeactivatedValue=0
@@ -408,32 +415,33 @@ class ChainRig(object):
         parentCurve=mainName+"_med_lead_crv"
         size, colour= 2, 22
         microLeadCurve=ls(childCurve)
-        divNum=6        
-        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
+        CVbucket=self.getCurveCVs(microLeadCurve)  
+        medLeadCurveNum=len(CVbucket)/5
+        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
-        
+         
         print "building major controllers"
         controllerType="_maj_grp"
         childControllers=ls(mainName+"*_med_grp")
         childCurve=mainName+"_med_lead_crv"
         parentCurve=mainName+"_maj_lead_crv"
-        size, colour= 3, 29
+        size, colour= 4, 29
         microLeadCurve=ls(childCurve) 
-        divNum=20
-        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
+        CVbucket=self.getCurveCVs(microLeadCurve)  
+        medLeadCurveNum=len(CVbucket)/5
+        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
         self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
-
+ 
         print "building maximum controllers"
         controllerType="_max_grp"
         childControllers=ls(mainName+"*_maj_grp")
         childCurve=mainName+"_maj_lead_crv"
         parentCurve=mainName+"_max_lead_crv"
-        size, colour= 5, 30
+        size, colour= 6, 30
         microLeadCurve=ls(childCurve)  
-        divNum=6      
-        medLeadCurve, medLeadCurveNum, getNum=self.macroControlsNumber(mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, divNum)
-        getNumNew=3
-        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNumNew, medLeadCurveNum)
+        medLeadCurveNum=1
+        medLeadCurve, getNum=self.dupCurve(childCurve, parentCurve, medLeadCurveNum)
+        self.macroControls(medLeadCurve, mainName, controllerType, childControllers, microLeadCurve, childCurve, parentCurve, size, colour, nrx, nry, nrz, getNum, medLeadCurveNum)
 
         print "Tidying up"
         self.tidyUp(mainName)
@@ -455,20 +463,24 @@ class ChainRig(object):
             cmds.parent(each, mainName+"Main_Ctrl")
         cmds.parent(mainName+"02_FK_grp", mainName+"Main_Ctrl")
 
-    def macroControlsNumber(self, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve, divNum):
-        microLeadCurve=ls(childCurve)
-        medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
+    #getCVs
+    def getCurveCVs(self, microLeadCurve):
         CVbucket=[]
         for eachCurve in microLeadCurve:
             getCurve=ls(eachCurve)[0]
             for eachCV in getCurve.cv:
                 CVbucket.append(eachCV)
-        getNum=len(CVbucket)-2
-        medLeadCurveNum=getNum/6
-        return medLeadCurve, medLeadCurveNum, getNum
-
+        return CVbucket
+    
+    #duplicating curve
+    def dupCurve(self, childCurve, parentCurve, divNum):
+        medLeadCurve=cmds.duplicate(childCurve, n=parentCurve)
+        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=divNum, d=3, tol=0)
+        CVbucket=self.getCurveCVs(medLeadCurve)       
+        return medLeadCurve, CVbucket
+    
+    #building new controllers
     def macroControls(self, medLeadCurve, mainName,controllerType, childControllers,microLeadCurve, childCurve, parentCurve,size, colour, nrx, nry, nrz, getNum, medLeadCurveNum):
-        cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=0, s=medLeadCurveNum, d=3, tol=0)
         CVbucketList=[]
         for eachCurve in medLeadCurve:
             getCurve=ls(eachCurve)[0]
@@ -495,6 +507,7 @@ class ChainRig(object):
         CVbucketbuckList=CVbucketbuckList[:1]+CVbucketbuckList[2:]
         CVbucketbuckList=CVbucketbuckList[:-2]+CVbucketbuckList[-1:]
         medLeadCurve=ls(medLeadCurve)
+        #attach controllers to new parent curve
         for each in medLeadCurve:
             for eachItemCV, eachCtrlGro in map(None, CVbucketbuckList, childControllers):
                 pgetCVpos=eachCtrlGro.getTranslation()
