@@ -35,17 +35,36 @@ gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
 BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
-getfilePath=str(__file__)
+#getfilePath=str(__file__)
 filepath= os.getcwd()
 
 sys.path.append(str(filepath))
-import baseFunctions_maya
-reload (baseFunctions_maya)
-getClass=baseFunctions_maya.BaseClass()
+# import baseFunctions_maya
+# reload (baseFunctions_maya)
+# getClass=baseFunctions_maya.BaseClass()
+
+
+from inspect import getsourcefile
+from os.path import abspath
+getfilePath=str(abspath(getsourcefile(lambda _: None)))
+gtepiece=getfilePath.split("/")
+getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+basepath=str(getRigModPath)+"/baseFunctions_maya.py"
+exec(open(basepath))
+getClass=BaseClass()
+
+# exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//baseFunctions_maya.py'))
+# getClass=BaseClass()
+
+# stretchIKpath=str(getRigModPath)+"/stretchIK.py"
+# exec(open(stretchIKpath))
+# getIKClass=stretchIKClass()
 
 gtepiece=getfilePath.split("/")
 getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
 sys.path.append(str(getguideFilepath))
+
 
 getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
 sys.path.append(str(getrenamerFilepath))
@@ -474,7 +493,13 @@ class ToolFunctions(object):
                 nry=0
                 nrz=1
             ControllerSize=int(getInfo[2])
-            getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize) 
+            # getChainClass=ChainRig()
+            # getChainClass.create(nrz, nry, nrx, mainName, ControllerSize) 
+            chainpath=str(getRigModPath)+"/ChainWork.py"
+            exec(open(chainpath))
+            getChainClass=ChainRig(nrz, nry, nrx, mainName, ControllerSize)
+            #getChainClass.create(nrz, nry, nrx, mainName, ControllerSize) 
+
 
     def _open_texture_file_gmp(self, arg=None):
         '''--------------------------------------------------------------------------------------------------------------------------------------
