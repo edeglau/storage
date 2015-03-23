@@ -31,8 +31,48 @@ BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
 from inspect import getsourcefile
 from os.path import abspath
-
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
+gtepiece=getfilePath.split("/")
+getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+
+if "Windows" in OSplatform:
+    gtepiece=getRigModPath.split("\\")
+if "Linux" in OSplatform: 
+    gtepiece=getRigModPath.split("/")                    
+
+
+basepath=str(getRigModPath)+"/baseFunctions_maya.py"
+exec(open(basepath))
+getBaseClass=BaseClass()
+
+stretchIKpath=str(getRigModPath)+"/stretchIK.py"
+exec(open(stretchIKpath))
+getIKClass=stretchIKClass()
+
+getToolArrayPath=str(getRigModPath)+"/Tools.py"
+exec(open(getToolArrayPath))
+toolClass=ToolFunctions()
+
+
+getValueFilepath='/'.join(gtepiece[:-2])+"/Values/"
+sys.path.append(str(getValueFilepath))
+
+getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
+sys.path.append(str(getSSDArrayPath))
+
+
+
+
+getScenePath=cmds.file(q=1, location=1)
+getPathSplit=getScenePath.split("/")
+folderPath='\\'.join(getPathSplit[:-1])+"\\"
+
+# getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
+# sys.path.append(str(getToolArrayPath))
+
+
+
 #getfilePath=str('__file__')
 filepath= os.getcwd()
 
@@ -42,44 +82,33 @@ sys.path.append(str(filepath))
 # print getEndPath
 # sys.path.append(str(getEndPath))
 
-import baseFunctions_maya
-reload (baseFunctions_maya)
-getBaseClass=baseFunctions_maya.BaseClass()
+# import baseFunctions_maya
+# reload (baseFunctions_maya)
+# getBaseClass=baseFunctions_maya.BaseClass()
 
-sys.path.append(str(filepath))
-import Tools
-reload (Tools)
-toolClass=Tools.ToolFunctions()
+# exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//baseFunctions_maya.py'))
+# getBaseClass=BaseClass()
 
-# 
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-if "Linux" in OSplatform: 
-    gtepiece=getfilePath.split("/")                    
+# sys.path.append(str(filepath))
+# # import Tools
+# # reload (Tools)
+# # toolClass=Tools.ToolFunctions()
+# exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//Tools.py'))
+# toolClass=ToolFunctions()
 
 
-gtepiece=getfilePath.split("\\")
-getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
-sys.path.append(str(getguideFilepath))
 
-getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
-sys.path.append(str(getrenamerFilepath))
 
-getValueFilepath='/'.join(gtepiece[:-2])+"/Values/"
-sys.path.append(str(getValueFilepath))
+# gtepiece=getfilePath.split("\\")
 
-getSelArrayPath='/'.join(gtepiece[:-2])+"/selectArray/"
-sys.path.append(str(getSelArrayPath))
+# sys.path.append(str(getguideFilepath))
 
-getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
-sys.path.append(str(getSSDArrayPath))
+# getSelArrayPath='/'.join(gtepiece[:-1])+"/selectArray/"
+# sys.path.append(str(getSelArrayPath))
 
-getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
-sys.path.append(str(getToolArrayPath))
 
-getScenePath=cmds.file(q=1, location=1)
-getPathSplit=getScenePath.split("/")
-folderPath='\\'.join(getPathSplit[:-1])+"\\"
+
+
 
       
 class ToolKitUI(object):
@@ -119,7 +148,7 @@ class ToolKitUI(object):
         cmds.text(label="Mini rigs")          
         cmds.text(label="")              
         cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Isolated joints that control CVs along a curve with no IK or FK dependencies. Create a guide chain then use this to create a curve rig. USES: Tongue, worm, eyelash line rig", p='listBuildButtonLayout', command = self._curve_rig)    
-        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='listBuildButtonLayout', command = self.chain_rig)    
+        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='listBuildButtonLayout', command = self.chain_rig)
         cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
         cmds.button (label='Multi functions',bgc=[0.45, 0.5, 0.5],ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
         cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._grp_insert)          
@@ -144,7 +173,6 @@ class ToolKitUI(object):
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
         cmds.button (label='**Create Edit Grps', bgc=[0.33, 0.27, 0.30], ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
-        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV) 
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
         cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
         cmds.button (label='ResetSelected', p='listBuildButtonLayout', ann="This will reset the selected to 0.0(transforms only - will not affect control box attributes)", command = self._reset_selected)
@@ -156,9 +184,9 @@ class ToolKitUI(object):
         cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
         cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
-        cmds.button (label='Movers', p='listBuildButtonLayout', command = self._movers) 
-        cmds.button (label='Revert', p='listBuildButtonLayout', command = self._revert) 
-        cmds.button (label='Poly Check', p='listBuildButtonLayout', command = self._poly_check) 
+        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV) 
+        cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
+        cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
         cmds.button (label='Undos back on', p='listBuildButtonLayout', command = self._turn_on_undo) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
@@ -185,20 +213,6 @@ class ToolKitUI(object):
         cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
-        cmds.text(label="")  
-        cmds.text(label="Attributes")          
-        cmds.text(label="")  
-        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple 0-1 float attribute to selected",  p='listBuildButtonLayout',command = self._fast_float)
-        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connect attributes between two selections",  p='listBuildButtonLayout',command = self._quickCconnect_window)
-        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creates a float alias attributes from first selection to second(no min/max)",  p='listBuildButtonLayout',command = self._createAlias_window)                  
-        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='listBuildButtonLayout',command = self._createSDK_alias_window)
-        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='listBuildButtonLayout',command = self._connSDK_alias_window)
-        cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
-        cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
-        cmds.button (label='Fetch Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
-        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
-        cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
-        cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)                                                         
         cmds.text(label="") 
         cmds.text(label="Modelling")          
         cmds.text(label="")               
@@ -245,10 +259,30 @@ class ToolKitUI(object):
      
     def _bone_rivet(self, arg=None): 
         toolClass._bone_rivet()
-        
+
     def chain_rig(self, arg=None):
-        toolClass.chain_rig()
-            
+        # toolClass.chain_rig()        
+        # chainpath=str(getRigModPath)+"/ChainWork.py"
+        # exec(open(chainpath))
+        # chainClass=ChainRig()
+        # chainClass.chain_rig()
+        chainpath=str(getRigModPath)+"/ChainWork.py"
+        exec(open(chainpath))
+        getChainClass=ChainRig()  
+        getChainClass.build_chain()
+
+    def _revert(self, arg=None):
+        getFileToolFilepath='/'.join(gtepiece[:-2])+"/tools/revert.py"
+        exec(open(getFileToolFilepath))
+        getRevertClass=RevertUI()
+        getRevertClass.create()
+
+    def _poly_check(self, arg=None):
+        getPolyToolFilepath='/'.join(gtepiece[:-2])+"/tools/polyChecker.py"
+        exec(open(getPolyToolFilepath))
+        getPolyClass=PolyUI()
+        getPolyClass.create()
+
     def _sets_win(self, arg=None):
         toolClass._sets_win()  
             
@@ -274,14 +308,32 @@ class ToolKitUI(object):
 
         
     def _guides(self, arg=None):
-        import combinedGuides
-        reload (combinedGuides)
-        combinedGuides.GuideUI()
+        getguideFilepath='/'.join(gtepiece[:-2])+"/guides/combinedGuides.py"
+        exec(open(getguideFilepath))
+        getguideClass=GuideUI()
+        getguideClass.create()
+        # exec(open('//usr//people//elise-d//workspace//sandBox//guides//combinedGuides.py'))  
+        # getguideFilepath=getguideFilepath+'/combinedGuides.py'
+        # print getguideFilepath
+        # exec(open(getguideFilepath))
+        # getGuides=GuideUI()
+        # filepath="//usr//people//elise-d//workspace//sandBox//guides"
+        # sys.path.append(str(filepath))        
+        # import combinedGuides
+        # reload (combinedGuides)
+
         
     def _renamer(self, arg=None):
-        import renamer
-        reload (renamer)
-        renamer.myUI()    
+        getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/renamer.py"
+        exec(open(getrenamerFilepath))
+        myUI() 
+        
+
+        # getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
+        # sys.path.append(str(getrenamerFilepath))     
+        # import renamer
+        # reload (renamer)
+        # renamer.myUI()    
             
     def _change_limit_values(self, arg=None):
         import LimitValues
@@ -347,9 +399,10 @@ class ToolKitUI(object):
         getBaseClass=Skinner_UI.SkinningUI()        
 
     def _select_array(self, arg=None):
-        import selectArray
-        reload (selectArray)
-        selectArray.SelectionPalettUI()         
+        getSelArrayPath='/'.join(gtepiece[:-2])+"/selectArray/selectArray.py"
+        exec(open(getSelArrayPath))
+        getSelArrayClass=SelectionPalettUI()        
+      
         
     def _tran_att(self, arg=None):
         getBaseClass.massTransfer()      
@@ -366,7 +419,7 @@ class ToolKitUI(object):
 
     def _blend_colour_window(self, arg=None):
         toolClass._blend_colour_window()
-        
+          
     def _quickCconnect_window(self, arg=None):
         toolClass._quickCconnect_window()
 
@@ -488,18 +541,6 @@ class ToolKitUI(object):
         reload (DefEditGrps)
         getgrp=DefEditGrps.myGrps()
         getgrp.grab_grp()  
-    def _revert(self, arg=None):
-        import movers
-        reload (movers)
-        movers.moversUI()  
-    def _poly_check(self, arg=None):
-        import polyChecker
-        reload (polyChecker)
-        polyChecker.polyCheckerUI()  
-    def _movers(self, arg=None):
-        import movers
-        reload (movers)
-        movers.moversUI()  
         
                     #===========================================================
                     # remove numbers at beginning
