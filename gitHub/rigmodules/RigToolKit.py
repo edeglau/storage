@@ -124,7 +124,7 @@ class ToolKitUI(object):
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
 
-        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=350, h=550)
+        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=350, h=750)
 
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
@@ -186,8 +186,10 @@ class ToolKitUI(object):
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
         cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV) 
         cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
+        cmds.button (label='Hidden grp', p='listBuildButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
         cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
-        cmds.button (label='Undos back on', p='listBuildButtonLayout', command = self._turn_on_undo) 
+        cmds.button (label='fix undos', p='listBuildButtonLayout', command = self._turn_on_undo) 
+        cmds.button (label='fix playblast', p='listBuildButtonLayout', command = self._fix_playblast)
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
@@ -235,7 +237,10 @@ class ToolKitUI(object):
         
     def _reset_selected(self, arg=None):
         toolClass._reset()
-        
+
+    def _hidden(self, arg=None):
+        toolClass.visibility_UI()
+
     def _shade_network(self, arg=None):
         toolClass._shade_network()
 
@@ -517,7 +522,15 @@ class ToolKitUI(object):
 
     def _turn_on_undo(self, arg=None):
         toolClass.turn_on_undo()
-        
+
+    def _fix_playblast(self, arg=None):
+        python("from mpc.maya.mpcPlayblast import mpcPlayblastMaya");
+        python("from mpc.maya.mpcPlayblast import mpcPlayblastFromHubInterface");
+        python("import maya.mel as mel");
+        python("playblast = None");
+        python("playblastMel = None");
+        playblast.play()
+
     def _load_ssd(self, arg=None):
         import SSD
         reload (SSD)
