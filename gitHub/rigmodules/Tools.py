@@ -1786,3 +1786,103 @@ class ToolFunctions(object):
                 
     def turn_on_undo(self, arg=None):
         cmds.undoInfo(state=1)
+
+
+    def visibility_UI(self, arg=None):
+        winName = "visibility"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 18)) 
+        self.hideToggle=cmds.textField( w=40, h=25, p='txvaluemeter', text="polySphere*")
+        button (label='eyedropper name', p='txvaluemeter', command = lambda *args:self.eye_dropper(hide))
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        button (label='Toggle name', p='BuildButtonLayout', command = lambda *args:self.visibility_name(hide=textField(self.hideToggle,q=1, text=1)))
+        button (label='Toggle exclude peers', p='BuildButtonLayout', command = lambda *args:self.visibility_peers())
+        button (label='Toggle children', p='BuildButtonLayout', command = lambda *args:self.visibility_children())
+        button (label='Toggle leaf children', p='BuildButtonLayout', command = lambda *args:self.visibility_leaf_children())
+        button (label='children off', p='BuildButtonLayout', command = lambda *args:self.visibility_children_off())        
+        button (label='children on', p='BuildButtonLayout', command = lambda *args:self.visibility_children_on())
+        showWindow(window)
+
+    def eye_dropper(self, hide):
+        selectedObject=cmds.ls(sl=1)
+        objListLength=len(selectedObject)
+        if objListLength:
+            if objListLength >= 1:
+                cmds.textField(self.hideToggle , e=1, text=selectedObject[0])  
+        else:
+            print "nothing selected"
+
+    def visibility_name(self, hide):
+        getAllList=ls(hide)
+        for each in getAllList:
+            self.toggleVis(each)
+
+    def visibility_children(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            getchildren=listRelatives(each, c=1)
+            for eachChild in getchildren:
+                self.toggleVis(eachChild)
+
+    def visibility_children_on(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            getchildren=listRelatives(each, c=1)
+            for eachChild in getchildren:
+                self.visOn(eachChild)
+
+    def visibility_children_off(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            getchildren=listRelatives(each, c=1)
+            for eachChild in getchildren:
+                self.visOff(eachChild)
+
+    def visibility_leaf_children(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            getchildren=listRelatives(each, c=1, ad=1)
+            for eachChild in getchildren:
+                self.toggleVis(eachChild)
+
+
+    def visibility_peers(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            getpar=listRelatives(each, p=1)
+            getchildren=listRelatives(getpar[0], c=1)
+            excGrp=[(eachChild) for eachChild in getchildren if each not in eachChild]
+            for eachChild in excGrp:
+                if str(each) != str(eachChild):
+                    self.toggleVis(eachChild)
+      
+
+    def toggleVis(self, foundObject):
+        try:
+            if foundObject.visibility.get()==1:
+                foundObject.visibility.set(0)
+            else:
+                foundObject.visibility.set(1)  
+        except:
+            pass
+
+    def visOn(self, foundObject):
+        try:
+            foundObject.visibility.set(1)
+        except:
+            pass
+
+    def visOff(self, foundObject):
+        try:
+            foundObject.visibility.set(0)
+        except:
+            pass            
