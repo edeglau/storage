@@ -127,17 +127,26 @@ class ToolKitUI(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=350, h=750)
 
         cmds.menuBarLayout(h=30)
+
+
+
+
+
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
 
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-
-        cmds.rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
+        cmds.frameLayout('topRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='topRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        cmds.text(label="Rig setup")          
-        cmds.text(label="")  
+        cmds.gridLayout('topGridLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.text(label="Rig setup")     
+        cmds.button (label='Help', bgc=[0.30, 0.30, 0.30], p='topGridLayout', command = self._help)     
+
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='etchedIn', bv=5, p='selectArrayColumn')
+        cmds.rowLayout  (' LowerMainRow ', w=350, numberOfColumns=6, p='LrRow')        
+        cmds.gridLayout('listBuildButtonLayout', p='LrRow', numberOfColumns=2, cellWidthHeight=(150, 20))   
+
+
         cmds.button (label='Guides Tool', ann="This is the guide tool menu to build the guides that creates the MG rig system", bgc=[0.7, 0.7, 0.7],p='listBuildButtonLayout', command = self._guides)
 #        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='listBuildButtonLayout', command = self._rig_biped)
         cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_biped_mirror)
@@ -173,6 +182,7 @@ class ToolKitUI(object):
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
         cmds.button (label='**Create Edit Grps', bgc=[0.33, 0.27, 0.30], ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV)         
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
         cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
         cmds.button (label='ResetSelected', p='listBuildButtonLayout', ann="This will reset the selected to 0.0(transforms only - will not affect control box attributes)", command = self._reset_selected)
@@ -184,7 +194,6 @@ class ToolKitUI(object):
         cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
         cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
-        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV) 
         cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
         cmds.button (label='Hidden grp', p='listBuildButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
         cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
@@ -215,6 +224,7 @@ class ToolKitUI(object):
         cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
+        cmds.button (label='Save Attr', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
         cmds.text(label="") 
         cmds.text(label="Modelling")          
         cmds.text(label="")               
@@ -227,10 +237,13 @@ class ToolKitUI(object):
         cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
         cmds.button (label='Open Image Gimp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
         cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
-        cmds.button (label='Add Revert', ann="Adds the revert (mel - Author: NextDesign - from Highend/Creative crash) script to the File drop down in Maya.", p='listBuildButtonLayout', command = self._revert)          
         cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)     
         cmds.showWindow(self.window)
 
+    def _help(self, arg=None):
+        helppath=str(getRigModPath)+"/rgModhelp.py"
+        exec(open(helppath))
+        helpClass()
 
     def _mirror_transform(self, arg=None): 
         getBaseClass.mirrorXform()
@@ -509,7 +522,13 @@ class ToolKitUI(object):
         
     def _stretch_ik_spline(self, arg=None):
         toolClass._stretch_ik_spline()
-        
+
+    def _save_att(self, arg=None):
+        toolClass.saved_attributes()
+
+    def _load_att(self, arg=None):
+        toolClass.load_attributes()
+
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
         
@@ -529,7 +548,7 @@ class ToolKitUI(object):
         python("import maya.mel as mel");
         python("playblast = None");
         python("playblastMel = None");
-        playblast.play()
+        # playblast.play()
 
     def _load_ssd(self, arg=None):
         import SSD
