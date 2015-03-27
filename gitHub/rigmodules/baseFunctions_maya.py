@@ -24,11 +24,11 @@ infFolderPath=folderPath+"Influences\\"
 xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
 
-getfilePath=str(__file__)
+# getfilePath=str(__file__)
 filepath= os.getcwd()
 
-gtepiece=getfilePath.split("\\")
-getSSDFilepath='\\'.join(gtepiece[:-2])+"\\SSD\\"
+# gtepiece=getfilePath.split("\\")
+# getSSDFilepath='\\'.join(gtepiece[:-2])+"\\SSD\\"
 
 class BaseClass():
 
@@ -3409,31 +3409,4 @@ class BaseClass():
     def xformAutoTranWrist(self, aim, target):
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
-        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )   
-        
-    def lockToMoCurve(self, Curve, lockObj):
-        for each in Curve: 
-            for eachObj in lockObj:
-                pgetCVpos=eachObj.getTranslation()
-                eachObj=cmds.ls(eachObj)
-#                 getChildrenController=cmds.listRelatives(eachObj, c=1)
-#                 if getChildrenController == "clusterHandle":
-#                 pgetCVpos = cmds.xform(eachObj[0], q=True, wd=1, sp=True)
-#                     print pgetCVpos
-#                 elif getChildrenController == "nurbsCurve":
-#                 pgetCVpos=eachObj.getPosition()
-#                     print pgetCVpos
-#                 else:
-#                 pgetCVpos=eachObj[0].getTranslation()
-#                     print pgetCVpos
-                print pgetCVpos
-                getpoint=each.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
-                getParam=each.getParamAtPoint(getpoint, space='preTransform')
-                select(eachObj, r=1)
-                select(Curve[0], add=1)
-                motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
-                disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
-                getpth=str(motionPath)
-                setAttr(motionPath+".fractionMode", False)
-                setAttr(motionPath+".uValue", getParam) 
-             
+        cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    
