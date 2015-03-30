@@ -1942,7 +1942,8 @@ class ToolFunctions(object):
         for each in selObj:
             printFolder=newfolderPath+str(each)+"_attributes.txt"
             if printFolder and each in printFolder:
-                getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]
+                getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]
+                # getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]                
                 inp=open(printFolder, 'r')
                 List = open(printFolder).readlines()
                 dirDict={}
