@@ -46,8 +46,14 @@ sys.path.append(str(filepath))
 
 from inspect import getsourcefile
 from os.path import abspath
+
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
-gtepiece=getfilePath.split("/")
+print getfilePath
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+if "Linux" in OSplatform: 
+    gtepiece=getfilePath.split("/")  
+# gtepiece=getfilePath.split("/")
 getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 basepath=str(getRigModPath)+"/baseFunctions_maya.py"
@@ -1901,14 +1907,18 @@ class ToolFunctions(object):
         selObj=ls(sl=1, fl=1)
         for each in selObj:
             attrValBucket=[]
-            printFolder=newfolderPath+str(selObj)+"_attributes.txt"
+            printFolder=newfolderPath+str(each)+"_attributes.txt"
+            print printFolder
             if not os.path.exists(printFolder): os.makedirs(printFolder) 
             getListedAttr=listAttr (each, w=1, a=1, s=1,u=1)
             for eachAttribute in getListedAttr:
-                attrVal=each.eachAttribute.get()
-                attrWithVal=str(eachAttribute)+">>"+str(attrVal)+","
-                attrValBucket.append(attrWithVal)
-            fullString=each+":"+str(attrValBucket)
+                try:
+                    attrVal=getattr(each,eachAttribute).get()
+                    attrWithVal=str(eachAttribute)+":"+str(attrVal)+","
+                    attrValBucket.append(attrWithVal)
+                except:
+                    pass
+            fullString=str(attrValBucket)
             inp=open(printFolder, 'w+')            
             inp.write(str(fullString)+'\r\n')
             inp.close()  
@@ -1925,102 +1935,19 @@ class ToolFunctions(object):
             print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
         selObj=cmds.ls(sl=1)
-
-
         for each in selObj:
-            printFolder=newfolderPath+str(each)+"_attributes.txt"
-            if printFolder:
-                if each in printFolder:
-                    getListedAttr=listAttr (each, w=1, a=1, s=1,u=1)
-                    inp=open(printFolder, 'r')
-                    List = open(printFolder).readlines()
-        
-        for each in List:   
-            getDictParts=each.split(':')
-            getDictValues=getDictParts[1:]
-            divideCBStuff=getDictValues[0].split("<<")
-            getCBValues=self.breakCBvalues(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], tx=[getTwoLimitValues[0], getTwoLimitValues[1]], etx=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.tx', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.tx', cb=getCBValues[2])
-            cmds.setAttr(getDictParts[0]+'.tx', k=getCBValues[1])            
-            divideCBStuff=getDictValues[1].split("<<")
-            getCBValues=self.breakCBvalues(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], ty=[getTwoLimitValues[0], getTwoLimitValues[1]], ety=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.ty', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.ty', cb=getCBValues[2])  
-            cmds.setAttr(getDictParts[0]+'.ty', k=getCBValues[1])                      
-            divideCBStuff=getDictValues[2].split("<<")
-            getCBValues=self.breakCBvalues(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], tz=[getTwoLimitValues[0], getTwoLimitValues[1]], etz=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.tz', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.tz', cb=getCBValues[2])  
-            cmds.setAttr(getDictParts[0]+'.tz', k=getCBValues[1])                         
-            divideCBStuff=getDictValues[3].split("<<")
-            getCBValues=self.breakCBvalues(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], rx=[getTwoLimitValues[0], getTwoLimitValues[1]], erx=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.rx', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.rx', cb=getCBValues[2])   
-            cmds.setAttr(getDictParts[0]+'.rx', k=getCBValues[1])             
-            divideCBStuff=getDictValues[4].split("<<")
-            getCBValues=self.breakCBvalues(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], ry=[getTwoLimitValues[0], getTwoLimitValues[1]], ery=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.ry', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.ry', cb=getCBValues[2])     
-            cmds.setAttr(getDictParts[0]+'.ry', k=getCBValues[1])           
-            divideCBStuff=getDictValues[5].split("<<")
-            getCBValues=self.breakCBvaluesLast(divideCBStuff[1])
-            divideLimitValues=divideCBStuff[0].split(">>")
-            getTwoLimitValues, getTwoLimitStates=self.breakUp(divideLimitValues)
-            cmds.transformLimits(getDictParts[0], rz=[getTwoLimitValues[0], getTwoLimitValues[1]], erz=[getTwoLimitStates[0], getTwoLimitStates[1]])
-            cmds.setAttr(getDictParts[0]+'.rz', lock=getCBValues[0])
-            cmds.setAttr(getDictParts[0]+'.rz', cb=getCBValues[2])   
-            cmds.setAttr(getDictParts[0]+'.rz', k=getCBValues[1])     
+            printFolder=newfolderPath+str(each[0])+"_attributes.txt"
+            if printFolder and each in printFolder:
+                getListedAttr=listAttr (each, w=1, a=1, s=1,u=1)
+                inp=open(printFolder, 'r')
+                List = open(printFolder).readlines()
+            dirDict={}
+            for each in List:  
+                getKeyDict=each.split(':')
+                getValueDict=getKeyDict[1].split(",")
+                makeDict={getKeyDict:getValueDict}
+                dirDict.update(makeDict)
+            for key, value in dirDict.items():
+                if key==getListedAttr:
+                    each.getListedAttr.set(value)
 
-    def breakUp(self, divideLimitValues):
-        getTXValues=divideLimitValues[0].strip('[]')
-        getTwoLimitValues=getTXValues.split(', ')
-        getTXLimits=divideLimitValues[1].strip('[]')
-        getTwoLimitStates=getTXLimits.split(', ')
-        getNewLimitNumberState=[]
-        for each in getTwoLimitStates:
-            if each=="False":
-                each=int(0)
-            elif each=="True":
-                each=int(1)
-            getNewLimitNumberState.append(each)
-        return getTwoLimitValues, getNewLimitNumberState
-    def breakCBvalues(self, divideLimitValues):
-        getTXLimits=divideLimitValues.strip('[]')
-        getCBtates=getTXLimits.split(', ')
-        getNewLimitNumberState=[]
-        for each in getCBtates:
-            if each=="False":
-                each=int(0)
-            elif each=="True":
-                each=int(1)
-            getNewLimitNumberState.append(each)
-        getNewLimitNumberState        
-        return getNewLimitNumberState
-    def breakCBvaluesLast(self, divideLimitValues):
-        getTXLimits=divideLimitValues.strip('[]]\r\n')
-        getCBtates=getTXLimits.split(', ')
-        getNewLimitNumberState=[]
-        for each in getCBtates:
-            if each=="False":
-                each=int(0)
-            elif each=="True":
-                each=int(1)
-            getNewLimitNumberState.append(each)
-        getNewLimitNumberState        
-        return getNewLimitNumberState            

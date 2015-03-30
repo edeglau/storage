@@ -32,14 +32,18 @@ BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 from inspect import getsourcefile
 from os.path import abspath
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
-gtepiece=getfilePath.split("/")
-getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-
-
+print getfilePath
 if "Windows" in OSplatform:
-    gtepiece=getRigModPath.split("\\")
+    gtepiece=getfilePath.split("\\")
 if "Linux" in OSplatform: 
-    gtepiece=getRigModPath.split("/")                    
+    gtepiece=getfilePath.split("/")  
+# gtepiece=getfilePath.split("/")
+print gtepiece
+getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+print getRigModPath
+
+
+                  
 
 
 basepath=str(getRigModPath)+"/baseFunctions_maya.py"
@@ -225,6 +229,7 @@ class ToolKitUI(object):
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
         cmds.button (label='Save Attr', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
+        cmds.button (label='Load Attr', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._load_att) 
         cmds.text(label="") 
         cmds.text(label="Modelling")          
         cmds.text(label="")               
@@ -548,7 +553,7 @@ class ToolKitUI(object):
         python("import maya.mel as mel");
         python("playblast = None");
         python("playblastMel = None");
-        # playblast.play()
+        playblast.play()
 
     def _load_ssd(self, arg=None):
         import SSD
