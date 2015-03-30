@@ -151,6 +151,7 @@ class ToolFunctions(object):
     def change_set(self):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
+        deformSets=["blendShape", "simpleBlendShape"]
         getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         if getSetType=="Dynamic sets":
             menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
@@ -168,7 +169,7 @@ class ToolFunctions(object):
             collectBlendSets=[]
             for each in getAllSets:
                 try:
-                    keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) if cmds.nodeType(connectedObj) =="blendShape"]
+                    keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) for eachDeform in deformSets if cmds.nodeType(connectedObj) ==eachDeform]
                     if keepEach:
                         collectBlendSets.append(each)
                 except:
@@ -1466,7 +1467,7 @@ class ToolFunctions(object):
                     delete(item)
         elif nodeType(getSel[0])=="nurbsCurve":
             for each in getSel[::removeNth]:         
-        		delete(each)
+                delete(each)
 
     def removeCV(self, remove):
         getSel=ls(sl=1, fl=1)
@@ -1909,45 +1910,69 @@ class ToolFunctions(object):
             attrValBucket=[]
             printFolder=newfolderPath+str(each)+"_attributes.txt"
             print printFolder
-            if not os.path.exists(printFolder): os.makedirs(printFolder) 
-            getListedAttr=listAttr (each, w=1, a=1, s=1,u=1)
+            if "Windows" in OSplatform:            
+                if not os.path.exists(printFolder): os.makedirs(printFolder) 
+            if "Linux" in OSplatform:
+                open(printFolder, 'w')
+            getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
             for eachAttribute in getListedAttr:
                 try:
                     attrVal=getattr(each,eachAttribute).get()
-                    attrWithVal=str(eachAttribute)+":"+str(attrVal)+","
+                    attrWithVal=str(eachAttribute)+":"+str(attrVal)
                     attrValBucket.append(attrWithVal)
                 except:
                     pass
             fullString=str(attrValBucket)
-            inp=open(printFolder, 'w+')            
-            inp.write(str(fullString)+'\r\n')
+            inp=open(printFolder, 'w+') 
+            for each in attrValBucket:
+                inp.write(str(each)+'\n')
             inp.close()  
             print "saved as "+printFolder
 
     def load_attributes(self, arg=None):
+        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
         if "Windows" in OSplatform:
-            print "windows"
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
-            print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
         selObj=cmds.ls(sl=1)
         for each in selObj:
-            printFolder=newfolderPath+str(each[0])+"_attributes.txt"
+            printFolder=newfolderPath+str(each)+"_attributes.txt"
             if printFolder and each in printFolder:
-                getListedAttr=listAttr (each, w=1, a=1, s=1,u=1)
+                getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]
                 inp=open(printFolder, 'r')
                 List = open(printFolder).readlines()
-            dirDict={}
-            for each in List:  
-                getKeyDict=each.split(':')
-                getValueDict=getKeyDict[1].split(",")
-                makeDict={getKeyDict:getValueDict}
-                dirDict.update(makeDict)
-            for key, value in dirDict.items():
-                if key==getListedAttr:
-                    each.getListedAttr.set(value)
+                dirDict={}
+                for aline in List: 
+                    print aline
+                    getKeyDict=aline.split(':')[0]
+                    getValueDict=aline.split(':')[1]
+                    makeDict={getKeyDict:getValueDict}
+                    dirDict.update(makeDict)
+                for eachAttribute in getListedAttr:
+                    print eachAttribute
+                    objectToQuery=ls(each)
+                    getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
+                    getTypeAttr=type(getChangeAttr)
+                    for key, value in dirDict.items():
+                        if key==eachAttribute:
+                            print key
+                            print value
+                            value=getTypeAttr(value)
+                            print type(value)
+                            # getChildAttrToChange=getAttr(each, eachAttribute)  
+                            try:
+                                setAttr(each+'.'+eachAttribute, value)
+                                print "happened"
+                            except:
+                                pass
+                                    # if type(eachAttribute)== float:
+                                    #     getChildAttrToChange.set(float(value)) 
+                                    # if type(eachAttribute)== str:
+                                    #     getChildAttrToChange.set(str(value))
+                   
+                            # each.getListedAttr.set(value)
 
