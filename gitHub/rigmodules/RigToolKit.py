@@ -386,9 +386,13 @@ class ToolKitUI(object):
 
 
     def _change_colours(self, arg=None):
-        import Colours
-        reload (Colours)
-        Colours.ColourPalet()
+        getcolourfFilepath='/'.join(gtepiece[:-1])+"/Colours.py"
+        exec(open(getcolourfFilepath))
+        getcolourfFilepath=ColourPalet()
+
+        # import Colours
+        # reload (Colours)
+        # Colours.ColourPalet()
         
     def _anim_tools(self, arg=None):
         import Anim_Tools
@@ -501,9 +505,13 @@ class ToolKitUI(object):
         
     def _constraint_maker(self, arg=None):
         #getBaseClass.constraintMaker()  
-        import multiFunctions
-        reload (multiFunctions)
-        multiFunctions.MultiFunctionClass() 
+        # import multiFunctions
+        # reload (multiFunctions)
+        # multiFunctions.MultiFunctionClass() 
+        getmultifFilepath='/'.join(gtepiece[:-1])+"/multiFunctions.py"
+        exec(open(getmultifFilepath))
+        getMultiClass=MultiFunctionClass()
+
 
     def _make_shape(self, arg=None):
         getBaseClass.makeShape()
@@ -529,10 +537,10 @@ class ToolKitUI(object):
         toolClass._stretch_ik_spline()
 
     def _save_att(self, arg=None):
-        toolClass.saved_attributes()
+        toolClass.saveAttributesWindow()
 
     def _load_att(self, arg=None):
-        toolClass.load_attributes()
+        toolClass.openAttributesWindow()
 
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
@@ -548,12 +556,12 @@ class ToolKitUI(object):
         toolClass.turn_on_undo()
 
     def _fix_playblast(self, arg=None):
-        python("from mpc.maya.mpcPlayblast import mpcPlayblastMaya");
-        python("from mpc.maya.mpcPlayblast import mpcPlayblastFromHubInterface");
-        python("import maya.mel as mel");
+        # python("from mpc.maya.mpcPlayblast import mpcPlayblastMaya");
+        # python("from mpc.maya.mpcPlayblast import mpcPlayblastFromHubInterface");
+        # python("import maya.mel as mel");
         python("playblast = None");
-        python("playblastMel = None");
-        playblast.play()
+        # python("playblastMel = None");
+        # playblast.play()
 
     def _load_ssd(self, arg=None):
         import SSD
