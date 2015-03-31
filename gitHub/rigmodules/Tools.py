@@ -573,21 +573,7 @@ class ToolFunctions(object):
         else:
             print "need to select a texture node"
             
-    def _open_work_folder(self, arg=None):
-        '''--------------------------------------------------------------------------------------------------------------------------------------
-        This opens the workfolder for the current saved file - file must be saved for query. untitled will not prompt an open folder.
-        --------------------------------------------------------------------------------------------------------------------------------------'''        
-        getScenePath=cmds.file(q=1, location=1)
-        getPathSplit=getScenePath.split("/")
-        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-        if "Windows" in OSplatform:
-            print "windows"
-            folderPath=re.sub(r'/',r'\\', folderPath)
-            os.startfile(folderPath)
-        if "Linux" in OSplatform:
-            print "Linux"
-            newfolderPath=re.sub(r'\\',r'/', folderPath)
-            os.system('xdg-open "%s"' % newfolderPath) 
+
 
 
     def _open_work_folderV1(self, arg=None):
@@ -1895,7 +1881,72 @@ class ToolFunctions(object):
         except:
             pass
 
-    def saved_attributes(self, arg=None):
+    def saveAttributesWindow(self, arg=None): 
+        selObj=ls(sl=1, fl=1)
+        if selObj: 
+            pass
+        else:
+            print "select something"
+            return      
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            print "windows"
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            print "Linux"
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+
+        winName = "Save attribute"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.gridLayout('topArea', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20))        
+        text("workpath: "+newfolderPath)
+        cmds.button (label='Add', p='topArea', command = lambda *args:self._refresh_function())  
+        cmds.button (label='Open folder', p='topArea', command = lambda *args:self._open_work_folder())
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20))
+        fieldBucket=[]
+        for each in selObj:
+            objNameFile=str(each)+"_attributes"
+            # fullPathName=newfolderPath+objNameFile
+            self.getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (w=40, label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window)        
+
+
+    def saved_attributes(self, each, newfolderPath, fileName):
+        printFolder=newfolderPath+fileName+".txt"
+        attrValBucket=[]
+        if "Windows" in OSplatform:            
+            if not os.path.exists(printFolder): os.makedirs(printFolder) 
+        if "Linux" in OSplatform:
+            open(printFolder, 'w')
+        getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
+        for eachAttribute in getListedAttr:
+            try:
+                attrVal=getattr(each,eachAttribute).get()
+                attrWithVal=str(eachAttribute)+":"+str(attrVal)
+                attrValBucket.append(attrWithVal)
+            except:
+                pass
+        fullString=str(attrValBucket)
+        inp=open(printFolder, 'w+') 
+        for each in attrValBucket:
+            inp.write(str(each)+'\n')
+        inp.close()  
+        print "saved as "+printFolder
+
+    def _refresh_function(self):
+        selObj=ls(sl=1, fl=1)
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
@@ -1905,75 +1956,187 @@ class ToolFunctions(object):
         if "Linux" in OSplatform:
             print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
-        selObj=ls(sl=1, fl=1)
         for each in selObj:
-            attrValBucket=[]
-            printFolder=newfolderPath+str(each)+"_attributes.txt"
-            print printFolder
-            if "Windows" in OSplatform:            
-                if not os.path.exists(printFolder): os.makedirs(printFolder) 
-            if "Linux" in OSplatform:
-                open(printFolder, 'w')
-            getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-            for eachAttribute in getListedAttr:
-                try:
-                    attrVal=getattr(each,eachAttribute).get()
-                    attrWithVal=str(eachAttribute)+":"+str(attrVal)
-                    attrValBucket.append(attrWithVal)
-                except:
-                    pass
-            fullString=str(attrValBucket)
-            inp=open(printFolder, 'w+') 
-            for each in attrValBucket:
-                inp.write(str(each)+'\n')
-            inp.close()  
-            print "saved as "+printFolder
+            objNameFile=str(each)+"_attributes.txt"
+            fullPathName=newfolderPath+objNameFile
+            getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fullPathName))
 
-    def load_attributes(self, arg=None):
-        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]
+
+    # def saved_attributesV1(self, arg=None):
+    #     getScenePath=cmds.file(q=1, location=1)
+    #     getPathSplit=getScenePath.split("/")
+    #     folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+    #     if "Windows" in OSplatform:
+    #         print "windows"
+    #         newfolderPath=re.sub(r'/',r'\\', folderPath)
+    #     if "Linux" in OSplatform:
+    #         print "Linux"
+    #         newfolderPath=re.sub(r'\\',r'/', folderPath)        
+    #     selObj=ls(sl=1, fl=1)
+    #     for each in selObj:
+    #         attrValBucket=[]
+    #         printFolder=newfolderPath+str(each)+"_attributes.txt"
+    #         print printFolder
+    #         if "Windows" in OSplatform:            
+    #             if not os.path.exists(printFolder): os.makedirs(printFolder) 
+    #         if "Linux" in OSplatform:
+    #             open(printFolder, 'w')
+    #         getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
+    #         for eachAttribute in getListedAttr:
+    #             try:
+    #                 attrVal=getattr(each,eachAttribute).get()
+    #                 attrWithVal=str(eachAttribute)+":"+str(attrVal)
+    #                 attrValBucket.append(attrWithVal)
+    #             except:
+    #                 pass
+    #         fullString=str(attrValBucket)
+    #         inp=open(printFolder, 'w+') 
+    #         for each in attrValBucket:
+    #             inp.write(str(each)+'\n')
+    #         inp.close()  
+    #         print "saved as "+printFolder
+
+    def openAttributesWindow(self, arg=None):    
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
         if "Windows" in OSplatform:
+            print "windows"
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
-            newfolderPath=re.sub(r'\\',r'/', folderPath)        
+            print "Linux"
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        getPath=newfolderPath+"*.txt"
+        files=glob.glob(getPath)   
+        makeBucket=[] 
+        for each in files:
+            if "Windows" in OSplatform:
+                getfileName=each.split("\\")
+            if "Linux" in OSplatform:
+                getfileName=each.split("/")         
+            getFile=getfileName[-1:][0]
+            makeBucket.append(getFile)            
+        winName = "Open attributes"
+        winTitle = winName
+        openFolderPath=folderPath+"\\"   
+
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=280 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        text("workpath:"+newfolderPath)
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20))      
+        self.fileDropName=cmds.optionMenu( label='files')
+        for each in makeBucket:
+            cmds.menuItem( label=each) 
+        print newfolderPath
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
+        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
+        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+each) 
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(cmds.textField(self.pathFile, q=1, text=1)))        
+        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
+        cmds.showWindow(window)
+
+    def _open_work_folder(self, arg=None):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        This opens the workfolder for the current saved file - file must be saved for query. untitled will not prompt an open folder.
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"
+        self.opening_folder(folderPath)
+
+    def opening_folder(self, folderPath):
+        if "Windows" in OSplatform:
+            folderPath=re.sub(r'/',r'\\', folderPath)
+            os.startfile(folderPath)
+        if "Linux" in OSplatform:
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+            os.system('xdg-open "%s"' % newfolderPath) 
+
+    def _open_defined_path(self, destImagePath):
+        getPathSplit=destImagePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        self.opening_folder(folderPath)
+
+    def _load_defined_path(self, newfolderPath, grabFileName):
+        printFolder=newfolderPath+grabFileName     
+        self.load_attributes(printFolder)
+
+    def load_attributes(self, printFolder):
+        print printFolder
+        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]    
         selObj=cmds.ls(sl=1)
         for each in selObj:
-            printFolder=newfolderPath+str(each)+"_attributes.txt"
-            if printFolder and each in printFolder:
-                getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]
-                # getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]                
-                inp=open(printFolder, 'r')
-                List = open(printFolder).readlines()
-                dirDict={}
-                for aline in List: 
-                    print aline
-                    getKeyDict=aline.split(':')[0]
-                    getValueDict=aline.split(':')[1]
-                    makeDict={getKeyDict:getValueDict}
-                    dirDict.update(makeDict)
-                for eachAttribute in getListedAttr:
-                    print eachAttribute
-                    objectToQuery=ls(each)
-                    getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
-                    getTypeAttr=type(getChangeAttr)
-                    for key, value in dirDict.items():
-                        if key==eachAttribute:
-                            print key
-                            print value
-                            value=getTypeAttr(value)
-                            print type(value)
-                            # getChildAttrToChange=getAttr(each, eachAttribute)  
-                            try:
-                                setAttr(each+'.'+eachAttribute, value)
-                                print "happened"
-                            except:
-                                pass
-                                    # if type(eachAttribute)== float:
-                                    #     getChildAttrToChange.set(float(value)) 
-                                    # if type(eachAttribute)== str:
-                                    #     getChildAttrToChange.set(str(value))
-                   
-                            # each.getListedAttr.set(value)
+            getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]     
+            if os.path.exists(printFolder):
+                pass
+            else:
+                print "does not exist"
+                pass 
+            List = open(printFolder).readlines()
+            dirDict={}
+            for aline in List: 
+                print aline
+                getKeyDict=aline.split(':')[0]
+                getValueDict=aline.split(':')[1]
+                makeDict={getKeyDict:getValueDict}
+                dirDict.update(makeDict)
+            for eachAttribute in getListedAttr:
+                print eachAttribute
+                objectToQuery=ls(each)
+                getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
+                getTypeAttr=type(getChangeAttr)
+                for key, value in dirDict.items():
+                    if key==eachAttribute:
+                        value=getTypeAttr(value)
+                        try:
+                            setAttr(each+'.'+eachAttribute, value)
+                            print str(each)+'.'+str(eachAttribute)+" set to " + str(value)
+                        except:
+                            pass
 
+
+    # def load_attributesV1(self, arg=None):
+    #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]
+    #     getScenePath=cmds.file(q=1, location=1)
+    #     getPathSplit=getScenePath.split("/")
+    #     folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+    #     if "Windows" in OSplatform:
+    #         newfolderPath=re.sub(r'/',r'\\', folderPath)
+    #     if "Linux" in OSplatform:
+    #         newfolderPath=re.sub(r'\\',r'/', folderPath)        
+    #     selObj=cmds.ls(sl=1)
+    #     for each in selObj:
+    #         printFolder=newfolderPath+str(each)+"_attributes.txt"
+    #         if printFolder and each in printFolder:
+    #             getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]
+    #             # getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]                
+    #             inp=open(printFolder, 'r')
+    #             List = open(printFolder).readlines()
+    #             dirDict={}
+    #             for aline in List: 
+    #                 print aline
+    #                 getKeyDict=aline.split(':')[0]
+    #                 getValueDict=aline.split(':')[1]
+    #                 makeDict={getKeyDict:getValueDict}
+    #                 dirDict.update(makeDict)
+    #             for eachAttribute in getListedAttr:
+    #                 print eachAttribute
+    #                 objectToQuery=ls(each)
+    #                 getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
+    #                 getTypeAttr=type(getChangeAttr)
+    #                 for key, value in dirDict.items():
+    #                     if key==eachAttribute:
+    #                         value=getTypeAttr(value)
+    #                         try:
+    #                             setAttr(each+'.'+eachAttribute, value)
+    #                             print str(each)+'.'+str(eachAttribute)+" set to " + str(value)
+    #                         except:
+    #                             pass
