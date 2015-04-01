@@ -1951,10 +1951,8 @@ class ToolFunctions(object):
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
         if "Windows" in OSplatform:
-            print "windows"
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
-            print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
         for each in selObj:
             objNameFile=str(each)+"_attributes.txt"
@@ -1962,50 +1960,13 @@ class ToolFunctions(object):
             getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
             cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fullPathName))
 
-
-    # def saved_attributesV1(self, arg=None):
-    #     getScenePath=cmds.file(q=1, location=1)
-    #     getPathSplit=getScenePath.split("/")
-    #     folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-    #     if "Windows" in OSplatform:
-    #         print "windows"
-    #         newfolderPath=re.sub(r'/',r'\\', folderPath)
-    #     if "Linux" in OSplatform:
-    #         print "Linux"
-    #         newfolderPath=re.sub(r'\\',r'/', folderPath)        
-    #     selObj=ls(sl=1, fl=1)
-    #     for each in selObj:
-    #         attrValBucket=[]
-    #         printFolder=newfolderPath+str(each)+"_attributes.txt"
-    #         print printFolder
-    #         if "Windows" in OSplatform:            
-    #             if not os.path.exists(printFolder): os.makedirs(printFolder) 
-    #         if "Linux" in OSplatform:
-    #             open(printFolder, 'w')
-    #         getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-    #         for eachAttribute in getListedAttr:
-    #             try:
-    #                 attrVal=getattr(each,eachAttribute).get()
-    #                 attrWithVal=str(eachAttribute)+":"+str(attrVal)
-    #                 attrValBucket.append(attrWithVal)
-    #             except:
-    #                 pass
-    #         fullString=str(attrValBucket)
-    #         inp=open(printFolder, 'w+') 
-    #         for each in attrValBucket:
-    #             inp.write(str(each)+'\n')
-    #         inp.close()  
-    #         print "saved as "+printFolder
-
     def openAttributesWindow(self, arg=None):    
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
         if "Windows" in OSplatform:
-            print "windows"
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
-            print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)
         getPath=newfolderPath+"*.txt"
         files=glob.glob(getPath)   
@@ -2020,7 +1981,7 @@ class ToolFunctions(object):
         winName = "Open attributes"
         winTitle = winName
         openFolderPath=folderPath+"\\"   
-
+        selObj=cmds.ls(sl=1, fl=1)
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=280 )
@@ -2035,11 +1996,10 @@ class ToolFunctions(object):
         self.fileDropName=cmds.optionMenu( label='files')
         for each in makeBucket:
             cmds.menuItem( label=each) 
-        print newfolderPath
         cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
         cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
-        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+each) 
-        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(cmds.textField(self.pathFile, q=1, text=1)))        
+        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(printFolder=cmds.textField(self.pathFile, q=1, text=1)))        
         cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
         cmds.showWindow(window)
 
@@ -2070,15 +2030,15 @@ class ToolFunctions(object):
         self.load_attributes(printFolder)
 
     def load_attributes(self, printFolder):
-        print printFolder
+        printFolder=printFolder+"_attributes.txt"
         notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]    
-        selObj=cmds.ls(sl=1)
+        selObj=cmds.ls(sl=1, fl=1)
         for each in selObj:
             getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]     
             if os.path.exists(printFolder):
                 pass
             else:
-                print "does not exist"
+                print printFolder+"does not exist"
                 pass 
             List = open(printFolder).readlines()
             dirDict={}
@@ -2089,7 +2049,6 @@ class ToolFunctions(object):
                 makeDict={getKeyDict:getValueDict}
                 dirDict.update(makeDict)
             for eachAttribute in getListedAttr:
-                print eachAttribute
                 objectToQuery=ls(each)
                 getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
                 getTypeAttr=type(getChangeAttr)
@@ -2101,42 +2060,3 @@ class ToolFunctions(object):
                             print str(each)+'.'+str(eachAttribute)+" set to " + str(value)
                         except:
                             pass
-
-
-    # def load_attributesV1(self, arg=None):
-    #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]
-    #     getScenePath=cmds.file(q=1, location=1)
-    #     getPathSplit=getScenePath.split("/")
-    #     folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-    #     if "Windows" in OSplatform:
-    #         newfolderPath=re.sub(r'/',r'\\', folderPath)
-    #     if "Linux" in OSplatform:
-    #         newfolderPath=re.sub(r'\\',r'/', folderPath)        
-    #     selObj=cmds.ls(sl=1)
-    #     for each in selObj:
-    #         printFolder=newfolderPath+str(each)+"_attributes.txt"
-    #         if printFolder and each in printFolder:
-    #             getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]
-    #             # getListedAttr=[(attrib) for attrib in listAttr(each, w=1, a=1, s=1,u=1, m=0, hd=1, lf=1) for item in notAttr if item not in attrib]                
-    #             inp=open(printFolder, 'r')
-    #             List = open(printFolder).readlines()
-    #             dirDict={}
-    #             for aline in List: 
-    #                 print aline
-    #                 getKeyDict=aline.split(':')[0]
-    #                 getValueDict=aline.split(':')[1]
-    #                 makeDict={getKeyDict:getValueDict}
-    #                 dirDict.update(makeDict)
-    #             for eachAttribute in getListedAttr:
-    #                 print eachAttribute
-    #                 objectToQuery=ls(each)
-    #                 getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
-    #                 getTypeAttr=type(getChangeAttr)
-    #                 for key, value in dirDict.items():
-    #                     if key==eachAttribute:
-    #                         value=getTypeAttr(value)
-    #                         try:
-    #                             setAttr(each+'.'+eachAttribute, value)
-    #                             print str(each)+'.'+str(eachAttribute)+" set to " + str(value)
-    #                         except:
-    #                             pass
