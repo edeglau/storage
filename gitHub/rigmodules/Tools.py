@@ -1518,15 +1518,8 @@ class ToolFunctions(object):
           
     def _conn_SDK_alias(self, firstMinValue, firstMaxValue, secondMinValue, secondMaxValue, getFirstattr, floater):
         getSel=ls(sl=1)
-#        firstMinValue=float(textField(self.firstMinValue,q=1, text=1))
-#        firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1))
-#        secondMinValue=float(textField(self.secondMinValue,q=1, text=1))
-#        secondMaxValue=float(textField(self.secondMaxValue,q=1, text=1))
-#        getFirstattr=optionMenu(attributeFirstSel, q=1, v=1)
-#        floater=optionMenu(makeAttr, q=1, v=1)
         getFirst=getSel[:-1]
         getSecond=getSel[-1]
-        #anAttr=addAttr([getSecond], ln=floater, min=0, max=1, at="double", k=1, nn=floater)
         Controller=getSecond+"."+floater
         print Controller
         for each in getFirst:
@@ -1882,12 +1875,15 @@ class ToolFunctions(object):
             pass
 
     def saveAttributesWindow(self, arg=None): 
-        selObj=ls(sl=1, fl=1)
-        if selObj: 
+        selObj=ls(sl=1, fl=1, sn=1)
+        if len(selObj)==1:
             pass
-        else:
+        elif len(selObj)<1:
             print "select something"
-            return      
+            return
+        else:
+            print "add one at a time"
+            return
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
@@ -1907,24 +1903,35 @@ class ToolFunctions(object):
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.gridLayout('topArea', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20))        
-        text("workpath: "+newfolderPath)
-        cmds.button (label='Add', p='topArea', command = lambda *args:self._refresh_function())  
-        cmds.button (label='Open folder', p='topArea', command = lambda *args:self._open_work_folder())
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20))
+        cmds.columnLayout ('selectArrayColumn', parent = 'LrRow')       
+        cmds.gridLayout('topArea', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 40)) 
+        cmds.rowLayout  (' listPathLayout ', w=480, numberOfColumns=6, cw6=[15, 400, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='topArea') 
+        self.workFolderYes=checkBox(p="listPathLayout", v=True)      
+        text(newfolderPath, p="listPathLayout")
+        cmds.button (label='Open folder', p='listPathLayout', command = lambda *args:self._open_work_folder()) 
+        cmds.rowLayout  (' seclistPathLayout ', w=480, numberOfColumns=6, cw6=[10, 400, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='topArea')          
+        self.custFolderYes=checkBox(p="seclistPathLayout")               
+        self.customSavePathFile=cmds.textField(p='seclistPathLayout', text=newfolderPath) 
+        cmds.button (label='Open folder', p='seclistPathLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.customSavePathFile, q=1, text=1)))
+        cmds.gridLayout('listgrid', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='LrRow')        
+        text("Objects to save attributes from:")
+        cmds.button (label='Add', p='bottomFrame', command = lambda *args:self._refresh_function())
+        cmds.text(label="")        
         fieldBucket=[]
         for each in selObj:
-            objNameFile=str(each)+"_attributes"
-            # fullPathName=newfolderPath+objNameFile
-            self.getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
-            cmds.button (w=40, label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(self.getName, q=1, text=1)))
+            objNameFile=str(each)
+            cmds.rowLayout  (' listBuildButtonLayout ', w=150, numberOfColumns=6, cw6=[400, 80, 1, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(getName, q=1, text=1), customSavePathFile=cmds.textField(self.customSavePathFile, q=1, text=1), workFolderYes=cmds.checkBox(self.workFolderYes,q=True, value=1), custFolderYes=cmds.checkBox(self.custFolderYes,q=True, value=1)))
         cmds.showWindow(window)        
 
 
-    def saved_attributes(self, each, newfolderPath, fileName):
-        printFolder=newfolderPath+fileName+".txt"
+    def saved_attributes(self, each, newfolderPath, fileName, customSavePathFile, workFolderYes, custFolderYes):
+        if workFolderYes == True:
+            printFolder=newfolderPath+each+"_attributes.txt"
+        else:   
+            printFolder=customSavePathFile+'/'+each+"_attributes.txt"         
         attrValBucket=[]
         if "Windows" in OSplatform:            
             if not os.path.exists(printFolder): os.makedirs(printFolder) 
@@ -1946,7 +1953,15 @@ class ToolFunctions(object):
         print "saved as "+printFolder
 
     def _refresh_function(self):
-        selObj=ls(sl=1, fl=1)
+        selObj=ls(sl=1, fl=1, sn=1)
+        if len(selObj)==1:
+            pass
+        elif len(selObj)<1:
+            print "select something"
+            return
+        else:
+            print "add one at a time"
+            return
         getScenePath=cmds.file(q=1, location=1)
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
@@ -1955,10 +1970,11 @@ class ToolFunctions(object):
         if "Linux" in OSplatform:
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
         for each in selObj:
-            objNameFile=str(each)+"_attributes.txt"
+            objNameFile=str(each)
             fullPathName=newfolderPath+objNameFile
-            getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
-            cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fullPathName))
+            cmds.rowLayout  (' nlistBuildButtonLayout ', w=150, numberOfColumns=6, cw6=[400, 80, 1, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            getName=cmds.textField(w=120, h=25, p='nlistBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save', p='nlistBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(getName, q=1, text=1), customSavePathFile=cmds.textField(self.customSavePathFile, q=1, text=1), workFolderYes=cmds.checkBox(self.workFolderYes,q=True, value=1), custFolderYes=cmds.checkBox(self.custFolderYes,q=True, value=1)))
 
     def openAttributesWindow(self, arg=None):    
         getScenePath=cmds.file(q=1, location=1)
@@ -2030,7 +2046,12 @@ class ToolFunctions(object):
         self.load_attributes(printFolder)
 
     def load_attributes(self, printFolder):
-        printFolder=printFolder+"_attributes.txt"
+        if "_attributes.txt" in printFolder:
+            printFolder=printFolder
+        # elif"_attributes" in printFolder:
+        #     printFolder=printFolder+".txt"
+        else:
+            printFolder=printFolder+"_attributes.txt"
         notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]    
         selObj=cmds.ls(sl=1, fl=1)
         for each in selObj:
