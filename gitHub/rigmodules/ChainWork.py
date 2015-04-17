@@ -1,29 +1,57 @@
 import sys, os
 from pymel.core import *
 
-filepath= os.getcwd()
-sys.path.append(str(filepath))
-import baseFunctions_maya
-reload (baseFunctions_maya)
-getClass=baseFunctions_maya.BaseClass()
 
 
-import stretchIK
-reload (stretchIK)
-getIKClass=stretchIK.stretchIKClass()
 
 
 from inspect import getsourcefile
 from os.path import abspath
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
-gtepiece=getfilePath.split("/")
+print getfilePath
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+if "Linux" in OSplatform: 
+    gtepiece=getfilePath.split("/")  
+
 getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
+basepath=str(getRigModPath)+"/baseFunctions_maya.py"
+exec(open(basepath))
+getClass=BaseClass()
 
-if "Windows" in OSplatform:
-    gtepiece=getRigModPath.split("\\")
-if "Linux" in OSplatform: 
-    gtepiece=getRigModPath.split("/")  
+
+stretchIKpath=str(getRigModPath)+"/stretchIK.py"
+exec(open(stretchIKpath))
+getIKClass=stretchIKClass()
+
+getToolArrayPath=str(getRigModPath)+"/Tools.py"
+exec(open(getToolArrayPath))
+toolClass=ToolFunctions()
+
+# filepath= os.getcwd()
+# sys.path.append(str(filepath))
+# import baseFunctions_maya
+# reload (baseFunctions_maya)
+# getClass=baseFunctions_maya.BaseClass()
+
+
+# import stretchIK
+# reload (stretchIK)
+# getIKClass=stretchIK.stretchIKClass()
+
+
+# from inspect import getsourcefile
+# from os.path import abspath
+# getfilePath=str(abspath(getsourcefile(lambda _: None)))
+# gtepiece=getfilePath.split("/")
+# getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+
+# if "Windows" in OSplatform:
+#     gtepiece=getRigModPath.split("\\")
+# if "Linux" in OSplatform: 
+#     gtepiece=getRigModPath.split("/")  
 # #name
 # mainName="neck"
 # #controllerdirection
@@ -447,7 +475,17 @@ class ChainRig(object):
         else:
             cmds.parent("End"+mainName+"FK_grp", FKCtrl[0])
             
-        
+        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
+        cmds.parent(mainName+"IK", getRigGrp)
+        cmds.parent(mainName+"IK_crv", getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="joint"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="transform"]
+        for each in getFreeStuff:
+            cmds.parent(each, getRigGrp)
+        cmds.parent("IK_grp", getRigGrp)
+
 
         getNames=cmds.ls(mainName+"*_guideFK_Ctrl")
         for each in getNames:
@@ -461,22 +499,10 @@ class ChainRig(object):
             getname=newname.replace("ik_ctrl", "IK_Ctrl")
             cmds.rename(each, getname)        
 #             
-
         cmds.addAttr(mainName+"Main_Ctrl", ln="Roll", at="double",k=1, nn="Roll")
         cmds.connectAttr(mainName+"Main_Ctrl.Roll", mainName+"IK.roll")
         cmds.addAttr(mainName+"Main_Ctrl", ln="Twist", at="double",k=1, nn="Twist")
         cmds.connectAttr(mainName+"Main_Ctrl.Twist", mainName+"IK.twist")
-
-        getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
-        cmds.parent(mainName+"IK", getRigGrp)
-        cmds.parent(mainName+"IK_crv", getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="joint"]
-        for each in getFreeStuff:
-            cmds.parent(each, getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_Clst_jnt*") if cmds.listRelatives(each, ap=1)==None and cmds.nodeType(each)=="transform"]
-        for each in getFreeStuff:
-            cmds.parent(each, getRigGrp)
-        cmds.parent("IK_grp", getRigGrp)
 
         print "building medium controllers"
         controllerType="_med_grp"
