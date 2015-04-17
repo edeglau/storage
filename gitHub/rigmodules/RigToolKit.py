@@ -37,14 +37,8 @@ if "Windows" in OSplatform:
     gtepiece=getfilePath.split("\\")
 if "Linux" in OSplatform: 
     gtepiece=getfilePath.split("/")  
-# gtepiece=getfilePath.split("/")
-print gtepiece
+
 getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-print getRigModPath
-
-
-                  
-
 
 basepath=str(getRigModPath)+"/baseFunctions_maya.py"
 exec(open(basepath))
@@ -65,54 +59,13 @@ sys.path.append(str(getValueFilepath))
 getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
 sys.path.append(str(getSSDArrayPath))
 
-
-
-
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
 
-# getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
-# sys.path.append(str(getToolArrayPath))
-
-
-
-#getfilePath=str('__file__')
 filepath= os.getcwd()
 
 sys.path.append(str(filepath))
-# gtepiece=getfilePath.split("\\")
-# getEndPath='/'.join(gtepiece[:-2])
-# print getEndPath
-# sys.path.append(str(getEndPath))
-
-# import baseFunctions_maya
-# reload (baseFunctions_maya)
-# getBaseClass=baseFunctions_maya.BaseClass()
-
-# exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//baseFunctions_maya.py'))
-# getBaseClass=BaseClass()
-
-# sys.path.append(str(filepath))
-# # import Tools
-# # reload (Tools)
-# # toolClass=Tools.ToolFunctions()
-# exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//Tools.py'))
-# toolClass=ToolFunctions()
-
-
-
-
-# gtepiece=getfilePath.split("\\")
-
-# sys.path.append(str(getguideFilepath))
-
-# getSelArrayPath='/'.join(gtepiece[:-1])+"/selectArray/"
-# sys.path.append(str(getSelArrayPath))
-
-
-
-
 
       
 class ToolKitUI(object):
@@ -185,7 +138,8 @@ class ToolKitUI(object):
 #        cmds.button (label='Edit Dyn sets', ann="Add and subtract selected objects/verts from a dynamic set", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_nsets_win) 
         cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
         cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
-        cmds.button (label='**Create Edit Grps', bgc=[0.33, 0.27, 0.30], ann="Creates edit groups.",p='listBuildButtonLayout', command = self._defEditGrp)
+        cmds.button (label='**Dynsettings', bgc=[0.33, 0.27, 0.30], ann="Sets cloth defaults",p='listBuildButtonLayout', command = self._cloth_dyn)
+        cmds.button (label='**SkinDEF', bgc=[0.33, 0.27, 0.30], ann="sets prime skin deformer values.",p='listBuildButtonLayout', command = self._skin_def)        
         cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV)         
         cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
         cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
@@ -429,7 +383,18 @@ class ToolKitUI(object):
         getSelArrayPath='/'.join(gtepiece[:-2])+"/selectArray/selectArray.py"
         exec(open(getSelArrayPath))
         getSelArrayClass=SelectionPalettUI()        
-      
+
+    def _cloth_dyn(self, arg=None):
+        getspecPath='/'.join(gtepiece[:-2])+"/tools/SpecTools.py"
+        exec(open(getspecPath))
+        getSpecClass=preSettings()
+        getSpecClass.m_dynSet()
+
+    def _skin_def(self, arg=None):
+        getspecPath='/'.join(gtepiece[:-2])+"/tools/SpecTools.py"
+        exec(open(getspecPath))
+        getSpecClass=preSettings()
+        getSpecClass.skinDef()     
         
     def _tran_att(self, arg=None):
         getBaseClass.massTransfer()      
