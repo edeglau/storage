@@ -1129,6 +1129,9 @@ class ToolFunctions(object):
         text(label="Search:", align="left", w=50) 
         findAttr=textField(AttributeName, text="Enter name EG:'translate'")
         button (label='Fetch Attribute Name', bgc=[0.55, 0.35, 0.20], p='listBuildButtonLayout', command = lambda *args:self._find_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
+        text(label="Search:", align="left", w=50)
+        valueAttr=textField(text="Enter value EG:'1.0'")
+        button (label='Fetch Attribute Value', bgc=[0.55, 0.35, 0.20], p='listBuildButtonLayout', command = lambda *args:self._find_value(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1), values=textField(valueAttr, q=1, text=1)))
         showWindow(window)   
 
     def _refresh(self, arg=None):
@@ -1150,7 +1153,7 @@ class ToolFunctions(object):
         self.count_attr_output(getChangeAttr) 
         print newAttr, getChangeAttr
         
-    def _find_att(self, getFirstattr, attribute):
+    def _find_att(self, getFirstattr, attribute):         
         getSel=ls(sl=1, fl=1)        
         collectAttr=[]
         for each in getFirstattr:
@@ -1160,8 +1163,48 @@ class ToolFunctions(object):
         optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
         newAttr=getattr(getSel[0],collectAttr[0])
         select(newAttr, add=1)
-        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
-        self.count_attr_output(getChangeAttr) 
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get() 
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+
+    def _find_value(self, getFirstattr, attribute, values):
+        try:
+            values=float(values) 
+        except:
+            values=int(values)
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
+        for each in getFirstattr:
+            getSel=ls(getSel[0])
+            find=menuItem(each, q=1, label=1)
+            try:
+                foundAttr=getattr(getSel[0],find).get()
+            except:
+                pass
+            if foundAttr == values:
+                print foundAttr
+                collectAttr.append(find)                 
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
+        print "hi"
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get() 
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
         print newAttr, getChangeAttr
 
     def count_attr_output(self, getChangeAttr):
