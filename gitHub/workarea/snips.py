@@ -2118,3 +2118,123 @@ for eachChild in getBlendeeChildren:
             cmds.select(getParent[0], r=1)
             cmds.select(getChild[0], add=1)
             getNewBLend=cmds.blendShape(n="reflectBlend", w=(1, 1.0), en=1.0, foc=1)
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime pSphere1.rotateY`;
+pSphere4.rotateY=$getPos;
+
+int $currentTime=`currentTime -q`;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime l_lesserRow001UnderWingCoverts007_stickyDeformer_1_CTRL.rotateZ`;
+defaultADeformSD_CTRL_Ctrl.rotateZ=$getPos;
+
+
+
+defaultADeformSD_CTRL_Ctrl
+
+
+l_lesserRow001UnderWingCoverts007_stickyDeformer_1_CTRL
+
+
+
+
+
+getObj=cmds.ls(sl=1)
+getParent=getObj[0]
+print getParent
+# cmds.nurbsToPolygonsPref(un=selfU, uv=selfV)
+for each in getObj[1:]:
+    print each
+    cmds.connectAttr(getParent+".RotateRightRow01", each+".rotateY") 
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=-1;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime defaultADeformSD_CTRL_Ctrl.rotateX`;
+l_lesserRow001UnderWingCoverts007_stickyDeformer_1_CTRL.rotateZ=$getPos;
+int $offset=1;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime defaultADeformSD_CTRL_Ctrl.rotateX`;
+l_lesserRow001UnderWingCoverts011_stickyDeformer_1_CTRL.rotateZ=$getPos;
+
+
+
+from pymel.core import *
+
+selObj=cmds.ls(sl=1, fl=1, sn=1)
+for each in selObj:
+    getChild=listRelatives(each, ad=1, f=1, typ="clusterHandle")
+    cmds.select(getChild)
+
+
+getObj=cmds.ls(sl=1)
+getParent=getObj[0]
+print getParent
+# cmds.nurbsToPolygonsPref(un=selfU, uv=selfV)
+for each in getObj[1:]:
+    print each
+    cmds.connectAttr(getParent+".rotate", each+".rotate") 
+
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=5;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW02_CTRL.rotateY=$getPos;
+int $offset=7;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW03_CTRL.rotateY=$getPos;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW04_CTRL.rotateY=$getPos/8;
+int $offset=12;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW05_CTRL.rotateY=$getPos/6;
+int $offset=15;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+L_G_ROW01_CTRL.rotateY=$getPos/2;
+int $offset=17;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+L_G_ROW02_CTRL.rotateY=$getPos/1.5;
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=5;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW02_CTRL.rotateY=$getPos;
+int $offset=7;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW03_CTRL.rotateY=$getPos;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW04_CTRL.rotateY=$getPos/8;
+int $offset=12;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW05_CTRL.rotateY=$getPos/6;
+int $offset=15;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_G_ROW01_CTRL.rotateY=$getPos/2;
+int $offset=17;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_G_ROW02_CTRL.rotateY=$getPos/1.5;
