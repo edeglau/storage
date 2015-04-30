@@ -1,0 +1,1260 @@
+from pymel.core import *
+selection=ls(sl=1)
+for each in selection:
+    print each.numCVs()
+    print each.length(tolerance=0.001)
+    for item in each.numCVs():
+        makepoint= each.getCVs(item, space='preTransform')
+    print makepoint
+        print each.getParamAtPoint(item, space='preTransform')
+
+    
+    for eachNumber, eachItem in enumerate(each.cv):  
+        print each.getDerivativesAtParm(eachNumber, space='preTransform')
+    for eachNumber, eachItem in enumerate(each.cv):
+        makepoint= each.getCV(eachNumber, space='preTransform')
+        print makepoint
+        
+        
+        
+        print makepoint
+        print each.getParamAtPoint(makepoint, space='preTransform')
+        
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+for each in getit:
+    delete(each.cv[1])
+    
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+for each in getit:
+    for item in each.cv[::2]
+        delete(item)
+
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+if nodeType(each)=="transform":
+    for each in getit:
+        for item in each.cv[::2]:
+            delete(item)
+elif nodeType(each)=="nurbsCurve":
+    for each in getit[::2]:
+        delete(each)
+        
+        
+cmds.undoInfo(state=1)
+
+
+from pymel.core import *
+sys.path.append(str('//usr//people//elise-d//workspace//sandBox//rigModules//'))
+import baseFunctions_maya
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+getSel=cmds.ls(sl=1, fl=1)
+parentObj=getSel[0]
+for each in getSel[1:]:
+    getTranslation, getRotation=getClass.locationXForm(each)
+    newObj=cmds.duplicate(parentObj)
+    cmds.xform(newObj, ws=1, t=getTranslation)
+    cmds.xform(newObj, ws=1, ro=getRotation)
+
+
+nedit ~/config/env.csh
+
+filepath="/usr/people/elise-d/workspace/techAnimTools/python/src/utils/"
+sys.path.append(str(filepath))
+import deformerControl
+reload (deformerControl)
+getClass=deformerControl.DeformerControl()    
+
+exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/rigModules/RigToolKit.py'))
+ToolKitUI()
+
+
+secondpart=cmds.ls(sl=1)
+BucketValue=[]
+firstMinValue=.5
+firstMaxValue=5.0
+percentTop=firstMaxValue*100
+print percentTop
+getPercentile=percentTop/len(secondpart)            
+for key, value in enumerate(secondpart):
+    percValue= (key+1)*getPercentile*.01
+    BucketValue.append(percValue)
+
+for each in range(len(BucketValue)):
+    getNewVal=BucketValue[each]
+    print getNewVal
+    
+#        def frange(start, stop, step):
+#            i = start
+#            while i < stop:
+#                yield i
+#                i += step
+#        for i in frange(firstMinValue, firstMaxValue, step):
+#            print(i)  
+
+selall=cmds.ls(sl=1)
+for each in selall:
+    cmds.setAttr(each+".selfCollide", 1)
+
+selall=cmds.ls(sl=1)
+for each in selall:
+    cmds.setAttr(each+".maxIterations", 10000)
+
+selall=cmds.ls(sl=1)
+for each in selall:
+    cmds.setAttr(each+".maxIterations", 3)
+
+selall=cmds.ls(sl=1)
+for each in selall:
+    cmds.setAttr(each+".selfCollisionFlag", 2)
+
+
+selall=cmds.ls(sl=1)
+for each in selall:
+    cmds.setAttr(each+".pointMass", 0.2)
+    
+#        for key, value in enumerate(getSeln):#reference the mid list length to append the incremented value to bucket
+#            percValue= (key+1)*getPercentile*.01
+#            BucketValue.append(percValue)
+
+
+from statistics import median
+getMesh=cmds.ls(sl=1)
+for each in getMesh:
+    transform=cmds.xform(getMesh[0], q=True, ws=1, t=True) 
+    print len(transform)
+    print transform[0::3]
+    print transform[1::3]
+    print median(transform[2::3])  
+    for each in transform:
+        print each
+        
+        
+from pymel.core import *
+getSel=ls(sl=1, fl=1)
+for each in getSel:
+    for item in each.vtx:
+        print item.getPosition()
+        
+        
+        
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+print getit[1:]
+for each in getit[:-1]:
+    for item in each.cv[0]:
+        mypos=item.getPosition()
+print mypos[0]
+xform(getit[1:], ws=1, t=mypos)  
+
+
+
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+for eachctrl in xrange(len(getit) - 1):
+    for each in getit:
+        current_item, next_item, previous_item= getit[eachctrl], getit[eachctrl + 1], getit[eachctrl - 1]
+        print current_item, next_item, previous_item
+        select(current_item, r=1)
+        if each!=current_item:
+            select(each, add=1)
+        else:
+            pass
+        cmds.CutCurve()      
+        
+        
+from pymel.core import *
+getit=ls(sl=1, fl=1)
+for eachCurve in getit:
+    for each in range(len(getit)):
+        if getit[each]!=eachCurve:
+            select(eachCurve, r=1)
+            select(getit[each], add=1)
+            cmds.CutCurve()
+        else:
+            print getit[each]+" matches and skipped"     
+            
+            
+            
+            
+create a scriptNode:
+
+myscriptNode=cmds.scriptNode(n="selectionScript", st=2, stp="python", bs=myScriptJobEvent)
+
+
+put this in the expression:
+
+def myScriptJobEvent():
+    getObj=cmds.ls(sl=1)
+    if getObj:
+        if "pCone1" in getObj[0]:
+            cmds.select("nurbsSphere1")
+        else:
+            return
+
+getThisScript=cmds.scriptJob( e=["SelectionChanged", "myScriptJobEvent()"])
+
+
+
+def myScriptJobEvent():
+    from pymel.core import *
+    getObj=ls("nParticleShape1")
+    getValue=getattr(getObj[0],"lifespanPP").get()
+    emitCount=30
+    if getValue>10:
+        emitCmd=emit("exploP", o="object")
+        for each in range(emitCount):
+            getPos=each.getPosition
+            cmds.emit( object='particle1', pos=getPos, attribute=('lifespanPP'), floatValue=.5)
+
+getThisScript=cmds.scriptJob( e=[myScriptJobEvent()])     
+
+
+nurbsToPoly(newItem[0], mnd=1  ,ch=1 ,f=1 ,pt=1 ,pc=200 ,chr=0.9 ,ft=0.01 ,mel=0.001 ,d=0.1 ,ut=1 ,un=3 ,vt=1 ,vn=3 ,uch=0 ,ucr=0 ,cht=0.2 ,es=0 ,ntr=0 ,mrt=0 ,uss=1)
+
+
+from pymel.core import *
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    print mysum    
+getit=ls(sl=1, fl=1)
+TheseFaces=getit[0].faces
+posBucket=[]
+for each in TheseFaces[0]:
+    select(TheseFaces[0], r=1)
+    getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+    cmds.select(getItems)
+    getItems=ls(sl=1, fl=1)
+for each in getItems:
+    transform=each.getPosition()
+    posBucket.append(median_find(transform[0::3]))
+    posBucket.append(median_find(transform[1::3]))
+    posBucket.append(median_find(transform[2::3]))
+    
+    
+from pymel.core import *
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    return mysum
+getit=ls(sl=1, fl=1)
+moveTool=ls(getit[1])
+intersector=ls(getit[2])
+TheseFaces=getit[0].faces
+posBucket=[]
+getFace=TheseFaces[2]
+for each in getFace:
+    select(getFace, r=1)
+    getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+    cmds.select(getItems)
+    getItems=ls(sl=1, fl=1)
+findTransformX=[]
+findTransformY=[]
+findTransformZ=[] 
+for each in getItems:
+    transform=xform(each, q=1, ws=1, t=1)
+    print transform
+    findTransformX.append(transform[0])
+    findTransformY.append(transform[1])
+    findTransformZ.append(transform[2])
+getX=median_find(findTransformX)
+getY=median_find(findTransformY)
+getZ=median_find(findTransformZ)+1
+newnumbers=[getX, getY, getZ]   
+print newnumbers
+cmds.xform(moveTool, ws=1, t=(newnumbers[0], newnumbers[1], newnumbers[2]))
+print newnumbers
+printget=getit[0].intersect(newnumbers, 2, tolerance=1e-10, space='object')
+print printget
+
+
+
+
+
+import sys
+import maya.cmds as cmds
+import maya.OpenMaya as OpenMaya
+import maya.OpenMayaMPx as OpenMayaMPx
+
+kPluginCmdName = "mayaPythonCornellBox"
+
+def findMeshIntersection( meshName, raySource, rayDir):
+    #       Create an empty selection list. 
+    selectionList = OpenMaya.MSelectionList() 
+    #       Put the mesh's name on the selection list. 
+    selectionList.add(meshName) 
+    #       Create an empty MDagPath object. 
+    meshPath = OpenMaya.MDagPath()
+    #       Get the first item on the selection list (which will be our mesh) 
+    #       as an MDagPath. 
+    selectionList.getDagPath(0, meshPath)
+    #       Create an MFnMesh functionset to operate on the node pointed to by 
+    #       the dag path. 
+    meshFn = OpenMaya.MFnMesh(meshPath) 
+    #       Convert the 'raySource' parameter into an MFloatPoint. 
+    raySource = OpenMaya.MFloatPoint(raySource[0], raySource[1], raySource[2]) 
+    #       Convert the 'rayDir' parameter into an MVector.` 
+    rayDirection = OpenMaya.MFloatVector(rayDir[0], rayDir[1], rayDir[2]) 
+    #       Create an empty MFloatPoint to receive the hit point from the call. 
+    hitPoint = OpenMaya.MFloatPoint() 
+    #       Set up a variable for each remaining parameter in the 
+    #       MFnMesh::closestIntersection call. We could have supplied these as 
+    #       literal values in the call, but this makes the example more readable. 
+    sortIds = False 
+    maxDist = 10.0 
+    bothDirections = False 
+    noFaceIds = None 
+    noTriangleIds = None 
+    noAccelerator = None
+    noHitParam = None 
+    noHitFace = None 
+    noHitTriangle = None 
+    noHitBary1 = None 
+    noHitBary2 = None 
+    #       Get the closest intersection. 
+    gotHit = meshFn.closestIntersection( 
+        raySource, rayDirection, 
+        noFaceIds, noTriangleIds, 
+        sortIds, OpenMaya.MSpace.kWorld, maxDist, bothDirections, 
+        noAccelerator, 
+        hitPoint, 
+        noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2 
+    ) 
+    #       Return the intersection as a Pthon list. 
+    if gotHit:
+        print 'O'
+        sys.stderr.write( "Intersection: (%f, %f, %f)\n" % (hitPoint.x, hitPoint.y, hitPoint.z))
+        return [hitPoint.x, hitPoint.y, hitPoint.z] 
+    else: 
+        print 'X'
+        return None 
+    
+import maya.OpenMaya as om
+    selList = om.MSelection list;
+
+    nodeObject = om.MObject();
+    selList.getDependNode(0, nodeObject)
+
+import maya.OpenMaya as om
+meshName
+raySource=None
+rayDir=None
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint(raySource[0], raySource[1], raySource[2])
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector(rayDir[0], rayDir[1], rayDir[2])
+
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 10.0
+        bothDirections = False
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+            
+            
+            
+import maya.OpenMaya as om
+
+from pymel.core import *
+
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint(raySource[0], raySource[1], raySource[2])
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector(rayDir[0], rayDir[1], rayDir[2])
+
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 10.0
+        bothDirections = False
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+                
+meshName=ls(sl=1, fl=1)
+meshName=meshName[0]
+raySource=[1, 1, 1]
+rayDir=[1, 1, 1]
+getsomething=findMeshIntersection(meshName, raySource, rayDir)
+print getsomething     
+
+
+
+
+
+
+
+
+
+
+
+import maya.OpenMaya as om
+
+from pymel.core import *
+
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint( meshName+".translateX", meshName+".translateY", meshName+".translateZ" )
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        #rayDirection = om.MFloatVector()
+        rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 10.0
+        bothDirections = False
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+                
+meshName=ls(sl=1, fl=1)
+meshName=meshName[0]
+#raySource=[1, 1, 1]
+#rayDir=[1, 1, 1]
+getsomething=findMeshIntersection(meshName, raySource, rayDir)
+print getsomething                
+
+
+
+
+
+
+
+
+
+
+
+
+import maya.OpenMaya as om
+
+from pymel.core import *
+
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 10.0
+        bothDirections = False
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+                
+meshName=ls(sl=1, fl=1)
+getValueX= xform(meshName[0], q=1, ws=1, t=1)
+print getValueX
+raySource=getValueX
+#rayDir=[1, 1, 1]
+getsomething=findMeshIntersection(meshName[0], raySource, rayDir)
+print getsomething                           
+
+
+
+meshName=ls(sl=1, fl=1)
+for each in meshName:
+    for item in each.face:
+        newobject=ls(item)
+        gotNormals=newobject[0].getNormal(space='preTransform')
+        print gotNormals
+        
+        
+        
+import maya.OpenMaya as om
+
+from pymel.core import *
+
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 10.0
+        bothDirections = False
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+                
+meshName=ls(sl=1, fl=1)
+for each in meshName:
+    for item in each.vtx:
+        gotNormals=item.getNormal(space='preTransform')
+        getValueX= xform(meshName[0], q=1, ws=1, t=1)
+        print gotNormals
+        print getValueX
+        raySource=getValueX
+        rayDirection=gotNormals
+        getsomething=findMeshIntersection(meshName[0], raySource, rayDirection)
+        print getsomething       
+        
+        
+        
+        
+        
+        
+        
+        
+        
+meshName=ls(sl=1, fl=1)
+moveTool=ls(getit[1])
+for each in meshName:
+    for eachFace in each.faces:
+        select(ls(eachFace), r=1)
+        getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+        cmds.select(getItems)
+        getItems=ls(sl=1, fl=1)
+    findTransformX=[]
+    findTransformY=[]
+    findTransformZ=[] 
+    for each in getItems:
+        transform=xform(each, q=1, ws=1, t=1)
+        findTransformX.append(transform[0])
+        findTransformY.append(transform[1])
+        findTransformZ.append(transform[2])
+    getX=median_find(findTransformX)
+    getY=median_find(findTransformY)
+    getZ=median_find(findTransformZ)
+    newnumbers=[getX, getY, getZ]   
+    cmds.xform(moveTool, ws=1, t=(newnumbers[0], newnumbers[1], newnumbers[2]))
+
+
+
+import maya.OpenMaya as om
+
+from pymel.core import *
+
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 50.0
+        bothDirections = 1
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+
+
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    return mysum
+
+              
+meshName=ls(sl=1, fl=1)
+moveTool=ls(getit[1])
+for each in meshName:
+    for eachFace in each.faces:
+        select(ls(eachFace), r=1)
+        getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+        cmds.select(getItems)
+        getItems=ls(sl=1, fl=1)
+    findTransformX=[]
+    findTransformY=[]
+    findTransformZ=[] 
+    for each in getItems:
+        transform=xform(each, q=1, ws=1, t=1)
+        findTransformX.append(transform[0])
+        findTransformY.append(transform[1])
+        findTransformZ.append(transform[2])
+    getX=median_find(findTransformX)
+    getY=median_find(findTransformY)
+    getZ=median_find(findTransformZ)
+    newnumbers=[getX, getY, getZ]   
+    cmds.xform(moveTool, ws=1, t=(newnumbers[0], newnumbers[1], newnumbers[2]))
+
+          
+
+for each in meshName:
+    select(getFace, r=1)
+    getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+    cmds.select(getItems)
+    getItems=ls(sl=1, fl=1)
+findTransformX=[]
+findTransformY=[]
+findTransformZ=[] 
+for each in getItems:
+    transform=xform(each, q=1, ws=1, t=1)
+    print transform
+    findTransformX.append(transform[0])
+    findTransformY.append(transform[1])
+    findTransformZ.append(transform[2])
+getX=median_find(findTransformX)
+getY=median_find(findTransformY)
+getZ=median_find(findTransformZ)+1
+newnumbers=[getX, getY, getZ]   
+print newnumbers
+cmds.xform(moveTool, ws=1, t=(newnumbers[0], newnumbers[1], newnumbers[2]))
+print newnumbers
+printget=getit[0].intersect(newnumbers, 2, tolerance=1e-10, space='object')
+print printget
+        
+        
+    for item in each.vtx:
+        gotNormals=item.getNormal(space='preTransform')
+        getValueX=xform(meshName[0], q=1, ws=1, t=1)
+        raySource=getValueX
+        rayDirection=gotNormals
+        getsomething=findMeshIntersection(meshName[0], raySource, getDirection)
+
+
+meshName=ls(sl=1, fl=1)
+moveTool=ls(meshName[1])
+mainMesh=ls(meshName[0])
+for each in mainMesh:
+    for indexFace, faceItem in enumerate(each.face):
+        gotNormals=each.getPolygonNormal(indexFace, space='preTransform')
+        print gotNormals    
+    for eachFace in each.faces:
+        select(ls(eachFace), r=1)
+        getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+        cmds.select(getItems)
+        getItems=ls(sl=1, fl=1)
+    findTransformX=[]
+    findTransformY=[]
+    findTransformZ=[] 
+    for each in getItems:
+        transform=xform(each, q=1, ws=1, t=1)
+        findTransformX.append(transform[0])
+        findTransformY.append(transform[1])
+        findTransformZ.append(transform[2])
+    getX=median_find(findTransformX)
+    getY=median_find(findTransformY)
+    getZ=median_find(findTransformZ)
+    newnumbers=[getX, getY, getZ]   
+    cmds.xform(moveTool, ws=1, t=(newnumbers[0], newnumbers[1], newnumbers[2])
+
+
+
+
+
+
+
+
+from pymel.core import *
+import maya.OpenMaya as om
+
+
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    return mysum
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 50.0
+        bothDirections = 1
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+
+
+meshName=ls(sl=1, fl=1)
+
+mainMesh=ls(meshName[0])
+for each in mainMesh:
+    for indexFace, faceItem in enumerate(each.face):
+        gotNormals=each.getPolygonNormal(indexFace, space='preTransform')
+        print gotNormals    
+    for eachFace in each.faces:
+        select(ls(eachFace), r=1)
+        getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+        cmds.select(getItems)
+        getItems=ls(sl=1, fl=1)
+    findTransformX=[]
+    findTransformY=[]
+    findTransformZ=[] 
+    for each in getItems:
+        transform=xform(each, q=1, ws=1, t=1)
+        findTransformX.append(transform[0])
+        findTransformY.append(transform[1])
+        findTransformZ.append(transform[2])
+    getX=median_find(findTransformX)
+    getY=median_find(findTransformY)
+    getZ=median_find(findTransformZ)
+    newnumbers=[getX, getY, getZ] 
+    
+    
+
+    raySource=newnumbers
+    rayDirection=gotNormals
+    getsomething=findMeshIntersection(meshName[0], raySource, rayDirection)
+    print getsomething       
+    
+    
+    
+    
+    
+from pymel.core import *
+import maya.OpenMaya as om
+
+
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    return mysum
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 50.0
+        bothDirections = 1
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+
+        #        Get the closest intersection.
+        gotHit = meshFn.closestIntersection(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+
+
+
+def getfaceNormals(indexFace, each):
+    gotNormals=each.getPolygonNormal(indexFace, space='preTransform')
+    return gotNormals
+
+def getlocation(eachFace):
+    select(ls(eachFace), r=1)
+    getItems=cmds.polyListComponentConversion( ff=1, tv=1 )
+    cmds.select(getItems)
+    getItems=ls(sl=1, fl=1)
+    findTransformX=[]
+    findTransformY=[]
+    findTransformZ=[] 
+    for item in getItems:
+        transform=xform(item, q=1, ws=1, t=1)
+        findTransformX.append(transform[0])
+        findTransformY.append(transform[1])
+        findTransformZ.append(transform[2])
+    getX=median_find(findTransformX)
+    getY=median_find(findTransformY)
+    getZ=median_find(findTransformZ)
+    newnumbers=[getX, getY, getZ] 
+    return newnumbers
+
+
+meshName=ls(sl=1, fl=1)
+mainMesh=ls(meshName[0])
+for each in mainMesh: 
+    for indexFace, faceItem in enumerate(each.face):
+        gotNormals=each.getPolygonNormal(indexFace, space='preTransform')  
+        rayDirection=gotNormals
+    for eachFace in each.faces:
+        getMyStartpoint=getlocation(eachFace)
+        raySource=getMyStartpoint
+        getsomething=findMeshIntersection(meshName[0], raySource, rayDirection)
+        print getsomething       
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+from pymel.core import *
+import maya.OpenMaya as om
+
+
+def median_find(lst):
+    even = (0 if len(lst) % 2 else 1) + 1
+    half = (len(lst) - 1) / 2
+    mysum= sum(sorted(lst)[half:half + even]) / float(even)
+    return mysum
+
+def findMeshIntersection(meshName, raySource, rayDir):
+        #        Create an empty selection list.
+        selectionList = om.MSelectionList()
+
+        #        Put the mesh's name on the selection list.
+        selectionList.add(meshName)
+
+        #        Create an empty MDagPath object.
+        meshPath = om.MDagPath()
+
+        #        Get the first item on the selection list (which will be our mesh)
+        #        as an MDagPath.
+        selectionList.getDagPath(0, meshPath)
+
+        #        Create an MFnMesh functionset to operate on the node pointed to by
+        #        the dag path.
+        meshFn = om.MFnMesh(meshPath)
+
+        #        Convert the 'raySource' parameter into an MFloatPoint.
+        raySource = om.MFloatPoint()
+
+        #        Convert the 'rayDir' parameter into an MVector.`
+        rayDirection = om.MFloatVector()
+        #rayDirection = om.MVector()
+        #        Create an empty MFloatPoint to receive the hit point from the call.
+        hitPoint = om.MFloatPoint()
+
+        #        Set up a variable for each remaining parameter in the
+        #        MFnMesh::closestIntersection call. We could have supplied these as
+        #        literal values in the call, but this makes the example more readable.
+        sortIds = False
+        maxDist = 50.0
+        bothDirections = 1
+        noFaceIds = None
+        noTriangleIds = None
+        noAccelerator = None
+        hitPoint = None
+        noHitParam = None
+        noHitFace = None
+        noHitTriangle = None
+        noHitBary1 = None
+        noHitBary2 = None
+        atolerance = 1e-6
+        ReturnStatus = False
+
+        #        Get the closest intersection.
+        gotHit = meshFn.allIntersections(
+                raySource, rayDirection,
+                noFaceIds, noTriangleIds,
+                sortIds, om.MSpace.kWorld, maxDist, bothDirections,
+                noAccelerator,
+                hitPoint,
+                noHitParam, noHitFace, noHitTriangle, noHitBary1, noHitBary2, atolerance, ReturnStatus
+        )
+
+        #        Return the intersection as a Pthon list.
+        if gotHit:
+                return [hitPoint.x, hitPoint.y, hitPoint.z]
+        else:
+                return None
+
+
+
+def getfaceNormals(indexFace, each):
+    gotNormals=each.getPolygonNormal(indexFace, space='preTransform')
+    return gotNormals
+
+
+from pymel.core import *
+
+selObj=cmds.ls(sl=1, fl=1, sn=1)
+for each in selObj:
+    getChild=listRelatives(each, ad=1, f=1, typ="clusterHandle")
+    cmds.select(getChild)
