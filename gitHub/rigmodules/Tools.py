@@ -35,13 +35,17 @@ gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
 BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
-#getfilePath=str(__file__)
-filepath= os.getcwd()
 
-sys.path.append(str(filepath))
-# import baseFunctions_maya
-# reload (baseFunctions_maya)
-# getClass=baseFunctions_maya.BaseClass()
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+sys.path.append(str(scriptPath))
+
+
+
+getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+exec(open(getBasePath))
+getBaseClass=BaseClass()
+
+
 
 
 from inspect import getsourcefile
@@ -56,9 +60,9 @@ if "Linux" in OSplatform:
 # gtepiece=getfilePath.split("/")
 getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
-basepath=str(getRigModPath)+"/baseFunctions_maya.py"
-exec(open(basepath))
-getClass=BaseClass()
+# basepath=str(getRigModPath)+"/baseFunctions_maya.py"
+# exec(open(basepath))
+# getClass=BaseClass()
 
 # exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//baseFunctions_maya.py'))
 # getClass=BaseClass()
@@ -151,7 +155,7 @@ class ToolFunctions(object):
     def change_set(self):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
-        deformSets=["blendShape", "simpleBlendShape"]
+        deformSets=["blendShape", "simpleBlendShape", "cluster"]
         getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         if getSetType=="Dynamic sets":
             menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
@@ -1891,10 +1895,11 @@ class ToolFunctions(object):
         getchildren=listRelatives(getpar[0], c=1)
         for each in selObj:
             self.toggleVis(each)
-        excGrp=[(eachChild) for eachChild in getchildren for each in selObj if each not in eachChild]
+        print "hi"
+        excGrp=[(eachChild) for eachChild in getchildren for each in selObj if eachChild not in each]
         for eachChild in excGrp:
-            if str(each) != str(eachChild):
-                self.toggleVis(eachChild)
+            # if str(each) != str(eachChild):
+            self.toggleVis(eachChild)
       
 
     def toggleVis(self, foundObject):
@@ -1943,44 +1948,38 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=100 )
         cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'LrRow')       
-        cmds.gridLayout('topArea', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 40)) 
-        cmds.rowLayout  (' listPathLayout ', w=480, numberOfColumns=6, cw6=[15, 400, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='topArea') 
-        self.workFolderYes=checkBox(p="listPathLayout", v=True)      
-        text(newfolderPath, p="listPathLayout")
-        cmds.button (label='Open folder', p='listPathLayout', command = lambda *args:self._open_work_folder())   
-        cmds.rowLayout  (' seclistPathLayout ', w=480, numberOfColumns=6, cw6=[10, 400, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='topArea')   
-        self.custFolderYes=checkBox(p="seclistPathLayout")               
-        self.customSavePathFile=cmds.textField(p='seclistPathLayout', text=newfolderPath) 
-        cmds.button (label='Open folder', p='seclistPathLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.customSavePathFile, q=1, text=1)))
-        cmds.gridLayout('listgrid', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
-        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='LrRow')        
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
+        cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(480, 20))   
         text("Objects to save attributes from:")
-        cmds.button (label='Add', p='bottomFrame', command = lambda *args:self._refresh_function())
+        cmds.button (label='Add', p='topGrid', command = lambda *args:self._refresh_function())
+        cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(480, 20)) 
         cmds.text(label="")        
         fieldBucket=[]
         for each in selObj:
-            objNameFile=str(each)
-            cmds.rowLayout  (' listBuildButtonLayout ', w=150, numberOfColumns=6, cw6=[400, 80, 1, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            getName=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=objNameFile)
-            cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(getName, q=1, text=1), customSavePathFile=cmds.textField(self.customSavePathFile, q=1, text=1), workFolderYes=cmds.checkBox(self.workFolderYes,q=True, value=1), custFolderYes=cmds.checkBox(self.custFolderYes,q=True, value=1)))
+            objNameFile=newfolderPath+str(each)
+            cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[400, 65, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            self.getName=cmds.textField(w=400, h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save', w=150, p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
         cmds.showWindow(window)        
 
 
-    def saved_attributes(self, each, newfolderPath, fileName, customSavePathFile, workFolderYes, custFolderYes):
-        if workFolderYes == True:
-            printFolder=newfolderPath+each+"_attributes.txt"
-        else:   
-            printFolder=customSavePathFile+'/'+each+"_attributes.txt"         
-        attrValBucket=[]
-        if "Windows" in OSplatform:            
-            if not os.path.exists(printFolder): os.makedirs(printFolder) 
+    def saved_attributes(self, each, fileName):   
+        fileName=fileName+'.txt'     
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(fileName): os.makedirs(fileName) 
         if "Linux" in OSplatform:
-            open(printFolder, 'w')
+            # folderPath='\\'.join(fileName.split('/')[:-1])+"\\"
+            # print folderPath
+            # printFolder=re.sub(r'\\',r'/', folderPath)
+            # print printFolder
+            open(fileName, 'w')
+        attrValBucket=[]            
         getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
         for eachAttribute in getListedAttr:
             try:
@@ -1990,11 +1989,11 @@ class ToolFunctions(object):
             except:
                 pass
         fullString=str(attrValBucket)
-        inp=open(printFolder, 'w+') 
+        inp=open(fileName, 'w+') 
         for each in attrValBucket:
             inp.write(str(each)+'\n')
         inp.close()  
-        print "saved as "+printFolder
+        print "saved as "+fileName
 
     def _refresh_function(self):
         selObj=ls(sl=1, fl=1, sn=1)
@@ -2016,72 +2015,23 @@ class ToolFunctions(object):
         for each in selObj:
             objNameFile=str(each)
             fullPathName=newfolderPath+objNameFile
-            cmds.rowLayout  (' nlistBuildButtonLayout ', w=150, numberOfColumns=6, cw6=[400, 80, 1, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            getName=cmds.textField(w=120, h=25, p='nlistBuildButtonLayout', text=objNameFile)
-            cmds.button (label='Save', p='nlistBuildButtonLayout', command = lambda *args:self.saved_attributes(each, newfolderPath, fileName=cmds.textField(getName, q=1, text=1), customSavePathFile=cmds.textField(self.customSavePathFile, q=1, text=1), workFolderYes=cmds.checkBox(self.workFolderYes,q=True, value=1), custFolderYes=cmds.checkBox(self.custFolderYes,q=True, value=1)))
-
-    def openAttributesWindowV1(self, arg=None):    
-        getScenePath=cmds.file(q=1, location=1)
-        getPathSplit=getScenePath.split("/")
-        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-        if "Windows" in OSplatform:
-            newfolderPath=re.sub(r'/',r'\\', folderPath)
-        if "Linux" in OSplatform:
-            newfolderPath=re.sub(r'\\',r'/', folderPath)
-        getPath=newfolderPath+"*.txt"
-        files=glob.glob(getPath)   
-        makeBucket=[] 
-        for each in files:
-            if "Windows" in OSplatform:
-                getfileName=each.split("\\")
-            if "Linux" in OSplatform:
-                getfileName=each.split("/")         
-            getFile=getfileName[-1:][0]
-            makeBucket.append(getFile)            
-        winName = "Open attributes"
-        winTitle = winName
-        openFolderPath=folderPath+"\\"   
-        selObj=cmds.ls(sl=1, fl=1)
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=280 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        text("workpath:"+newfolderPath)
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20))      
-        self.fileDropName=cmds.optionMenu( label='files')
-        for each in makeBucket:
-            cmds.menuItem( label=each) 
-        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
-        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
-        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
-        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(printFolder=cmds.textField(self.pathFile, q=1, text=1)))        
-        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
-        cmds.showWindow(window)
+            cmds.rowLayout  (' nlistBuildButtonLayout ', w=400, numberOfColumns=6, cw6=[400, 80, 80, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            self.getName=cmds.textField(w=120, h=25, p='nlistBuildButtonLayout', text=fullPathName)
+            cmds.button (label='Save', w=150, p='nlistBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Open folder', p='nlistBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
 
 
     def openAttributesWindow(self, arg=None):    
-        getScenePath=cmds.file(q=1, location=1)
-        getPathSplit=getScenePath.split("/")
-        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-        if "Windows" in OSplatform:
-            newfolderPath=re.sub(r'/',r'\\', folderPath)
-        if "Linux" in OSplatform:
-            newfolderPath=re.sub(r'\\',r'/', folderPath)
-        getPath=newfolderPath+"*.txt"
-        files=glob.glob(getPath)   
-        makeBucket=[] 
-        for each in files:
-            if "Windows" in OSplatform:
-                getfileName=each.split("\\")
-            if "Linux" in OSplatform:
-                getfileName=each.split("/")         
-            getFile=getfileName[-1:][0]
-            makeBucket.append(getFile)            
+        # getScenePath=cmds.file(q=1, location=1)
+        # getPathSplit=getScenePath.split("/")
+        # folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        # if "Windows" in OSplatform:
+        #     newfolderPath=re.sub(r'/',r'\\', folderPath)
+        # if "Linux" in OSplatform:
+        #     newfolderPath=re.sub(r'\\',r'/', folderPath)
+        # getPath=newfolderPath+"*.txt"
+        # files=glob.glob(getPath)
+        files, getPath, newfolderPath, filebucket=self.getWorkPath()    
         winName = "Open attributes"
         winTitle = winName
         openFolderPath=folderPath+"\\"   
@@ -2095,19 +2045,61 @@ class ToolFunctions(object):
         cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
-        text("workpath:"+newfolderPath)
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20))      
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.button (label='refresh folder', p='listBuildButtonLayout', command = lambda *args:self.refresh_text()) 
+        cmds.button (label='workpath', p='listBuildButtonLayout', command = lambda *args:self.refresh_work_text())      
         self.fileDropName=cmds.optionMenu( label='files')
-        for each in makeBucket:
+        for each in filebucket:
             cmds.menuItem( label=each) 
-
-
-        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
-        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
+        # cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
+        # cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
         self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
         cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(printFolder=cmds.textField(self.pathFile, q=1, text=1)))        
         cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
         cmds.showWindow(window)
+
+    def getWorkPath(self):
+        filebucket=[]
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        getPath=newfolderPath+"*.txt"
+        files=glob.glob(getPath)
+        for each in files:
+            if "Windows" in OSplatform:
+                getfileName=each.split("\\")
+            if "Linux" in OSplatform:
+                getfileName=each.split("/")         
+            getFile=getfileName[-1:][0]
+            filebucket.append(getFile)         
+        return files, getPath, newfolderPath, filebucket
+
+    def refresh_work_text(self, arg=None):
+        menuItems = cmds.optionMenu(self.fileDropName, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)
+        files, getPath, newfolderPath, filebucket=self.getWorkPath()        
+        cmds.optionMenu(self.fileDropName, e=1) 
+        self.pathFile=cmds.textField(self.pathFile, e=1, text=newfolderPath) 
+        for each in filebucket:
+            menuItem(label=each, parent=self.fileDropName)
+
+    def refresh_text(self, arg=None):
+        menuItems = cmds.optionMenu(self.fileDropName, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)
+        getPathSplit=cmds.textField(self.pathFile, q=1, text=1)
+        folderPath=getPathSplit 
+        print folderPath
+        getPath=folderPath+"*.txt"
+        files=glob.glob(getPath)          
+        cmds.optionMenu(self.fileDropName, e=1) 
+        for each in files:
+            menuItem(label=each, parent=self.fileDropName)
 
     def _open_work_folder(self, arg=None):
         '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -2127,8 +2119,7 @@ class ToolFunctions(object):
             os.system('xdg-open "%s"' % newfolderPath) 
 
     def _open_defined_path(self, destImagePath):
-        getPathSplit=destImagePath.split("/")
-        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        folderPath='\\'.join(destImagePath.split("/")[:-1])+"\\"        
         self.opening_folder(folderPath)
 
     def _load_defined_path(self, newfolderPath, grabFileName):
