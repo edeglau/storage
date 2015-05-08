@@ -1888,6 +1888,14 @@ class ToolFunctions(object):
             for eachChild in getchildren:
                 self.toggleVis(eachChild)
 
+    def select_children(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            cmds.select(each, d=1)
+            getchildren=cmds.listRelatives(each, c=1)
+            for eachChild in getchildren:
+                cmds.select(eachChild, add=1)
+
 
     def visibility_peers(self, arg=None):
         selObj=cmds.ls(sl=1, fl=1)
