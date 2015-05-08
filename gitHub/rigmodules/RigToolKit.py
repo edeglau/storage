@@ -22,36 +22,29 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
-photoshop = r"C:\\Program Files\\Adobe\\Adobe Photoshop CC 2014\\Photoshop.exe"
-gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
 
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+sys.path.append(str(scriptPath))
 
-BbxName="eyeDirGuide"
-BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
-
-from inspect import getsourcefile
-from os.path import abspath
-getfilePath=str(abspath(getsourcefile(lambda _: None)))
-print getfilePath
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-if "Linux" in OSplatform: 
-    gtepiece=getfilePath.split("/")  
-
-getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-
-basepath=str(getRigModPath)+"/baseFunctions_maya.py"
-exec(open(basepath))
-getBaseClass=BaseClass()
-
-stretchIKpath=str(getRigModPath)+"/stretchIK.py"
-exec(open(stretchIKpath))
-getIKClass=stretchIKClass()
-
-getToolArrayPath=str(getRigModPath)+"/Tools.py"
+getToolArrayPath=str(scriptPath)+"/Tools.py"
 exec(open(getToolArrayPath))
 toolClass=ToolFunctions()
 
+
+getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+exec(open(getBasePath))
+getBaseClass=BaseClass()
+
+
+#gtepiece=getfilePath.split("\\")
+getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
+sys.path.append(str(getguideFilepath))
+
+getSAFilepath='/'.join(gtepiece[:-2])+"/selectArray/"
+sys.path.append(str(getSAFilepath))
+
+getrenamerFilepath='/'.join(gtepiece[:-2])+"/renamer/"
+sys.path.append(str(getrenamerFilepath))
 
 getValueFilepath='/'.join(gtepiece[:-2])+"/Values/"
 sys.path.append(str(getValueFilepath))
@@ -59,14 +52,12 @@ sys.path.append(str(getValueFilepath))
 getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
 sys.path.append(str(getSSDArrayPath))
 
+getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
+sys.path.append(str(getToolArrayPath))
+
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
-
-filepath= os.getcwd()
-
-sys.path.append(str(filepath))
-
       
 class ToolKitUI(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -160,7 +151,6 @@ class ToolKitUI(object):
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
-        cmds.text(label="") 
         cmds.text(label="Controllers")
         cmds.text(label="")           
         cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._make_shape)
@@ -191,6 +181,7 @@ class ToolKitUI(object):
         cmds.button (label='Export multiple obj', ann="Exports a group of selected objects as separate .obj files.",p='listBuildButtonLayout', command = self._exp_obj)   
         cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='listBuildButtonLayout', command = self._clean_mod)           
         cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='listBuildButtonLayout', command = self._mirror_blend)              
+        cmds.button (label='Blend Groups', ann="Blend a group of objects to another group of objects(needs to be same meshes in heirarchy). Select deformer group and then deformee group.", p='listBuildButtonLayout', command = self._blend_grp)
         cmds.text(label="External folders")
         cmds.text(label="")                       
         cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
@@ -198,6 +189,7 @@ class ToolKitUI(object):
         cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
         cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)     
         cmds.showWindow(self.window)
+
 
     def _help(self, arg=None):
         helppath=str(getRigModPath)+"/rgModhelp.py"
@@ -491,9 +483,15 @@ class ToolKitUI(object):
         getBaseClass.curve_rig()
         
     def _finalling_rig(self, arg=None):
-        import FinallingRig
-        reload (FinallingRig)
-        getBaseClass=FinallingRig.Finalling()
+        getFinalPath='/'.join(gtepiece[:-1])+"/FinallingRig.py"
+        print getFinalPath
+        exec(open(getFinalPath))
+        getFinalClass=FinallingRig.Finalling() 
+
+             
+        # import FinallingRig
+        # reload (FinallingRig)
+        # getFinalClass=FinallingRig.Finalling()
         
     def _stretch_ik(self, arg=None):
         toolClass._stretch_ik()
@@ -509,7 +507,10 @@ class ToolKitUI(object):
 
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
-        
+
+    def _blend_grp(self, arg=None):
+        getBaseClass.blendGroupToGroup()
+
     def _grp_insert(self, arg=None):
         getBaseClass.createGrpCtrl()
         
@@ -560,6 +561,10 @@ class ToolKitUI(object):
                     # remove all numbers
                     #===========================================================
 #                    sub_Name=re.sub(r'\d[1-9]*', '', lognm) 
+
+inst = ToolKitUI()
+inst.create()
+
 
 inst = ToolKitUI()
 inst.create()
