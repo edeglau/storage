@@ -1,50 +1,3 @@
-##saved convig
-nedit ~/config/env.csh
-
-
-#Only use this file to set environment variables that will override
-#jobshell settings. In most cases this file should remain empty
-#
-#Do not try to edit ~/.cshrc, ~/.tcshrc or .login
-setenv AUTOLOAD_HUBFURTILITY 1
-setenv RIGGINGTOOLS_VERSION 5.3
-setenv ECLIPSE_VERSION 4.0
-setenv TECHANIMTOOLS_VERSION 5.3
-setenv AUTOLOAD_TECHANIMTOOLS 1
-source /software/tools_RND_PATCH/gbVineGeneration/rt000000_gbVineGeneration/rc5/env.csh
-
-
-###################
-# SHELL / ALIASES #
-###################
-set autolist
-
-alias md 'mkDaily'
-alias m 'maya&'
-alias publish 'mpcPublishUI'
-alias liftcloth 'job -d cloth lift'
-alias lifttechanim 'job -d cloth lift'
-alias liftfur 'job -d fur lift'
-alias gbta 'job -d techanim gb'
-alias gbfur 'job -d fur gb'
-alias gbcloth 'job -d cloth gb'
-alias training 'job -d techanim training'
-alias hwr 'mgnHwRender&'
-alias hub 'hubPackageUI'
-alias kon 'konqueror'
-alias g 'graffiti'
-alias clothBake 'cd maya/playblasts/techAnim/vincent-ro/clothBake/'
-alias p 'cd maya/playblasts/'
-alias u 'cd ..'
-alias createPackage 'hubPackageUI createPackage'
-alias pan 'job -d techanim pan'
-
-
-#### Do not delete this line or add anything below this line ####
-
-
-
-
 
 
 ####expressions
@@ -2205,11 +2158,11 @@ L_ROW05_CTRL.rotateY=$getPos/6;
 int $offset=15;
 $offsetTime=$currentTime-$offset;
 $getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
-L_G_ROW01_CTRL.rotateY=$getPos/2;
+L_G_ROW01_CTRL.rotateY=$getPos/4;
 int $offset=17;
 $offsetTime=$currentTime-$offset;
 $getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
-L_G_ROW02_CTRL.rotateY=$getPos/1.5;
+L_G_ROW02_CTRL.rotateY=$getPos/4;
 
 
 
@@ -2233,8 +2186,67 @@ R_ROW05_CTRL.rotateY=$getPos/6;
 int $offset=15;
 $offsetTime=$currentTime-$offset;
 $getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
-R_G_ROW01_CTRL.rotateY=$getPos/2;
+R_G_ROW01_CTRL.rotateY=$getPos/4;
 int $offset=17;
 $offsetTime=$currentTime-$offset;
 $getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
-R_G_ROW02_CTRL.rotateY=$getPos/1.5;
+R_G_ROW02_CTRL.rotateY=$getPos/4;
+
+
+
+
+from pymel.core import *
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    each=ls(each)[0]
+    print each.mesh()
+
+
+
+from pymel.core import *
+selObj=cmds.ls(sl=1, fl=1)
+getParentChild=cmds.listRelatives(selObj[0], p=1)
+getParentParent=cmds.listRelatives(selObj[-1:], p=1)
+for each in selObj:
+    if cmds.listRelatives(each, p=1)==getParentChild:
+        print "1"
+    if cmds.listRelatives(each, p=1)==getParentParent:
+        print "2"
+
+
+from pymel.core import *
+selObj=cmds.ls(sl=1, fl=1)
+getParentChild=cmds.listRelatives(selObj[0], p=1)
+getParentParent=cmds.listRelatives(selObj[-1:], p=1)
+getChildCurveBuild=[(each) for each in selObj if cmds.listRelatives(each, p=1)==getParentChild]
+getParentCurveBuild=[(each) for each in selObj if cmds.listRelatives(each, p=1)==getParentParent]
+cmds.select(getChildCurveBuild)
+createChildCurve=cmds.polyToCurve(n="childCurve", f=0, dg=3, addUnderTransform=1)
+cmds.select(getParentCurveBuild)
+createParentCurve=cmds.polyToCurve(n="parentCurve", f=0, dg=3, addUnderTransform=1)
+
+
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+getParent=selObj[-1:]
+getChildren=selObj[1:]
+
+for each in getChildren:
+    cmds.connectAttr(getParent+".outputGeometry", each+".inMesh", f=1)
+
+
+
+
+
+from pymel.core import *
+selObj=cmds.ls(sl=1, fl=1)
+getParent=selObj[-1:]
+getChildren=selObj[:1]
+getParent=ls(getParent)[0]
+print getParent
+print getChildren
+for each in getChildren:
+    cmds.connectAttr(getParent+".outputGeometry", each+".inMesh")
