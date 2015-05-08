@@ -12,8 +12,7 @@ __version__ = 1.00
 from pymel.core import *
 import maya.cmds as cmds
 import sys, os, glob
-# filepath=( "C:\Users\edeglau\git\Liquid\Liquid_egit\SSD\\" )
-# sys.path.append(str(filepath))
+
 import maya.mel
 
 getScenePath=cmds.file(q=1, location=1)
@@ -25,8 +24,8 @@ xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
 
 # getfilePath=str(__file__)
-filepath= os.getcwd()
-
+# filepath= os.getcwd()
+# objFolderPath=folderPath+"Obj\\"
 # gtepiece=getfilePath.split("\\")
 # getSSDFilepath='\\'.join(gtepiece[:-2])+"\\SSD\\"
 
@@ -2967,6 +2966,16 @@ class BaseClass():
         if selObjParent:
             cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
 
+    def blendGroupToGroup(self):
+        selObj=cmds.ls(sl=1, fl=1)
+        parentObj=selObj[0]
+        childrenObj=selObj[1]
+        getparentObj=cmds.listRelatives(parentObj, c=1)
+        getchildObj=cmds.listRelatives(childrenObj, c=1)
+        for parentItem, childItem in map(None, getparentObj,getchildObj):
+            cmds.select(parentItem)
+            cmds.select(childItem, add=1)
+            cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))        
 
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
@@ -3271,14 +3280,14 @@ class BaseClass():
                 posBucket.append(self.median_find(transform[1::3]))
                 posBucket.append(self.median_find(transform[2::3]))
                 transform=posBucket
-            cmds.xform(getloc[0], ws=1, t=transform)  
-            cmds.SetKeyTranslate(getloc[0])
-            cmds.xform(placeloc[0], ws=1, t=transform)
-            cmds.SetKeyTranslate(placeloc[0])               
-            rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
-            cmds.xform(placeloc[0], ws=1, ro=rotate)  
-            cmds.SetKeyRotate(placeloc[0])
-            maya.mel.eval( "playButtonStepForward;" )
+                cmds.xform(getloc[0], ws=1, t=transform)  
+                cmds.SetKeyTranslate(getloc[0])
+                cmds.xform(placeloc[0], ws=1, t=transform)
+                cmds.SetKeyTranslate(placeloc[0])               
+                rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+                cmds.xform(placeloc[0], ws=1, ro=rotate)  
+                cmds.SetKeyRotate(placeloc[0])
+                maya.mel.eval( "playButtonStepForward;" )
         cmds.delete(getloc[0])
                 
 
