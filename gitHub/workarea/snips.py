@@ -1,3 +1,62 @@
+##saved convig
+nedit ~/config/env.csh
+
+=======================================================================================================
+
+
+
+#Only use this file to set environment variables that will override
+#jobshell settings. In most cases this file should remain empty
+#
+#Do not try to edit ~/.cshrc, ~/.tcshrc or .login
+setenv AUTOLOAD_HUBFURTILITY 1
+setenv RIGGINGTOOLS_VERSION 5.3
+setenv ECLIPSE_VERSION 4.0
+setenv TECHANIMTOOLS_VERSION 5.3
+setenv AUTOLOAD_TECHANIMTOOLS 1
+
+
+###################
+# SHELL / ALIASES #
+###################
+set autolist
+
+alias md 'makeDaily'
+alias m 'maya&'
+alias publish 'mpcPublishUI'
+alias liftcloth 'job -d cloth lift'
+alias lifttechanim 'job -d cloth lift'
+alias liftfur 'job -d fur lift'
+alias gbta 'job -d techanim gb'
+alias gbfur 'job -d fur gb'
+alias gbcloth 'job -d cloth gb'
+alias training 'job -d techanim training'
+alias hwr 'mgnHwRender&'
+alias hub 'hubPackageUI'
+alias kon 'konqueror'
+alias g 'graffiti'
+alias clothBake 'cd maya/playblasts/techAnim/vincent-ro/clothBake/'
+alias p 'cd maya/playblasts/'
+alias u 'cd ..'
+alias createPackage 'hubPackageUI createPackage'
+alias pan 'job -d techanim pan'
+alias home 'firefox intranet.mpc.local'
+alias punchout 'firefox http://wt.web.monw.mpc.local/punchOut/'
+alias email 'https://email.moving-picture.com/owa/'
+alias tractor 'firefox tractor'
+alias mayadocs 'firefox docserv/maya/2015'
+alias pymeldocs 'firefox docserv/maya/2015/PyMel'
+alias repo 'firefox http://git.mpc.local/repos/film/techAnim/techAnimTools/'
+alias hubpan 'http://hub.monw.mpc.local/hubViewer.php?job=pan'
+alias mayasux 'kill maya.bin'
+
+
+#### Do not delete this line or add anything below this line ####
+
+
+
+======================================================================================================
+
 
 
 ####expressions
@@ -2250,3 +2309,21 @@ print getParent
 print getChildren
 for each in getChildren:
     cmds.connectAttr(getParent+".outputGeometry", each+".inMesh")
+
+
+selObj=cmds.ls(sl=1)
+for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
+    cmds.select(eachController)
+    cmds.select(eachChild, add=1)
+    cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))
+
+
+selObj=cmds.ls(sl=1, fl=1)
+parentObj=selObj[0]
+childrenObj=selObj[1]
+getparentObj=cmds.listRelatives(parentObj, c=1)
+getchildObj=cmds.listRelatives(childrenObj, c=1)
+for parentItem, childItem in map(None, getparentObj,getchildObj):
+    cmds.select(parentItem)
+    cmds.select(childItem, add=1)
+    cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))
