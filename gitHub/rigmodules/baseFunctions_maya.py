@@ -3260,18 +3260,18 @@ class BaseClass():
     def plot_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
         selObj=cmds.ls(sl=1, fl=1)       
-        if len(selObj)==1:
+        if len(selObj)>0:
             pass
         else:
             print "Select 1 object" 
             return     
         getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
         getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
-        getloc=cmds.spaceLocator(n=selObj[0]+"_lctr")
+        getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
         cmds.normalConstraint(selObj[0], getloc[0])
-        placeloc=cmds.spaceLocator(n=selObj[0]+"_lctr")
+        placeloc=cmds.spaceLocator(n=selObj[0]+"lctr")
         for each in range(getRange):
-            transform=cmds.xform(selObj[0], q=True, ws=1, t=True)
+            transform=cmds.xform(selObj, q=True, ws=1, t=True)
             if len(transform)<4:
                 pass
             else:
@@ -3280,6 +3280,64 @@ class BaseClass():
                 posBucket.append(self.median_find(transform[1::3]))
                 posBucket.append(self.median_find(transform[2::3]))
                 transform=posBucket
+            cmds.xform(getloc[0], ws=1, t=transform)  
+            cmds.SetKeyTranslate(getloc[0])
+            cmds.xform(placeloc[0], ws=1, t=transform)
+            cmds.SetKeyTranslate(placeloc[0])               
+            rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+            cmds.xform(placeloc[0], ws=1, ro=rotate)  
+            cmds.SetKeyRotate(placeloc[0])
+            maya.mel.eval( "playButtonStepForward;" )
+        cmds.delete(getloc[0])
+
+    def plot_each_vert(self):
+        '''plots a locator to a vertice or face per keyframe in a timeline'''
+        selObj=cmds.ls(sl=1, fl=1)       
+        if len(selObj)==1:
+            pass
+        else:
+            print "Select 1 object" 
+        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+        getRange=range(int(getRange))#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+        dirDict={}
+        for item in selObj:
+            getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+            cmds.normalConstraint(item, getloc[0])
+            placeloc=cmds.spaceLocator(n=item+"lctr")
+            lst=[getloc[0], placeloc[0]]
+            makeDict={item:lst}
+            print makeDict
+            dirDict.update(makeDict)   
+            print dirDict
+        for key, value in dirDict.items():    
+            for each in getRange:
+                cmds.currentTime(each)
+                transform=cmds.xform(key, q=True, ws=1, t=True)
+                cmds.xform(value[0], ws=1, t=transform)
+                cmds.SetKeyTranslate(value[0])
+                cmds.xform(value[1], ws=1, t=transform)
+                cmds.SetKeyTranslate(value[1])               
+                rotate=cmds.xform(value[0], q=True, ws=1, ro=True)
+                cmds.xform(value[1], ws=1, ro=rotate)  
+                cmds.SetKeyRotate(value[1])
+                cmds.delete(value[0])
+
+                
+    def plot_each_vertV1(self):
+        '''plots a locator to a vertice or face per keyframe in a timeline'''
+        selObj=cmds.ls(sl=1, fl=1)       
+        if len(selObj)==1:
+            pass
+        else:
+            print "Select 1 object" 
+        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+        getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+        for item in selObj:
+            getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+            cmds.normalConstraint(item, getloc[0])
+            placeloc=cmds.spaceLocator(n=item+"lctr")
+            for each in range(getRange):
+                transform=cmds.xform(item, q=True, ws=1, t=True)
                 cmds.xform(getloc[0], ws=1, t=transform)  
                 cmds.SetKeyTranslate(getloc[0])
                 cmds.xform(placeloc[0], ws=1, t=transform)
@@ -3288,8 +3346,33 @@ class BaseClass():
                 cmds.xform(placeloc[0], ws=1, ro=rotate)  
                 cmds.SetKeyRotate(placeloc[0])
                 maya.mel.eval( "playButtonStepForward;" )
-        cmds.delete(getloc[0])
-                
+            cmds.delete(getloc[0])
+
+    def onionSkin(self):
+        selObj=cmds.ls(sl=1, fl=1)       
+        if len(selObj)==1:
+            pass
+        else:
+            print "Select 1 object" 
+        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+        getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+        for each in range(getRange):
+            for item in selObj:
+                getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+                cmds.normalConstraint(item, getloc[0])
+                getNum="%04d" % (each,)
+                placeloc=cmds.spaceLocator(n=item+'FR'+str(getNum)+"_lctr")
+                transform=cmds.xform(item, q=True, ws=1, t=True)
+                cmds.xform(getloc[0], ws=1, t=transform)  
+                cmds.SetKeyTranslate(getloc[0])
+                cmds.xform(placeloc[0], ws=1, t=transform)
+                cmds.SetKeyTranslate(placeloc[0])               
+                rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+                cmds.xform(placeloc[0], ws=1, ro=rotate)  
+                cmds.SetKeyRotate(placeloc[0])
+                maya.mel.eval( "playButtonStepForward;" )
+                cmds.delete(getloc[0])
+
 
     def Percentages(self, getSel, minValue, maxValue):
         collectNewNumbers=[]  
@@ -3341,7 +3424,7 @@ class BaseClass():
             rotateWorldMatrix=[0, 0, 0]    
             transformWorldMatrix=[x + y for x, y in zip(maintransformWorldMatrix, transformWorldVertex)]
         return transformWorldMatrix, rotateWorldMatrix        
-    
+
     def locationXFormV2(self, each):
         transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0, 0, 0]:
