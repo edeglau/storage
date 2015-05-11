@@ -138,13 +138,13 @@ class ToolKitUI(object):
         cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='listBuildButtonLayout', command = self._erase_anim)   
         cmds.button (label='Toggle Nullify object', ann="Hides object and makes unkeyable. USES: hide locators from animators", p='listBuildButtonLayout', command = self._disappear)                               
         cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
-        cmds.button (label='Plot vertex', ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
+        cmds.button (label='Plot vertex', bgc=[0.45, 0.5, 0.5], ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
         cmds.button (label='MatchMatrix', p='listBuildButtonLayout', ann="This will match the exact matrix of the first selection", command = self._match_matrix)
         cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
         cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
         cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
-        cmds.button (label='Hidden grp', p='listBuildButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
+        cmds.button (label='Hidden grp', bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
         cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
         cmds.button (label='fix undos', p='listBuildButtonLayout', command = self._turn_on_undo) 
         cmds.button (label='fix playblast', p='listBuildButtonLayout', command = self._fix_playblast)
@@ -538,7 +538,7 @@ class ToolKitUI(object):
         getBaseClass.groupShapes()
 
     def _plot_vert(self, arg=None):
-        getBaseClass.plot_vert()
+        toolClass.vertex_UI()
 
 
     def _defEditGrp(self, arg=None):
