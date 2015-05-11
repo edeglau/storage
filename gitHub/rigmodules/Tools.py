@@ -62,10 +62,10 @@ getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 # basepath=str(getRigModPath)+"/baseFunctions_maya.py"
 # exec(open(basepath))
-# getClass=BaseClass()
+# getBaseClass=BaseClass()
 
 # exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//baseFunctions_maya.py'))
-# getClass=BaseClass()
+# getBaseClass=BaseClass()
 
 # stretchIKpath=str(getRigModPath)+"/stretchIK.py"
 # exec(open(stretchIKpath))
@@ -466,7 +466,7 @@ class ToolFunctions(object):
             getRiv=cmds.ls(sl=1)
             cmds.rename(getRiv[0], queryRivet)
             getNewRiv=cmds.ls(sl=1)
-            getClass.makeJoint()
+            getBaseClass.makeJoint()
             cmds.parent(getNewRiv[0]+"_jnt", getNewRiv[0]) 
         
     def chain_rig(self, arg=None):
@@ -625,7 +625,7 @@ class ToolFunctions(object):
             getBox=cmds.ls("BigBox_CC_grp") 
         except:
             getBox=cmds.ls("*:BigBox_CC_grp")  
-        getTranslation, getRotation=getClass.locationXForm(getHeadCtrl)
+        getTranslation, getRotation=getBaseClass.locationXForm(getHeadCtrl)
         cmds.move(getTranslation[0]+40, getTranslation[1], getTranslation[2], getBox)
         cmds.parentConstraint(getHeadCtrl,getBox, mo=1)
         print "Eye Direction Present"
@@ -638,12 +638,12 @@ class ToolFunctions(object):
         selObj=("EyeOrient_L_jnt", "EyeOrient_R_jnt")
         for each in selObj:
             selObjParent=cmds.listRelatives( each, allParents=True )
-            transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)        
+            transformWorldMatrix, rotateWorldMatrix=getBaseClass.locationXForm(each)        
             nrx, nry, nrz = 0.0, 0.0, 1.0 
             getcolour=cmds.getAttr(each+".overrideColor")
             name=each.split("_jnt")[0]+"_dir"
             grpname=each.split("_jnt")[0]+"_dir_grp"
-            getClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
+            getBaseClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
             cmds.parent(name, each)      
     def _rivet(self, arg=None):
         maya.mel.eval( "rivet;" )
@@ -877,7 +877,7 @@ class ToolFunctions(object):
         secondChild=selObj[2]
         thirdChild=selObj[3]  
         Controller=Controller+"."+geteattr      
-        getClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
+        getBaseClass.blendColors_callup(Controller, firstChild, secondChild, thirdChild)  
         
     def _quickCconnect_window(self, arg=None):
         getSel=cmds.ls(sl=1) 
@@ -1418,7 +1418,7 @@ class ToolFunctions(object):
             
     
     def _range_inc(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
-        BucketValue=getClass.Percentages(getSel, firstMinValue, firstMaxValue)
+        BucketValue=getBaseClass.Percentages(getSel, firstMinValue, firstMaxValue)
         for each, item in map(None, getSel, BucketValue):
             getChangeAttr=each+'.'+getFirstattr
             cmds.setAttr(getChangeAttr, item)
@@ -1431,7 +1431,7 @@ class ToolFunctions(object):
             cmds.setAttr(getChangeAttr, getVal)
 
     def _range_relative(self, getSel, getFirstattr, firstMinValue, firstMaxValue):
-        BucketValue=getClass.Percentages(getSel, firstMinValue, firstMaxValue)
+        BucketValue=getBaseClass.Percentages(getSel, firstMinValue, firstMaxValue)
         for each, item in map(None, getSel, BucketValue):
             getChangeAttr=each+'.'+getFirstattr
             getValue=cmds.getAttr(each+'.'+getFirstattr)
@@ -1642,7 +1642,7 @@ class ToolFunctions(object):
         print Controller+ " is the Control value I hook up to"
         Child=getChild[0]
         print Child+" is the attribute that is being driven"
-        getClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
+        getBaseClass.doubleSetDrivenKey_constraint(Controller, Child, child_one_constraint, child_two_constraint, firstValue, secondValue)
 
 
     def _file_texture_manager(self, arg=None):
@@ -1821,6 +1821,43 @@ class ToolFunctions(object):
     def turn_on_undo(self, arg=None):
         cmds.undoInfo(state=1)
 
+
+    def vertex_UI(self, arg=None):
+        winName = "vertex"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 18))            
+        button (label='plot', p='txvaluemeter', command = lambda *args:self._plotter())
+        button (label='plot each', p='txvaluemeter', command = lambda *args:self._plot_each_vert())
+        button (label='onion', p='txvaluemeter', command = lambda *args:self._onion_skin())
+        button (label='locate', p='txvaluemeter', command = lambda *args:self.locator_select_verts())
+        showWindow(window)
+
+    def locator_select_verts(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        transform=cmds.xform(selObj, q=1, ws=1, t=1)
+        posBucketx=getBaseClass.median_find(transform[0::3])
+        posBuckety=getBaseClass.median_find(transform[1::3])
+        posBucketz=getBaseClass.median_find(transform[2::3])
+        getLoc=cmds.spaceLocator()
+        cmds.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
+
+    def _plotter(self, arg=None):
+        getBaseClass.plot_vert()
+
+    def _plot_each_vert(self, arg=None):
+        getBaseClass.plot_each_vert()
+
+    def _onion_skin(self, arg=None):
+        getBaseClass.onionSkin()
 
     def visibility_UI(self, arg=None):
         winName = "visibility"
