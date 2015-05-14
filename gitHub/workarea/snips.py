@@ -2327,3 +2327,62 @@ for parentItem, childItem in map(None, getparentObj,getchildObj):
     cmds.select(parentItem)
     cmds.select(childItem, add=1)
     cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))
+
+
+#onionSkin
+selObj=cmds.ls(sl=1, fl=1)       
+if len(selObj)==1:
+    pass
+else:
+    print "Select 1 object" 
+getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+for each in range(getRange):
+    for item in selObj:
+        getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+        cmds.normalConstraint(item, getloc[0])
+        placeloc=cmds.spaceLocator(n=item+"_lctr")
+        transform=cmds.xform(item, q=True, ws=1, t=True)
+        cmds.xform(getloc[0], ws=1, t=transform)  
+        cmds.SetKeyTranslate(getloc[0])
+        cmds.xform(placeloc[0], ws=1, t=transform)
+        cmds.SetKeyTranslate(placeloc[0])               
+        rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+        cmds.xform(placeloc[0], ws=1, ro=rotate)  
+        cmds.SetKeyRotate(placeloc[0])
+        maya.mel.eval( "playButtonStepForward;" )
+        cmds.delete(getloc[0])
+
+
+maya.mel.eval( 'artSetToolAndSelectAttr( "artAttrCtx", "ta_normalPush2.paintTargetWeights" );' )
+
+
+
+
+
+
+#renaming files
+
+fleName=""
+folderPath="/jobs/pan/build/envNativeVillage/release/cache/geometryCache/NativeVillageTentB/backup"
+oldNamePart=""
+newNamePart=""
+for fleName in glob.glob(os.path.join(folderPath, "*"+oldNamePart+"*")):
+    os.rename(fleName, fleName.replace(oldNamePart, newNamePart))
+
+
+getSel=cmds.ls(sl=1, fl=1)
+for each in getSel:
+    cmds.setAttr(each+'.sx', lock=0)
+    cmds.setAttr(each+'.sx', cb=1)   
+    cmds.setAttr(each+'.sx', k=1)
+    cmds.setAttr(each+'.sy', lock=0)
+    cmds.setAttr(each+'.sy', cb=1)   
+    cmds.setAttr(each+'.sy', k=1)
+    cmds.setAttr(each+'.sz', lock=0)
+    cmds.setAttr(each+'.sz', cb=1)   
+    cmds.setAttr(each+'.sz', k=1)
+
+    
+exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/Values//LimitValues.py'))
+ValueClass()
