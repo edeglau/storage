@@ -9,7 +9,6 @@ from sys import stdin
 from pymel.core import *
 #import win32clipboard
 import operator
-OSplatform=platform.platform()
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
@@ -17,23 +16,39 @@ __version__ = 1.00
 'This work is licensed under a Creative Commons License'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
+global colour1
+global colour2
+global colour3
+pipelineguides=""
+
+
 colour1=13
 colour2=6
 colour3=27  
-pipelineguides="//usr//people//elise-d//maya//projects//default//data"
-filepath= os.getcwd()
+pipelineguides=""
 
-sys.path.append(str(filepath))
-getfilePath=str(__file__)
-gtepiece=getfilePath.split("\\")
-getRigModPath='\\'.join(gtepiece[:-2])+"\\rigmodules\\"
+# filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+# sys.path.append(str(filepath))
+# import baseFunctions_maya
+# reload (baseFunctions_maya)
+# getClass=baseFunctions_maya.BaseClass()
 
+
+# filepath= os.getcwd()
+
+
+# sys.path.append(str(filepath))
+# getfilePath=str(__file__)
+# gtepiece=getfilePath.split("\\")
+# getRigModPath='\\'.join(gtepiece[:-2])+"\\rigmodules\\"
+
+getRigModPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 #filepath=( 'D:\\code\\git\\LiquidGit\\Liquid_egit\\guides\\' )
 
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
-
+global getClass
 sys.path.append(str(getRigModPath))
 import baseFunctions_maya
 reload (baseFunctions_maya)
@@ -69,31 +84,9 @@ class GuideUI(object):
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout',bgc=[0.7, 0.65, 0.5] , p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        cmds.text(label="External files",bgc=[0.5, 0.45, 0.3])          
-        cmds.text(label="",bgc=[0.5, 0.45, 0.3])      
-        cmds.button (label='Save Guides',bgc=[0.9, 0.85, 0.7], p='listBuildButtonLayout', command = self.save_guides)
-        cmds.button (label='Open Guides',bgc=[0.9, 0.85, 0.7], p='listBuildButtonLayout', command = self.open_guides)
-        cmds.text(label="Templates",bgc=[0.5, 0.45, 0.3])          
-        cmds.text(label="",bgc=[0.5, 0.45, 0.3])           
-        cmds.button (label='Biped',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self.template_guides)
-        cmds.button (label='Quad-w-Paw',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self.template_quad_toe_guides)
-        cmds.button (label='Quad-w-Hoof',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self.template_quad_hoof_guides)
-        cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
         cmds.text(label="Partial Templates",bgc=[0.5, 0.45, 0.3])          
         cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
-        cmds.button (label='Paw', p='listBuildButtonLayout', command = self.template_toe_guides)
-        cmds.button (label='Hoof', p='listBuildButtonLayout', command = self.template_hoof_guides)
-        cmds.button (label='Arm Guides', p='listBuildButtonLayout', command = self.build_arm_guides)
-        cmds.button (label='Q-Arm', p='listBuildButtonLayout', command = self.template_qarm_guides)
-        cmds.button (label='Foot', p='listBuildButtonLayout', command = self.build_foot_guides)        
-        cmds.button (label='Leg', p='listBuildButtonLayout', command = self.build_leg_guides)
-        cmds.button (label='Neck', p='listBuildButtonLayout', command = self.build_neck_guides)
-        cmds.button (label='Q-Spine', p='listBuildButtonLayout', command = self.template_quad_spine_guides)
-        cmds.button (label='Spine', p='listBuildButtonLayout', command = self.build_spine_guides)
-        cmds.button (label='Hand', p='listBuildButtonLayout', command = self.build_hand_guides)
         cmds.button (label='Tail', p='listBuildButtonLayout', command = self.build_tail_guides)    
-        cmds.button (label='Previs face', p='listBuildButtonLayout', command = self.build_previs_face_guides)    
-        cmds.button (label='Aface', p='listBuildButtonLayout', command = self.build_anim_face_guides)    
         cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
         cmds.text(label="Editting",bgc=[0.5, 0.45, 0.3])          
         cmds.text(label="",bgc=[0.5, 0.45, 0.3]) 
@@ -122,7 +115,7 @@ class GuideUI(object):
                 name=getName.split("_jnt")[0]+"_guide"
             transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)
             getClass.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3)
+#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3) 
 #             cmds.move(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide,r=1, rpr=1 )
 #             cmds.rotate(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide )  
     def _clean_guide(self, arg=None):
@@ -560,27 +553,20 @@ class GuideUI(object):
             os.startfile(path)
                      
     def _save_guide_function(self):
-        fileSavePath=cmds.file(q=1, location=1)
-        getPath= '/'.join(fileSavePath.split('/')[:-1])+'/'
-        print getPath+" file save path"
-        if fileSavePath =="unknown":
+        filename=cmds.file(q=1, location=1)
+        if getScenePath =="unknown":
             print "This file has not been saved into a location yet. Cannot determine where you want to put this."
             return
         else:
             pass        
         filename=cmds.textField(fileName, q=1, text=True)
-        print filename
         if filename:
             pass
         else:
             print "you need to give it a name"
-            return   
-        if "Windows" in OSplatform:
-            printFolder=getPath+filename+".txt"
-            if not os.path.exists(printFolder): os.makedirs(printFolder) 
-        if "Linux" in OSplatform:
-            printFolder=getPath+filename+".txt"   
-            if not os.path.exists(printFolder):open(printFolder, 'w')
+            return    
+        printFolder=guideFolderPath+filename+".txt"
+        if not os.path.exists(guideFolderPath): os.makedirs(guideFolderPath)         
         self.guide_writer(printFolder)
         
     def _save_to_pipeline(self):
@@ -594,7 +580,7 @@ class GuideUI(object):
         self.guide_writer(printFolder)
         
     def guide_writer(self, printFolder):
-        getGuides=cmds.ls("*_guide")
+        getGuides=cmds.ls("*guide")
         inp=open(printFolder, 'w+')
         for each in getGuides:
             transform=cmds.xform(each , q=True, ws=1, t=True)
@@ -714,21 +700,16 @@ class GuideUI(object):
         else:
             print "no path entered"
             return
-        try:
-            filename=cmds.optionMenu(fileDropName, q=1, v=1)
-            printFolder=getPath+"\\"+filename
-        except:
-            if "\\" in getPath:
-                filename=getPath.split("\\")[-1:][0]
-            elif "/" in getPath:
-                filename=getPath.split("/")[-1:][0]        
-            printFolder=getPath
+        filename=cmds.optionMenu(fileDropName, q=1, v=1)
+        printFolder=getPath+"\\"+filename
 #         if fileSaveName:
 #             printFolder=fileSaveName
 #         else:
 #             printFolder=folderPath+filename
+        print printFolder
         Ggrp=cmds.CreateEmptyGroup()
         getName=filename.split(".")[0]
+        print getName
         cmds.rename(Ggrp, "Guides_"+getName+"_grp")
         inp=open(printFolder, 'r')
         
@@ -794,6 +775,7 @@ class GuideUI(object):
             getDeleted=cmds.ls("*_guide1")
             for each in getDeleted:
                 cmds.delete(each) 
+           
 
     def build_tail_guides(self, arg=None):
         axisList=["X", "Y", "Z"]  
@@ -822,8 +804,8 @@ class GuideUI(object):
         self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="range", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="-20.0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="20.0")  
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
         button (label='Go', p='BuildButtonLayout', command = lambda *args:self.create_tail_guides(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), amount=int(textField(self.amount,q=1, text=1)), size=int(textField(self.size,q=1, text=1)), namefield=textField(self.namefield,q=1, text=1), direction=optionMenu(direction, q=1, v=1)))
         showWindow(window)
