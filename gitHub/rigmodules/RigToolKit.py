@@ -36,6 +36,26 @@ exec(open(getBasePath))
 getBaseClass=BaseClass()
 
 
+
+import baseFunctions_maya
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+sys.path.append(str(getClass))
+
+import stretchIK
+reload (stretchIK)
+getIKClass=stretchIK.stretchIKClass()
+sys.path.append(str(getIKClass))
+
+
+import Tools
+reload (Tools)
+toolClass=Tools.ToolFunctions()
+sys.path.append(str(toolClass))
+
+
+
+
 #gtepiece=getfilePath.split("\\")
 getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
 sys.path.append(str(getguideFilepath))
