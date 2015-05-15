@@ -5,29 +5,56 @@ from pymel.core import *
 
 
 
-from inspect import getsourcefile
-from os.path import abspath
-getfilePath=str(abspath(getsourcefile(lambda _: None)))
-print getfilePath
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-if "Linux" in OSplatform: 
-    gtepiece=getfilePath.split("/")  
+# from inspect import getsourcefile
+# from os.path import abspath
+# getfilePath=str(abspath(getsourcefile(lambda _: None)))
+# print getfilePath
+# if "Windows" in OSplatform:
+#     gtepiece=getfilePath.split("\\")
+# if "Linux" in OSplatform: 
+#     gtepiece=getfilePath.split("/")  
 
-getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-
-basepath=str(getRigModPath)+"/baseFunctions_maya.py"
-exec(open(basepath))
-getClass=BaseClass()
+# # getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+# getRigModPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules//"
 
 
-stretchIKpath=str(getRigModPath)+"/stretchIK.py"
-exec(open(stretchIKpath))
-getIKClass=stretchIKClass()
+# sys.path.append(str(getRigModPath))
 
-getToolArrayPath=str(getRigModPath)+"/Tools.py"
-exec(open(getToolArrayPath))
-toolClass=ToolFunctions()
+# basepath=str(getRigModPath)+"/baseFunctions_maya.py"
+# exec(open(basepath))
+# getClass=BaseClass()
+
+# stretchIKpath=str(getRigModPath)+"/stretchIK.py"
+# exec(open(stretchIKpath))
+# getIKClass=stretchIKClass()
+
+# getToolArrayPath=str(getRigModPath)+"/Tools.py"
+# exec(open(getToolArrayPath))
+# toolClass=ToolFunctions()
+
+
+import baseFunctions_maya
+reload (baseFunctions_maya)
+getClass=baseFunctions_maya.BaseClass()
+sys.path.append(str(getClass))
+
+import stretchIK
+reload (stretchIK)
+getIKClass=stretchIK.stretchIKClass()
+sys.path.append(str(getIKClass))
+
+
+import Tools
+reload (Tools)
+toolClass=Tools.ToolFunctions()
+sys.path.append(str(toolClass))
+
+
+
+
+
+
+
 
 # filepath= os.getcwd()
 # sys.path.append(str(filepath))
