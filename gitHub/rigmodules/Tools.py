@@ -145,7 +145,7 @@ class ToolFunctions(object):
         cmds.separator(h=10, p=windowColumnLayout)
         cmds.gridLayout(listBuildLayout, p=windowColumnLayout, numberOfColumns=1, cellWidthHeight=(600, 20))
         self.getSetTyp=optionMenu( label='SetType', cc=lambda *args:self.change_set(), w=120, ann="Select set type to edit(Dynamic ncloth constraints or Blenshape memberships)")
-        menuItem( label="Blendshape sets")
+        menuItem( label="Deformer sets")       
         menuItem( label="Dynamic sets")
         self.setMenu=cmds.optionMenu( label=windowName, ann=annot)
 #        for each in getAllSets:
@@ -165,11 +165,11 @@ class ToolFunctions(object):
             cmds.optionMenu(self.setMenu, e=1)
             for each in getAllSets:
                 cmds.menuItem( label=each)   
-        elif getSetType=="Blendshape sets":
+        elif getSetType=="Deformer sets":
             menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
             if menuItems:
                 cmds.deleteUI(menuItems)             
-            getAllSets=[(each) for each in cmds.ls(typ="objectSet") if "tweak" not in each]
+            getAllSets=[(each) for each in cmds.ls(typ="objectSet")]
             collectBlendSets=[]
             for each in getAllSets:
                 try:
@@ -212,7 +212,7 @@ class ToolFunctions(object):
             for each in getSel:
                 cmds.select(querySet, add=1)
                 maya.mel.eval( 'dynamicConstraintMembership "add";' )              
-        elif getSetType=="Blendshape sets":   
+        elif getSetType=="Deformer sets":   
             if getSel and querySet:
                 for each in getSel:
                     cmds.sets(each, add=querySet)
@@ -230,7 +230,7 @@ class ToolFunctions(object):
             for each in getSel:
                 cmds.select(querySet, add=1)
                 maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
-        elif getSetType=="Blendshape sets":            
+        elif getSetType=="Deformer sets":            
             if getSel and querySet:
                 for each in getSel:
                     cmds.sets(each, rm=querySet)
