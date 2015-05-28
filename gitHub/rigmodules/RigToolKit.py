@@ -78,7 +78,11 @@ sys.path.append(str(getToolArrayPath))
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
-      
+
+
+
+
+
 class ToolKitUI(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
     Interface Layout
@@ -202,6 +206,7 @@ class ToolKitUI(object):
         cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='listBuildButtonLayout', command = self._clean_mod)           
         cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='listBuildButtonLayout', command = self._mirror_blend)              
         cmds.button (label='Blend Groups', ann="Blend a group of objects to another group of objects(needs to be same meshes in heirarchy). Select deformer group and then deformee group.", p='listBuildButtonLayout', command = self._blend_grp)
+        cmds.button (label='Build curve', ann="Build a curve on selected items.", p='listBuildButtonLayout', command = self._build_curve)
         cmds.text(label="External folders")
         cmds.text(label="")                       
         cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
@@ -489,6 +494,8 @@ class ToolKitUI(object):
         exec(open(getmultifFilepath))
         getMultiClass=MultiFunctionClass()
 
+    def _build_curve(self, arg=None):
+        getBaseClass.build_a_curve()
 
     def _make_shape(self, arg=None):
         getBaseClass.makeShape()
@@ -585,8 +592,5 @@ class ToolKitUI(object):
 inst = ToolKitUI()
 inst.create()
 
-
-inst = ToolKitUI()
-inst.create()
-
+python("playblast = None");
 
