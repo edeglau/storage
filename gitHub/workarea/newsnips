@@ -1258,3 +1258,35 @@ selObj=cmds.ls(sl=1, fl=1, sn=1)
 for each in selObj:
     getChild=listRelatives(each, ad=1, f=1, typ="clusterHandle")
     cmds.select(getChild)
+
+
+
+
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+parentObj=selObj[0]
+childrenObj=selObj[1]
+getparentObj=cmds.listRelatives(parentObj, c=1)
+getchildObj=cmds.listRelatives(childrenObj, c=1)
+for parentItem, childItem in map(None, getparentObj,getchildObj):
+    cmds.select(parentItem)
+    cmds.select(childItem, add=1)
+    cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))
+
+
+
+
+getTopOpenGuides=cmds.ls(sl=1, fl=1)
+for each in getTopOpenGuides:#get point values to build curve
+    transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+    values.append(transformWorldMatrix)
+cmds.curve(n=name, d=1, p=values)    
+
+getTopOpenGuides=cmds.ls(sl=1, fl=1)
+for each in getTopOpenGuides:#get point values to build curve
+    transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
+    values.append(transformWorldMatrix)
+cmds.curve(n=name, d=1, p=values)
