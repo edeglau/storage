@@ -56,11 +56,13 @@ class myUI:
         cmds.text( label='Naming' )
         cmds.separator()
         global dropname
-        cmds.button (label='Getname', command = self.eyedropper)
+        cmds.button (label='Eyedropper Name', command = self.eyedropper)
         cmds.separator()
         global relname
         self.relname=cmds.textField()
         cmds.button (label='Rename', command = self.rename)
+        cmds.button (label='Transfer name(mass)', command = self.trname)    
+        cmds.button (label='Transfer name(seq)', command = self.sqtrname)          
         cmds.separator()
         cmds.textField(self.relname, edit=True, enterCommand=('cmds.setFocus(\"' + self.relname + '\")'))
         cmds.button (label='Guide names',bgc=[0.8, 0.75, 0.6], command = self.guide_name) 
@@ -158,7 +160,7 @@ class myUI:
         selectionCheck=cmds.ls(sl=1, fl=1)         
         guideName=getClass.fetchName()
         if selectionCheck:
-            for indexNumber, eachSelObj in enumerate(xrange(len(selectionCheck) - 1)):
+            for indexNumber, eachSelObj in enumerate(xrange(len(selectionCheck))):
                 newname=getClass.guide_names(indexNumber, guideName)
                 print newname
                 cmds.rename(selectionCheck[eachSelObj], newname)
@@ -175,6 +177,17 @@ class myUI:
                 else:
                     aNewString=cmds.rename(each, newname)  
       
+
+    def trname(self, arg=None):
+        selObj=cmds.ls(sl = True, fl=1) 
+        getParent=selObj[0]
+        for each in selObj[1:]:          
+            cmds.rename(each, getParent+"_01")
+
+    def sqtrname(self, arg=None):
+        selObj=cmds.ls(sl = True, fl=1) 
+        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):   
+            cmds.rename(eachChild, eachController+"_01")
 
     def _shift_left(self, breakName):
         selObj=cmds.ls(sl = True, fl=1)
@@ -226,8 +239,11 @@ class myUI:
         old_String=cmds.textField(old, q=True, text=True)
         new_String=cmds.textField(new, q=True, text=True)     
         for item in selObj:
-            aNewString=cmds.rename(item, item.replace( '%s'%old_String, '%s'%new_String))
-            
+            try:
+                aNewString=cmds.rename(item, item.replace( '%s'%old_String, '%s'%new_String))
+            except:
+                pass
+                        
     def rename(self, arg=None):
         selObj=cmds.ls(sl = True)  
         new_String=cmds.textField(self.relname, q=True, text=True)
