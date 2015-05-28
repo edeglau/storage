@@ -44,13 +44,50 @@ class BaseClass():
         getClass=SSD.ui()
     
     def cleanModels(self):
-        '''this deletes history and freezes out transformes'''
-        objSel=cmds.ls(sl=1)
+        '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
+        getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
+        objSel=cmds.ls(sl=1, fl=1)
+        getparentObj=cmds.listRelatives(objSel, c=1)
         for each in objSel:
+            for eachAttr in getdef:
+                cmds.setAttr(each+eachAttr, lock=0)
+                cmds.setAttr(each+eachAttr, cb=1)   
+                cmds.setAttr(each+eachAttr, k=1)  
+                print each+eachAttr+" is now visible in channel box"
+            if ":" in each:
+                newName=each.split(":")[-1:]
+                cmds.rename(each, newName)
+                print "renamed "+each+" to "+newName
+            getControllerListAttr=cmds.listAttr (objSel, ud=1)
+            if getControllerListAttr:
+                for eachAttr in getControllerListAttr:
+                    try:
+                        cmds.setAttr(each+"."+eachAttr, l=0)
+                        print "unlocked "+each+"."+eachAttr 
+                    except:
+                        pass  
+                    try:                      
+                        cmds.deleteAttr(each+"."+eachAttr)
+                        print "deleted "+each+"."+eachAttr                    
+                    except:
+                        pass
             cmds.polySoftEdge(each, a=180, ch=1)
             cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
+            print "zeroed out transforms for "+each
             cmds.delete(each, ch=1)
-            print str(each)+" now has rotation, translation and scale frozen and construction history has been wiped"
+            print "deleted history on "+each
+            getShapes=cmds.listRelatives(each, c=1, typ="shape")
+            print getShapes
+            for item in getShapes:
+                if "Orig" in item:
+                    item=cmds.ls(item)
+                    cmds.delete(item[0])
+                    print "deleted "+item[0]
+                if "output" in item:
+                    item=cmds.ls(item)
+                    cmds.rename(item[0], each+"Shape")
+                    print "renamed "+item[0]+" to "+each+"Shape"
+
     def cleanScene(self):
         '''this deletes history and freezes out transformes'''
         objSel=cmds.ls(sl=1)
@@ -1281,7 +1318,15 @@ class BaseClass():
         cmds.setAttr(newBucket[1]+".overrideColor", colour2)    
         cmds.setAttr(newBucket[2]+".overrideColor", colour3)     
         return xCircmake
-           
+
+    def build_a_curve(self):
+        getTopOpenGuides=cmds.ls(sl=1, fl=1)
+        values=[]
+        for each in getTopOpenGuides:#get point values to build curve
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
+            values.append(transformWorldMatrix)
+        cmds.curve(n=getTopOpenGuides[0]+"_crv", d=3, p=values)        
+
     def makeJoint(self):
         '''This creates a joint at a selection'''
         selectionCheck=cmds.ls(sl=1)
@@ -2973,10 +3018,11 @@ class BaseClass():
         getparentObj=cmds.listRelatives(parentObj, c=1)
         getchildObj=cmds.listRelatives(childrenObj, c=1)
         for parentItem, childItem in map(None, getparentObj,getchildObj):
+            parentItem=cmds.ls(parentItem)
+            childItem=cmds.ls(childItem)
             cmds.select(parentItem)
             cmds.select(childItem, add=1)
-            cmds.blendShape(n=parentItem+"_BShape", w=(0, 1.0))        
-
+            cmds.blendShape(n=str(parentItem[0])+"_BShape", w=(0, 1.0)) 
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
         if len(selObj)<2:
@@ -3304,23 +3350,31 @@ class BaseClass():
             getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
             cmds.normalConstraint(item, getloc[0])
             placeloc=cmds.spaceLocator(n=item+"lctr")
-            lst=[getloc[0], placeloc[0]]
+            lst=[placeloc[0], getloc[0]]
             makeDict={item:lst}
             print makeDict
             dirDict.update(makeDict)   
             print dirDict
-        for key, value in dirDict.items():    
-            for each in getRange:
-                cmds.currentTime(each)
+        for each in getRange: 
+            for key, value in dirDict.items(): 
+                print key  
+                plotterLoc=ls(value[0])
+                constrainedLoc=ls(value[1])
                 transform=cmds.xform(key, q=True, ws=1, t=True)
-                cmds.xform(value[0], ws=1, t=transform)
-                cmds.SetKeyTranslate(value[0])
-                cmds.xform(value[1], ws=1, t=transform)
-                cmds.SetKeyTranslate(value[1])               
-                rotate=cmds.xform(value[0], q=True, ws=1, ro=True)
-                cmds.xform(value[1], ws=1, ro=rotate)  
-                cmds.SetKeyRotate(value[1])
-                cmds.delete(value[0])
+                print "received transform from key"
+                cmds.xform(plotterLoc, ws=1, t=transform)  
+                print "set transform for plotter locator"
+                cmds.SetKeyTranslate(plotterLoc)
+                print "set key for plotter locator"           
+                rotate=cmds.xform(constrainedLoc, q=True, ws=1, ro=True)
+                print "get rotate for plotter locator"
+                cmds.xform(plotterLoc, ws=1, ro=rotate)  
+                print "set rotate value for plotter locator"
+                cmds.SetKeyRotate(plotterLoc)
+                print "set rotate key for plotter locator"
+            maya.mel.eval( "playButtonStepForward;" )
+            # cmds.currentTime(each)
+            #cmds.delete(value[0])
 
                 
     def plot_each_vertV1(self):
