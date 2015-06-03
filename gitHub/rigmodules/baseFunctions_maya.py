@@ -42,23 +42,68 @@ class BaseClass():
         import SSD
         reload (SSD)
         getClass=SSD.ui()
-    
-    def cleanModels(self):
+
+    def cleanModels(self, arg=None):       
+        winName = "Clean object"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20)) 
+        cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:self.cleanObjHist()) 
+        cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:self.cleanObj())      
+        cmds.showWindow(window)
+
+    def cleanObjHist(self):
+        result = cmds.confirmDialog ( 
+            title='Clean object', 
+            message="Warning! Any Orig shape and history will be deleted on all selected objects!", 
+            button=['Continue','Cancel'],
+            defaultButton='Continue', 
+            cancelButton='Cancel', 
+            dismissString='Cancel' )
+        if result == 'Continue':
+            pass
+        else:
+            print "nothing collected"         
+        self.cleaningFunctionCallup()
+        self.clearHistoryCallup() 
+
+    def cleanObj(self):
+        self.cleaningFunctionCallup()
+
+    def clearHistoryCallup(self):
+        objSel=cmds.ls(sl=1, fl=1)
+        for each in objSel:        
+            cmds.delete(each, ch=1)
+            print "deleted history on "+each
+            try:
+                getShapes=cmds.listRelatives(each, c=1, typ="shape")
+                for item in getShapes:
+                    if "Orig" in item:
+                        item=cmds.ls(item)
+                        cmds.delete(item[0])
+                        print "deleted "+item[0]
+                    if "output" in item:
+                        item=cmds.ls(item)
+                        cmds.rename(item[0], each+"Shape")
+                        print "renamed "+item[0]+" to "+each+"Shape"
+            except:
+                print "Object has no shapes. Passing on cleaning shapes."
+
+    def cleaningFunctionCallup(self):
         '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
         getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
         objSel=cmds.ls(sl=1, fl=1)
-        getparentObj=cmds.listRelatives(objSel, c=1)
+        # getparentObj=cmds.listRelatives(objSel, c=1)
         for each in objSel:
-            for eachAttr in getdef:
-                cmds.setAttr(each+eachAttr, lock=0)
-                cmds.setAttr(each+eachAttr, cb=1)   
-                cmds.setAttr(each+eachAttr, k=1)  
-                print each+eachAttr+" is now visible in channel box"
-            if ":" in each:
-                newName=each.split(":")[-1:]
-                cmds.rename(each, newName)
-                print "renamed "+each+" to "+newName
-            getControllerListAttr=cmds.listAttr (objSel, ud=1)
+            getControllerListAttr=cmds.listAttr (each, ud=1)
             if getControllerListAttr:
                 for eachAttr in getControllerListAttr:
                     try:
@@ -71,22 +116,24 @@ class BaseClass():
                         print "deleted "+each+"."+eachAttr                    
                     except:
                         pass
-            cmds.polySoftEdge(each, a=180, ch=1)
-            cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
-            print "zeroed out transforms for "+each
-            cmds.delete(each, ch=1)
-            print "deleted history on "+each
-            getShapes=cmds.listRelatives(each, c=1, typ="shape")
-            print getShapes
-            for item in getShapes:
-                if "Orig" in item:
-                    item=cmds.ls(item)
-                    cmds.delete(item[0])
-                    print "deleted "+item[0]
-                if "output" in item:
-                    item=cmds.ls(item)
-                    cmds.rename(item[0], each+"Shape")
-                    print "renamed "+item[0]+" to "+each+"Shape"
+            try:
+                cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
+                print "zeroed out transforms for "+each
+            except:
+                print "Object isn't a transform or has already had it's transform zeroed. Passing on zeroing out transforms"
+            try:
+                for eachAttr in getdef:
+                    cmds.setAttr(each+eachAttr, lock=0)
+                    cmds.setAttr(each+eachAttr, cb=1)   
+                    cmds.setAttr(each+eachAttr, k=1)  
+                    print each+eachAttr+" is now visible in channel box"
+                if ":" in each:
+                    newName=each.split(":")[-1:]
+                    cmds.rename(each, newName)
+                    print "renamed "+str(each)+" to "+str(newName)  
+            except:
+                print "Object has clean name space"
+                pass                  
 
     def cleanScene(self):
         '''this deletes history and freezes out transformes'''
