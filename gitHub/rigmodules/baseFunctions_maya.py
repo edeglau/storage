@@ -97,7 +97,53 @@ class BaseClass():
             except:
                 print "Object has no shapes. Passing on cleaning shapes."
 
+    def freeTheAttrs(self, each):
+        getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
+        for eachAttr in getdef:
+            cmds.setAttr(each+eachAttr, lock=0)
+            cmds.setAttr(each+eachAttr, cb=1)   
+            cmds.setAttr(each+eachAttr, k=1) 
+        print each+eachAttr+" is now visible in channel box"
+
+            
+
     def cleaningFunctionCallup(self):
+        '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
+        objSel=cmds.ls(sl=1, fl=1)
+        # getparentObj=cmds.listRelatives(objSel, c=1)
+        for each in objSel:
+            getControllerListAttr=cmds.listAttr (each, ud=1)
+            if getControllerListAttr:
+                for eachAttr in getControllerListAttr:
+                    try:
+                        cmds.setAttr(each+"."+eachAttr, l=0)
+                        print "unlocked "+each+"."+eachAttr 
+                    except:
+                        pass  
+                    try:                      
+                        cmds.deleteAttr(each+"."+eachAttr)
+                        print "deleted "+each+"."+eachAttr                    
+                    except:
+                        pass
+            try:
+                cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
+                print "zeroed out transforms for "+each
+            except:
+                print "Object isn't a transform or has already had it's transform zeroed. Passing on zeroing out transforms"
+            try:
+                if ":" in each:
+                    newName=each.split(":")[-1:]
+                    cmds.rename(each, newName)
+                    print "renamed "+str(each)+" to "+str(newName)  
+            except:
+                print "Object has clean name space"
+                pass
+            try:
+                self.freeTheAttrs(each)                
+            except:
+                pass
+
+    def cleaningFunctionCallupV1(self):
         '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
         getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
         objSel=cmds.ls(sl=1, fl=1)
@@ -133,7 +179,7 @@ class BaseClass():
                     print "renamed "+str(each)+" to "+str(newName)  
             except:
                 print "Object has clean name space"
-                pass                  
+                pass              
 
     def cleanScene(self):
         '''this deletes history and freezes out transformes'''
@@ -1238,6 +1284,7 @@ class BaseClass():
 
 
     def buildGrp(self, each):
+        self.freeTheAttrs(each)
         '''this partners with the createGrpCtrl is the create group function'''
         selObjParent=cmds.listRelatives( each, allParents=True )
         cmds.CreateEmptyGroup(each+'_grp')
@@ -1253,6 +1300,34 @@ class BaseClass():
         cmds.parent(each, each+'_grp')
         Child=cmds.listRelatives(each+'_grp', ad=1, typ="transform") 
         cmds.makeIdentity(Child, a=True, t=1, n=0) 
+
+    def createClstr(self):
+        selObj=cmds.ls(sl=1, fl=1)
+        cmds.select(cl=1)
+        for each in selObj:
+            self.freeTheAttrs(each)
+            cmds.cluster()
+            clstrObj=cmds.ls(sl=1)
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            cmds.xform(clstrObj[0], ws=1, t=transformWorldMatrix)
+            cmds.xform(clstrObj[0], ws=1, ro=rotateWorldMatrix)         
+            cmds.xform(each, ws=1, t=[0,0,0])
+            cmds.xform(each, ws=1, ro=[0,0,0])
+            querySet=[(connectedObj) for connectedObj in cmds.listConnections(clstrObj[0], c=1) if cmds.nodeType(connectedObj) =="cluster"]
+            setName=[(connectedObj) for connectedObj in cmds.listSets(o=querySet[0])]
+            for item in setName:
+                getObj=cmds.ls(item+"Set")
+                cmds.sets(each, add=item)
+
+    def createJnt(self):
+        selObj=cmds.ls(sl=1, fl=1)
+        for each in selObj:
+            self.freeTheAttrs(each)
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            jnt=self.buildJoint(each, transformWorldMatrix, rotateWorldMatrix)
+            cmds.skinCluster( jnt, each, dr=4.5, tsb=1)
+
+
 
     def buildGrpIsolated(self, each, grpName):
         selObjParent=cmds.listRelatives( each, allParents=True )
@@ -1402,6 +1477,7 @@ class BaseClass():
         cmds.parent(jointName, w=1)
         cmds.delete(getloc[0])    
         cmds.select(cl=1)   
+        return getjoint
 
 
     def buildJointFunction_callup(self):
