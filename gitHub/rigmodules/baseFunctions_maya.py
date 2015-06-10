@@ -1254,10 +1254,7 @@ class BaseClass():
             for item in getConn:
                 cmds.connectAttr(eachChild+".worldMesh[0]",  item+".inputMesh", f=1)
         
-    def createGrpCtrl(self):
-        '''creates a group above a selected object and zeroes it out'''
-        selObj=cmds.ls(sl=1)
-        self.buildGrp(selObj[0])
+
         
     def hideEyes(self):
         '''this hides unwanted curves'''
@@ -1282,16 +1279,21 @@ class BaseClass():
         Child=cmds.listRelatives(each+'_grp', ad=1, typ="transform") 
         cmds.makeIdentity(Child, a=True, t=1, n=0)  
 
+    def createGrpCtrl(self):
+        '''creates a group above a selected object and zeroes it out'''
+        selObj=cmds.ls(sl=1)
+        for each in selObj:
+            self.buildGrp(each)
 
     def buildGrp(self, each):
-        self.freeTheAttrs(each)
         '''this partners with the createGrpCtrl is the create group function'''
+        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+        self.freeTheAttrs(each)
+        # cmds.xform(each, ws=1, t=[0,0,0])
+        # cmds.xform(each, ws=1, ro=[0,0,0])
         selObjParent=cmds.listRelatives( each, allParents=True )
         cmds.CreateEmptyGroup(each+'_grp')
         grpObj=cmds.ls(sl=1)
-        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-        #worldMatrix = cmds.xform(selObj[0], q=True, ws=1, m=True)
-        #cmds.xform(grpObj[0], ws=1,  m=worldMatrix )
         cmds.xform(grpObj[0], ws=1, t=transformWorldMatrix)
         cmds.xform(grpObj[0], ws=1, ro=rotateWorldMatrix)         
         cmds.rename(grpObj[0], each+'_grp')      
@@ -1305,29 +1307,30 @@ class BaseClass():
         selObj=cmds.ls(sl=1, fl=1)
         cmds.select(cl=1)
         for each in selObj:
-            self.freeTheAttrs(each)
-            cmds.cluster()
-            clstrObj=cmds.ls(sl=1)
+            cmds.select(each, r=1)
             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-            cmds.xform(clstrObj[0], ws=1, t=transformWorldMatrix)
-            cmds.xform(clstrObj[0], ws=1, ro=rotateWorldMatrix)         
+            self.freeTheAttrs(each)
             cmds.xform(each, ws=1, t=[0,0,0])
             cmds.xform(each, ws=1, ro=[0,0,0])
+            cmds.cluster()
+            clstrObj=cmds.ls(sl=1)        
             querySet=[(connectedObj) for connectedObj in cmds.listConnections(clstrObj[0], c=1) if cmds.nodeType(connectedObj) =="cluster"]
             setName=[(connectedObj) for connectedObj in cmds.listSets(o=querySet[0])]
-            for item in setName:
-                getObj=cmds.ls(item+"Set")
-                cmds.sets(each, add=item)
+            cmds.sets(each, add=setName[0])
+            cmds.xform(clstrObj[0], ws=1, t=transformWorldMatrix)
+            cmds.xform(clstrObj[0], ws=1, ro=rotateWorldMatrix)
 
     def createJnt(self):
         selObj=cmds.ls(sl=1, fl=1)
         for each in selObj:
-            self.freeTheAttrs(each)
             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-            jnt=self.buildJoint(each, transformWorldMatrix, rotateWorldMatrix)
+            self.freeTheAttrs(each)
+            cmds.xform(each, ws=1, t=[0,0,0])
+            cmds.xform(each, ws=1, ro=[0,0,0])
+            jnt=self.buildJoint(each, [0,0,0], [0,0,0])
             cmds.skinCluster( jnt, each, dr=4.5, tsb=1)
-
-
+            cmds.xform(jnt, ws=1, t=transformWorldMatrix)
+            cmds.xform(jnt, ws=1, ro=rotateWorldMatrix)
 
     def buildGrpIsolated(self, each, grpName):
         selObjParent=cmds.listRelatives( each, allParents=True )
@@ -2484,14 +2487,7 @@ class BaseClass():
         for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
             translate, rotated=self.locationXForm(eachController)
             cmds.move(-translate[0], translate[1], translate[2], eachChild)
-            cmds.rotate(-rotated[0], -rotated[1], rotated[2], eachChild)   
-             
-    def massTransferV1(self):
-        selObj=cmds.ls(sl=1)
-        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
-            cmds.select(eachController)    
-            cmds.select(eachChild, add=1)
-            cmds.copyAttr(values=1, inConnections=1, outConnections=1, keepSourceConnections=1)
+            cmds.rotate(-rotated[0], -rotated[1], rotated[2], eachChild)
 
     def massTransfer(self):
 #        selObj=self.selection_grab()
@@ -3141,11 +3137,39 @@ class BaseClass():
         getparentObj=cmds.listRelatives(parentObj, c=1)
         getchildObj=cmds.listRelatives(childrenObj, c=1)
         for parentItem, childItem in map(None, getparentObj,getchildObj):
-            parentItem=cmds.ls(parentItem)
-            childItem=cmds.ls(childItem)
+            parentItemls=cmds.ls(parentItem)
+            childItemls=cmds.ls(childItem)
+            cmds.select(parentItemls)
+            cmds.select(childItemls, add=1)
+            defName=str(parentItem)+"_BShape"
+            print defName
+            cmds.blendShape(n=defName, w=(0, 1.0)) 
+
+    def blendMass(self):
+        selObj=cmds.ls(sl=1, fl=1)
+        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
+            parentItem=cmds.ls(eachController)
+            childItem=cmds.ls(eachChild)
             cmds.select(parentItem)
             cmds.select(childItem, add=1)
             cmds.blendShape(n=str(parentItem[0])+"_BShape", w=(0, 1.0)) 
+
+    def blendIDontKnow(self):
+        selObj=cmds.ls(sl=1, fl=1)
+        parentObj=selObj[0]
+        childrenObj=selObj[1]
+        getparentObj=cmds.listRelatives(parentObj, c=1)
+        getchildObj=cmds.listRelatives(childrenObj, c=1)
+        for parentItem in getparentObj:
+            for childItem in getchildObj:
+                if parentItem in childItem:
+                    parentItemls=cmds.ls(parentItem)
+                    childItemls=cmds.ls(childItem)
+                    cmds.select(parentItemls)
+                    cmds.select(childItemls, add=1)
+                    defName=str(parentItem)+"_BShape"
+                    cmds.blendShape(n=defName, w=(0, 1.0)) 
+
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
         if len(selObj)<2:
