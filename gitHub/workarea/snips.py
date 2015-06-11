@@ -2332,3 +2332,24 @@ for each in getSel:
     
 exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/Values//LimitValues.py'))
 ValueClass()
+
+selObj=cmds.ls(sl=1, fl=1)
+pluginTypes=["AlembicNode"]
+filterNode=["geometryFilter"]
+exempt=["tweak"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)     
+        for eachsource in ls_str:
+            getInputDef=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode for eachExempt in exempt if eachConnected==eachFilter and eachExempt not in eachsource] 
+            getpluggedDefItem=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for pluginTypes in deformerTypes if eachConnected ==pluggedDefItem]
+            if getInputDef:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getInputDef
+            elif getpluggedDefItem:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getpluggedDefItem
+    except:
+        pass
