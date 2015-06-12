@@ -1290,3 +1290,80 @@ for each in getTopOpenGuides:#get point values to build curve
     transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)  
     values.append(transformWorldMatrix)
 cmds.curve(n=name, d=1, p=values)
+
+
+
+
+
+
+
+
+#SAVE
+fileName="//usr//people//elise-d//"
+
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    fileName=fileName+str(each)+'.txt'    
+    if "Windows" in OSplatform:    
+        # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+        # printFolder=re.sub(r'/',r'\\', folderPath)       
+        if not os.path.exists(fileName): os.makedirs(fileName) 
+    if "Linux" in OSplatform:
+        open(fileName, 'w')
+    inp=open(fileName, 'w+')
+    selObj=cmds.ls(sl=1, fl=1)
+    filterNode=["animCurve"]
+    dirDict={}
+    getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+    getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                attibute=getListedAttr[0]
+                frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                print attibute
+                inp.write(str(attibute)+";")
+                for eachframe, valueitem in map(None, frames, values):
+                    #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
+                    makeDict={eachframe:valueitem}
+                    print str(makeDict)
+                    dirDict.update(makeDict)
+                    #print dirDict
+                inp.write(str(dirDict)+'\n')
+                print "saved as "+fileName
+        inp.close()  
+    except:
+        pass
+
+#LOAD
+# folderPath='\\'.printFolderjoin(printFolder.split("/")[:-1])+"\\"
+import ast
+printFolder="//usr//people//elise-d//pSphere1.txt"
+notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]    
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    attribute_container=[]
+    getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]     
+    if os.path.exists(printFolder):
+        pass
+    else:
+        print printFolder+"does not exist"
+        pass 
+    List = open(printFolder).readlines()
+    for aline in List:
+        getAttribute=aline.split(';')[0]
+        attribute_container.append(getAttribute)        
+        dirDict=aline.split(';')[1]
+        gethis=ast.literal_eval(dirDict)
+        print gethis
+        for item in getListedAttr:
+            if item==getAttribute:
+                for key, value in gethis.items():
+                    cmds.setKeyframe( each, t=key, at=getAttribute, v=value )
