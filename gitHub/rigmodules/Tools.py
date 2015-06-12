@@ -2019,10 +2019,6 @@ class ToolFunctions(object):
             # printFolder=re.sub(r'/',r'\\', folderPath)       
             if not os.path.exists(fileName): os.makedirs(fileName) 
         if "Linux" in OSplatform:
-            # folderPath='\\'.join(fileName.split('/')[:-1])+"\\"
-            # print folderPath
-            # printFolder=re.sub(r'\\',r'/', folderPath)
-            # print printFolder
             open(fileName, 'w')
         attrValBucket=[]            
         getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
@@ -2066,16 +2062,7 @@ class ToolFunctions(object):
             cmds.button (label='Open folder', p='nlistBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
 
 
-    def openAttributesWindow(self, arg=None):    
-        # getScenePath=cmds.file(q=1, location=1)
-        # getPathSplit=getScenePath.split("/")
-        # folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-        # if "Windows" in OSplatform:
-        #     newfolderPath=re.sub(r'/',r'\\', folderPath)
-        # if "Linux" in OSplatform:
-        #     newfolderPath=re.sub(r'\\',r'/', folderPath)
-        # getPath=newfolderPath+"*.txt"
-        # files=glob.glob(getPath)
+    def openAttributesWindow(self, arg=None):
         getScenePath=cmds.file(q=1, location=1)
         files, getPath, newfolderPath, filebucket=self.getWorkPath(getScenePath)    
         winName = "Open attributes"
@@ -2210,40 +2197,140 @@ class ToolFunctions(object):
                         except:
                             pass
 
-    def load_attributesV1(self, printFolder):
-        print printFolder
-        if "_attributes.txt" in printFolder:
-            printFolder=printFolder
-        # elif"_attributes" in printFolder:
-        #     printFolder=printFolder+".txt"
+
+    def saveAnimWindow(self, arg=None): 
+        selObj=ls(sl=1, fl=1, sn=1)
+        if len(selObj)==1:
+            pass
+        elif len(selObj)<1:
+            print "select something"
+            return
         else:
-            printFolder=printFolder+"_attributes.txt"
-        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo"]    
+            print "add one at a time"
+            return
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            print "windows"
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            print "Linux"
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+
+        winName = "Save Animation"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
+        cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(480, 20))   
+        text("Objects to save attributes from:")
+        cmds.button (label='Add', p='topGrid', command = lambda *args:self._refresh_function())
+        cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.text(label="")        
+        fieldBucket=[]
+        for each in selObj:
+            objNameFile=newfolderPath+str(each)
+            cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[400, 65, 65, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            self.getName=cmds.textField(w=400, h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save', w=150, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window)        
+
+
+    def _save_anim(self, each, fileName):   
+        fileName=fileName+'.txt'
+        print "here"
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(fileName): os.makedirs(fileName) 
+        if "Linux" in OSplatform:
+            #open(fileName, 'w')
+            inp=open(fileName, 'w+')
+        filterNode=["animCurve"]
+        dirDict={}
+        getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+        getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+        try:
+            ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+            keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+            if keepLS:
+                for eachsource in ls_str:
+                    remove=each+"_"
+                    removeobj=eachsource.split(remove)[1]
+                    eachsource=removeobj.split(".")[0]
+                    getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                    attibute=getListedAttr[0]
+                    frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                    values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                    print attibute
+                    inp.write(str(attibute)+";")
+                    for eachframe, valueitem in map(None, frames, values):
+                        #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
+                        makeDict={eachframe:valueitem}
+                        print str(makeDict)
+                        dirDict.update(makeDict)
+                        #print dirDict
+                    inp.write(str(dirDict)+'\n')
+                    print "saved as "+fileName
+            inp.close()  
+        except:
+            pass
+
+
+    def openAnimWindow(self, arg=None):
+        getScenePath=cmds.file(q=1, location=1)
+        files, getPath, newfolderPath, filebucket=self.getWorkPath(getScenePath)    
+        winName = "Open Animation"
+        winTitle = winName
+        openFolderPath=folderPath+"\\"   
+        selObj=cmds.ls(sl=1, fl=1)
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=280 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.button (label='refresh folder', p='listBuildButtonLayout', command = lambda *args:self.refresh_text()) 
+        cmds.button (label='workpath', p='listBuildButtonLayout', command = lambda *args:self.refresh_work_text())      
+        self.fileDropName=cmds.optionMenu( label='files')
+        for each in filebucket:
+            cmds.menuItem( label=each) 
+        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_anim(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))        
+        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1))) 
+
+
+    def _load_anim(self, printFolder, grabFileName):
+        import ast
+        printFolder=printFolder+grabFileName
+        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]    
         selObj=cmds.ls(sl=1, fl=1)
         for each in selObj:
-            getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1) for item in notAttr if item not in attrib]     
+            attribute_container=[]
+            getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]     
             if os.path.exists(printFolder):
                 pass
             else:
                 print printFolder+"does not exist"
                 pass 
             List = open(printFolder).readlines()
-            dirDict={}
-            for aline in List: 
-                print aline
-                getKeyDict=aline.split(':')[0]
-                getValueDict=aline.split(':')[1]
-                makeDict={getKeyDict:getValueDict}
-                dirDict.update(makeDict)
-            for eachAttribute in getListedAttr:
-                objectToQuery=ls(each)
-                getChangeAttr=getattr(objectToQuery[0], eachAttribute).get()
-                getTypeAttr=type(getChangeAttr)
-                for key, value in dirDict.items():
-                    if key==eachAttribute:
-                        value=getTypeAttr(value)
-                        try:
-                            setAttr(each+'.'+eachAttribute, value)
-                            print str(each)+'.'+str(eachAttribute)+" set to " + str(value)
-                        except:
-                            pass
+            for aline in List:
+                getAttribute=aline.split(';')[0]
+                attribute_container.append(getAttribute)        
+                dirDict=aline.split(';')[1]
+                gethis=ast.literal_eval(dirDict)
+                print gethis
+                for item in getListedAttr:
+                    if item==getAttribute:
+                        for key, value in gethis.items():
+                            cmds.setKeyframe( each, t=key, at=getAttribute, v=value )
