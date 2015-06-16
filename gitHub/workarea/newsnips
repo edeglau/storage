@@ -1295,6 +1295,381 @@ cmds.curve(n=name, d=1, p=values)
 
 
 
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    getListAttr=listAttr (each, w=1, a=1, s=1, u=1)
+    for eachattr in getListAttr:
+        try:
+            ls_str=cmds.listConnections(each+"."+eachattr, d=0, s=1, c=1)
+        except:
+            pass
+        if ls_str:
+            for eachsource in ls_str:
+                print eachsource+ " source"
+                try:
+                    dn_str=cmds.listConnections(eachsource, s=0, d=1, c=1, p=1)
+                except:
+                    pass
+                if dn_str:
+                    for eachdestination in dn_str:
+                        print eachdestination+ " destination from the source"
+
+
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        for eachsource in ls_str:
+            downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+            print eachsource +" ---> "+downStrDest[0]
+    except:
+        pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+deformerTypes=["cluster", "skinCluster", "*cache*", "*Cache*", "mugginsCacheDeformer", "AlembicNode", ]
+for each in selObj:
+    for eachDefType in deformerTypes:
+        try:
+            ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1, type=eachDefType)
+            for eachsource in ls_str:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+        except:
+            pass
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+deformerTypes=["mugginsCacheDeformer", "AlembicNode"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        for eachsource in ls_str:
+            if cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1)[0]=="geometryFilter" and "tweak" not in eachsource:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+    except:
+        pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+pluginDeformerTypes=["AlembicNode"]
+filterNode=["geometryFilter"]
+exempt=["tweak"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        for eachsource in ls_str:
+            getInputDef=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode for eachExempt in exempt if eachConnected ==eachFilter and eachExempt not in eachsource] 
+            getpluggedDefItem=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for pluginDeformerTypes in deformerTypes if eachConnected ==pluggedDefItem]
+            if getInputDef:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getInputDef
+            elif getpluggedDefItem:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getpluggedDefItem
+    except:
+        pass
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+pluginTypes=["AlembicNode"]
+filterNode=["geometryFilter"]
+exempt=["tweak"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)     
+        for eachsource in ls_str:
+            getInputDef=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode for eachExempt in exempt if eachConnected==eachFilter and eachExempt not in eachsource] 
+            getpluggedDefItem=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for pluginTypes in deformerTypes if eachConnected ==pluggedDefItem]
+            if getInputDef:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getInputDef
+            elif getpluggedDefItem:
+                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                print eachsource +" ---> "+downStrDest[0]
+                print getpluggedDefItem
+    except:
+        pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+attrValBucket=[]
+for each in selObj:        
+    getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1) if "solverDisplay" not in attrib]
+    for eachAttribute in getListedAttr:
+        print each+"."+eachAttribute
+        try:
+            getKeyAttr=cmds.getAttr(each+"."+eachAttribute)
+            print getKeyAttr
+        except:
+            print each+"."+eachAttribute+" cannot be accessed"
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+attrValBucket=[]
+for each in selObj:        
+    getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1) if "solverDisplay" not in attrib]
+    for eachAttribute in getListedAttr:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+for eachsource in ls_str:
+    getInputDef=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode if eachConnected==eachFilter] 
+    if getInputDef:
+        downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+        print eachsource +" ---> "+downStrDest[0]
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+attrValBucket=[]
+for each in selObj:        
+    getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1) if "solverDisplay" not in attrib]
+    for eachAttribute in getListedAttr:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+for eachsource in ls_str:
+    getKeyNode=cmds.ls(eachsource.split(".")[0])[0]
+    print getKeyNode
+    getListedAttr=[(attrib) for attrib in listAttr (getKeyNode, w=1, a=1, s=1,u=1)]
+    for listedAttr in getListedAttr:
+        print listedAttr
+
+
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:  
+    getit=cmds.findKeyframe(each, curve=True) 
+for eachKeyCurve in getit:
+    getthis=cmds.findKeyframe(eachKeyCurve, time=(0,25), which="next" )
+    print getthis
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:  
+    getCurve=[(item.split("_")[-1:]) for item in cmds.findKeyframe(each, curve=True)]
+    for eachKeyCurve in getCurve:
+        print each, eachKeyCurve
+        getthis=cmds.keyframe(each, attribute=eachKeyCurve, query=True, keyframeCount=True )
+        print getthis
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        for eachsource in ls_str:
+            remove=each+"_"
+            removeobj=eachsource.split(remove)[1]
+            eachsource=removeobj.split(".")[0]
+            print eachsource
+            getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]
+            print getListedAttr, eachsource
+            getCurve=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+            if getCurve:
+                getthis=cmds.keyframe(each, attribute=eachsource, query=True, keyframeCount=True )
+                #getthis=cmds.findKeyframe(eachsource, time=(0,25), which="next" )
+                print getthis
+    except:
+        pass
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        for eachsource in ls_str:
+            remove=each+"_"
+            removeobj=eachsource.split(remove)[1]
+            eachsource=removeobj.split(".")[0]
+            getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+            getthis=cmds.keyframe(each, attribute=getListedAttr[0], query=True, keyframeCount=True )
+            print getthis
+    except:
+        pass
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        print ls_str
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                print eachsource
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                getthis=cmds.keyframe(each, attribute=getListedAttr[0], query=True, keyframeCount=True )
+                print getthis
+    except:
+        pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                #getthis=cmds.keyframe(each, attribute=getListedAttr[0], query=True, keyframeCount=True )
+                print getListedAttr[0]
+                print cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, timeChange=True)
+                print cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, valueChange=True)
+    except:
+        pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                attibute=getListedAttr[0]
+                frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, timeChange=True)
+                values=cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, valueChange=True)
+                print attibute
+                for each, item in map(None, frames, values):
+                    print each, item
+    except:
+        pass
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+dirDict={}
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                attibute=getListedAttr[0]
+                frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, timeChange=True)
+                values=cmds.keyframe(each, attribute=getListedAttr[0], time=(0,100), query=True, valueChange=True)
+                for each, item in map(None, frames, values):
+                    makeDict={each:item}
+                    dirDict.update(makeDict)                     
+    except:
+        pass
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+dirDict={}
+getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+for each in selObj:
+    try:
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                attibute=getListedAttr[0]
+                frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                print attibute
+                for eachframe, valueitem in map(None, frames, values):
+                    makeDict={eachframe:valueitem}
+                    print makeDict
+                    dirDict.update(makeDict)                     
+    except:
+        pass
+
+
+
+printFolder="//usr//people//elise-d//pSphere1_jnt.txt"
+notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]    
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    attribute_container=[]
+    getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]
+    print getListedAttr     
+    if os.path.exists(printFolder):
+        pass
+    else:
+        print printFolder+"does not exist"
+        pass 
+    List = open(printFolder).readlines()
+    for aline in List:
+        getAttribute=aline.split(';')[0]
+        attribute_container.append(getAttribute)        
+        dirDict=aline.split(';')[1]
+        for item in getListedAttr:
+            if item==getAttribute:
+                for key, value in dirDict.items():
+                    value=int(value)
+                    cmds.setKeyframe( each, t=[key], at=getAttribute, v=value )
+
+
+
+# folderPath='\\'.printFolderjoin(printFolder.split("/")[:-1])+"\\"
+import ast
+printFolder="//usr//people//elise-d//pSphere1_jnt.txt"
+notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]    
+selObj=cmds.ls(sl=1, fl=1)
+for each in selObj:
+    attribute_container=[]
+    getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]
+    print getListedAttr     
+    if os.path.exists(printFolder):
+        pass
+    else:
+        print printFolder+"does not exist"
+        pass 
+    List = open(printFolder).readlines()
+    for aline in List:
+        getAttribute=aline.split(';')[0]
+        attribute_container.append(getAttribute)        
+        dirDict=aline.split(';')[1]
+        gethis=ast.literal_eval(dirDict)
+        for item in getListedAttr:
+            if item==getAttribute:
+                for key, value in gethis.items():
+                    value=int(value)
+                    cmds.setKeyframe( each, t=[key], at=getAttribute, v=value )
+
+
 
 
 
@@ -1367,3 +1742,153 @@ for each in selObj:
             if item==getAttribute:
                 for key, value in gethis.items():
                     cmds.setKeyframe( each, t=key, at=getAttribute, v=value )
+
+
+
+#select charInfo and then characterGeometryLoader
+selObj=cmds.ls(sl=1, fl=1)
+
+cmds.connectAttr(selObj[0]+".gglInSsceneShot", selObj[1]+".gglInSscene_shot", f=1)
+cmds.connectAttr(selObj[0]+".gglInSbundle", selObj[1]+".gglInSbundle", f=1)
+cmds.connectAttr(selObj[0]+".gglInSelement", selObj[1]+".gglInSelement", f=1)
+cmds.connectAttr(selObj[0]+".gglInIversion", selObj[1]+".gglInIversion", f=1)
+cmds.connectAttr(selObj[0]+".gglInSpackagePath", selObj[1]+".gglInSpackagePathOverride", f=1)
+
+cmds.createNode("timeToUnitConversion")
+cmds.connectAttr("time1.output", "timeToUnitConversion1.input", f=1)
+cmds.connectAttr("timeToUnitConversion1.output", selObj[1]+".gglInFcurrentFrame", f=1)
+cmds.setAttr(selObj[1]+".gglInBuseFurUVs", 1)
+cmds.setAttr(selObj[1]+".gglInBuseFurModel", 1)
+cmds.setAttr(selObj[1]+".gglInBdoWorldPosScale", 1)
+
+
+#select charinfo and then dynamic loader
+selObj=cmds.ls(sl=1, fl=1)
+
+cmds.connectAttr(selObj[0]+".gglInSsceneShot", selObj[1]+".gglInSscene_shot", f=1)
+cmds.connectAttr(selObj[0]+".gglInSbundle", selObj[1]+".gglInSbundle", f=1)
+cmds.connectAttr(selObj[0]+".gglInSelement", selObj[1]+".gglInSelement", f=1)
+cmds.connectAttr(selObj[0]+".gglInIversion", selObj[1]+".gglInIversion", f=1)
+cmds.connectAttr(selObj[0]+".gglInSpackagePath", selObj[1]+".gglInSpackagePathOverride", f=1)
+
+
+#select charinfo and verlet solver
+selObj=cmds.ls(sl=1, fl=1)
+
+cmds.connectAttr(selObj[0]+".gglInFgeoCacheStartFrame", selObj[1]+".gglInFsimStartFrame", f=1)
+cmds.connectAttr(selObj[0]+".gglInFgeoCacheStartFrame", selObj[1]+".gglInFcacheStartFrame", f=1)
+cmds.connectAttr(selObj[0]+".gglInFgeoCacheEndFrame", selObj[1]+".gglInFcacheEndFrame", f=1)
+cmds.setAttr(selObj[0]+".gglInIinitConstraintIterations", 20)
+
+
+#select Verlet
+selObj=cmds.ls(sl=1, fl=1)
+getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+cmds.setAttr(selObj[0]+".gglInFsimStartFrame", getStrtRange)
+
+#select hairbuilder
+selObj=cmds.ls(sl=1, fl=1)
+cmds.setAttr(selObj[0]+".gglInFangularStiffness", 0.9)
+cmds.setAttr(selObj[0]+".gglInFlinearStiffness", 1.6)
+#add collision
+cmds.setAttr(selObj[0]+".gglInBuseOldVertexCollisions", 1)
+cmds.setAttr(selObj[0]+".gglInBhairToHairCollision", 1)
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+dirDict={}
+getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+for eachObj in selObj:
+    #get children
+    getChildren=cmds.listRelatives(eachObj, ad=1)
+    for each in getChildren:
+        try:
+            #get plugs
+            ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+            #get connected only if they are anim curve nodes
+            for eachsource in ls_str:
+                keepLS=[(eachConnected) for eachConnected in cmds.nodeType(eachsource.split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+                if len(keepLS)>0:
+                    remove=each+"_"
+                    print remove+" this is the name of what i want to remove"
+                    removeobj=eachsource.split(remove)[1]
+                    print removeobj+" this is the result of removing that thing I just said"
+                    eachsource=removeobj.split(".")[0]
+                    print eachsource+" this is the node I want"    
+                    getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]    
+                    print getListedAttr+" this is something i forgot"               
+        except:
+            pass 
+                    attibrute=getListedAttr[0]
+                    print attibrute+" isolated the first thing"
+                    #get frames of the attribute
+                    frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                    print frames+" this is the frames"
+                    #get values of the attributes
+                    values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                    print values+" this is values"
+                    #inp.write(str(attibute)+";")
+                    for eachframe, valueitem in map(None, frames, values):
+                        #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
+                        makeDict={eachframe:valueitem}
+                        print str(makeDict)
+                        dirDict.update(makeDict)
+                        #print dirDict
+                    #inp.write(str(dirDict)+'\n')
+                    print dirDict
+                    print "saved as "+fileName
+        except:
+            pass
+
+
+selObj=cmds.ls(sl=1, fl=1)
+filterNode=["animCurve"]
+dirDict={}
+getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+for eachObj in selObj:
+    print eachObj+" this is the parent"
+    #get children
+    getChildren=cmds.listRelatives(eachObj, ad=1)
+    for each in getChildren:
+        print each
+        try:
+            #get plugs
+            ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+            #get connected only if they are anim curve nodes
+            for eachsource in ls_str:
+                keepLS=[(eachConnected) for eachConnected in cmds.nodeType(eachsource.split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+                if len(keepLS)>0:
+                    remove=each+"_"
+                    #print remove+" this is the name of what i want to remove"
+                    removeobj=eachsource.split(remove)[1]
+                    #print removeobj+" this is the result of removing that thing I just said"
+                    eachsource=removeobj.split(".")[0]
+                    #print eachsource+" this is the node I want"    
+                    getListedAttr=[(attrib) for attrib in cmds.listAttr(each) if attrib==eachsource] 
+                    attibrute=getListedAttr[0]
+                    print attibrute
+                    #print attibrute+" isolated the first thing"
+                    #get frames of the attribute                
+                    frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                    #print frames                      
+                    #get values of the attributes
+                    values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                    #print values                 
+                    #inp.write(str(attibute)+";")
+                    for eachframe, valueitem in map(None, frames, values):
+                        #print eachframe, valueitem
+                        #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
+                        makeDict={eachframe:valueitem}
+                        #print str(makeDict)
+                        dirDict.update(makeDict)
+                        #print dirDict
+                    #inp.write(str(dirDict)+'\n')
+                    print dirDict
+                    #print "saved as "+fileName
+        except:
+            pass  
