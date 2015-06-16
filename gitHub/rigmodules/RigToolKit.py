@@ -177,6 +177,8 @@ class ToolKitUI(object):
         cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
         cmds.button (label='fix undos', p='listBuildButtonLayout', command = self._turn_on_undo) 
         cmds.button (label='fix playblast', p='listBuildButtonLayout', command = self._fix_playblast)
+        cmds.button (label='**Dynsettings', bgc=[0.33, 0.27, 0.30], ann="Sets cloth defaults",p='listBuildButtonLayout', command = self._cloth_dyn)
+        cmds.button (label='**SkinDEF', bgc=[0.33, 0.27, 0.30], ann="sets prime skin deformer values.",p='listBuildButtonLayout', command = self._skin_def)        
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
@@ -201,10 +203,10 @@ class ToolKitUI(object):
         cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
-        cmds.button (label='Save Attr', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
-        cmds.button (label='Load Attr', ann="loads attributes from an external file into project",  p='listBuildButtonLayout', command = self._load_att)
-        cmds.button (label='Save Anim', ann="saves anim into an external file into project",  p='listBuildButtonLayout', command = self._save_anim)
-        cmds.button (label='Load Anim', ann="loads anim from an external file into project",  p='listBuildButtonLayout', command = self._load_anim) 
+        cmds.button (label='Save Attr/Anim', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
+        cmds.button (label='Load Attr/Anim', ann="loads attributes from an external file into project",  p='listBuildButtonLayout', command = self._load_att)
+        # cmds.button (label='Save Anim', ann="saves anim into an external file into project",  p='listBuildButtonLayout', command = self._save_anim)
+        # cmds.button (label='Load Anim', ann="loads anim from an external file into project",  p='listBuildButtonLayout', command = self._load_anim) 
         cmds.text(label="") 
         cmds.text(label="Modelling")          
         cmds.text(label="")               
@@ -624,5 +626,5 @@ class ToolKitUI(object):
 inst = ToolKitUI()
 inst.create()
 
-
+python("playblast = None");
 
