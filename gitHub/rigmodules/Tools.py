@@ -2006,9 +2006,9 @@ class ToolFunctions(object):
             objNameFile=newfolderPath+str(each)
             cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
             self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=objNameFile)
-            cmds.button (label='Save Att', w=50, p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Save Anim', w=60, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Save Anim Heir', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(each, fileName=cmds.textField(self.getName, q=1, text=1)))            
+            # cmds.button (label='Save Att', w=50, p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            # cmds.button (label='Save Anim', w=60, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(each, fileName=cmds.textField(self.getName, q=1, text=1)))            
             cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
         cmds.showWindow(window)        
 
@@ -2243,6 +2243,31 @@ class ToolFunctions(object):
             pass
 
 
+    def saved_attributes(self, each, fileName):   
+        fileName=fileName+'.txt'     
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(fileName): os.makedirs(fileName) 
+        if "Linux" in OSplatform:
+            open(fileName, 'w')
+        attrValBucket=[]            
+        getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
+        for eachAttribute in getListedAttr:
+            try:
+                attrVal=getattr(each,eachAttribute).get()
+                attrWithVal=str(eachAttribute)+":"+str(attrVal)
+                attrValBucket.append(attrWithVal)
+            except:
+                pass
+        fullString=str(attrValBucket)
+        inp=open(fileName, 'w+') 
+        for each in attrValBucket:
+            inp.write(str(each)+'\n')
+        inp.close()  
+        print "saved as "+fileName
+
+
     def _save_anim_heirarchy(self, each, fileName):   
         selObj=cmds.ls(sl=1, fl=1)        
         fileName=fileName+'.txt'
@@ -2296,32 +2321,6 @@ class ToolFunctions(object):
             print "saved as "+fileName
 
 
-    def saved_attributes(self, each, fileName):   
-        fileName=fileName+'.txt'     
-        if "Windows" in OSplatform:    
-            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
-            # printFolder=re.sub(r'/',r'\\', folderPath)       
-            if not os.path.exists(fileName): os.makedirs(fileName) 
-        if "Linux" in OSplatform:
-            open(fileName, 'w')
-        attrValBucket=[]            
-        getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-        for eachAttribute in getListedAttr:
-            try:
-                attrVal=getattr(each,eachAttribute).get()
-                attrWithVal=str(eachAttribute)+":"+str(attrVal)
-                attrValBucket.append(attrWithVal)
-            except:
-                pass
-        fullString=str(attrValBucket)
-        inp=open(fileName, 'w+') 
-        for each in attrValBucket:
-            inp.write(str(each)+'\n')
-        inp.close()  
-        print "saved as "+fileName
-
-
-
     def _load_anim_heirarchy(self, printFolder, grabFileName):
         import ast
         notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
@@ -2363,3 +2362,41 @@ class ToolFunctions(object):
                                     pass                                              
                     else:
                         pass
+
+
+    def xml_transformUI(self):
+        self.winName = "Change Files"
+        if cmds.window(self.winName, exists=True):
+                cmds.deleteUI(self.winName)
+        self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.text( label='Full file path(set as specific file path + file name for single edit or file path + "*.*" to change files in bulk)' )
+        self.pathText=cmds.textField(w=800, h=25, p='selectArrayColumn', tx=xmlFolderPath+"*.*" )
+        cmds.text( label='old string' )
+        self.oldJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="LA0095_MaleIncidental4_Rig"    )
+        cmds.text( label='new string' )
+        self.newJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="LA0095_ZookeeperAdam_Rig"     )              
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(100, 20)) 
+        cmds.button (label='Change XMLs', p='listBuildButtonLayout', command = self.change_file_callup)
+        cmds.showWindow(self.window)
+
+    def change_file_callup():
+        pathText=cmds.textField(self.pathText,q=True, text=True)
+        oldJointText=cmds.textField(self.oldJointText,q=True, text=True)
+        newJointText=cmds.textField(self.newJointText,q=True, text=True)
+        print pathText
+        files=glob.glob(pathText)
+        for each in files: 
+            dataFromTextFile=open(each).read()
+            dataFromTextFile=dataFromTextFile.replace(oldJointText, newJointText)
+            replacedDataTextFile=open(each, 'w')
+            replacedDataTextFile.write(dataFromTextFile)
+            print dataFromTextFile
+            replacedDataTextFile.close()   
