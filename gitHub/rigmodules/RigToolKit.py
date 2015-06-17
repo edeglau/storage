@@ -223,6 +223,7 @@ class ToolKitUI(object):
         cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
         cmds.button (label='Open Image Gimp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
         cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
+        cmds.button (label='Change file contents', ann="changes file contents.",  p='listBuildButtonLayout', command = self._changing_file_contents)  
         cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)     
         cmds.showWindow(self.window)
 
@@ -549,6 +550,9 @@ class ToolKitUI(object):
 
     def _load_anim(self, arg=None):
         toolClass.openAnimWindow()
+
+    def _changing_file_contents(self, arg=None):
+        toolClass.xml_transformUI()
 
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
