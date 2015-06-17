@@ -1998,17 +1998,18 @@ class ToolFunctions(object):
         cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
         cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(620, 20))   
         text("Objects to save attributes from:")
-        cmds.button (label='Add', p='topGrid', command = lambda *args:self._add_function())
+        cmds.button (label='Add selected(one at a time)', p='topGrid', command = lambda *args:self._add_function())
         cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20)) 
         cmds.text(label="")        
         fieldBucket=[]
         for each in selObj:
             objNameFile=newfolderPath+str(each)
-            cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[420, 60, 60, 60, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            self.getName=cmds.textField(w=400, h=25, p='listBuildButtonLayout', text=objNameFile)
-            cmds.button (label='Save', p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Save Anim', p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+            cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=objNameFile)
+            cmds.button (label='Save Att', w=50, p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Save Anim', w=60, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Save Anim Heir', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(each, fileName=cmds.textField(self.getName, q=1, text=1)))            
+            cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
         cmds.showWindow(window)        
 
 
@@ -2037,10 +2038,10 @@ class ToolFunctions(object):
         print "saved as "+fileName
 
     def _add_function(self):
-        selObj=ls(sl=1, fl=1, sn=1)
-        if len(selObj)==1:
+        selObjNew=ls(sl=1, fl=1, sn=1)
+        if len(selObjNew)==1:
             pass
-        elif len(selObj)<1:
+        elif len(selObjNew)<1:
             print "select something"
             return
         else:
@@ -2053,14 +2054,15 @@ class ToolFunctions(object):
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
             newfolderPath=re.sub(r'\\',r'/', folderPath)        
-        for item in selObj:
+        for item in selObjNew:
             objNameFile=str(item)
             fullPathName=newfolderPath+objNameFile
-            cmds.rowLayout  (' nlistBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[420, 60, 60, 60, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            self.getName=cmds.textField(w=120, h=25, p='nlistBuildButtonLayout', text=fullPathName)
-            cmds.button (label='Save', p='nlistBuildButtonLayout', command = lambda *args:self.saved_attributes(item, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Save Anim', p='listBuildButtonLayout', command = lambda *args:self._save_anim(item, fileName=cmds.textField(self.getName, q=1, text=1)))            
-            cmds.button (label='Open folder', p='nlistBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+            cmds.rowLayout  (' nlistBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+            self.getNewName=cmds.textField(h=25, p='nlistBuildButtonLayout', text=fullPathName)
+            cmds.button (label='Save Att', w=50,p='nlistBuildButtonLayout', command = lambda *args:self.saved_attributes(item, fileName=cmds.textField(self.getNewName, q=1, text=1)))
+            cmds.button (label='Save Anim', w=60, p='nlistBuildButtonLayout', command = lambda *args:self._save_anim(item, fileName=cmds.textField(self.getNewName, q=1, text=1)))            
+            cmds.button (label='Save Anim Heir', w=90, p='nlistBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(item, fileName=cmds.textField(self.getNewName, q=1, text=1)))
+            cmds.button (label='Open folder', w=60, p='nlistBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getNewName, q=1, text=1)))
 
 
     def openAttributesWindow(self, arg=None):
@@ -2087,9 +2089,10 @@ class ToolFunctions(object):
             cmds.menuItem( label=each) 
         # cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_defined_path(newfolderPath, grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))
         # cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_work_folder())
-        self.pathFile=cmds.textField(w=120, h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
+        self.pathFile=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath+selObj[0]) 
         cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self.load_attributes(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1)))        
         cmds.button (label='Load Anim', p='listBuildButtonLayout', command = lambda *args:self._load_anim(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Load Anim Hierarchy', p='listBuildButtonLayout', command = lambda *args:self._load_anim_heirarchy(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
         cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
         cmds.showWindow(window)
 
@@ -2244,44 +2247,8 @@ class ToolFunctions(object):
     #     cmds.showWindow(window)        
 
 
-    def _save_anim(self, each, fileName):   
-        fileName=fileName+'.txt'
-        print fileName
-        if "Windows" in OSplatform:    
-            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
-            # printFolder=re.sub(r'/',r'\\', folderPath)       
-            if not os.path.exists(fileName): os.makedirs(fileName) 
-        if "Linux" in OSplatform:
-            inp=open(fileName, 'w+')
-        filterNode=["animCurve"]
-        dirDict={}
-        getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
-        getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
-        try:
-            ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
-            keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
-            if keepLS:
-                for eachsource in ls_str:
-                    remove=each+"_"
-                    removeobj=eachsource.split(remove)[1]
-                    eachsource=removeobj.split(".")[0]
-                    getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
-                    attibute=getListedAttr[0]
-                    frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
-                    values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
-                    print attibute
-                    inp.write(str(attibute)+";")
-                    for eachframe, valueitem in map(None, frames, values):
-                        #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
-                        makeDict={eachframe:valueitem}
-                        print str(makeDict)
-                        dirDict.update(makeDict)
-                        #print dirDict
-                    inp.write(str(dirDict)+'\n')
-                    print "saved as "+fileName
-            inp.close()  
-        except:
-            pass
+
+
 
 
     # def openAnimWindow(self, arg=None):
@@ -2337,8 +2304,7 @@ class ToolFunctions(object):
                             cmds.setKeyframe( each, t=key, at=getAttribute, v=value )
 
 
-
-    def _save_anim_heirarchy(self, each, fileName):   
+    def _save_anim(self, each, fileName):   
         fileName=fileName+'.txt'
         print fileName
         if "Windows" in OSplatform:    
@@ -2348,7 +2314,6 @@ class ToolFunctions(object):
         if "Linux" in OSplatform:
             inp=open(fileName, 'w+')
         filterNode=["animCurve"]
-        dirDict={}
         getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
         getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
         try:
@@ -2363,8 +2328,8 @@ class ToolFunctions(object):
                     attibute=getListedAttr[0]
                     frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
                     values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
-                    print attibute
                     inp.write(str(attibute)+";")
+                    dirDict={}
                     for eachframe, valueitem in map(None, frames, values):
                         #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
                         makeDict={eachframe:valueitem}
@@ -2376,6 +2341,48 @@ class ToolFunctions(object):
             inp.close()  
         except:
             pass
+
+    def _save_anim_heirarchy(self, each, fileName):   
+        selObj=cmds.ls(sl=1, fl=1)        
+        fileName=fileName+'.txt'
+        print fileName
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(fileName): os.makedirs(fileName) 
+        if "Linux" in OSplatform:
+            inp=open(fileName, 'w+')
+        filterNode=["animCurve"]
+        dirDict={}
+        getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+        getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+        for each in selObj:
+            allChildren=cmds.listRelatives(each, ad=1)
+            getChildren=allChildren
+            getChildren=[each]+getChildren
+            for eachChildTree in getChildren:
+                inp.write('\n'+str(eachChildTree)+">>")
+                try:
+                    ls_str=cmds.listConnections(eachChildTree, d=0, s=1, p=1, sh=1)
+                    #get connected only if they are anim curve nodes
+                    for eachsource in ls_str:
+                        keepLS=[(eachChildTreeConnected) for eachChildTreeConnected in cmds.nodeType(eachsource.split(".")[0], i=1) for eachFilter in filterNode if eachChildTreeConnected==eachFilter]
+                        if len(keepLS)>0:                        
+                            downStrDest=cmds.connectionInfo(eachsource, dfs=1)
+                            for eachDest in downStrDest:
+                                dirDict={}
+                                anattribute=eachDest.split(".")[1]
+                                frames=cmds.keyframe(eachChildTree, attribute=anattribute, time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                                values=cmds.keyframe(eachChildTree, attribute=anattribute, time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                                for eachFrame, valueitem in map(None, frames, values):
+                                    makeDict={eachFrame:valueitem}
+                                    dirDict.update(makeDict)
+                                inp.write("<"+str(anattribute+";"))                                    
+                                inp.write(str(dirDict))                              
+                                print "saved as "+fileName
+                except:
+                    pass  
+            inp.close()   
 
     def _load_anim_heirarchy(self, printFolder, grabFileName):
         import ast
@@ -2392,12 +2399,17 @@ class ToolFunctions(object):
                 pass 
             List = open(printFolder).readlines()
             for aline in List:
-                getAttribute=aline.split(';')[0]
-                attribute_container.append(getAttribute)        
-                dirDict=aline.split(';')[1]
-                gethis=ast.literal_eval(dirDict)
-                print gethis
-                for item in getListedAttr:
-                    if item==getAttribute:
-                        for key, value in gethis.items():
-                            cmds.setKeyframe( each, t=key, at=getAttribute, v=value )
+                if ">>" in aline:
+                    getObj=aline.split('>>')[0]
+                    getExistantInfo=aline.split('>>')[1]
+                    if getExistantInfo!="\n":
+                        findAtt=getExistantInfo.split("<")
+                        for thing in findAtt:
+                            getAnimDicts=thing.split(";")
+                            for eachctrl in xrange(len(getAnimDicts) - 1):
+                                current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
+                                gethis=ast.literal_eval(next_item)
+                                for key, value in gethis.items():
+                                    cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )                
+                    else:
+                        pass
