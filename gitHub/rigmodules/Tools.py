@@ -1482,25 +1482,54 @@ class ToolFunctions(object):
         setParent ('selectArrayColumn')
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
         cmds.text(label="every",  p='txvaluemeter', w=80, h=25)         
-        cmds.text(label="every other",  p='txvaluemeter', w=80, h=25) 
+        cmds.text(label="*or%",  p='txvaluemeter', w=80, h=25) 
         self.remove=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
         self.removeNth=cmds.textField(w=40, h=25, p='txvaluemeter', text="2")  
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.removeCV(remove=int(textField(self.remove,q=1, text=1))))
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=int(textField(self.removeNth,q=1, text=1))))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.removeCV(remove=textField(self.remove,q=1, text=1)))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1)))
         showWindow(window)
         
-                
-    def remove_Nth(self, removeNth):  
+
+    def remove_Nth(self, removeNth): 
         getSel=ls(sl=1, fl=1)   
         getSel=getSel[:1]  
+        cmds.select(cl=1)
         if nodeType(getSel[0])=="transform":
             for each in getSel:
+                getNumber=each.numCVs()
+                if "*" in removeNth:
+                    removeNth=removeNth.split("*")[1]
+                    removeNth=int(removeNth)
+                    createNewNumber=getNumber*removeNth
+                elif "%" in removeNth:
+                    removeNth=removeNth.split("%")[0]
+                    removeNth=float(removeNth)
+                    removeNth=removeNth*0.01
+                    createNewNumber=getNumber*removeNth
+                rebuildCurve(each, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=createNewNumber, d=3, tol=1e-06)
+
+                
+    def remove_NthV1(self, removeNth): 
+        getSel=ls(sl=1, fl=1)   
+        getSel=getSel[:1]  
+        cmds.select(cl=1)
+        if nodeType(getSel[0])=="transform":
+            for each in getSel:
+                cvBucket=[]
                 for item in each.cv[::removeNth]:
-                    delete(item)
-        elif nodeType(getSel[0])=="nurbsCurve":
-            for each in getSel[::removeNth]:         
-                delete(each)
+                    cvBucket.append(item)
+                for eachCV in cvBucket[1:-1]:
+                    select(eachCV, add=1)
+                    # delete()
+                    maya.mel.eval('doDelete;')
+                # cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=divNum, d=3, tol=1e-06)
+        # elif nodeType(getSel[0])=="nurbsCurve":
+        #     cvBucket=[]
+        #     for each in getSel[::removeNth]:         
+        #         cvBucket.append(item)
+        #     for eachCV in cvBucket[:-1]:
+        #         delete(eachCV)
 
     def removeCV(self, remove):
         getSel=ls(sl=1, fl=1)
@@ -2380,9 +2409,9 @@ class ToolFunctions(object):
         cmds.text( label='Full file path(set as specific file path + file name for single edit or file path + "*.*" to change files in bulk)' )
         self.pathText=cmds.textField(w=800, h=25, p='selectArrayColumn', tx=xmlFolderPath+"*.*" )
         cmds.text( label='old string' )
-        self.oldJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="LA0095_MaleIncidental4_Rig"    )
+        self.oldJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="replace this"    )
         cmds.text( label='new string' )
-        self.newJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="LA0095_ZookeeperAdam_Rig"     )              
+        self.newJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="with this"     )              
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(100, 20)) 
         cmds.button (label='Change XMLs', p='listBuildButtonLayout', command = self.change_file_callup)
         cmds.showWindow(self.window)
@@ -2400,3 +2429,31 @@ class ToolFunctions(object):
             replacedDataTextFile.write(dataFromTextFile)
             print dataFromTextFile
             replacedDataTextFile.close()   
+
+
+
+
+    def connect_to_curve(self):
+        selObj=cmds.ls(sl=1)
+        microLeadCurve=[selObj[0]]
+        CVbucketbuckList=[]
+        childControllers=selObj[1:]
+        for each in microLeadCurve:
+            each=ls(each)[0]
+            for eachCV, eachCtrlGro in map(None, each.cv, childControllers):
+                CVbucketbuckList.append(eachCV)
+        microLeadCurve=ls(microLeadCurve)[0]        
+        for eachCtrlGro in childControllers:
+            try:
+                pgetCVpos=cmds.xform(eachCtrlGro, ws=1, q=1, t=1)
+            except:
+                pass
+            getpoint=microLeadCurve.closestPoint(pgetCVpos, tolerance=0.001, space='preTransform')
+            getParam=microLeadCurve.getParamAtPoint(getpoint, space='preTransform')
+            select(eachCtrlGro, r=1)
+            select(microLeadCurve, add=1)
+            motionPath=cmds.pathAnimation(fractionMode=1, follow=1, followAxis="x", upAxis="y", worldUpType="vector", worldUpVector=[0, 1, 0], inverseUp=0, inverseFront=0, bank=0)        
+            disconnectAttr(motionPath+"_uValue.output", motionPath+".uValue")
+            getpth=str(motionPath)
+            setAttr(motionPath+".fractionMode", False)
+            setAttr(motionPath+".uValue", getParam)        
