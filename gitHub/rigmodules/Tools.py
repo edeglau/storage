@@ -1483,30 +1483,35 @@ class ToolFunctions(object):
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
         cmds.text(label="every",  p='txvaluemeter', w=80, h=25)         
         cmds.text(label="*or%",  p='txvaluemeter', w=80, h=25) 
-        self.remove=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
-        self.removeNth=cmds.textField(w=40, h=25, p='txvaluemeter', text="2")  
+        cmds.gridLayout('infotext', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18))         
+        self.remove=cmds.textField(w=40, h=25, p='infotext', text="1")
+        self.removeNth=cmds.textField(w=40, h=25, p='infotext', text="2")  
+        self.mathtype=optionMenu( label='math')   
+        menuItem( label="%")  
+        menuItem( label="*")                        
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 20))             
         button (label='Go', p='BuildButtonLayout', command = lambda *args:self.removeCV(remove=textField(self.remove,q=1, text=1)))
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1)))
+        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1), queryMaths=cmds.optionMenu(self.mathtype, q=1, sl=1)))
         showWindow(window)
         
 
-    def remove_Nth(self, removeNth): 
+    def remove_Nth(self, removeNth, queryMaths): 
+        print queryMaths
         getSel=ls(sl=1, fl=1)   
         getSel=getSel[:1]  
         cmds.select(cl=1)
         if nodeType(getSel[0])=="transform":
             for each in getSel:
                 getNumber=each.numCVs()
-                if "*" in removeNth:
-                    removeNth=removeNth.split("*")[1]
-                    removeNth=int(removeNth)
-                    createNewNumber=getNumber*removeNth
-                elif "%" in removeNth:
-                    removeNth=removeNth.split("%")[0]
+                if queryMaths==1:
+                    # removeNth=removeNth.split("%")[0]
                     removeNth=float(removeNth)
                     removeNth=removeNth*0.01
                     createNewNumber=getNumber*removeNth
+                elif queryMaths==2:
+                    # removeNth=removeNth.split("*")[1]
+                    removeNth=int(removeNth)
+                    createNewNumber=getNumber*removeNth                    
                 rebuildCurve(each, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=createNewNumber, d=3, tol=1e-06)
 
                 
@@ -2457,3 +2462,29 @@ class ToolFunctions(object):
             getpth=str(motionPath)
             setAttr(motionPath+".fractionMode", False)
             setAttr(motionPath+".uValue", getParam)        
+
+    def matchCurveShapes(self):
+        getNames=ls(sl=1, fl=1)
+        getFirstGrp = getNames[0].split(".")[0]
+        getSecondGrp = getNames[-1:][0].split(".")[0]
+        firstList=[(each) for each in getNames if each.split(".")[0]==getFirstGrp]
+        secondList=[(each) for each in getNames if each.split(".")[0]==getSecondGrp]
+        cmds.select(firstList)
+        cmds.CreateCurveFromPoly()
+        getFirstCurve=cmds.ls(sl=1, fl=1)
+        getFirstCurveInfo=ls(sl=1, fl=1)
+        numberCV=getFirstCurveInfo[0].numCVs()
+        cmds.delete(getFirstCurve[0], ch=1)
+        cmds.select(secondList)
+        cmds.CreateCurveFromPoly()
+        getSecondCurve=cmds.ls(sl=1, fl=1)
+        getSecondCurveInfo=ls(sl=1, fl=1)
+        cmds.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
+        getSecondCurve=cmds.ls(sl=1, fl=1)
+        getSecondCurveInfo=ls(sl=1, fl=1)
+        cmds.delete(getSecondCurve[0], ch=1)
+        cmds.select(cmds.ls(getFirstGrp)[0], r=1)
+        cmds.wire(w=getFirstCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        cmds.select(cmds.ls(getSecondGrp)[0], r=1)
+        cmds.wire(w=getSecondCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        cmds.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0)) 
