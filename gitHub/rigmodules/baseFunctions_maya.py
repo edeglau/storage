@@ -194,7 +194,63 @@ class BaseClass():
         cmds.modelEditor("modelPanel4", e=1,polymeshes=1)
         cmds.modelEditor("modelPanel4", e=1,nurbsCurves=1)
 
-    def expObj(self):
+
+    def expObj(self, arg=None): 
+        selObj=ls(sl=1, fl=1, sn=1)
+        if len(selObj)>0:
+            pass
+        else:
+            print "select something"
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            print "windows"
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            print "Linux"
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+        winName = "Save obj"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=620, h=100 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
+        cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(620, 20))   
+        cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20)) 
+        cmds.text(label="")        
+        fieldBucket=[]
+        cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+        self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath)
+        cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self.expObj_callup(objFolderPath=cmds.textField(self.getName, q=1, text=1)))            
+        cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window)        
+
+
+    def expObj_callup(self, objFolderPath):
+        '''this loads the obj plugin and exports a group of selected obj'''
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
+            cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True)  
+        if "Linux" in OSplatform:
+            print objFolderPath
+            if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
+            # inp=open(objFolderPath, 'w+')
+        # cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True)      
+#         getname=cmds.ls(sl=1, sn=1)
+        getname=cmds.ls(sl=1)
+        cmds.select(cl=1)
+        for each in getname:
+            cmds.select(each)
+#             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJ", pr=1, es=1)
+            cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
+
+    def expObjV1(self):
         '''this loads the obj plugin and exports a group of selected obj'''
         result = cmds.promptDialog( 
                     title='save Obj', 
@@ -210,7 +266,13 @@ class BaseClass():
                 pass
             else:
                 print "nothing collected" 
-        if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)         
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
+        if "Linux" in OSplatform:
+            print objFolderPath
+            inp=open(objFolderPath, 'w+')
         cmds.pluginInfo("C:/Program Files/Autodesk/Maya2015/bin/plug-ins/objExport.mll", e=1, autoload=True)
 #         getname=cmds.ls(sl=1, sn=1)
         getname=cmds.ls(sl=1)
@@ -220,7 +282,6 @@ class BaseClass():
 #             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJ", pr=1, es=1)
             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
 
-    
     def fastFloat(self):
         '''this creates a fast float attribute on selection'''
         titleText=('Fast Float Attribute'),                        
@@ -1796,7 +1857,7 @@ class BaseClass():
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
                 for each in getObj[1:]:
-                    extrude(getParent, each, ch=1, rn=0, po=1, et=2, ucp=1, fpt=1, upn=1, rotation=0, scale=1, rsp=1)   
+                    extrude(getParent, each, ch=1, rn=0, po=1, et=2, ucp=1, fpt=1, upn=1, rotation=0, scale=1, rsp=1)  
             elif ConstraintType=="xform":
                 getObj=cmds.ls(sl=1)
                 getParent=getObj[0]
@@ -3154,7 +3215,7 @@ class BaseClass():
             cmds.select(childItem, add=1)
             cmds.blendShape(n=str(parentItem[0])+"_BShape", w=(0, 1.0)) 
 
-    def blendIDontKnow(self):
+    def blendSearch(self):
         selObj=cmds.ls(sl=1, fl=1)
         parentObj=selObj[0]
         childrenObj=selObj[1]
@@ -3703,3 +3764,15 @@ class BaseClass():
         '''move to transform and rotation'''
         transformWorldMatrix, rotateWorldMatrix=self.locationXForm(target)
         cmds.move(transformWorldMatrix[0], 0.0, transformWorldMatrix[0], aim, r=1, rpr=1 )    
+
+    def _open_defined_path(self, destImagePath):
+        folderPath='\\'.join(destImagePath.split("/")[:-1])+"\\"        
+        self.opening_folder(folderPath)
+
+    def opening_folder(self, folderPath):
+        if "Windows" in OSplatform:
+            folderPath=re.sub(r'/',r'\\', folderPath)
+            os.startfile(folderPath)
+        if "Linux" in OSplatform:
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+            os.system('xdg-open "%s"' % newfolderPath) 
