@@ -42,19 +42,30 @@ class MultiFunctionClass(object):
         cmds.menuItem( label="parent_constraint")#3
         cmds.menuItem( label="point_constraint" )#4
         cmds.menuItem( label="extrude_tube")#5    
+        cmds.menuItem( label="extrude_path")#5          
         cmds.menuItem( label="xform")#6 
-        cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = self.perform_multi_function)
+        cmds.gridLayout('dimensions', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.text("length spans(extrude)")
+        self.selfU=cmds.textField(text="12")
+        cmds.text("width spans(extrude)")
+        self.selfV=cmds.textField(text="1")
+        cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = lambda *args:self.perform_multi_function(selfU=cmds.textField(self.selfU, q=1,text=1), selfV=cmds.textField(self.selfV, q=1,text=1)))
+        # cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = self.perform_multi_function)
         cmds.showWindow(self.window)
 
 
 
-    def perform_multi_function(self, arg=None):
+    def perform_multi_function(self, selfU, selfV):
         '''----------------------------------------------------------------------------------
         Common add to list function
         ----------------------------------------------------------------------------------''' 
-        ConstraintType=cmds.promptDialog(q=1)  
+        # maya.mel.eval( 'nurbsToPolygonsPref -un %d -vn %d;',  %(selfU, ) %(selfV, )
+        cmds.nurbsToPolygonsPref(un=selfU, vn=selfV)
+        # nurbsToPolygonsPref -un 1 -vn 90
+        ConstraintType=cmds.optionMenu(colMenu, q=1, sl=1)
         getObj=cmds.ls(sl=1)
         getParent=getObj[0]
+        # cmds.nurbsToPolygonsPref(un=selfU, uv=selfV)
         for each in getObj[1:]: 
             if ConstraintType==1:#orient
                 cmds.orientConstraint(getParent, each, mo=1)   
@@ -65,8 +76,13 @@ class MultiFunctionClass(object):
             elif ConstraintType==4:#point
                 cmds.pointConstraint(getParent, each, mo=1)  
             elif ConstraintType==5:#extrude_tube
-                extrude(getParent, each, ch=1, rn=0, po=1, et=2, ucp=1, fpt=1, upn=1, rotation=0, scale=1, rsp=1) 
-            elif ConstraintType==6:#xform
+                cmds.extrude(getParent, each, ch=1, rn=0, po=1, et=2, ucp=1, fpt=1, upn=1, rsp=1, rotation=0, scale=1)
+                # nurbsToPoly -mnd 1  -ch 1 -f 2 -pt 1 -pc 81 -chr 0.99 -ft 0.01 -mel 0.001 -d 0.1 -ut 1 -un 24 -vt 1 -vn 1 -uch 1 -ucr 1 -cht 0.2 -es 0 -ntr 0 -mrt 0 -uss 1 "extrudedSurface3"; 
+            elif ConstraintType==6:#extrude_path
+                cmds.nurbsToPolygonsPref(un=selfU, vn=selfV)
+                cmds.extrude(getParent, each, ch=1, rn=0, po=1, et=1, ucp=1, fpt=1, upn=1, rotation=0, scale=1, rsp=1) 
+                # cmds.extrude(getParent, each, ch=1, rn=0, po=1, et=0, fpt=1, upn=1, rotation=0, scale=1) 
+            elif ConstraintType==7:#xform
                 getTranslation, getRotation=self.locationXForm(getParent)
                 each.setTranslation(getTranslation)
                 each.setTranslation(getRotation)
