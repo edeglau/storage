@@ -232,24 +232,23 @@ class BaseClass():
 
     def expObj_callup(self, objFolderPath):
         '''this loads the obj plugin and exports a group of selected obj'''
-        if "Windows" in OSplatform:    
-            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
-            # printFolder=re.sub(r'/',r'\\', folderPath)       
+        if "Windows" in OSplatform:         
             if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
             cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True)  
+            getname=cmds.ls(sl=1)
+            cmds.select(cl=1)
+            for each in getname:
+                cmds.select(each)
+                cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
         if "Linux" in OSplatform:
-            print objFolderPath
             if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
-            # inp=open(objFolderPath, 'w+')
-        # cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True)      
-#         getname=cmds.ls(sl=1, sn=1)
-        getname=cmds.ls(sl=1)
-        cmds.select(cl=1)
-        for each in getname:
-            cmds.select(each)
-#             cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=0;smoothing=1;normals=1", typ="OBJ", pr=1, es=1)
-            cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJ", es=1)
-
+            # cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True) 
+            getname=cmds.ls(sl=1)
+            cmds.select(cl=1)
+            for each in getname:
+                cmds.select(each)
+                cmds.file(str(objFolderPath)+str(each)+".obj", f=1, options="groups=1;ptgroups=1;materials=1;smoothing=1;normals=1", typ="OBJexport", es=1)
+            
     def expObjV1(self):
         '''this loads the obj plugin and exports a group of selected obj'''
         result = cmds.promptDialog( 
@@ -1443,36 +1442,7 @@ class BaseClass():
         incrementals=indexNumber+1
         getNum="%02d" % (incrementals,)
         name=guideName+getNum+"_guide"  
-        return name                
-                
-    def makeGuideV1(self):
-        '''This is the initate buildguide function'''
-        selectionCheck=cmds.ls(sl=1, fl=1)
-        colour1=13
-        colour2=6
-        colour3=27               
-        if selectionCheck:
-            for eachPoint in xrange(len(selectionCheck) - 1):
-                each, next_item = selectionCheck[eachPoint], selectionCheck[eachPoint + 1]             
-#            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                transformWorldMatrixNext, rotateWorldMatrixNext=self.locationXForm(next_item)
-                name=each+"_guide"            
-                self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-                getNewGuide=cmds.ls(sl=1, fl=1)
-                tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
-                self.JackI(tempname, tempgrpname, tempsize, transformWorldMatrixNext, rotateWorldMatrixNext, tempcolour)
-                cmds.select(tempname, r=1)
-                getDelete=cmds.ls(sl=1, fl=1)
-                cmds.select(getNewGuide[0], add=1)
-                cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
-                cmds.delete(tempname)
-                cmds.delete(tempgrpname)
-        else:
-            each="name_guide"
-            transformWorldMatrix=(0, 0, 0) 
-            rotateWorldMatrix=(0, 0, 0)           
-            self.guideBuild(each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
+        return name
 
     def guideBuild(self, each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3):
         '''finds location for the build guides function'''
