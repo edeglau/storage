@@ -2398,21 +2398,21 @@ class ToolFunctions(object):
                         pass
 
 
-    def xml_transformUI(self):
+    def change_file_countents_UI(self):
+        getScenePath=cmds.file(q=1, location=1)
+        getScenePath="//"+getScenePath+"//"
         self.winName = "Change Files"
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
         self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
-
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        
         cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=6, p='selectArrayRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.text( label='Full file path(set as specific file path + file name for single edit or file path + "*.*" to change files in bulk)' )
-        self.pathText=cmds.textField(w=800, h=25, p='selectArrayColumn', tx=xmlFolderPath+"*.*" )
+        self.pathText=cmds.textField(w=800, h=25, p='selectArrayColumn', tx=getScenePath+"*.*" )
         cmds.text( label='old string' )
         self.oldJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="replace this"    )
         cmds.text( label='new string' )
@@ -2421,11 +2421,10 @@ class ToolFunctions(object):
         cmds.button (label='Change XMLs', p='listBuildButtonLayout', command = self.change_file_callup)
         cmds.showWindow(self.window)
 
-    def change_file_callup():
+    def change_file_callup(self):
         pathText=cmds.textField(self.pathText,q=True, text=True)
         oldJointText=cmds.textField(self.oldJointText,q=True, text=True)
         newJointText=cmds.textField(self.newJointText,q=True, text=True)
-        print pathText
         files=glob.glob(pathText)
         for each in files: 
             dataFromTextFile=open(each).read()
@@ -2435,8 +2434,50 @@ class ToolFunctions(object):
             print dataFromTextFile
             replacedDataTextFile.close()   
 
+    def change_file_UI(self):
+        getScenePath=cmds.file(q=1, location=1)
+        getScenePath="//"+getScenePath+"//"
+        self.winName = "Change Files"
+        if cmds.window(self.winName, exists=True):
+                cmds.deleteUI(self.winName)
+        self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.text( label='Full file path(set as specific file path' )
+        self.pathText=cmds.textField(w=800, h=25, p='selectArrayColumn', tx=getScenePath )
+        cmds.text( label='file name' )
+        self.fileName=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="fileName"     )         
+        cmds.text( label='old file portion' )
+        self.oldJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="replace this"    )
+        cmds.text( label='new file portion' )
+        self.newJointText=cmds.textField(w=300, h=25, p='selectArrayColumn', tx="with this"     )          
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(100, 20)) 
+        cmds.button (label='Change XMLs', p='listBuildButtonLayout', command = lambda *args:self.rename_file_callup(fleName=cmds.textField(self.fileName, q=1, text=1), pathName=cmds.textField(self.pathText, q=1, text=1), oldNamePart=cmds.textField(self.oldJointText, q=1, text=1), newNamePart=cmds.textField(self.newJointText, q=1, text=1)))
+        cmds.showWindow(self.window)
 
+    def rename_file_callup(self,fleName, pathName, oldNamePart, newNamePart):
+        if len(fleName)>0 and len(oldNamePart)>0:
+            for each in glob.glob(os.path.join(pathName, "*"+oldNamePart+"*")): 
+                if fleName in each:
+                    os.rename(each, each.replace(oldNamePart, newNamePart)) 
+        else:
+            getNameBucket=[]
+            for index, each in enumerate(glob.glob(os.path.join(pathName, "*"))):
+                getFileName=each.split("/")[-1:]
+                getname=getFileName[0].split(".")
+                oldNamePart=getname[0]
+                newName=self.guide_names(index, newNamePart)
+                os.rename(each, each.replace(oldNamePart, newName)) 
 
+    def guide_names(self, indexNumber, guideName):                
+        incrementals=indexNumber+1
+        getNum="%02d" % (incrementals,)
+        name=str(guideName)+str(getNum)
+        return name          
 
     def connect_to_curve(self):
         selObj=cmds.ls(sl=1)
@@ -2463,28 +2504,42 @@ class ToolFunctions(object):
             setAttr(motionPath+".fractionMode", False)
             setAttr(motionPath+".uValue", getParam)        
 
+
     def matchCurveShapes(self):
         getNames=ls(sl=1, fl=1)
         getFirstGrp = getNames[0].split(".")[0]
         getSecondGrp = getNames[-1:][0].split(".")[0]
         firstList=[(each) for each in getNames if each.split(".")[0]==getFirstGrp]
         secondList=[(each) for each in getNames if each.split(".")[0]==getSecondGrp]
+        '''create childfirst curve'''
         cmds.select(firstList)
         cmds.CreateCurveFromPoly()
         getFirstCurve=cmds.ls(sl=1, fl=1)
+        '''get cv total of curve'''
         getFirstCurveInfo=ls(sl=1, fl=1)
         numberCV=getFirstCurveInfo[0].numCVs()
         cmds.delete(getFirstCurve[0], ch=1)
+        '''wrap child mesh to curve'''
+        cmds.select(cmds.ls(getFirstGrp)[0], r=1)
+        cmds.wire(w=getFirstCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        '''create parent curve'''
         cmds.select(secondList)
         cmds.CreateCurveFromPoly()
         getSecondCurve=cmds.ls(sl=1, fl=1)
         getSecondCurveInfo=ls(sl=1, fl=1)
+        '''rebuilt curve to match first curve built'''
         cmds.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
         getSecondCurve=cmds.ls(sl=1, fl=1)
         getSecondCurveInfo=ls(sl=1, fl=1)
         cmds.delete(getSecondCurve[0], ch=1)
-        cmds.select(cmds.ls(getFirstGrp)[0], r=1)
-        cmds.wire(w=getFirstCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
-        cmds.select(cmds.ls(getSecondGrp)[0], r=1)
-        cmds.wire(w=getSecondCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        '''wrap parent curve to parent mesh'''
+        # cmds.select(cmds.ls(getSecondGrp)[0], r=1)
+        # cmds.wire(w=getSecondCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        cmds.select(getSecondCurve[0], r=1)
+        cmds.select(cmds.ls(getSecondGrp)[0], add=1)
+        cmds.CreateWrap()
+        '''blend child curve to parent curve'''
         cmds.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0)) 
+
+
+
