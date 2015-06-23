@@ -198,11 +198,11 @@ class ToolKitUI(object):
         cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='listBuildButtonLayout',command = self._quickCopy_single_Attr_window)
         cmds.button (label='Fetch Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='listBuildButtonLayout', command = self._findAttr_window)                                                         
         cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='listBuildButtonLayout', command = self._range_attr_window)                                                         
+        cmds.button (label='Save Attr/Anim', bgc=[0.45, 0.5, 0.5], ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
+        cmds.button (label='Load Attr/Anim', bgc=[0.45, 0.5, 0.5], ann="loads attributes from an external file into project",  p='listBuildButtonLayout', command = self._load_att)
         cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._set_any)               
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='listBuildButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='listBuildButtonLayout', command = self._tran_att)    
-        cmds.button (label='Save Attr/Anim', ann="saves all attributes into an external file into project",  p='listBuildButtonLayout', command = self._save_att) 
-        cmds.button (label='Load Attr/Anim', ann="loads attributes from an external file into project",  p='listBuildButtonLayout', command = self._load_att)
         # cmds.button (label='Save Anim', ann="saves anim into an external file into project",  p='listBuildButtonLayout', command = self._save_anim)
         # cmds.button (label='Load Anim', ann="loads anim from an external file into project",  p='listBuildButtonLayout', command = self._load_anim) 
         cmds.text(label="") 
@@ -212,19 +212,20 @@ class ToolKitUI(object):
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='GrpToGrp', command = self._blend_grp)
         cmds.menuItem  (label='massBlend', command = self._mass_blend)
-        cmds.menuItem  (label='GrpSearchAndBlend', command = self._srch_and_blend)        
+        cmds.menuItem  (label='GrpSearchAndBlend', command = self._srch_and_blend) 
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='listBuildButtonLayout', command = self._mirror_object)         
-        cmds.button (label='Export multiple obj', ann="Exports a group of selected objects as separate .obj files.",p='listBuildButtonLayout', command = self._exp_obj)   
         cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='listBuildButtonLayout', command = self._clean_mod)           
         cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='listBuildButtonLayout', command = self._mirror_blend)              
         cmds.button (label='Build curve', ann="Build a curve on selected items.", p='listBuildButtonLayout', command = self._build_curve)
         cmds.button (label='Reshape to Edge', ann="Build a curve on selected items.", p='listBuildButtonLayout', command = self._reshape_to_curve)
         cmds.text(label="External folders")
-        cmds.text(label="")                       
+        cmds.text(label="")
+        cmds.button (label='Export multiple obj', bgc=[0.45, 0.5, 0.5], ann="Exports a group of selected objects as separate .obj files.",p='listBuildButtonLayout', command = self._exp_obj) 
+        cmds.button (label='Change multi file contents', bgc=[0.45, 0.5, 0.5], ann="changes file contents.",  p='listBuildButtonLayout', command = self._changing_file_contents)  
+        cmds.button (label='Change multi file names', bgc=[0.45, 0.5, 0.5], ann="changes file contents.",  p='listBuildButtonLayout', command = self._changing_files)                                        
         cmds.button (label='Open Image PS', ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='listBuildButtonLayout', command = self._open_texture_file_ps)  
         cmds.button (label='Open Image Gimp', ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='listBuildButtonLayout', command = self._open_texture_file_gmp)  
-        cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)  
-        cmds.button (label='Change file contents', ann="changes file contents.",  p='listBuildButtonLayout', command = self._changing_file_contents)  
+        cmds.button (label='Open Work folder', ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='listBuildButtonLayout', command = self._open_work_folder)   
         cmds.button (label='stream swim', p='listBuildButtonLayout', command = self._load_ssd)     
         cmds.showWindow(self.window)
 
@@ -559,7 +560,10 @@ class ToolKitUI(object):
         toolClass.openAnimWindow()
 
     def _changing_file_contents(self, arg=None):
-        toolClass.xml_transformUI()
+        toolClass.change_file_countents_UI()
+
+    def _changing_files(self, arg=None):
+        toolClass.change_file_UI()  
 
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
