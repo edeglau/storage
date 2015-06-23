@@ -42,20 +42,27 @@ class ColourPalet(object):
         cmds.menuItem( label='Bright Green' )#3
         cmds.menuItem( label='Bright Yellow' )#4
         cmds.menuItem( label='Dark Yellow' )#5    
-        cmds.menuItem( label='Dark Green' )#6     
-        cmds.menuItem( label='Dark Red' )#7    
-        cmds.menuItem( label='Maroon' )#8
-        cmds.menuItem( label='Torquise' )#9             
-        cmds.menuItem( label='Light Pink' )  
-        cmds.menuItem( label='Skin' )         
-        cmds.menuItem( label='Light Brown' )
-        cmds.menuItem( label='Forest Green' )
-        cmds.menuItem( label='Teal Green' )
-        cmds.menuItem( label='Purple' )
-        cmds.menuItem( label='Light Blue' )
-        cmds.menuItem( label='Dark Blue' )
-        cmds.menuItem( label='Darkest Blue' )
-        cmds.menuItem( label='Brown' )
+        cmds.menuItem( label='Dull Green' )#6     
+        cmds.menuItem( label='Dark Red' )#7  
+        cmds.menuItem( label='Dark Purple' )#8 
+        cmds.menuItem( label='Darkest Blue' ) #9
+        cmds.menuItem( label='Dark Green' ) #10
+        cmds.menuItem( label='Dark Blue' )#11
+        cmds.menuItem( label='Darkest Blue' )#12
+        cmds.menuItem( label='Light Pink' ) #13 
+        cmds.menuItem( label='Light Brown' )#14
+        cmds.menuItem( label='Light Blue' )#15
+        cmds.menuItem( label='Maroon' )#16
+        cmds.menuItem( label='Torquise' )#17             
+        cmds.menuItem( label='Skin' )#18
+        cmds.menuItem( label='Brown' )#19
+        cmds.menuItem( label='White' )#20     
+        cmds.menuItem( label='Pink' )#21
+        cmds.menuItem( label='Forest Green' )#22
+        cmds.menuItem( label='Teal Green' )#23
+        cmds.menuItem( label='Purple' )#24
+        cmds.menuItem( label='Black' ) #25
+        cmds.menuItem( label='Grey' ) #26
         cmds.button (label='Change Selection', w=150, p='listBuildButtonLayout', command = self._change_colour)
         cmds.showWindow(self.window)
 
@@ -66,13 +73,13 @@ class ColourPalet(object):
         queryColor=cmds.optionMenu(colMenu, q=1, sl=1)
         getSel=cmds.ls(sl=1)
         if queryColor==1:
-            color=13          
+            color=13#Bright Red
         elif queryColor==2:
-            color=6   
+            color=6#Bright blue
         elif queryColor==3:
-            color=14
+            color=14#Bright Green
         elif queryColor==4:
-            color=22
+            color=17#Bright Yellow
         elif queryColor==5:
             color=25#Dark Yellow
         elif queryColor==6:
@@ -80,29 +87,43 @@ class ColourPalet(object):
         elif queryColor==7:
             color=4#Dark Red
         elif queryColor==8:
-            color=31
+            color=8#Dark Purple
         elif queryColor==9:
-            color=28#Sky Blue    
+            color=5#Darkest Blue
         elif queryColor==10:
-            color=20#Pink
+            color=7#Dark Green 
         elif queryColor==11:
-            color=21#Orange       
-        elif queryColor==12:
-            color=24#LBrown
-        elif queryColor==13:
-            color=26#Forest Green
-        elif queryColor==14:
-            color=27#Light Teal
-        elif queryColor==15:
-            color=30#Purple
-        elif queryColor==16:
-            color=29#Light Blue
-        elif queryColor==17:
             color=15#Dark Blue
+        elif queryColor==12:
+            color=5#Darkest Blue 
+        elif queryColor==13:
+            color=20#Light Pink
+        elif queryColor==14:
+            color=24#Light brown
+        elif queryColor==15:
+            color=29#Light Blue
+        elif queryColor==16:
+            color=31#Maroon
+        elif queryColor==17:
+            color=28#Sky Blue    
         elif queryColor==18:
-            color=5#Darkest Blue            
+            color=21#Orange
         elif queryColor==19:
             color=10#Brown
+        elif queryColor==20:
+            color=16#White
+        elif queryColor==21:
+            color=9#Pink
+        elif queryColor==22:
+            color=26#Forest Green
+        elif queryColor==23:
+            color=27#Light Teal
+        elif queryColor==24:
+            color=30#Purple
+        elif queryColor==25:
+            color=1#Black  
+        elif queryColor==26:
+            color=2#Dark Grey         
         for each in getSel:
             cmds.setAttr(each+".overrideEnabled", 1)
             cmds.setAttr(each+".overrideColor", color)            
