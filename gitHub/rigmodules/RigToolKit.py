@@ -150,7 +150,7 @@ class ToolKitUI(object):
         cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
         cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode)select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
         cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
-        cmds.button (label='Connect to Curve', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._connect_to_curve)
+        cmds.button (label='Connect to Curve', ann="connect objects to a curve - select curve first and then objects",  p='listBuildButtonLayout',command = self._connect_to_curve)
         cmds.text(label="Tools")
         cmds.text(label="")         
         cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
@@ -176,7 +176,6 @@ class ToolKitUI(object):
         cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
         cmds.button (label='revert', p='listBuildButtonLayout', command = self._revert)                 
         cmds.button (label='fix undos', p='listBuildButtonLayout', command = self._turn_on_undo) 
-        cmds.button (label='fix playblast', p='listBuildButtonLayout', command = self._fix_playblast)
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
@@ -638,6 +637,4 @@ class ToolKitUI(object):
 
 inst = ToolKitUI()
 inst.create()
-
-python("playblast = None");
 
