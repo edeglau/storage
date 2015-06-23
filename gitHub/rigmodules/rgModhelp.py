@@ -11,14 +11,14 @@ class helpClass(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=900 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=800 )
         menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(600, 900)) 
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(500, 800)) 
         self.list=cmds.scrollField( editable=False, wordWrap=True, text=
 '''Button interface: what the buttons do
 
@@ -47,7 +47,11 @@ Tools
 
 "Renamer tool" - a basic renamer. has the ability to strip number, shift name parts, remove underscores, shift numbers, remove isolated numbers, replace names in bulk
 
+"Cull CV" removes every first or every other cv in a selection(you can use this to remove the (1) cv will remove the second in chain(as the vine tool fails if second and first cv are too close together)
+
 "Plot vertex" - if you're familiar with rivets, it's similar except that there is no dependency set up. it bakes a locator in space for the animation duration to the face or vertex of your choice
+
+"MultiFunctions" does a mass constraint or extrude. Constrains all items to the first selected item or extrudes first selected item as a tube along several curves(vines)
 
 "Matchmatrix" moves one object to another based on the xform command
 
@@ -59,17 +63,13 @@ Tools
 
 "ShadeNetworkSel" - this brings up the hypershade and networks the shader(s)for the selected object(s)
 
-Reset selected
+"Reset selected" - resets transforms
 
 "Duplicate move" duplicates the first selected item to the subsequent selected items positions and heirarchy
 
-"MultiFunctions" does a mass constraint or extrude. Constrains all items to the first selected item or extrudes first selected item as a tube along several curves(vines)
-
-"Cull CV" removes every first or every other cv in a selection(you can use this to remove the (1) cv will remove the second in chain(as the vine tool fails if second and first cv are too close together)
+"Revert" rolls back file to last saved
 
 "Fix Playblast" resets the playblast if in case it breaks in scene
-
-"Revert" rolls back file to last saved
 
 "Undos back on" resets the undos to be on. Maya has a bug where some plugins will turn this off
 
@@ -91,18 +91,16 @@ Attributes:
 
 "Fast attr alias" - creates a custom attribute on the second selected object to hook up the attribute of the first object to.(handy to link an attribute to a controller)
 
-"Fast SDK alias" - my own version of creating a fast set driven key. you can set your range within the window rather than manually
-
-"Fast SDK connect" - similar to the last tool except no creation, just a hook up between attributes with an SDK range.
-
-"SDK Any" - first selected object is the driver. Everything selected therafter will have an tx, ty, tz, rx, ry, rz SDK - this is a manual set but it will always key these attributes to the first(was useful for facial animation phoneme)
-
 "Copy single Attribute" - copies one attribute value to another selected objects attribute
 
 "Find Attribute" an interface to query a selected items attributes that you can hunt by name portion. You can also change attribute value through this window if number values apply
 ( does anyone feel lost with the sheer amount of attributes on the skin deformer to hunt through? later: making a way to copy preset attribute settings to an external file to load in another file to get around loading a reference file to copy )
 
 "Set Range Multi Attr" This has a window that will call up a list of attributes. you can then set a range in which a group of items attributes can be changed to that range. It has random option that will set a random value within the range. and relative so that if you want to transform in local, it will only range within a local area(randomizing curve CV position for example) or make a range of attributes across multiple items for more random feel(ive been using this to randomize cvs on curves)
+
+"Save Anim/Att" Saves anim keys and attribute values into external file(s)(works on a heirarchy)
+
+"Load Anim/Att" Opens anim keys and attribute values from external file(s)(works on a heirarchy)
 
 "copyAnim/Att" copies the animation curves and attributes from one object to another
 
@@ -112,15 +110,23 @@ Modelling
 
 "Mirror Object" mirrors objects in the X axis (rigging)
 
+"Mirror blend" for mirroring face blends(right blink//left blink, etc)(rigging)
+
 "Clean model" wipes history, resets transforms and averages normals on a model(modelling)
 
-"Mirror blend" for mirroring face blends(right blink//left blink, etc)(rigging)
+"Reshape to Edge" Select a continuous edge on one object and a continuous edge on a target object. This will bend the edge of the first object to the second(veins on leaves or quills on feathers)
 
 External folders
 
+"Export multiple obj" export multiple selections into seperate .obj files
+
+"Change multi file contents" change contents of all files in a specific folder(eg: names of a joint in an xml skin export)
+
+"Change multi file names" change the names of all files in a specific folder(eg: render images)
+
 "Open image in gimp" Will load selected image in a selected texture node in gimp
 
-"pen work folder" opens current workfolder for current scene. if untitled, will open top heirarchy.
+"Open work folder" opens current workfolder for current scene. if untitled, will open top heirarchy.
 
 ''')
         showWindow(window)
