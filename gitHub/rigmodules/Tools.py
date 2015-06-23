@@ -1481,17 +1481,21 @@ class ToolFunctions(object):
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
-        cmds.text(label="every",  p='txvaluemeter', w=80, h=25)         
-        cmds.text(label="*or%",  p='txvaluemeter', w=80, h=25) 
-        cmds.gridLayout('infotext', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18))         
-        self.remove=cmds.textField(w=40, h=25, p='infotext', text="1")
-        self.removeNth=cmds.textField(w=40, h=25, p='infotext', text="2")  
-        self.mathtype=optionMenu( label='math')   
+        cmds.text(label="every-st",  p='txvaluemeter', w=80, h=25)         
+        cmds.text(label="rebuild",  p='txvaluemeter', w=80, h=25) 
+        # cmds.gridLayout('infotext', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18))         
+        self.remove=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")
+        self.removeNth=cmds.textField(w=40, h=25, p='txvaluemeter', text="50")  
+        cmds.text(label="",  w=80, h=25)         
+        self.mathtype=optionMenu( label='')   
         menuItem( label="%")  
-        menuItem( label="*")                        
-        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 20))             
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.removeCV(remove=textField(self.remove,q=1, text=1)))
-        button (label='Go', p='BuildButtonLayout', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1), queryMaths=cmds.optionMenu(self.mathtype, q=1, sl=1)))
+        menuItem( label="*")
+        menuItem( label="/")  
+        menuItem( label="-")
+        menuItem( label="+")                  
+        menuItem( label="amount")                            
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.removeCV(remove=textField(self.remove,q=1, text=1)))      
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1), queryMaths=cmds.optionMenu(self.mathtype, q=1, sl=1)))
         showWindow(window)
         
 
@@ -1509,35 +1513,22 @@ class ToolFunctions(object):
                     removeNth=removeNth*0.01
                     createNewNumber=getNumber*removeNth
                 elif queryMaths==2:
-                    # removeNth=removeNth.split("*")[1]
                     removeNth=int(removeNth)
-                    createNewNumber=getNumber*removeNth                    
+                    createNewNumber=getNumber*removeNth   
+                elif queryMaths==3:
+                    removeNth=int(removeNth)
+                    createNewNumber=getNumber/removeNth   
+                elif queryMaths==4:
+                    removeNth=int(removeNth)
+                    createNewNumber=getNumber-removeNth      
+                elif queryMaths==5:
+                    removeNth=int(removeNth)
+                    createNewNumber=getNumber+removeNth                                                                              
                 rebuildCurve(each, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=createNewNumber, d=3, tol=1e-06)
-
-                
-    def remove_NthV1(self, removeNth): 
-        getSel=ls(sl=1, fl=1)   
-        getSel=getSel[:1]  
-        cmds.select(cl=1)
-        if nodeType(getSel[0])=="transform":
-            for each in getSel:
-                cvBucket=[]
-                for item in each.cv[::removeNth]:
-                    cvBucket.append(item)
-                for eachCV in cvBucket[1:-1]:
-                    select(eachCV, add=1)
-                    # delete()
-                    maya.mel.eval('doDelete;')
-                # cmds.rebuildCurve(medLeadCurve, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=divNum, d=3, tol=1e-06)
-        # elif nodeType(getSel[0])=="nurbsCurve":
-        #     cvBucket=[]
-        #     for each in getSel[::removeNth]:         
-        #         cvBucket.append(item)
-        #     for eachCV in cvBucket[:-1]:
-        #         delete(eachCV)
 
     def removeCV(self, remove):
         getSel=ls(sl=1, fl=1)
+        remove=int(remove)
         if nodeType(getSel[0])=="transform":         
             for each in getSel:
                 for item in each.cv[remove]:
