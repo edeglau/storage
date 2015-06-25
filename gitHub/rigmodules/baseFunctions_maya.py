@@ -31,6 +31,12 @@ objFolderPath=folderPath+"Obj\\"
 
 class BaseClass():
 
+    def median_find(self, lst):
+        even = (0 if len(lst) % 2 else 1) + 1
+        half = (len(lst) - 1) / 2
+        mysum= sum(sorted(lst)[half:half + even]) / float(even)
+        return mysum
+
     def loadSS(self):
         '''this builds my swim stream basic window'''
         import SS
@@ -38,7 +44,7 @@ class BaseClass():
         getClass=SS.ui() 
     
     def loadSSD(self):
-        '''this loads my swim stream deluxe window'''          
+        '''this loads my swim stream deluxe window'''
         import SSD
         reload (SSD)
         getClass=SSD.ui()
@@ -3474,13 +3480,6 @@ class BaseClass():
         cmds.delete(getLocation) 
 
 
-
-    def median_find(self, lst):
-        even = (0 if len(lst) % 2 else 1) + 1
-        half = (len(lst) - 1) / 2
-        mysum= sum(sorted(lst)[half:half + even]) / float(even)
-        return mysum         
-
     def plot_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
         selObj=cmds.ls(sl=1, fl=1)       
@@ -3516,69 +3515,70 @@ class BaseClass():
 
     def plot_each_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
-        selObj=cmds.ls(sl=1, fl=1)       
-        if len(selObj)==1:
-            pass
-        else:
-            print "Select 1 object" 
-        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
-        getRange=range(int(getRange))#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
-        dirDict={}
+        selObj=cmds.ls(sl=1, fl=1)
         for item in selObj:
-            getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
-            cmds.normalConstraint(item, getloc[0])
-            placeloc=cmds.spaceLocator(n=item+"lctr")
-            lst=[placeloc[0], getloc[0]]
-            makeDict={item:lst}
-            print makeDict
-            dirDict.update(makeDict)   
-            print dirDict
-        for each in getRange: 
-            for key, value in dirDict.items(): 
-                print key  
-                plotterLoc=ls(value[0])
-                constrainedLoc=ls(value[1])
-                transform=cmds.xform(key, q=True, ws=1, t=True)
-                print "received transform from key"
-                cmds.xform(plotterLoc, ws=1, t=transform)  
-                print "set transform for plotter locator"
-                cmds.SetKeyTranslate(plotterLoc)
-                print "set key for plotter locator"           
-                rotate=cmds.xform(constrainedLoc, q=True, ws=1, ro=True)
-                print "get rotate for plotter locator"
-                cmds.xform(plotterLoc, ws=1, ro=rotate)  
-                print "set rotate value for plotter locator"
-                cmds.SetKeyRotate(plotterLoc)
-                print "set rotate key for plotter locator"
-            maya.mel.eval( "playButtonStepForward;" )
-            # cmds.currentTime(each)
-            #cmds.delete(value[0])
+            cmds.select(item, r=1)
+            self.plot_vert()
+
+
+
+
+    # def plot_each_vertV1(self):
+    #     '''plots a locator to a vertice or face per keyframe in a timeline'''
+    #     selObj=cmds.ls(sl=1, fl=1)       
+    #     if len(selObj)==1:
+    #         pass
+    #     else:
+    #         print "Select 1 object" 
+    #     getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+    #     getRange=range(int(getRange))#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+    #     dirDict={}
+    #     for item in selObj:
+    #         getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+    #         cmds.normalConstraint(item, getloc[0])
+    #         placeloc=cmds.spaceLocator(n=item+"lctr")
+    #         lst=[placeloc[0], getloc[0]]
+    #         makeDict={item:lst}
+    #         dirDict.update(makeDict)   
+    #     for each in getRange: 
+    #         for key, value in dirDict.items(): 
+    #             plotterLoc=ls(value[0])
+    #             constrainedLoc=ls(value[1])
+    #             transform=cmds.xform(key, q=True, ws=1, t=True)
+    #             cmds.xform(plotterLoc, ws=1, t=transform)  
+    #             cmds.SetKeyTranslate(plotterLoc)       
+    #             rotate=cmds.xform(constrainedLoc, q=True, ws=1, ro=True)
+    #             cmds.xform(plotterLoc, ws=1, ro=rotate)  
+    #             cmds.SetKeyRotate(plotterLoc)
+    #         maya.mel.eval( "playButtonStepForward;" )
+    #         # cmds.currentTime(each)
+    #         #cmds.delete(value[0])
 
                 
-    def plot_each_vertV1(self):
-        '''plots a locator to a vertice or face per keyframe in a timeline'''
-        selObj=cmds.ls(sl=1, fl=1)       
-        if len(selObj)==1:
-            pass
-        else:
-            print "Select 1 object" 
-        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
-        getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
-        for item in selObj:
-            getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
-            cmds.normalConstraint(item, getloc[0])
-            placeloc=cmds.spaceLocator(n=item+"lctr")
-            for each in range(getRange):
-                transform=cmds.xform(item, q=True, ws=1, t=True)
-                cmds.xform(getloc[0], ws=1, t=transform)  
-                cmds.SetKeyTranslate(getloc[0])
-                cmds.xform(placeloc[0], ws=1, t=transform)
-                cmds.SetKeyTranslate(placeloc[0])               
-                rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
-                cmds.xform(placeloc[0], ws=1, ro=rotate)  
-                cmds.SetKeyRotate(placeloc[0])
-                maya.mel.eval( "playButtonStepForward;" )
-            cmds.delete(getloc[0])
+    # def plot_each_vertV1(self):
+    #     '''plots a locator to a vertice or face per keyframe in a timeline'''
+    #     selObj=cmds.ls(sl=1, fl=1)       
+    #     if len(selObj)==1:
+    #         pass
+    #     else:
+    #         print "Select 1 object" 
+    #     getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+    #     getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+    #     for item in selObj:
+    #         getloc=cmds.spaceLocator(n=item+"cnstr_lctr")
+    #         cmds.normalConstraint(item, getloc[0])
+    #         placeloc=cmds.spaceLocator(n=item+"lctr")
+    #         for each in range(getRange):
+    #             transform=cmds.xform(item, q=True, ws=1, t=True)
+    #             cmds.xform(getloc[0], ws=1, t=transform)  
+    #             cmds.SetKeyTranslate(getloc[0])
+    #             cmds.xform(placeloc[0], ws=1, t=transform)
+    #             cmds.SetKeyTranslate(placeloc[0])               
+    #             rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+    #             cmds.xform(placeloc[0], ws=1, ro=rotate)  
+    #             cmds.SetKeyRotate(placeloc[0])
+    #             maya.mel.eval( "playButtonStepForward;" )
+    #         cmds.delete(getloc[0])
 
     def onionSkin(self):
         selObj=cmds.ls(sl=1, fl=1)       
