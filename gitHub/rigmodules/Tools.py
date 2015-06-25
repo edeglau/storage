@@ -1108,7 +1108,7 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=100)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=200)
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -1965,8 +1965,7 @@ class ToolFunctions(object):
         getchildren=listRelatives(getpar[0], c=1)
         for each in selObj:
             self.toggleVis(each)
-        print "hi"
-        excGrp=[(eachChild) for eachChild in getchildren for each in selObj if eachChild not in each]
+        excGrp=((each) for each in getchildren if each not in selObj)
         for eachChild in excGrp:
             # if str(each) != str(eachChild):
             self.toggleVis(eachChild)
@@ -2392,7 +2391,7 @@ class ToolFunctions(object):
     def change_file_countents_UI(self):
         getScenePath=cmds.file(q=1, location=1)
         getScenePath="//"+getScenePath+"//"
-        self.winName = "Change Files"
+        self.winName = "Change File Contents"
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
         self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
@@ -2534,3 +2533,171 @@ class ToolFunctions(object):
 
 
 
+    def curve_rig(self):
+        influenceList=["StarSphere", "Controller"]
+        buildStyle=["Curve", "Guides"]
+        winName = "Create chain"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')      
+        rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        separator(h=10, p='selectArrayColumn')
+        gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20)) 
+        self.controllerMake=optionMenu( label='Ctrl')
+        for each in influenceList:
+            menuItem( label=each)   
+        self.buildStyle=optionMenu( label='Build') 
+        for each in buildStyle:
+            menuItem( label=each)                  
+        cmds.text(label="", w=80, h=25)            
+        cmds.text(label="name", w=80, h=25)             
+        self.namefield=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="name")
+        cmds.text(label="size", w=80, h=25) 
+        self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10") 
+        gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(100, 20))             
+        button (label='Tail guides',bgc=[0.8, 0.75, 0.6], p='BuildButtonLayout', command = lambda *args:self._tail_guides())
+        button (label='Build guides',bgc=[0.8, 0.75, 0.6], p='BuildButtonLayout', command = lambda *args:self._build_guides())
+        button (label='Build curve rig', p='BuildButtonLayout', command = lambda *args:self.build_curve_rig(ControllerSize=int(textField(self.size,q=1, text=1)), mainName=textField(self.namefield,q=1, text=1), controllerType=optionMenu(self.controllerMake, q=1, v=1), buildStyle=cmds.optionMenu(self.buildStyle, q=1, sl=1)))
+        showWindow(window)
+
+    def build_curve_rig(self, ControllerSize, mainName, controllerType, buildStyle):
+        if buildStyle==1:
+            self.build_curve_rig_curve(ControllerSize, mainName, controllerType)
+        elif buildStyle==2:
+            getBaseClass.build_curve_rig(mainName)
+
+
+
+    def build_curve_rig_curve(self, ControllerSize, mainName, controllerType):
+        print controllerType
+        curvename=cmds.ls(sl=1, fl=1)
+        getIKCurveCVs=cmds.ls(curvename[0]+".cv[*]", fl=1)
+        for each in getIKCurveCVs:
+            cmds.select(each)
+            cmds.cluster()
+            getTranslation=cmds.xform(each, q=1, t=1, ws=1)
+            getRotation=[0.0,0.0,0.0]
+            name=each.split(".")[0]+"_Ctrl"
+            grpname=each.split(".")[0]+"_grp"
+            # print each.getPosition()   
+            if controllerType==1:
+                print controllerType
+                num0, num1, num2, num3 = 1, .5, .7, .9
+                colour=13
+                getBaseClass.CCCircle(name, grpname, num0, num1, num2, num3, getTranslation, getRotation, colour)
+            elif controllerType==2:
+                print controllerType
+                colour=13
+                nrx, nry, nrz=1, 0, 0
+                getBaseClass.buildCtrl(each, name, grpname, getTranslation, getRotation, ControllerSize, colour, nrx, nry, nrz)
+
+    # def ClstrControl(self, size, colour, nrx, nry, nrz, Guides, joints):       
+    #     for each, joint in map(None, Guides, joints):
+    #         name=each.split("_guide")[0]+"_Ctrl"
+    #         grpname=each.split("_guide")[0]+"_grp"
+    #         getTranslation, getRotation=self.locationXForm(each)
+    #         self.buildCtrl(each, name, grpname, getTranslation, getRotation, size, colour, nrx, nry, nrz)
+    #         cmds.parentConstraint(name,joint)
+
+
+    # def build_curve_rig_curveV1(self, ControllerSize, mainName, controllerType):
+    #     getTopOpenGuides=[]
+    #     collectJoints=[]
+    #     curvename=ls(sl=1, fl=1)
+    #     for each in curvename:
+    #         for item in each.cv:
+    #             getTopOpenGuides.append(item)
+    #             getTranslation=cmds.xform(item, q=1, t=1, ws=1)
+    #             jointnames=item.split(".")[0]+"_Clst_jnt"
+    #             collectJoints.append(jointnames) 
+    #             # print item.getPosition()   
+    #     self.buildControllsForCurveRig(getTopOpenGuides, curvename, ControllerSize, mainName, controllerType, collectJoints)
+
+    # def build_curve_rig_guide(self, ControllerSize, mainName, controllerType):   
+    #     '''function for building a curve rig'''
+    #     getTopOpenGuides = cmds.ls(mainName + "*_guide")
+    #     getKnotValue = len(getTopOpenGuides)
+    #     curvename = mainName + "_crv"
+    #     values = []
+    #     # get point values to build curve
+    #     for each in getTopOpenGuides:
+    #         translate, rotate = self.locationXForm(each)
+    #         values.append(translate)
+    #     self.buildCurves(values, curvename, getKnotValue)  #build top curve
+    #     collectJoints=self.buildJointClustersInt(getTopOpenGuides)
+    #     self.buildControllsForCurveRig(getTopOpenGuides, curvename, ControllerSize, mainName, controllerType, collectJoints)
+
+
+    # def buildControllsForCurveRig(self, getTopOpenGuides, curvename, ControllerSize, mainName, controllerType, collectJoints):   
+    #     self.buildJointClusters(getTopOpenGuides, curvename, ControllerSize, mainName, controllerType, collectJoints)#build controllers and the bound joints for the top lid curve(this pulls into shapes)
+    #     getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
+    #     cmds.parent(mainName+"01_Clst_jnt", getRigGrp)
+    #     cmds.parent(mainName+"_crv", getRigGrp)
+    #     getFreeStuff=[(each) for each in cmds.ls("name*_grp")]
+    #     for each in getFreeStuff: 
+    #         cmds.parent(each, getRigGrp)
+
+
+    # def buildCurves(self, values, name, getKnotValue):
+    #     getKnotValueList = list(range(getKnotValue))
+    #     getKnotValueList.insert(0, 0)
+    #     getKnotValueList.append(getKnotValue)
+    #     try:
+    #         CurveMake = cmds.curve(n=name, d=1, p=values)
+    #     except:
+    #         print "Check the name of the guide you are using to build this"       
+
+    # def buildJointClustersInt(self, getTopOpenGuides):       
+    #     '''function for skinning bones to a curve and making a curv rig'''
+    #     cmds.select(cl=1) 
+    #     collectJoints=[]
+    #     for each in Guides:
+    #         getTranslation=cmds.xform(each, q=1, t=1, ws=1)
+    #         jointnames=each.split("_guide")[0]+"_Clst_jnt"
+    #         cmds.joint(n=jointnames, p=getTranslation)     
+    #         collectJoints.append(jointnames)   
+    #     return collectJoints
+
+    # def buildJointClusters(self, getTopOpenGuides, curvename, ControllerSize, mainName, controllerType, collectJoints):
+    #     print curvename
+    #     getIKCurveCVs=cmds.ls(curvename+".cv[*]", fl=1)
+    #     print getIKCurveCVs
+    #     for each , bone in map(None, getIKCurveCVs[:-1], collectJoints[:-1]):
+    #         cmds.select(clear=1)
+    #         cmds.select(each)
+    #         cmds.select( bone, add=1)
+    #         cmds.bindSkin(each, bone, tsb=1)
+    #     getlastjoint=collectJoints[-1:] 
+    #     getverylastCVs=getIKCurveCVs[-1:]
+    #     for each in getverylastCVs:
+    #         cmds.select(each) 
+    #         createdCluster=cmds.cluster()
+    #         cmds.select(each, add=1)    
+    #         cmds.parent(createdCluster, getlastjoint)  
+    #     if queryColor==1:
+    #         self.buildStarSphereClusterControl(ControllerSize, getTopOpenGuides, collectJoints)
+    #     elif queryColor==2:
+    #         self.buildControllerClusterControl(ControllerSize, getTopOpenGuides, collectJoints)
+
+    # def buildStarSphereClusterControl(self, ControllerSize, Guides, collectJoints):
+    #     '''uses the CCCircle(sphere controller) script to make a broken circle shaped controller(if you get tired of seeing circles)'''
+    #     num0, num1, num2, num3 = 1*ControllerSize, .5*ControllerSize, .7*ControllerSize, .9*ControllerSize
+    #     colour=13
+    #     for each, joint in map(None, getTopOpenGuides, collectJoints):
+    #         name=each.split("_guide")[0]+"_Ctrl"
+    #         grpname=each.split("_guide")[0]+"_grp"
+    #         getTranslation, getRotation=self.locationXForm(each)
+    #         self.CCCircle(name, grpname, num0, num1, num2, num3, getTranslation, getRotation, colour)
+    #         cmds.parentConstraint(name,joint)
+            
+    # def buildControllerClusterControl(self, ControllerSize, getTopOpenGuides, collectJoints):
+    #     '''builds the sphere controller used in the build curve rig function'''
+    #     colour=13
+    #     nrx, nry, nrz=1, 0, 0
+    #     self.ClstrControl(ControllerSize, colour, nrx, nry, nrz, getTopOpenGuides, collectJoints)
