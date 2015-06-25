@@ -104,7 +104,7 @@ class ChainRig(object):
     def build_chain(self, arg=None):
         axisList=["X", "Y", "Z"] 
         influenceList= ["curved", "straight"] 
-        winName = "create tail guides"
+        winName = "Create chain"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
@@ -253,7 +253,7 @@ class ChainRig(object):
         for each in mainChainguides[1:-1]:
 #         for each in getOdd[:-1]:
             fkmainChainSecondaryJoint=each.split("_guide")[0]+"FK_jnt"  
-            name=each.split("_guide")[0]+"_FK_ctrl"  
+            name=each.split("_guide")[0]+"_FK_Ctrl"  
             grpname=each.split("_guide")[0]+"_FK_grp"  
             size=ControllerSize
             colour=6  
@@ -367,7 +367,6 @@ class ChainRig(object):
             getClass.createGrpCtrl()
             getClustrGrp=cmds.ls(sl=1)
             newClstrs=getClustrGrp[0]+"_grp"
-            print newClstrs
             clusterBucket.append(newClstrs)
         #=======================================================================
         # 
@@ -551,18 +550,7 @@ class ChainRig(object):
         print "Tidying up"
         self.tidyUp(mainName)
 
-    def tidyUp(self, mainName):
-        print "adding micro control visibility"
-        cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
-        clstrCtrlrs=ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")
-        for each in clstrCtrlrs:
-            cmds.connectAttr(mainName+"Main_Ctrl.microVisible", each+".visibility", f=1)   
-        getFirstClstrCtrl=cmds.ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")[0] 
-        print "adding joints to beginning controller"
-        cmds.parent(mainName+"01_jnt", getFirstClstrCtrl)
-        cmds.parent(mainName+"01FK_jnt", getFirstClstrCtrl)
-        cmds.parent(mainName+"01IK_jnt", getFirstClstrCtrl)      
-        cmds.parent(mainName+"02_FK_grp", mainName+"Main_Ctrl")
+
 
     #getCVs
     def getCurveCVs(self, microLeadCurve):
@@ -604,7 +592,7 @@ class ChainRig(object):
                 getNum=re.sub("\D", "", str(eachCV))
                 getNum=int(getNum)
                 getNum="%02d" % (getNum,)
-                aname=controllerType.split("_grp")[0]+"_ctrl"
+                aname=controllerType.split("_grp")[0]+"_Ctrl"
                 name=mainName+str(getNum)+aname
                 grpname= mainName+str(getNum)+controllerType
                 CVbucketList.append(eachCV)
@@ -644,6 +632,7 @@ class ChainRig(object):
                 getpth=str(motionPath)
                 setAttr(motionPath+".fractionMode", False)
                 setAttr(motionPath+".uValue", getParam) 
+        
 
     def straightLine(self, mainName,  nrx, nry, nrz):
         print "building major controllers"
@@ -751,3 +740,57 @@ class ChainRig(object):
         cmds.parent("End"+mainName+"IK_grp",mainName+"Main_Ctrl")
         cmds.parent(mainName+"Secondary_IK_Ctrl",mainName+"Main_Ctrl")
         cmds.parent("Base"+mainName+"_Ctrl",mainName+"Main_Ctrl")        
+
+
+    def tidyUp(self, mainName):
+        print "adding micro control visibility"
+        cmds.addAttr(mainName+"Main_Ctrl", ln="microVisible", at="double",k=1, nn="microVisible")
+        clstrCtrlrs=ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")
+        for each in clstrCtrlrs:
+            cmds.connectAttr(mainName+"Main_Ctrl.microVisible", each+".visibility", f=1)   
+        getFirstClstrCtrl=cmds.ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl")[0] 
+        print "adding joints to beginning controller"
+        cmds.parent(mainName+"01_jnt", getFirstClstrCtrl)
+        cmds.parent(mainName+"01FK_jnt", getFirstClstrCtrl)
+        cmds.parent(mainName+"01IK_jnt", getFirstClstrCtrl)      
+        cmds.parent(mainName+"02_FK_grp", mainName+"Main_Ctrl")
+        getClstrCtrlrs=cmds.ls(mainName+"IKcrv*_clstrHandle_grp_Ctrl_grp")
+        for each in getClstrCtrlrs:
+            cmds.parent(each, mainName+"_Rig")
+        #create controller sets
+
+        cmds.select(cl=1)
+        getControllerSets=[(each) for each in cmds.ls(mainName+"Main_Ctrl") if cmds.nodeType(each)=="transform"]
+        cmds.sets(n=mainName+"_Controllers")
+
+        getControllerSets=[(each) for each in cmds.ls("*max_Ctrl") if cmds.nodeType(each)=="transform"]
+        if len(getControllerSets)>0:
+            cmds.sets(getControllerSets, n=mainName+"max_Controllers")
+            cmds.sets(mainName+"max_Controllers", add=mainName+"_Controllers")
+
+        getControllerSets=[(each) for each in cmds.ls("*maj_Ctrl") if cmds.nodeType(each)=="transform"]
+        if len(getControllerSets)>0:        
+            cmds.sets(getControllerSets, n=mainName+"maj_Controllers")
+            cmds.sets(mainName+"maj_Controllers", add=mainName+"_Controllers")
+
+        getControllerSets=[(each) for each in cmds.ls("*med_Ctrl") if cmds.nodeType(each)=="transform"]
+        if len(getControllerSets)>0:
+            cmds.sets(getControllerSets, n=mainName+"med_Controllers")
+            cmds.sets(mainName+"med_Controllers", add=mainName+"_Controllers")
+
+        getControllerSets=[(each) for each in cmds.ls("*_clstrHandle_grp_Ctrl") if cmds.nodeType(each)=="transform"]
+        if len(getControllerSets)>0:
+            cmds.sets(getControllerSets, n=mainName+"micro_Controllers")
+            cmds.sets(mainName+"micro_Controllers", add=mainName+"_Controllers")
+
+        getControllerSets=[(each) for each in cmds.ls("*FK_Ctrl") if cmds.nodeType(each)=="transform"]
+        if len(getControllerSets)>0:
+            cmds.sets(getControllerSets, n=mainName+"FK_Controllers")
+            cmds.sets(mainName+"FK_Controllers", add=mainName+"_Controllers")
+
+        #create skin joint set
+        grpone=cmds.ls("*FK_jnt")
+        grptwo=cmds.ls("*IK_jnt")
+        removeFromControllers=grpone+grptwo
+        getControllerSets=[(each) for each in cmds.ls(mainName+"*_jnt", type="joint") if each not in removeFromControllers]
+        cmds.sets(getControllerSets, n=mainName+"skinjoints")       
