@@ -23,7 +23,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+scriptPath=""
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -181,8 +181,6 @@ class ToolKitUI(object):
         cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
         cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
-        cmds.button (label='**Dynsettings', bgc=[0.33, 0.27, 0.30], ann="Sets cloth defaults",p='listBuildButtonLayout', command = self._cloth_dyn)
-        cmds.button (label='**SkinDEF', bgc=[0.33, 0.27, 0.30], ann="sets prime skin deformer values.",p='listBuildButtonLayout', command = self._skin_def)        
         cmds.button (label='stream swim', bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._load_ssd) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
