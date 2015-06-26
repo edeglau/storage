@@ -1481,13 +1481,17 @@ class BaseClass():
         cmds.setAttr(newBucket[2]+".overrideColor", colour3)     
         return xCircmake
 
+
     def build_a_curve(self):
         getTopOpenGuides=cmds.ls(sl=1, fl=1)
+        self.build_a_curve_callup(getTopOpenGuides)
+
+    def build_a_curve_callup(self, selectedObjects):
         values=[]
-        for each in getTopOpenGuides:#get point values to build curve
+        for each in selectedObjects:#get point values to build curve
             transformWorldMatrix = cmds.xform(each, q=True, wd=1, t=True)  
             values.append(transformWorldMatrix)
-        cmds.curve(n=getTopOpenGuides[0]+"_crv", d=3, p=values)        
+        cmds.curve(n=selectedObjects[0]+"_crv", d=3, p=values)        
 
     def makeJoint(self):
         '''This creates a joint at a selection'''
@@ -1739,7 +1743,7 @@ class BaseClass():
         getRigGrp=cmds.group( em=True, name=mainName+'_Rig' )
         cmds.parent(mainName+"01_Clst_jnt", getRigGrp)
         cmds.parent(mainName+"_crv", getRigGrp)
-        getFreeStuff=[(each) for each in cmds.ls("name*_grp")]
+        getFreeStuff=[(each) for each in cmds.ls(mainName+"*_grp")]
         for each in getFreeStuff: 
             cmds.parent(each, getRigGrp)        
     def buildCurves(self, values, name, getKnotValue):
@@ -3210,7 +3214,8 @@ class BaseClass():
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
         if len(selObj)<2:
-            print "must select a deformed shape and the mesh to apply the reverse mirror to"
+            print "Must select a deformed shape and the neutral shape to apply the reverse mirror to."
+            return
         else:
             pass
         cmds.duplicate(selObj[1],n="shape_Scale")
