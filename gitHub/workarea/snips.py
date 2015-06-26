@@ -112,9 +112,9 @@ import deformerControl
 reload (deformerControl)
 getClass=deformerControl.DeformerControl()    
 
-exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/rigModules/RigToolKit.py'))
+exec(open('/usr//rigModules/RigToolKit.py'))
 ToolKitUI()
-exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//RigToolKit.py'))
+exec(open('//usr//RigToolKit.py'))
 ToolKitUI()
 
 secondpart=cmds.ls(sl=1)
