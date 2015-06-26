@@ -79,7 +79,15 @@ getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
 
-
+closeWindow=[
+            'CommandWindow', 
+            'MayaWindow', 
+            'shelfEditorWin', 
+            'ColorEditor',
+            'outlinerPanel1Window',
+            'scriptEditorPanel1Window',
+            'Rig_Tool_Kit',
+            'selectArrayWindow']
 
 
 
@@ -108,119 +116,125 @@ class ToolKitUI(object):
 
         cmds.frameLayout('topRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='topRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.scrollLayout ('selectArrayColumn', parent = 'rMainRow', w=350, h=900)
         # cmds.gridLayout('topGridLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
 
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='etchedIn', bv=5, p='selectArrayColumn')
-        cmds.rowLayout  (' LowerMainRow ', w=350, numberOfColumns=6, p='LrRow')        
-        cmds.gridLayout('listBuildButtonLayout', p='LrRow', numberOfColumns=2, cellWidthHeight=(150, 20))   
-
+        cmds.frameLayout('FileInterface', cll=1, cl=1, bgc=[0.15, 0.15, 0.15],  label='File/session', lv=1, nch=1, borderStyle='out', bv=2, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.gridLayout('listBuildButtonLayout', p='FileInterface', numberOfColumns=2, cellWidthHeight=(150, 20))      
+        cmds.button (label='Outliner win',bgc=[0.65, 0.75, 0.75], p='listBuildButtonLayout', command = self.outlinerWindow_callup)          
         cmds.button (label='Clean Interface', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = lambda *args:self.clear_superflous_windows())
         cmds.button (label='Help', bgc=[0.2, 0.2, 0.2],p='listBuildButtonLayout', command = self._help)
         cmds.button (label='revert', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = self._revert)
         cmds.button (label='fix playblast', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = self._fix_playblast)
         cmds.button (label='fix undos', bgc=[0.2, 0.2, 0.2], ann="This turns undos back on", p='listBuildButtonLayout', command = self._turn_on_undo)
-        cmds.text(label="") 
-        cmds.separator()
-        cmds.separator()        
-        cmds.text(label="Rig setup")          
-        cmds.text(label="")  
+        cmds.frameLayout('sep0', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.separator(h=1, p='sep0', bgc=[0.0, 0.0, 0.0]) 
 
-        cmds.button (label='Guides Tool', ann="This is the guide tool menu to build the guides that creates the MG rig system", bgc=[0.7, 0.7, 0.7],p='listBuildButtonLayout', command = self._guides)
-#        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='listBuildButtonLayout', command = self._rig_biped)
-        cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_biped_mirror)
-        cmds.button (label='Build Quad', ann="This is the Quad MG rig system", bgc=[0.6, 0.65, 0.65], p='listBuildButtonLayout', command = self._rig_quad)
-        cmds.button (label='Face Hugger', ann="This is the Face Hugger rig", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._rig_face)                
-        cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._skinning)       
-        cmds.text(label="")         
-        cmds.text(label="Mini rigs")          
-        cmds.text(label="")              
-        cmds.button (label='CurveRig', bgc=[0.45, 0.5, 0.5], ann="Isolated joints that control CVs along a curve with no IK or FK dependencies. Create a guide chain then use this to create a curve rig. USES: Tongue, worm, eyelash line rig", p='listBuildButtonLayout', command = self._curve_rig)    
-        cmds.button (label='ChainRig', bgc=[0.45, 0.5, 0.5], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='listBuildButtonLayout', command = self.chain_rig)
-        cmds.button (label='FinallingRig', bgc=[0.45, 0.5, 0.5], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='listBuildButtonLayout', command = self._finalling_rig)
-        cmds.button (label='Multi functions',bgc=[0.45, 0.5, 0.5],ann="this builds a constraint on a group of selected items to the first selected item", p='listBuildButtonLayout',  command = self._constraint_maker)
-        cmds.button (label='Insert Grp/Clst/Jnt', bgc=[0.55, 0.6, 0.6], ann="Inserts a group or add a joint or cluster above or as an influence to a controller or object; zeroes out object. USES: set default position in a rig controller/use a deformer joint or cluster to set position of an object",  p='listBuildButtonLayout', command = self._grp_insert)
+        cmds.frameLayout('Rigs', bgc=[0.15, 0.15, 0.15], cll=1, cl=1, label='Rigs', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.gridLayout('RigsButtonLayout', p='Rigs', numberOfColumns=2, cellWidthHeight=(150, 20))  
+
+        cmds.button (label='Guides Tool', ann="This is the guide tool menu to build the guides that creates the MG rig system", bgc=[0.1, 0.5, 0.5],p='RigsButtonLayout', command = self._guides)
+#        cmds.button (label='Build Biped', ann="This is the biped MG rig system - non-mirrored arms", bgc=[0.55, 0.55, 0.55], p='RigsButtonLayout', command = self._rig_biped)
+        cmds.button (label='Build BipedMirror', ann="This is the biped MG rig system - mirrored arms", bgc=[0.1, 0.5, 0.5], p='RigsButtonLayout', command = self._rig_biped_mirror)
+        cmds.button (label='Build Quad', ann="This is the Quad MG rig system", bgc=[0.1, 0.5, 0.5], p='RigsButtonLayout', command = self._rig_quad)
+        cmds.button (label='Face Hugger', ann="This is the Face Hugger rig", bgc=[0.1, 0.5, 0.5], p='RigsButtonLayout', command = self._rig_face)                
+        cmds.button (label='Skinning Tool', ann="This is the Skinning tool", bgc=[0.1, 0.5, 0.5], p='RigsButtonLayout', command = self._skinning)       
+        cmds.frameLayout('sep1', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.separator(h=1, p='sep1', bgc=[0.0, 0.0, 0.0]) 
+
+        cmds.frameLayout('MiniRigs', bgc=[0.15, 0.15, 0.15], cll=1, label='Mini Rigs', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.gridLayout('MiniRigsButtonLayout', p='MiniRigs', numberOfColumns=2, cellWidthHeight=(150, 20))             
+        cmds.button (label='Insert Grp/Clst/Jnt', bgc=[0.7, 0.7, 0.7], ann="Inserts a group or add a joint or cluster above or as an influence to a controller or object; zeroes out object. USES: set default position in a rig controller/use a deformer joint or cluster to set position of an object",  p='MiniRigsButtonLayout', command = self._grp_insert)
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='Grp insert', command = self._grp_insert)
         cmds.menuItem  (label='Clstr insert', command = self._clstr_insert)
         cmds.menuItem  (label='Jnt insert', command = self._jnt_insert)        
-        # cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._grp_insert)          
-        # cmds.button (label='Clstr insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._clstr_insert)
-        # cmds.button (label='Jnt insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='listBuildButtonLayout', command = self._jnt_insert)
-        cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='listBuildButtonLayout', command = self._rivet)             
-        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. Adds selected object to a new created rivet. Select two edges of one object and then the object you want to rivet to the first. USES: buttons", p='listBuildButtonLayout', command = self._rivet_obj)             
-        cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator for skinning geometry to. USES: eyelashes", p='listBuildButtonLayout', command = self._bone_rivet) 
-        cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides. USES: insect leg chains with no prebuilt rig", p='listBuildButtonLayout', command = self._build_joints) 
-        cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller.", p='listBuildButtonLayout', command = self._build_ik)         
-        cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute.", p='listBuildButtonLayout', command = self._stretch_ik)    
-        cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='listBuildButtonLayout', command = self._stretch_ik_spline)    
-        cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='listBuildButtonLayout', command = self.addEyeDir)   
-        cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode)select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='listBuildButtonLayout',command = self._switch_driven_key_window)                  
-        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='listBuildButtonLayout',command = self._blend_colour_window)
-        cmds.button (label='Connect to Curve', ann="connect objects to a curve - select curve first and then objects",  p='listBuildButtonLayout',command = self._connect_to_curve)
-        cmds.text(label="Tools")
-        cmds.text(label="")         
-        cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._anim_tools)         
-        cmds.button (label='Material tool', ann="This opens a material tool for manipulating and naming shaders and shader nodes" , bgc=[0.1, 0.5, 0.5], p='listBuildButtonLayout', command = self._material_namer)  
-#        cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._sets_win)
-        cmds.button (label='Edit sets', ann="Add and subtract selected objects/verts from a set", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_sets_win)            
-#        cmds.button (label='Edit Dyn sets', ann="Add and subtract selected objects/verts from a dynamic set", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._edit_nsets_win) 
-        cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._select_array) 
-        cmds.button (label='Renamer Tool', ann="Launches a renamer tool.", bgc=[0.45, 0.5, 0.5],p='listBuildButtonLayout', command = self._renamer)          
-        cmds.button (label='Plot vertex', bgc=[0.45, 0.5, 0.5], ann="Plots a locator along a vertex or face within keyframe range", p='listBuildButtonLayout', command = self._plot_vert)                               
-        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._remove_CV)         
-        cmds.button (label='Hidden grp', bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
-        cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='listBuildButtonLayout', command = self._copy_into_grp)
-        cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='listBuildButtonLayout', command = self._wrap_ta_grp)
-        cmds.button (label='ResetSelected', p='listBuildButtonLayout', ann="This will reset the selected to 0.0(transforms only - will not affect control box attributes)", command = self._reset_selected)
-        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='listBuildButtonLayout', command = self._erase_anim)   
-        cmds.button (label='Toggle Nullify object', ann="Hides object and makes unkeyable. USES: hide locators from animators", p='listBuildButtonLayout', command = self._disappear)                               
-        cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='listBuildButtonLayout', command = self._mass_movecstr)                               
-        cmds.button (label='MatchMatrix', p='listBuildButtonLayout', ann="This will match the exact matrix of the first selection", command = self._match_matrix)
-        cmds.button (label='MirrorTransform', p='listBuildButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
-        cmds.button (label='Duplicate Move', p='listBuildButtonLayout', command = self._dup_move)
-        cmds.button (label='ShadeNetworkSel', p='listBuildButtonLayout', command = self._shade_network)
-        cmds.button (label='PolyCheck', p='listBuildButtonLayout', command = self._poly_check) 
-        cmds.button (label='stream swim', bgc=[0.45, 0.5, 0.5], p='listBuildButtonLayout', command = self._load_ssd) 
+        cmds.button (label='CurveRig', bgc=[0.55, 0.6, 0.6], ann="Isolated joints that control CVs along a curve with no IK or FK dependencies. Create a guide chain then use this to create a curve rig. USES: Tongue, worm, eyelash line rig", p='MiniRigsButtonLayout', command = self._curve_rig)    
+        cmds.button (label='ChainRig', bgc=[0.55, 0.6, 0.6], ann="An FK/IK tail rig. Create a guide chain and then create a rig chain that has both IK/FK and a stretch attribute. USES: Rope rig", p='MiniRigsButtonLayout', command = self.chain_rig)
+        cmds.button (label='FinallingRig', bgc=[0.55, 0.6, 0.6], ann="Mini joint rigs. Creates a bone connected to a controller to be added to outfits or to a simple prop. Select object or vert to add. If using vert, the resulting joint needs to be added and weight painted", p='MiniRigsButtonLayout', command = self._finalling_rig)
+        cmds.button (label='Multi functions',bgc=[0.55, 0.6, 0.6],ann="this builds a constraint on a group of selected items to the first selected item", p='MiniRigsButtonLayout',  command = self._constraint_maker)
+        # cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._grp_insert)          
+        # cmds.button (label='Clstr insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._clstr_insert)
+        # cmds.button (label='Jnt insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._jnt_insert)
+        cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='MiniRigsButtonLayout', command = self._rivet)             
+        cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. Adds selected object to a new created rivet. Select two edges of one object and then the object you want to rivet to the first. USES: buttons", p='MiniRigsButtonLayout', command = self._rivet_obj)             
+        cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator for skinning geometry to. USES: eyelashes", p='MiniRigsButtonLayout', command = self._bone_rivet) 
+        cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides. USES: insect leg chains with no prebuilt rig", p='MiniRigsButtonLayout', command = self._build_joints) 
+        cmds.button (label='build IK', ann="Adds ik to handle. Select root bone, select end bone and select controller. Will parent ik handle to controller.", p='MiniRigsButtonLayout', command = self._build_ik)         
+        cmds.button (label='Stretch IK',ann="select controller and ikhandle to link up and add stretch attribute.", p='MiniRigsButtonLayout', command = self._stretch_ik)    
+        cmds.button (label='Stretch IKspline', ann="adds a stretch to a spline IK", p='MiniRigsButtonLayout', command = self._stretch_ik_spline)    
+        cmds.button (label='EyeDir', ann="Adds a curve to represent a pupil to the eye joint. Must have 'EyeOrient_*_jnt' in scene to parent to.", p='MiniRigsButtonLayout', command = self.addEyeDir)   
+        cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode)select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='MiniRigsButtonLayout',command = self._switch_driven_key_window)                  
+        cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='MiniRigsButtonLayout',command = self._blend_colour_window)
+        cmds.button (label='Connect to Curve', ann="connect objects to a curve - select curve first and then objects",  p='MiniRigsButtonLayout',command = self._connect_to_curve)
+        cmds.frameLayout('sep2', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.separator(h=1, p='sep2') 
+
+        cmds.frameLayout('Tool', bgc=[0.15, 0.15, 0.15], cll=1, label='Tools', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.gridLayout('ToolButtonLayout', p='Tool', numberOfColumns=2, cellWidthHeight=(150, 20))      
+        cmds.button (label='Anim Tools', ann="This opens the animator tools menu", bgc=[0.1, 0.5, 0.5], p='ToolButtonLayout', command = self._anim_tools)         
+        cmds.button (label='Material tool', ann="This opens a material tool for manipulating and naming shaders and shader nodes" ,  bgc=[0.1, 0.5, 0.5], p='ToolButtonLayout', command = self._material_namer)  
+        cmds.button (label='SelectArray Tool', ann="Launches Select Array tool. Workspace for creating selections, sets and finding nodes in complicated scenes.", bgc=[0.65, 0.75, 0.75], p='ToolButtonLayout', command = self._select_array) 
+        cmds.button (label='Stream Swim', bgc=[0.65, 0.75, 0.75], p='ToolButtonLayout', command = self._load_ssd) 
+        cmds.button (label='Renamer Tool', ann="Launches a renamer tool.",  bgc=[0.65, 0.75, 0.75],p='ToolButtonLayout', command = self._renamer)          
+#        cmds.button (label='Add to Body set', ann="This adds a selection to the MG named bodyset(used when adding wardrobe finalling controllers)", bgc=[0.55, 0.6, 0.6], p='ToolButtonLayout', command = self._sets_win)
+        cmds.button (label='Edit sets', ann="Add and subtract selected objects/verts from a set", bgc=[0.55, 0.6, 0.6], p='ToolButtonLayout', command = self._edit_sets_win)            
+#        cmds.button (label='Edit Dyn sets', ann="Add and subtract selected objects/verts from a dynamic set", bgc=[0.55, 0.6, 0.6], p='ToolButtonLayout', command = self._edit_nsets_win) 
+        cmds.button (label='Plot vertex', bgc=[0.55, 0.6, 0.6], ann="Plots a locator along a vertex or face within keyframe range", p='ToolButtonLayout', command = self._plot_vert)                               
+        cmds.button (label='cull CVs', ann="This is the Skinning tool", bgc=[0.55, 0.6, 0.6], p='ToolButtonLayout', command = self._remove_CV)         
+        cmds.button (label='Hidden grp', bgc=[0.55, 0.6, 0.6], p='ToolButtonLayout', ann="A menu for toggle hiding in group heirarchies" ,command = self._hidden)   
+        cmds.button (label='Copy To Grps', ann="Copy's object to group selected.",p='ToolButtonLayout', command = self._copy_into_grp)
+        cmds.button (label='Wrap TA Groups', ann="Wrap objects under selection 2 group to selection 1.",p='ToolButtonLayout', command = self._wrap_ta_grp)
+        cmds.button (label='ResetSelected', p='ToolButtonLayout', ann="This will reset the selected to 0.0(transforms only - will not affect control box attributes)", command = self._reset_selected)
+        cmds.button (label='Wipe Anim From Obj', ann="Resets all Ctrl on selected to zero. Wipes animation", p='ToolButtonLayout', command = self._erase_anim)   
+        cmds.button (label='Toggle Nullify object', ann="Hides object and makes unkeyable. USES: hide locators from animators", p='ToolButtonLayout', command = self._disappear)                               
+        cmds.button (label='Mass Move', ann="moves first selected to second selected(mass select first and then where to move last)", p='ToolButtonLayout', command = self._mass_movecstr)                               
+        cmds.button (label='MatchMatrix', p='ToolButtonLayout', ann="This will match the exact matrix of the first selection", command = self._match_matrix)
+        cmds.button (label='MirrorTransform', p='ToolButtonLayout', ann="This will mirror the transform to the opposite controller", command = self._mirror_transform) 
+        cmds.button (label='Duplicate Move', p='ToolButtonLayout', command = self._dup_move)
+        cmds.button (label='ShadeNetworkSel', p='ToolButtonLayout', command = self._shade_network)
+        cmds.button (label='PolyCheck', p='ToolButtonLayout', command = self._poly_check) 
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
         cmds.frameLayout('sep3', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep3') 
 
-        cmds.frameLayout('ControllerFrameLayout', bgc=[0.0, 0.0, 0.0], cll=1, label='Controllers', lv=1, nch=1, borderStyle='out', bv=1, p='selectArrayColumn') 
-        cmds.gridLayout('ControllerButtonLayout', p='ControllerFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20))           
-        cmds.button (label='Sandwich ctrl', bgc=[0.45, 0.5, 0.5], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='ControllerButtonLayout', command = self._sandwich_control)          
-        cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.45, 0.5, 0.5], p='ControllerButtonLayout', command = self._make_shape)
-        cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.45, 0.5, 0.5], p='ControllerButtonLayout', command = self._change_colours)    
-        cmds.button (label='Limits', ann="An interface for creating limits on rigs. Can globally set, load or reset a rig.", bgc=[0.45, 0.5, 0.5], p='ControllerButtonLayout', command = self._change_limit_values)    
-        cmds.button (label='Combine Shapes', ann="Combines selected curves into a single shape", p='ControllerButtonLayout', command = self._group_shapes)   
-        cmds.frameLayout('sep4', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='ControllerButtonLayout')
-        cmds.separator(h=1, p='sep4') 
 
-        cmds.frameLayout('AttributesFrameLayout', bgc=[0.0, 0.0, 0.0], cll=1, label='Attributes', lv=1, nch=1, borderStyle='out', bv=1, p='selectArrayColumn') 
+        cmds.frameLayout('AttributesFrameLayout',bgc=[0.15, 0.15, 0.15], cll=1, label='Attributes', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
         cmds.gridLayout('AttributeButtonLayout', p='AttributesFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20))   
-        cmds.button (label='Fast Float', bgc=[0.45, 0.5, 0.5], ann="Add a simple 0-1 float attribute to selected",  p='AttributeButtonLayout',command = self._fast_float)
-        cmds.button (label='Fast Connect', bgc=[0.45, 0.5, 0.5], ann="Connect attributes between two selections",  p='AttributeButtonLayout',command = self._quickCconnect_window)
-        cmds.button (label='Fast Attr Alias', bgc=[0.45, 0.5, 0.5], ann="Creates a float alias attributes from first selection to second(no min/max)",  p='AttributeButtonLayout',command = self._createAlias_window)                  
-        cmds.button (label='Fast SDK Alias', bgc=[0.45, 0.5, 0.5], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='AttributeButtonLayout',command = self._createSDK_alias_window)
-        cmds.button (label='Fast SDK Connect', bgc=[0.45, 0.5, 0.5], ann="Connects between two attributes with the option to set SDK",  p='AttributeButtonLayout',command = self._connSDK_alias_window)
-        cmds.button (label='Copy Single Attr', bgc=[0.45, 0.5, 0.5], ann="copies a singular attribute properties from one selection to another",  p='AttributeButtonLayout',command = self._quickCopy_single_Attr_window)
-        cmds.button (label='Fetch Attribute', bgc=[0.45, 0.5, 0.5], ann="searches for attribute by name",  p='AttributeButtonLayout', command = self._findAttr_window)                                                         
-        cmds.button (label='Set Range Multi Attr', bgc=[0.45, 0.5, 0.5], ann="sets same attribute across an object selection between a set range",  p='AttributeButtonLayout', command = self._range_attr_window)                                                         
-        cmds.button (label='Save Attr/Anim', bgc=[0.45, 0.5, 0.5], ann="saves all attributes into an external file into project",  p='AttributeButtonLayout', command = self._save_att) 
-        cmds.button (label='Load Attr/Anim', bgc=[0.45, 0.5, 0.5], ann="loads attributes from an external file into project",  p='AttributeButtonLayout', command = self._load_att)
-        cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.45, 0.5, 0.5],p='AttributeButtonLayout', command = self._set_any)               
+        cmds.button (label='Fetch Attribute', bgc=[0.65, 0.75, 0.75], ann="searches for attribute by name",  p='AttributeButtonLayout', command = self._findAttr_window)                                                         
+        cmds.button (label='Fast Float', bgc=[0.55, 0.6, 0.6], ann="Add a simple 0-1 float attribute to selected",  p='AttributeButtonLayout',command = self._fast_float)
+        cmds.button (label='Fast Connect', bgc=[0.55, 0.6, 0.6], ann="Connect attributes between two selections",  p='AttributeButtonLayout',command = self._quickCconnect_window)
+        cmds.button (label='Fast Attr Alias', bgc=[0.55, 0.6, 0.6], ann="Creates a float alias attributes from first selection to second(no min/max)",  p='AttributeButtonLayout',command = self._createAlias_window)                  
+        cmds.button (label='Fast SDK Alias', bgc=[0.55, 0.6, 0.6], ann="Creates and connects attribute between two objects, first attribute to a new attribute on the second with the option to set SDK",  p='AttributeButtonLayout',command = self._createSDK_alias_window)
+        cmds.button (label='Fast SDK Connect', bgc=[0.55, 0.6, 0.6], ann="Connects between two attributes with the option to set SDK",  p='AttributeButtonLayout',command = self._connSDK_alias_window)
+        cmds.button (label='Copy Single Attr', bgc=[0.55, 0.6, 0.6], ann="copies a singular attribute properties from one selection to another",  p='AttributeButtonLayout',command = self._quickCopy_single_Attr_window)
+        cmds.button (label='Set Range Multi Attr', bgc=[0.55, 0.6, 0.6], ann="sets same attribute across an object selection between a set range",  p='AttributeButtonLayout', command = self._range_attr_window)                                                         
+        cmds.button (label='Save Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="saves all attributes into an external file into project",  p='AttributeButtonLayout', command = self._save_att) 
+        cmds.button (label='Load Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="loads attributes from an external file into project",  p='AttributeButtonLayout', command = self._load_att)
+        cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.55, 0.6, 0.6],p='AttributeButtonLayout', command = self._set_any)               
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='AttributeButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='AttributeButtonLayout', command = self._tran_att)    
         # cmds.button (label='Save Anim', ann="saves anim into an external file into project",  p='AttributeButtonLayout', command = self._save_anim)
         # cmds.button (label='Load Anim', ann="loads anim from an external file into project",  p='AttributeButtonLayout', command = self._load_anim) 
-        cmds.frameLayout('sep5', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.frameLayout('sep5', cll=1, bgc=[0.0, 0.0, 0.0], label='', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep5') 
 
-        cmds.frameLayout('ModelFrameLayout', bgc=[0.0, 0.0, 0.0], cll=1, label='Modelling', lv=1, nch=1, borderStyle='out', bv=1, p='selectArrayColumn') 
+        cmds.frameLayout('ControllerFrameLayout', bgc=[0.15, 0.15, 0.15], cll=1, cl=1, label='Controllers', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.gridLayout('ControllerButtonLayout', p='ControllerFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20))           
+        cmds.button (label='Sandwich ctrl', bgc=[0.55, 0.6, 0.6], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='ControllerButtonLayout', command = self._sandwich_control)          
+        cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.55, 0.6, 0.6], p='ControllerButtonLayout', command = self._make_shape)
+        cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.55, 0.6, 0.6], p='ControllerButtonLayout', command = self._change_colours)    
+        cmds.button (label='Limits', ann="An interface for creating limits on rigs. Can globally set, load or reset a rig.", bgc=[0.55, 0.6, 0.6], p='ControllerButtonLayout', command = self._change_limit_values)    
+        cmds.button (label='Combine Shapes', ann="Combines selected curves into a single shape", p='ControllerButtonLayout', command = self._group_shapes)  
+         
+        cmds.frameLayout('sep4', cll=1, bgc=[0.0, 0.0, 0.0], label='', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.separator(h=1, p='sep4') 
+
+        cmds.frameLayout('ModelFrameLayout',bgc=[0.15, 0.15, 0.15], cll=1, cl=1, label='Modelling', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont",  p='selectArrayColumn') 
         cmds.gridLayout('ModelButtonLayout', p='ModelFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20))      
-        cmds.button (label='Blend Groups', bgc=[0.55, 0.6, 0.6], ann="Blend a group of objects to another group of objects(needs to be same meshes in heirarchy). Select deformer group and then deformee group.", p='ModelButtonLayout', command = self._blend_grp)
+        cmds.button (label='Blend Groups', bgc=[0.7, 0.7, 0.7], ann="Blend a group of objects to another group of objects(needs to be same meshes in heirarchy). Select deformer group and then deformee group.", p='ModelButtonLayout', command = self._blend_grp)
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='GrpToGrp', command = self._blend_grp)
         cmds.menuItem  (label='massBlend', command = self._mass_blend)
@@ -229,10 +243,11 @@ class ToolKitUI(object):
         cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='ModelButtonLayout', command = self._clean_mod)           
         cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='ModelButtonLayout', command = self._mirror_blend)              
         cmds.button (label='Build curve', ann="Build a curve on selected items.", p='ModelButtonLayout', command = self._build_curve)
-        cmds.button (label='Reshape to Edge', ann="Build a curve on selected items.", p='listBuildButtonLayout', command = self._reshape_to_curve)
-        cmds.frameLayout('sep6', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
+        cmds.button (label='Reshape to Edge', ann="Build a curve on selected items.", p='ModelButtonLayout', command = self._reshape_to_curve)
+
+        cmds.frameLayout('sep6', cll=1, bgc=[0.0, 0.0, 0.0], label='',  lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep6') 
-        cmds.frameLayout('ExtFolderFrameLayout', bgc=[0.0, 0.0, 0.0], cll=1, label='External folders', lv=1, nch=1, borderStyle='out', bv=1, p='selectArrayColumn') 
+        cmds.frameLayout('ExtFolderFrameLayout', bgc=[0.15, 0.15, 0.15], cl=1, cll=1, label='External folders', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
         cmds.gridLayout('ExtFolderButtonLayout', p='ExtFolderFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20)) 
         cmds.button (label='Change multi file contents', bgc=[0.25, 0.25, 0.25], ann="changes multiple file contents(EG: joint names within skin xml files).",  p='ExtFolderButtonLayout', command = self._changing_file_contents)  
         cmds.button (label='Change multi file names', bgc=[0.25, 0.25, 0.25], ann="changes multiple file names(EG: render images/version numbers).",  p='ExtFolderButtonLayout', command = self._changing_files)  
@@ -242,7 +257,23 @@ class ToolKitUI(object):
         cmds.button (label='Open Work folder', bgc=[0.2, 0.2, 0.2], ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.",  p='ExtFolderButtonLayout', command = self._open_work_folder)      
         cmds.showWindow(self.window)
 
+
+
+    def outlinerWindow_callup(self, arg=None):    #################
+        maya.mel.eval( "OutlinerWindow;" )
     
+    def clear_superflous_windows(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This clears the interface of window clutter and puts display in wire to lower file load time
+        ----------------------------------------------------------------------------------'''          
+        windows = cmds.lsUI(wnd=1)
+        getDeleteWindows=((each) for each in windows if each not in closeWindow)
+        for each in getDeleteWindows:
+            try:
+                print each
+                cmds.deleteUI(each, window=1)
+            except:
+                pass
 
     def _help(self, arg=None):
         helppath=str(getRigModPath)+"/rgModhelp.py"
@@ -617,10 +648,12 @@ class ToolKitUI(object):
         # playblast.play()
 
     def _load_ssd(self, arg=None):
-        import SSD
-        reload (SSD)
-        SSD.ui()
-        
+        # import SSD
+        # reload (SSD)
+        # SSD.ui()
+        exec(open('//usr//people//elise-d//workspace//sandBox//SSD//SSD.py'))
+        SSD()        
+                
     def _group_shapes(self, arg=None):
         getBaseClass.groupShapes()
 
