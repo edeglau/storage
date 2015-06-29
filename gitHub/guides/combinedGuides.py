@@ -812,14 +812,19 @@ class GuideUI(object):
 
     def create_tail_guides(self, firstMinValue, firstMaxValue, amount, size, namefield, direction):
         nameBucket=[]
+        namePortionTwo="_guide"
         for each in range(amount):
             numbername=each+1
             stringname=str(numbername)
             numbername=[each for each in stringname]
             if len(numbername)==1:
                 newname=namefield+'0'+stringname+"_guide"
+                if objExists(newname):
+                    newname=getClass.nameExist(namefield, namePortionTwo)                
             elif len(numbername)>1:
                 newname=namefield+stringname+"_guide"
+                if objExists(newname):
+                    newname=getClass.nameExist(namefield, namePortionTwo)             
             nameBucket.append(newname)  
         getSelected=range(amount)
         BucketValue=getClass.Percentages(getSelected, firstMinValue, firstMaxValue)
