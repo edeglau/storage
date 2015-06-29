@@ -1434,14 +1434,7 @@ class BaseClass():
                     pass
                 name=self.guide_names(indexNumber, guideName) 
                 if objExists(name):
-                    getNumbs=[]
-                    getAll=cmds.ls(guideName+"*_guide")
-                    for each in getAll:
-                        getLast=each.split(guideName)[1]
-                        getNumb=getLast.split("_guide")[0]
-                        getNumb=int(getNumb)
-                        getNumbs.append(getNumb)
-                    name=self.guide_names(getNumbs[-1:][0], guideName)                 
+                    name=self.nameExist(guideName, namePortionTwo)               
                 transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selectionCheck[eachPoint])
                 self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
                 getNewGuide=cmds.ls(sl=1, fl=1)
@@ -1455,23 +1448,34 @@ class BaseClass():
                 except:
                     pass
         else:
-            indexNumber=01
+            indexNumber=00
             name=self.guide_names(indexNumber, guideName) 
             if objExists(name):
-                getNumbs=[]
-                getAll=cmds.ls(guideName+"*_guide")
-                for each in getAll:
-                    getLast=each.split(guideName)[1]
-                    getNumb=getLast.split("_guide")[0]
-                    getNumb=int(getNumb)
-                    getNumbs.append(getNumb)
-                name=self.guide_names(getNumbs[-1:][0], guideName)  
+                name=self.nameExist(guideName, namePortionTwo)
+                # getNumbs=[]
+                # getAll=cmds.ls(guideName+"*_guide")
+                # for each in getAll:
+                #     getLast=each.split(guideName)[1]
+                #     getNumb=getLast.split("_guide")[0]
+                #     getNumb=int(getNumb)
+                #     getNumbs.append(getNumb)
+                # name=self.guide_names(getNumbs[-1:][0], guideName)  
             else:            
                 name=name
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)           
             self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
 
+    def nameExist(self, prefix, suffix):
+        getNumbs=[]
+        getAll=cmds.ls(prefix+"*"+suffix)
+        for each in getAll:
+            getLast=each.split(prefix)[1]
+            getNumb=getLast.split(suffix)[0]
+            getNumb=int(getNumb)
+            getNumbs.append(getNumb)
+        newname=self.guide_names(getNumbs[-1:][0], prefix)   
+        return newname
 
 
     def guide_names(self, indexNumber, guideName):                
