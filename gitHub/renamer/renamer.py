@@ -159,10 +159,11 @@ class myUI:
     def guide_name(self, arg=None):
         selectionCheck=cmds.ls(sl=1, fl=1)         
         guideName=getClass.fetchName()
+        namePortionTwo="_guide"
         if selectionCheck:
             for indexNumber, eachSelObj in enumerate(xrange(len(selectionCheck))):
                 newname=getClass.guide_names(indexNumber, guideName)
-                print newname
+                newname=getClass.nameExist(guideName, namePortionTwo) 
                 cmds.rename(selectionCheck[eachSelObj], newname)
                 
     def _shift_beg(self, breakName):
