@@ -1414,35 +1414,65 @@ class BaseClass():
         Child=cmds.listRelatives(grpName, ad=1, typ="transform") 
         cmds.makeIdentity(Child, a=True, t=1, n=0)     
            
+
     def makeGuide(self):
         '''This is the initate buildguide function'''
         selectionCheck=cmds.ls(sl=1, fl=1)
         colour1=13
         colour2=6
-        colour3=27         
+        colour3=27
+        namePortionTwo="_guide"   
         guideName=self.fetchName()
         if selectionCheck:
-            for indexNumber, eachPoint in enumerate(xrange(len(selectionCheck) - 1)):
-                name=self.guide_names(indexNumber, guideName)               
-                each, next_item = selectionCheck[eachPoint], selectionCheck[eachPoint + 1]             
-#            for each in selectionCheck:
-                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
-                transformWorldMatrixNext, rotateWorldMatrixNext=self.locationXForm(next_item)
+            for indexNumber, eachPoint in enumerate(xrange(len(selectionCheck))):
+                try:
+                    each, next_item = selectionCheck[eachPoint], selectionCheck[eachPoint + 1]  
+                    transformWorldMatrixNext, rotateWorldMatrixNext=self.locationXForm(next_item)    
+                    tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
+                    self.JackI(tempname, tempgrpname, tempsize, transformWorldMatrixNext, rotateWorldMatrixNext, tempcolour)                    
+                except:
+                    pass
+                name=self.guide_names(indexNumber, guideName) 
+                if objExists(name):
+                    getNumbs=[]
+                    getAll=cmds.ls(guideName+"*_guide")
+                    for each in getAll:
+                        getLast=each.split(guideName)[1]
+                        getNumb=getLast.split("_guide")[0]
+                        getNumb=int(getNumb)
+                        getNumbs.append(getNumb)
+                    name=self.guide_names(getNumbs[-1:][0], guideName)                 
+                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selectionCheck[eachPoint])
                 self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
                 getNewGuide=cmds.ls(sl=1, fl=1)
-                tempname, tempgrpname, tempsize, tempcolour="none", "none_grp", 6, 6
-                self.JackI(tempname, tempgrpname, tempsize, transformWorldMatrixNext, rotateWorldMatrixNext, tempcolour)
-                cmds.select(tempname, r=1)
-                getDelete=cmds.ls(sl=1, fl=1)
-                cmds.select(getNewGuide[0], add=1)
-                cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
-                cmds.delete(tempname)
-                cmds.delete(tempgrpname)
+                try:
+                    cmds.select(tempname, r=1)
+                    getDelete=cmds.ls(sl=1, fl=1)
+                    cmds.select(getNewGuide[0], add=1)
+                    cmds.aimConstraint(offset=[0,0, 0], weight=1, aimVector=[1, 0, 0] , upVector=[0, 1, 0] ,worldUpType="vector" ,worldUpVector=[0, 1, 0])
+                    cmds.delete(tempname)
+                    cmds.delete(tempgrpname)
+                except:
+                    pass
         else:
-            each="name_guide"
+            indexNumber=01
+            name=self.guide_names(indexNumber, guideName) 
+            if objExists(name):
+                getNumbs=[]
+                getAll=cmds.ls(guideName+"*_guide")
+                for each in getAll:
+                    getLast=each.split(guideName)[1]
+                    getNumb=getLast.split("_guide")[0]
+                    getNumb=int(getNumb)
+                    getNumbs.append(getNumb)
+                name=self.guide_names(getNumbs[-1:][0], guideName)  
+            else:            
+                name=name
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)           
-            self.guideBuild(each, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
+            self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
+
+
 
     def guide_names(self, indexNumber, guideName):                
         incrementals=indexNumber+1
