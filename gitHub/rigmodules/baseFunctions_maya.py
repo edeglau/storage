@@ -2140,7 +2140,10 @@ class BaseClass():
         cmds.setAttr(child_two_constraint, lock=1) 
 
     def setBuilder(self, setName, getMarks):
-        cmds.sets(n=setName, co=3)
+        if objExists(setName):
+            pass
+        else:
+            cmds.sets(n=setName, co=3)
         for each in getMarks:
             cmds.sets(each, add=setName)
 
@@ -2148,23 +2151,37 @@ class BaseClass():
     def buildRoughCalamari(self, size):
         '''this creates cubes as a low res standin for mesh on a bone heirarchy. handy to check for flipping and orientation'''
         selObj=cmds.ls(sl=1)
+        #----get joint heirarchy
         getGrp=cmds.listRelatives(selObj[0], ad=1, typ="joint")
         getGrp.append(selObj[0])
         cmds.select(cl=1) 
         Ggrp=cmds.CreateEmptyGroup()
+        #----create group
         cmds.rename(Ggrp, "calamari_grp")
         getSetMarks=[]      
         setName="calamari" 
+        #----create lambert shaders
         FVfirst = cmds.shadingNode('lambert', asShader=True, n="calamariFVOne_shd")
+        getFVfirst=[FVfirst]
+        self.setBuilder(setName, getFVfirst)
         cmds.setAttr("calamariFVOne_shd.color", 1, 0, 0, type="double3")
         FVSecond = cmds.shadingNode('lambert', asShader=True, n="calamariFVTwo_shd")
+        getFVSecond=[FVSecond]
+        self.setBuilder(setName, getFVSecond)
         cmds.setAttr("calamariFVTwo_shd.color", 0, 1, 0, type="double3")
         FVThird = cmds.shadingNode('lambert', asShader=True, n="calamariFVThree_shd")
+        getFVThird=[FVThird]
+        self.setBuilder(setName, getFVThird)
         cmds.setAttr("calamariFVThree_shd.color", 0, 0, 1, type="double3")
         FVfourth = cmds.shadingNode('lambert', asShader=True, n="calamariFVFour_shd")
+        getFVfourth=[FVfourth]
+        self.setBuilder(setName, getFVfourth)
         cmds.setAttr("calamariFVFour_shd.color", 0.5, 0, 0.5, type="double3")
         FVfifth = cmds.shadingNode('lambert', asShader=True, n="calamariFVFive_shd")
+        getFVfifth=[FVfifth]
+        self.setBuilder(setName, getFVfifth)
         cmds.setAttr("calamariFVFive_shd.color", 1, 1, 0, type="double3")
+        #----build cubes at joints and constrain
         for each in getGrp: 
             transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
             buildCube=cmds.polyCube(n="calamari_"+each+"_GEO", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
@@ -2173,7 +2190,9 @@ class BaseClass():
             cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])            
             cmds.parent(buildCube[0],"calamari_grp")
             cmds.parentConstraint(each, buildCube[0], mo=0, w=1)
+        #----put cubes in set
         self.setBuilder(setName, getSetMarks)
+        #---assign different cube faces to lambert colours
         for item in getSetMarks:
             select(item+".f[1]", r=1)
             cmds.hyperShade(assign=str(FVfirst))
@@ -2361,6 +2380,42 @@ class BaseClass():
 
 
 
+    def controllerUI(self):
+        # selectionCheck=self.selection_grab()
+        shapes=["cube", "sphere", "circle", "square", "rectangle", "prim", "triangle", "calamari", "jack", "ballarrow", "handle", "joint", "locator"]
+        winName = "Controller"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
+        cmds.text(label="Size",  p='txvaluemeter', w=80, h=25)       
+        self.size=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")   
+        self.shapeType=optionMenu( label='')   
+        for item in shapes:
+            menuItem(item)   
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateControlFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1)))
+        showWindow(window)
+
+    def CreateControlFunction(self, mainName, size):
+        selectionCheck=self.selection_grab()
+        colour=13
+        size=int(size)   
+        for item in selectionCheck:  
+            item=[item]
+            self.optionFunctionForShape(item, mainName, size, colour)
+            cmds.pickWalk(d="Down")
+            getControl=cmds.ls(sl=1, fl=1)
+            # cmds.parentConstraint(getControl, item)
+            cmds.parentConstraint(getControl[0], item, mo=1)
+
+
     def makeShape(self, arg=None):
         # selectionCheck=self.selection_grab()
         shapes=["cube", "sphere", "circle", "square", "rectangle", "prim", "triangle", "calamari", "jack", "ballarrow", "handle", "joint", "locator"]
@@ -2388,55 +2443,62 @@ class BaseClass():
     def CreateShapeFunction(self, mainName, size):
         selectionCheck=self.selection_grab()
         colour=13
-        size=int(size)          
+        size=int(size)   
+        for item in selectionCheck:  
+            item=[item]
+            self.optionFunctionForShape(item, mainName, size, colour)
+
+    def optionFunctionForShape(self, each, mainName, size, colour):
         if mainName==2:#sphere
             # colour=self.fetchColour()
-            self.getSphere(selectionCheck, colour, size)
+            self.getSphere(each, colour, size)
         if mainName==3:#circle
             # colour=self.fetchColour()
-            self.getcircle(selectionCheck, colour, size)
+            self.getcircle(each, colour, size)
         if mainName==4:#square
             # colour=self.fetchColour()
-            self.getsquare(selectionCheck, colour, size)
+            self.getsquare(each, colour, size)
         if mainName==5:#rectangle
             # colour=self.fetchColour()
-            self.getrectangle(selectionCheck, colour, size)
+            self.getrectangle(each, colour, size)
         if mainName==6:#prim
             # colour=self.fetchColour()
-            self.getprim(selectionCheck, colour, size)
+            self.getprim(each, colour, size)
         if mainName==7:#triangle
             # colour=self.fetchColour()
-            self.gettri(selectionCheck, colour, size)
+            self.gettri(each, colour, size)
         if mainName==1:#cube
             # colour=self.fetchColour()
-            self.getcube(selectionCheck, colour, size)
+            self.getcube(each, colour, size)
         if mainName==9:#jack
             # colour=self.fetchColour()
-            self.getjack(selectionCheck, colour, size)
+            self.getjack(each, colour, size)
         if mainName==12:#joint
-            self.getJoint(selectionCheck, size)      
+            self.getJoint(each, size)      
         if mainName==10:#ballarrow
             # colour=self.fetchColour()
-            self.getballarrow(selectionCheck, colour, size) 
+            self.getballarrow(each, colour, size) 
         if mainName==8:#calamari
             # colour=self.fetchColour()
-            self.getCubeCala(selectionCheck, colour, size)   
+            self.getCubeCala(each, colour, size)   
         if mainName==11:#handle
             # colour=self.fetchColour()
-            self.gethandle(selectionCheck, colour, size)                                 
+            self.gethandle(each, colour, size)
         if mainName==13:#locator
             # colour=self.fetchColour()
-            self.getLoc(selectionCheck, colour, size) 
+            self.getLoc(each, colour, size) 
             
     def getSphere(self, selectionCheck, colour, size):
         # titleText=('Define dimension'),                        
         # messageText=("Enter 4 numbers"), 
-        size=("1, .4, .9, .7, 22")
+        number=("1, .4, .9, .7, 22")
         # size=self.makeDialog(titleText, messageText, textText)
-        getNumbers= size.split(', ')
+        getNumbers= number.split(', ')
         numberBucket=[]
         for each in getNumbers:
-            numberBucket.append(float(each))
+            each=float(each)
+            each=each*size
+            numberBucket.append(each)
         num0, num1, num2, num3=numberBucket[0],numberBucket[1],numberBucket[2],numberBucket[3]
         if selectionCheck:
             for each in selectionCheck:
@@ -2450,7 +2512,7 @@ class BaseClass():
             self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
 
     def getcircle(self, selectionCheck, colour, size):            
-        nrx, nry, nrz = self.fetchDirection() 
+        nrx, nry, nrz = 0, 1, 0
         # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
@@ -3282,20 +3344,9 @@ class BaseClass():
         if selObjParent:
             cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
         cmds.parent(each, each.split("_Ctrl")[0]+typeCtrl+"_Ctrl")
-    def sandwichControlV1(self):
-        '''this builds controller shapes'''
-        titleText=('Controller'), 
-        messageText=("enter controller type"), 
-        textText=("sphere, circle, square, rectangle, prim, triangle, cube, jack, ballarrow, handle, joint, locator"), 
-        mainName=self.makeDialog(titleText, messageText, textText)
-        selectionCheck=cmds.ls(sl=1)
-        if selectionCheck:
-            for each in selectionCheck:
-                selObjParent=cmds.listRelatives( each, allParents=True )
-                getItem=self.CreateShapeFunction(selectionCheck, mainName)
-                cmds.parent(getItem, each.split("_Ctrl")[0]+typeCtrl+"_Ctrl")
-        if selObjParent:
-            cmds.parent(each.split("_Ctrl")[0]+typeCtrl+"_grp", selObjParent[0] )
+
+
+
 
     def blendGroupToGroup(self):
         selObj=cmds.ls(sl=1, fl=1)
@@ -3779,6 +3830,11 @@ class BaseClass():
 #            transformWorldMatrix=posBucket 
 #            selection=ls(selection)
 #            rotateWorldMatrix = cmds.xform(selection, q=True, wd=1, ra=True)
+        elif objectType(selection)=="joint":
+            selection=ls(selection)
+            maintransformWorldMatrix=cmds.xform(selection, q=True, ws=1, t=True)
+            rotateWorldMatrix=[0, 0, 0]    
+            transformWorldMatrix=maintransformWorldMatrix          
         else:
             transforms = listTransforms(selection.node())
             transform = transforms[0]
