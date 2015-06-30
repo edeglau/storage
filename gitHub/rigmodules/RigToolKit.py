@@ -119,7 +119,7 @@ class ToolKitUI(object):
         cmds.scrollLayout ('selectArrayColumn', parent = 'rMainRow', w=350, h=900)
         # cmds.gridLayout('topGridLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
 
-        cmds.frameLayout('FileInterface', cll=1, cl=1, bgc=[0.15, 0.15, 0.15],  label='File/session', lv=1, nch=1, borderStyle='out', bv=2, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.frameLayout('FileInterface', cll=1, cl=0, bgc=[0.15, 0.15, 0.15],  label='File/session', lv=1, nch=1, borderStyle='out', bv=2, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
         cmds.gridLayout('listBuildButtonLayout', p='FileInterface', numberOfColumns=2, cellWidthHeight=(150, 20))      
         cmds.button (label='Outliner win',bgc=[0.65, 0.75, 0.75], p='listBuildButtonLayout', command = self.outlinerWindow_callup)          
         cmds.button (label='Clean Interface', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = lambda *args:self.clear_superflous_windows())
