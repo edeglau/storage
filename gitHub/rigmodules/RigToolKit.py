@@ -23,7 +23,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath=""
+scriptPath="//rigModules"
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -167,6 +167,7 @@ class ToolKitUI(object):
         cmds.button (label='Switch Constraint SDK', ann="Switch constraint SDK(used in switching a double constraint in IK/FK mode)select single item with two constraints and then select control item with user defined float in the attribute and connects an SDK switch for the two constraints",  p='MiniRigsButtonLayout',command = self._switch_driven_key_window)                  
         cmds.button (label='Blend Colour Switch', ann="Blend colour tool(used in blend IK to FK chains) Select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object",  p='MiniRigsButtonLayout',command = self._blend_colour_window)
         cmds.button (label='Connect to Curve', ann="connect objects to a curve - select curve first and then objects",  p='MiniRigsButtonLayout',command = self._connect_to_curve)
+        cmds.button (label='Calamari', ann="Creates proxy cubes as a low res standin for mesh on a bone heirarchy. Used to check for flipping joints",  p='MiniRigsButtonLayout',command = self._calamari)
         cmds.frameLayout('sep2', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep2') 
 
@@ -306,6 +307,10 @@ class ToolKitUI(object):
         reload (FaceRig)
         getBaseClass=FaceRig.FaceSetup()    
         getBaseClass.TR_SDKKeys()   
+
+
+    def _calamari(self, arg=None):
+        getBaseClass.buildRoughCalamari(3)
 
     def _match_matrix(self, arg=None):
         getBaseClass.xformmove()   
