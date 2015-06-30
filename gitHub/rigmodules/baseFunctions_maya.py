@@ -2396,24 +2396,29 @@ class BaseClass():
         setParent ('selectArrayColumn')
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
         cmds.text(label="Size",  p='txvaluemeter', w=80, h=25)       
-        self.size=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")   
+        self.size=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")  
+        self.colour=13 
         self.shapeType=optionMenu( label='')   
         for item in shapes:
             menuItem(item)   
-        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateControlFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1)))
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateControlFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1), colour=self.colour))
         showWindow(window)
 
-    def CreateControlFunction(self, mainName, size):
+    def CreateControlFunction(self, mainName, size, colour):
         selectionCheck=self.selection_grab()
         colour=13
         size=int(size)   
-        for item in selectionCheck:  
-            item=[item]
-            self.optionFunctionForShape(item, mainName, size, colour)
-            cmds.pickWalk(d="Down")
-            getControl=cmds.ls(sl=1, fl=1)
-            # cmds.parentConstraint(getControl, item)
-            cmds.parentConstraint(getControl[0], item, mo=1)
+        try:
+            for item in selectionCheck:  
+                item=[item]
+                self.optionFunctionForShape(item, mainName, size, colour)
+                cmds.pickWalk(d="Down")
+                getControl=cmds.ls(sl=1, fl=1)
+                # cmds.parentConstraint(getControl, item)
+                cmds.parentConstraint(getControl[0], item, mo=1)
+        except:
+            print "you need to make a selection to add this control to"
+            return
 
 
     def makeShape(self, arg=None):
@@ -2434,19 +2439,22 @@ class BaseClass():
         cmds.text(label="Size",  p='txvaluemeter', w=80, h=25)         
         # cmds.gridLayout('infotext', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18))         
         self.size=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")   
+        self.colour=13
         self.shapeType=optionMenu( label='')   
         for item in shapes:
             menuItem(item)   
-        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateShapeFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1)))
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateShapeFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1), colour=self.colour))
         showWindow(window)
 
-    def CreateShapeFunction(self, mainName, size):
+    def CreateShapeFunction(self, mainName, size, colour):
         selectionCheck=self.selection_grab()
-        colour=13
         size=int(size)   
-        for item in selectionCheck:  
-            item=[item]
-            self.optionFunctionForShape(item, mainName, size, colour)
+        try:
+            for item in selectionCheck:  
+                item=[item]
+                self.optionFunctionForShape(item, mainName, size, colour)
+        except:
+            self.optionFunctionForShape(selectionCheck, mainName, size, colour)
 
     def optionFunctionForShape(self, each, mainName, size, colour):
         if mainName==2:#sphere
