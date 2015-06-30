@@ -23,7 +23,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath="//rigModules"
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -195,6 +195,8 @@ class ToolKitUI(object):
         cmds.button (label='Duplicate Move', p='ToolButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='ToolButtonLayout', command = self._shade_network)
         cmds.button (label='PolyCheck', p='ToolButtonLayout', command = self._poly_check) 
+        cmds.button (label='**Dynsettings', bgc=[0.33, 0.27, 0.30], ann="Sets cloth defaults",p='ToolButtonLayout', command = self._cloth_dyn)
+        cmds.button (label='**SkinDEF', bgc=[0.33, 0.27, 0.30], ann="sets prime skin deformer values.",p='ToolButtonLayout', command = self._skin_def)        
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
@@ -222,8 +224,9 @@ class ToolKitUI(object):
         cmds.frameLayout('sep5', cll=1, bgc=[0.0, 0.0, 0.0], label='', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep5') 
 
-        cmds.frameLayout('ControllerFrameLayout', bgc=[0.15, 0.15, 0.15], cll=1, cl=1, label='Controllers', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
+        cmds.frameLayout('ControllerFrameLayout', bgc=[0.15, 0.15, 0.15], cll=1, cl=0, label='Controllers', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
         cmds.gridLayout('ControllerButtonLayout', p='ControllerFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20))           
+        cmds.button (label='Controller', bgc=[0.55, 0.6, 0.6], ann="parent constraints to a controller.", p='ControllerButtonLayout', command = self._control)          
         cmds.button (label='Sandwich ctrl', bgc=[0.55, 0.6, 0.6], ann="Adds a helper control. (SDK=Set Driven Key). Sandwiches a controller between a selected controller and it's parent. Used for adding a set driven key to maintain a specific movement while the regular controller can be used as it's offset.", p='ControllerButtonLayout', command = self._sandwich_control)          
         cmds.button (label='Shapes Tool', ann="Creates a predetermined controller shape, joint or locator at selection or at origin (if nothing selected)", bgc=[0.55, 0.6, 0.6], p='ControllerButtonLayout', command = self._make_shape)
         cmds.button (label='Colours', ann="Changes colors on a group of selected objects",  bgc=[0.55, 0.6, 0.6], p='ControllerButtonLayout', command = self._change_colours)    
@@ -616,6 +619,9 @@ class ToolKitUI(object):
 
     def _sandwich_control(self, arg=None):
         getBaseClass.sandwichControl()
+
+    def _control(self, arg=None):
+        getBaseClass.controllerUI()
 
     def _blend_grp(self, arg=None):
         getBaseClass.blendGroupToGroup()
