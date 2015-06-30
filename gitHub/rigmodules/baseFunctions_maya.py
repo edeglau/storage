@@ -14,7 +14,7 @@ import maya.cmds as cmds
 import sys, os, glob
 
 import maya.mel
-
+getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
@@ -2139,7 +2139,56 @@ class BaseClass():
         cmds.setAttr(child_one_constraint, lock=1)
         cmds.setAttr(child_two_constraint, lock=1) 
 
+    def setBuilder(self, setName, getMarks):
+        cmds.sets(n=setName, co=3)
+        for each in getMarks:
+            cmds.sets(each, add=setName)
+
+
     def buildRoughCalamari(self, size):
+        '''this creates cubes as a low res standin for mesh on a bone heirarchy. handy to check for flipping and orientation'''
+        selObj=cmds.ls(sl=1)
+        getGrp=cmds.listRelatives(selObj[0], ad=1, typ="joint")
+        getGrp.append(selObj[0])
+        cmds.select(cl=1) 
+        Ggrp=cmds.CreateEmptyGroup()
+        cmds.rename(Ggrp, "calamari_grp")
+        getSetMarks=[]      
+        setName="calamari" 
+        FVfirst = cmds.shadingNode('lambert', asShader=True, n="calamariFVOne_shd")
+        cmds.setAttr("calamariFVOne_shd.color", 1, 0, 0, type="double3")
+        FVSecond = cmds.shadingNode('lambert', asShader=True, n="calamariFVTwo_shd")
+        cmds.setAttr("calamariFVTwo_shd.color", 0, 1, 0, type="double3")
+        FVThird = cmds.shadingNode('lambert', asShader=True, n="calamariFVThree_shd")
+        cmds.setAttr("calamariFVThree_shd.color", 0, 0, 1, type="double3")
+        FVfourth = cmds.shadingNode('lambert', asShader=True, n="calamariFVFour_shd")
+        cmds.setAttr("calamariFVFour_shd.color", 0.5, 0, 0.5, type="double3")
+        FVfifth = cmds.shadingNode('lambert', asShader=True, n="calamariFVFive_shd")
+        cmds.setAttr("calamariFVFive_shd.color", 1, 1, 0, type="double3")
+        for each in getGrp: 
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            buildCube=cmds.polyCube(n="calamari_"+each+"_GEO", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
+            getSetMarks.append(buildCube[0])
+            cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
+            cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])            
+            cmds.parent(buildCube[0],"calamari_grp")
+            cmds.parentConstraint(each, buildCube[0], mo=0, w=1)
+        self.setBuilder(setName, getSetMarks)
+        for item in getSetMarks:
+            select(item+".f[1]", r=1)
+            cmds.hyperShade(assign=str(FVfirst))
+            select(item+".f[2]", r=1)
+            cmds.hyperShade(assign=str(FVSecond))
+            select(item+".f[3]", r=1)
+            cmds.hyperShade(assign=str(FVThird))
+            select(item+".f[4]", r=1)
+            cmds.hyperShade(assign=str(FVfourth))
+            select(item+".f[5]", r=1)
+            cmds.hyperShade(assign=str(FVfifth))
+
+
+
+    def buildRoughCalamariV1(self, size):
         '''this creates cubes as a low res standin for mesh on a bone heirarchy. handy to check for flipping'''
         selObj=cmds.ls(sl=1)
         getGrp=cmds.listRelatives(selObj[0], ad=1, typ="joint")
