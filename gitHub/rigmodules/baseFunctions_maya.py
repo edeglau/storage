@@ -2150,8 +2150,22 @@ class BaseClass():
             cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
             cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
             cmds.parent(buildCube[0], each)
+
+
+
+    def buildRoughCalamariV1(self, size):
+        '''this creates cubes as a low res standin for mesh on a bone heirarchy. handy to check for flipping'''
+        selObj=cmds.ls(sl=1)
+        getGrp=cmds.listRelatives(selObj[0], ad=1, typ="joint")
+        getGrp.append(selObj[0])
+        for each in getGrp:
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            buildCube=cmds.polyCube(n="calamariCube", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
+            cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
+            cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
+            cmds.parent(buildCube[0], each)
             
-    def cubeCala(self, name, grpname, transformWorldMatrix, rotateWorldMatrix):
+    def cubeCala(self, name, grpname, transformWorldMatrix, rotateWorldMatrix, size):
         buildCube=cmds.polyCube(n=name+"calaCube", w=size, h=size, d=size, sx=1, sy=1, sz=1, ax=[0, 1, 0], cuv=4, ch=1)
         cmds.move(transformWorldMatrix[0],transformWorldMatrix[1], transformWorldMatrix[2], buildCube[0])
         cmds.rotate(rotateWorldMatrix[0],rotateWorldMatrix[1], rotateWorldMatrix[2], buildCube[0])
@@ -2282,7 +2296,7 @@ class BaseClass():
         else:
             print "nothing collected"    
             
-    def makeShape(self):
+    def makeShapeV1(self):
         '''this builds controller shapes'''
         titleText=('Controller'), 
         messageText=("enter controller type"), 
@@ -2295,52 +2309,81 @@ class BaseClass():
         else:
             selectionCheck=None
             self.CreateShapeFunction(selectionCheck, mainName)  
-             
-    def CreateShapeFunction(self, selectionCheck, mainName):
-        if mainName=="sphere":
-            colour=self.fetchColour()
-            self.getSphere(selectionCheck, colour)
-        if mainName=="circle":
-            colour=self.fetchColour()
-            self.getcircle(selectionCheck, colour)
-        if mainName=="square":
-            colour=self.fetchColour()
-            self.getsquare(selectionCheck, colour)
-        if mainName=="rectangle":
-            colour=self.fetchColour()
-            self.getrectangle(selectionCheck, colour)
-        if mainName=="prim":
-            colour=self.fetchColour()
-            self.getprim(selectionCheck, colour)
-        if mainName=="triangle":
-            colour=self.fetchColour()
-            self.gettri(selectionCheck, colour)
-        if mainName=="cube":
-            colour=self.fetchColour()
-            self.getcube(selectionCheck, colour)
-        if mainName=="jack":
-            colour=self.fetchColour()
-            self.getjack(selectionCheck, colour)
-        if mainName=="joint":
-            self.getJoint(selectionCheck)      
-        if mainName=="ballarrow":
-            colour=self.fetchColour()
-            self.getballarrow(selectionCheck, colour) 
-        if mainName=="cube":
-            colour=self.fetchColour()
-            self.getCubeCala(selectionCheck, colour)   
-        if mainName=="handle":
-            colour=self.fetchColour()
-            self.gethandle(selectionCheck, colour)                                 
-        if mainName=="locator":
-            colour=self.fetchColour()
-            self.getLoc(selectionCheck, colour) 
+
+
+
+    def makeShape(self, arg=None):
+        # selectionCheck=self.selection_grab()
+        shapes=["cube", "sphere", "circle", "square", "rectangle", "prim", "triangle", "calamari", "jack", "ballarrow", "handle", "joint", "locator"]
+        winName = "Shapes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18)) 
+        cmds.text(label="Size",  p='txvaluemeter', w=80, h=25)         
+        # cmds.gridLayout('infotext', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(80, 18))         
+        self.size=cmds.textField(w=40, h=25, p='txvaluemeter', text="1")   
+        self.shapeType=optionMenu( label='')   
+        for item in shapes:
+            menuItem(item)   
+        button (label='Go', p='txvaluemeter', command = lambda *args:self.CreateShapeFunction(mainName=cmds.optionMenu(self.shapeType, q=1, sl=1), size=textField(self.size,q=1, text=1)))
+        showWindow(window)
+
+    def CreateShapeFunction(self, mainName, size):
+        selectionCheck=self.selection_grab()
+        colour=13
+        size=int(size)          
+        if mainName==2:#sphere
+            # colour=self.fetchColour()
+            self.getSphere(selectionCheck, colour, size)
+        if mainName==3:#circle
+            # colour=self.fetchColour()
+            self.getcircle(selectionCheck, colour, size)
+        if mainName==4:#square
+            # colour=self.fetchColour()
+            self.getsquare(selectionCheck, colour, size)
+        if mainName==5:#rectangle
+            # colour=self.fetchColour()
+            self.getrectangle(selectionCheck, colour, size)
+        if mainName==6:#prim
+            # colour=self.fetchColour()
+            self.getprim(selectionCheck, colour, size)
+        if mainName==7:#triangle
+            # colour=self.fetchColour()
+            self.gettri(selectionCheck, colour, size)
+        if mainName==1:#cube
+            # colour=self.fetchColour()
+            self.getcube(selectionCheck, colour, size)
+        if mainName==9:#jack
+            # colour=self.fetchColour()
+            self.getjack(selectionCheck, colour, size)
+        if mainName==12:#joint
+            self.getJoint(selectionCheck, size)      
+        if mainName==10:#ballarrow
+            # colour=self.fetchColour()
+            self.getballarrow(selectionCheck, colour, size) 
+        if mainName==8:#calamari
+            # colour=self.fetchColour()
+            self.getCubeCala(selectionCheck, colour, size)   
+        if mainName==11:#handle
+            # colour=self.fetchColour()
+            self.gethandle(selectionCheck, colour, size)                                 
+        if mainName==13:#locator
+            # colour=self.fetchColour()
+            self.getLoc(selectionCheck, colour, size) 
             
-    def getSphere(self, selectionCheck, colour):
-        titleText=('Define dimension'),                        
-        messageText=("Enter 4 numbers"), 
-        textText=("1, .4, .9, .7, 22"), 
-        size=self.makeDialog(titleText, messageText, textText)
+    def getSphere(self, selectionCheck, colour, size):
+        # titleText=('Define dimension'),                        
+        # messageText=("Enter 4 numbers"), 
+        size=("1, .4, .9, .7, 22")
+        # size=self.makeDialog(titleText, messageText, textText)
         getNumbers= size.split(', ')
         numberBucket=[]
         for each in getNumbers:
@@ -2357,9 +2400,9 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)  
             self.CCCircle(name, grpname, num0, num1, num2, num3, transformWorldMatrix, rotateWorldMatrix, colour)
 
-    def getcircle(self, selectionCheck, colour):            
+    def getcircle(self, selectionCheck, colour, size):            
         nrx, nry, nrz = self.fetchDirection() 
-        size=self.fetchSize()
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2371,8 +2414,8 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)         
             self.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)            
-    def getsquare(self, selectionCheck, colour):           
-        size=self.fetchSize()
+    def getsquare(self, selectionCheck, colour, size):           
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2384,11 +2427,11 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)            
             self.squareI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)
             
-    def getrectangle(self, selectionCheck, colour):                        
-        titleText=('Define dimension'),                        
-        messageText=("Enter 2 numbers"), 
-        textText=("4, 5"), 
-        size=self.makeDialog(titleText, messageText, textText)
+    def getrectangle(self, selectionCheck, colour, size):                        
+        # titleText=('Define dimension'),                        
+        # messageText=("Enter 2 numbers"), 
+        size=("4, 5")
+        # size=self.makeDialog(titleText, messageText, textText)
         getParts=size.split(', ')
         numlen, numwid= int(getParts[0]), int(getParts[1])
         if selectionCheck:
@@ -2402,8 +2445,8 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)    
             self.rectI(name, grpname, numlen, numwid, transformWorldMatrix, rotateWorldMatrix, colour)
                                   
-    def getprim(self, selectionCheck, colour):                                    
-        size=self.fetchSize()
+    def getprim(self, selectionCheck, colour, size):                                    
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2414,8 +2457,8 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)    
             self.PrimI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)                     
-    def gettri(self, selectionCheck, coloure):                                                
-        size=self.fetchSize()
+    def gettri(self, selectionCheck, colour, size):                                                
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2426,8 +2469,8 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)    
             self.TriI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)             
-    def getcube(self, selectionCheck, colour):                                                            
-        size=self.fetchSize()
+    def getcube(self, selectionCheck, colour, size):                                                       
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2439,8 +2482,8 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)        
             self.cubeI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)    
                      
-    def getjack(self, selectionCheck, colour):                                                
-        size=self.fetchSize()
+    def getjack(self, selectionCheck, colour, size):                                                
+        # size=self.fetchSize()
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2451,7 +2494,7 @@ class BaseClass():
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)              
             self.JackI(name, grpname, size, transformWorldMatrix, rotateWorldMatrix, colour)   
-    def getJoint(self, selectionCheck):
+    def getJoint(self, selectionCheck, size):
         if selectionCheck:
             for each in selectionCheck:
                 transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)           
@@ -2462,7 +2505,7 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)
             self.buildJoint(name, transformWorldMatrix, rotateWorldMatrix)
 
-    def getLoc(self, selectionCheck, colour):
+    def getLoc(self, selectionCheck, colour, size):
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_loc", each+"_grp"
@@ -2474,7 +2517,7 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)   
             self.buildLoc(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
                           
-    def getballarrow(self, selectionCheck, colour):   
+    def getballarrow(self, selectionCheck, colour, size):   
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
@@ -2486,19 +2529,19 @@ class BaseClass():
             rotateWorldMatrix=(0, 0, 0)                 
             self.ballArrowI(name, grpname, transformWorldMatrix, rotateWorldMatrix, colour)
 
-    def getCubeCala(self, selectionCheck, colour):   
+    def getCubeCala(self, selectionCheck, colour, size):   
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
                 transformWorldMatrix, rotateWorldMatrix=self.selection_location_type(each)                                                        
-                self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix)
+                self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix, size)
         else:
             name, grpname="name_Ctrl", "name_grp"
             transformWorldMatrix=(0, 0, 0) 
             rotateWorldMatrix=(0, 0, 0)                 
-            self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix)
+            self.cubeCala(name, grpname, transformWorldMatrix, rotateWorldMatrix, size)
             
-    def gethandle(self, selectionCheck, colour):
+    def gethandle(self, selectionCheck, colour, size):
         if selectionCheck:
             for each in selectionCheck:
                 name, grpname=each+"_Ctrl", each+"_grp"
