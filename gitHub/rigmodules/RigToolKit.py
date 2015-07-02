@@ -23,7 +23,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath="//rigModules"
+scriptPath="rigModules"
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -212,8 +212,6 @@ class ToolKitUI(object):
         cmds.button (label='Fast SDK Connect', bgc=[0.55, 0.6, 0.6], ann="Connects between two attributes with the option to set SDK",  p='AttributeButtonLayout',command = self._connSDK_alias_window)
         cmds.button (label='Copy Single Attr', bgc=[0.55, 0.6, 0.6], ann="copies a singular attribute properties from one selection to another",  p='AttributeButtonLayout',command = self._quickCopy_single_Attr_window)
         cmds.button (label='Set Range Multi Attr', bgc=[0.55, 0.6, 0.6], ann="sets same attribute across an object selection between a set range",  p='AttributeButtonLayout', command = self._range_attr_window)                                                         
-        cmds.button (label='Save Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="saves all attributes into an external file into project",  p='AttributeButtonLayout', command = self._save_att) 
-        cmds.button (label='Load Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="loads attributes from an external file into project",  p='AttributeButtonLayout', command = self._load_att)
         cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.55, 0.6, 0.6],p='AttributeButtonLayout', command = self._set_any)               
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another",  p='AttributeButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform",  p='AttributeButtonLayout', command = self._tran_att)    
@@ -241,16 +239,21 @@ class ToolKitUI(object):
         cmds.menuItem  (label='GrpToGrp', command = self._blend_grp)
         cmds.menuItem  (label='massBlend', command = self._mass_blend)
         cmds.menuItem  (label='GrpSearchAndBlend', command = self._srch_and_blend) 
+        cmds.button (label='Reshape to Edge', bgc=[0.7, 0.7, 0.7], ann="aligns and deforms an object by continuous edge of one poly object to another (EG: aligning a vein to the surface of a leaf). 'Reshape to Edge' is better for cylindrical shapes, 'Reshape to Shape' is better for flat planes.", p='ModelButtonLayout', command = self._reshape_to_curve)
+        cmds.popupMenu(button=1)
+        cmds.menuItem  (label='Reshape to Edge', command = self._reshape_to_curve)
+        cmds.menuItem  (label='Reshape to Shape', command = self._reshape_to_shape)        
         cmds.button (label='MirrorObject', ann="Mirrors duplicate object across the X axis", p='ModelButtonLayout', command = self._mirror_object)         
         cmds.button (label='Clean model', ann="Deletes history on a selected mesh and zeroes out transforms", p='ModelButtonLayout', command = self._clean_mod)           
         cmds.button (label='MirrorBlend', ann="Creates a mirrored blend shape. Select blendShape and select main object.", p='ModelButtonLayout', command = self._mirror_blend)              
         cmds.button (label='Build curve', ann="Build a curve on selected items.", p='ModelButtonLayout', command = self._build_curve)
-        cmds.button (label='Reshape to Edge', ann="Build a curve on selected items.", p='ModelButtonLayout', command = self._reshape_to_curve)
 
         cmds.frameLayout('sep6', cll=1, bgc=[0.0, 0.0, 0.0], label='',  lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep6') 
         cmds.frameLayout('ExtFolderFrameLayout', bgc=[0.15, 0.15, 0.15], cl=1, cll=1, label='External folders', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
         cmds.gridLayout('ExtFolderButtonLayout', p='ExtFolderFrameLayout', numberOfColumns=2, cellWidthHeight=(150, 20)) 
+        cmds.button (label='Save Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="saves all attributes into an external file into project",  p='ExtFolderButtonLayout', command = self._save_att) 
+        cmds.button (label='Load Attr/Anim', bgc=[0.55, 0.6, 0.6], ann="loads attributes from an external file into project",  p='ExtFolderButtonLayout', command = self._load_att)        
         cmds.button (label='Change multi file contents', bgc=[0.25, 0.25, 0.25], ann="changes multiple file contents(EG: joint names within skin xml files).",  p='ExtFolderButtonLayout', command = self._changing_file_contents)  
         cmds.button (label='Change multi file names', bgc=[0.25, 0.25, 0.25], ann="changes multiple file names(EG: render images/version numbers).",  p='ExtFolderButtonLayout', command = self._changing_files)  
         cmds.button (label='Export multiple obj', bgc=[0.25, 0.25, 0.25], ann="Exports a group of selected objects as separate .obj files.",p='ExtFolderButtonLayout', command = self._exp_obj)                        
@@ -544,6 +547,9 @@ class ToolKitUI(object):
     def _reshape_to_curve(self, arg=None):
         toolClass.matchCurveShapes()
 
+    def _reshape_to_shape(self, arg=None):
+        toolClass.matchFullShape()
+
     def _build_ik(self, arg=None):
         getBaseClass.buildIK()      
         
@@ -694,5 +700,4 @@ class ToolKitUI(object):
 inst = ToolKitUI()
 inst.create()
 
-python("playblast = None");
 
