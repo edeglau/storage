@@ -36,7 +36,7 @@ BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
 
-scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+scriptPath="//rigModules"
 sys.path.append(str(scriptPath))
 
 
