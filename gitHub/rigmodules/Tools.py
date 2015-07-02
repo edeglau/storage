@@ -929,12 +929,17 @@ class ToolFunctions(object):
             cmds.connectAttr(getSecond+"."+getSecondattr, each+"."+getFirstattr, f=1)
 
     def _quickCopy_single_Attr_window(self, arg=None):
-        getSel=cmds.ls(sl=1)  
-        getChildren=getSel[1:]
-        getParent=getSel[:1]
+        getSel=ls(sl=1, fl=1)  
+        if len(getSel)>1:
+            pass
+        else:
+            print "need to select 2 or more items" 
+            return  
+        getChildren=cmds.ls(getSel[1:])[0]
+        getParent=cmds.ls(getSel[:1])[0]
         global attributeFirstSel
         global attributeSecondSel        
-        getFirstAttr=cmds.listAttr (getChildren[0])      
+        getFirstAttr=cmds.listAttr (getChildren)      
         getFirstAttr=sorted(getFirstAttr)
         getSecondAttr=cmds.listAttr (getParent)
         getSecondAttr=sorted(getSecondAttr)         
@@ -945,15 +950,14 @@ class ToolFunctions(object):
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
         cmds.menuBarLayout(h=30)
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
-
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-        self.theParent=cmds.text(label=getParent[0])
-        self.theChild=cmds.text(label=getChildren[0])        
+        self.theParent=cmds.text(label=getParent)
+        self.theChild=cmds.text(label=getChildren)        
         self.attributeFirstSel=cmds.optionMenu( label='From', cc=lambda *args:self._change_second_attr_menu())
         for each in getFirstAttr:
             cmds.menuItem( label=each) 
@@ -1197,7 +1201,6 @@ class ToolFunctions(object):
                 print foundAttr
                 collectAttr.append(find)                 
         optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
-        print "hi"
         newAttr=getattr(getSel[0],collectAttr[0])
         select(newAttr, add=1)
         getChangeAttr=getattr(getSel[0],collectAttr[0]).get() 
@@ -1460,6 +1463,7 @@ class ToolFunctions(object):
         getFirst=getSel[0]
         global attributeFirstSel
         global makeAttr
+        global removeNth
         getFirstAttr=[]
         getAttrs=listAttr (getFirst, w=1, a=1, s=1,u=1) 
         for each in getAttrs:
@@ -1488,43 +1492,71 @@ class ToolFunctions(object):
         self.removeNth=cmds.textField(w=40, h=25, p='txvaluemeter', text="50")  
         cmds.text(label="",  w=80, h=25)         
         self.mathtype=optionMenu( label='')   
-        menuItem( label="%")  
-        menuItem( label="*")
-        menuItem( label="/")  
-        menuItem( label="-")
-        menuItem( label="+")                  
-        menuItem( label="amount")                            
+        menuItem( label="%")#1
+        menuItem( label="*")#2
+        menuItem( label="/")#3
+        menuItem( label="-")#4
+        menuItem( label="+")#5                
+        menuItem( label="amount")#6                            
+        menuItem( label="match")#7                         
         button (label='Go', p='txvaluemeter', command = lambda *args:self.removeCV(remove=textField(self.remove,q=1, text=1)))      
         button (label='Go', p='txvaluemeter', command = lambda *args:self.remove_Nth(removeNth=textField(self.removeNth,q=1, text=1), queryMaths=cmds.optionMenu(self.mathtype, q=1, sl=1)))
         showWindow(window)
         
 
     def remove_Nth(self, removeNth, queryMaths): 
-        print queryMaths
-        getSel=ls(sl=1, fl=1)   
-        getSel=getSel[:1]  
-        cmds.select(cl=1)
-        if nodeType(getSel[0])=="transform":
-            for each in getSel:
-                getNumber=each.numCVs()
-                if queryMaths==1:
-                    # removeNth=removeNth.split("%")[0]
+        selObj=ls(sl=1, fl=1)
+        if nodeType(selObj[0])=="transform":
+            if queryMaths==1:
+                for each in selObj:
+                    getNumber=each.numCVs()                
                     removeNth=float(removeNth)
                     removeNth=removeNth*0.01
                     createNewNumber=getNumber*removeNth
-                elif queryMaths==2:
+                    self.rebuildFunction(each, createNewNumber)
+            elif queryMaths==2:
+                for each in selObj:
+                    getNumber=each.numCVs()                 
                     removeNth=int(removeNth)
                     createNewNumber=getNumber*removeNth   
-                elif queryMaths==3:
+                    self.rebuildFunction(each, createNewNumber)
+            elif queryMaths==3:
+                for each in selObj:
+                    getNumber=each.numCVs()                  
                     removeNth=int(removeNth)
-                    createNewNumber=getNumber/removeNth   
-                elif queryMaths==4:
+                    createNewNumber=getNumber/removeNth 
+                    self.rebuildFunction(each, createNewNumber)  
+            elif queryMaths==4:
+                for each in selObj:
+                    getNumber=each.numCVs()                
                     removeNth=int(removeNth)
-                    createNewNumber=getNumber-removeNth      
-                elif queryMaths==5:
+                    createNewNumber=getNumber-removeNth  
+                    self.rebuildFunction(each, createNewNumber)    
+            elif queryMaths==5:
+                for each in selObj:
+                    getNumber=each.numCVs()                
                     removeNth=int(removeNth)
-                    createNewNumber=getNumber+removeNth                                                                              
-                rebuildCurve(each, ch=1, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=1, kt=1, s=createNewNumber, d=3, tol=1e-06)
+                    createNewNumber=getNumber+removeNth
+                    self.rebuildFunction(each, createNewNumber)  
+            elif queryMaths==6:
+                for each in selObj:
+                    getNumber=each.numCVs()
+                    createNewNumber=int(removeNth)
+                    self.rebuildFunction(each, createNewNumber) 
+            elif queryMaths==7:
+                getCurveForNumber=ls(selObj[0])[0]
+                for each in selObj[1:]:
+                    self.rebuildFunctionMatch(each, getCurveForNumber) 
+            cmds.select(selObj, r=1)
+        else:
+            print "select a curve"
+            return            
+
+    def rebuildFunction(self, each, createNewNumber):                                                                   
+        rebuildCurve(each, ch=0, rpo=1, rt=0, end=1, kr=0, kcp=0, kep=0, kt=0, s=createNewNumber, d=2, tol=0.001)
+
+    def rebuildFunctionMatch(self, each, getCurveForNumber):
+        rebuildCurve(each, getCurveForNumber, rt=2)
 
     def removeCV(self, remove):
         getSel=ls(sl=1, fl=1)
@@ -2006,10 +2038,8 @@ class ToolFunctions(object):
         getPathSplit=getScenePath.split("/")
         folderPath='\\'.join(getPathSplit[:-1])+"\\"        
         if "Windows" in OSplatform:
-            print "windows"
             newfolderPath=re.sub(r'/',r'\\', folderPath)
         if "Linux" in OSplatform:
-            print "Linux"
             newfolderPath=re.sub(r'\\',r'/', folderPath)
         folderBucket=[]
         winName = "Save attribute"
@@ -2034,6 +2064,7 @@ class ToolFunctions(object):
             # cmds.button (label='Save Anim', w=60, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
             cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(each, fileName=cmds.textField(self.getName, q=1, text=1)))            
             cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+            cmds.button (label='Attr dict', w=60, ann=" prints a dictionary with attributes(for dev)", p='listBuildButtonLayout', command = lambda *args:self._printAttributes())
         cmds.showWindow(window)        
 
     def _add_function(self):
@@ -2062,6 +2093,7 @@ class ToolFunctions(object):
             # cmds.button (label='Save Anim', w=60, p='nlistBuildButtonLayout', command = lambda *args:self._save_anim(item, fileName=cmds.textField(self.getNewName, q=1, text=1)))            
             cmds.button (label='Save', w=90, p='nlistBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(item, fileName=cmds.textField(self.getNewName, q=1, text=1)))
             cmds.button (label='Open folder', w=60, p='nlistBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getNewName, q=1, text=1)))
+            cmds.button (label='Attr dict', w=60, ann=" prints a dictionary with attributes(for dev)", p='nlistBuildButtonLayout', command = lambda *args:self._printAttributes())
 
 
     def openAttributesWindow(self, arg=None):
@@ -2291,6 +2323,24 @@ class ToolFunctions(object):
         inp.close()  
         print "saved as "+fileName
 
+    def _printAttributes(self):
+        selObj=cmds.ls(sl=1, fl=1) 
+        newDict={}
+        for each in selObj:            
+            getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
+            for eachAttribute in getListedAttr:
+                try:
+                    attrVal=cmds.getAttr(each+"."+eachAttribute) 
+                    makeDict={eachAttribute:attrVal}
+                    newDict.update(makeDict)
+
+                except:
+                    pass
+        print "{"
+        for key, value in newDict.items():
+            print "'"+str(key)+"':"+str(value)+","
+        print "}"
+
 
     def _save_anim_heirarchy(self, each, fileName):   
         selObj=cmds.ls(sl=1, fl=1)        
@@ -2387,7 +2437,47 @@ class ToolFunctions(object):
                     else:
                         pass
 
-
+    def _load_anim_single(self, printFolder, grabFileName):
+        import ast
+        notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
+        printFolder=printFolder+grabFileName    
+        selObj=cmds.ls(sl=1, fl=1)
+        if os.path.exists(printFolder):
+            pass
+        else:
+            print printFolder+"does not exist"
+            return 
+        for each in selObj:
+            attribute_container=[]
+            getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
+            List = open(printFolder).readlines()
+            for aline in List:
+                if ">>" in aline:
+                    getObj=aline.split('>>')[0]
+                    getExistantInfo=aline.split('>>')[1]
+                    if getExistantInfo!="\n":
+                        findAtt=getExistantInfo.split("<")
+                        for eachInfo in findAtt:
+                            getAnimDicts=eachInfo.split(";")
+                            for eachctrl in xrange(len(getAnimDicts) - 1):
+                                current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
+                                # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value) 
+                                gethis=ast.literal_eval(next_item)
+                                try:
+                                    if len(gethis)<2:
+                                        for key, value in gethis.items():
+                                            for listeditem in getListedAttr:
+                                                if current_item==listeditem:
+                                                    cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
+                                    else:
+                                         for key, value in gethis.items():
+                                            for listeditem in getListedAttr:
+                                                if current_item==listeditem:
+                                                    cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
+                                except:
+                                    pass                                              
+                    else:
+                        pass
     def change_file_countents_UI(self):
         getScenePath=cmds.file(q=1, location=1)
         getScenePath="//"+getScenePath+"//"
@@ -2494,8 +2584,15 @@ class ToolFunctions(object):
             setAttr(motionPath+".fractionMode", False)
             setAttr(motionPath+".uValue", getParam)        
 
-
     def matchCurveShapes(self):
+        self.CurveShapes()
+
+    def matchFullShape(self):
+        getFirstGrp, getSecondGrp=self.CurveShapes()
+        self.matchCurveShapes_andShrinkWrap(getFirstGrp, getSecondGrp)
+
+
+    def CurveShapes(self):
         getSel=self.selection_grab()
         if getSel:
             pass
@@ -2538,13 +2635,54 @@ class ToolFunctions(object):
         getSecondCurveInfo=ls(sl=1, fl=1)
         cmds.delete(getSecondCurve[0], ch=1)
         '''wrap parent curve to parent mesh'''
-        # cmds.select(cmds.ls(getSecondGrp)[0], r=1)
-        # cmds.wire(w=getSecondCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
         cmds.select(getSecondCurve[0], r=1)
         cmds.select(cmds.ls(getSecondGrp)[0], add=1)
         cmds.CreateWrap()
         '''blend child curve to parent curve'''
         cmds.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0)) 
+        return getFirstGrp, getSecondGrp
+
+
+
+    def matchCurveShapes_andShrinkWrap(self, getFirstGrp, getSecondGrp):
+        myDict={
+                ".shapePreservationEnable":1, 
+                ".shapePreservationSteps":72, 
+                ".shapePreservationReprojection":1,
+                ".shapePreservationIterations":1,
+                ".shapePreservationMethod":0,
+                ".envelope":1,
+                ".targetSmoothLevel":1,
+                ".continuity":1,
+                ".keepBorder":0,
+                ".boundaryRule":1,
+                ".keepHardEdge":0,
+                ".propagateEdgeHardness":0,
+                ".keepMapBorders":1,
+                ".projection":4,
+                ".closestIfNoIntersection":0,
+                ".closestIfNoIntersection":0 ,
+                ".reverse":0,
+                ".bidirectional":0,
+                ".boundingBoxCenter":1,
+                ".axisReference":0 ,
+                ".alongX":1,
+                ".alongY":1,
+                ".alongZ":1,
+                ".offset":0,
+                ".targetInflation":0,
+                ".falloff":0.3021390379,
+                ".falloffIterations": 1
+                }        
+        cmds.delete(getFirstGrp, ch=1)
+        getShrink=cmds.deformer(getFirstGrp, type="shrinkWrap")
+        cmds.connectAttr(getSecondGrp+".worldMesh[0]", getShrink[0]+".targetGeom", f=1)
+        for key, value in myDict.items():
+            cmds.setAttr(getShrink[0]+key, value)
+        # cmds.delete(getFirstGrp, ch=1)
+        # cmds.select(getFirstGrp, r=1)
+        # cmds.select(cmds.ls(getSecondGrp)[0], add=1)
+        # cmds.CreateWrap()
 
     def curve_rig(self):
         influenceList=["StarSphere", "Controller"]
