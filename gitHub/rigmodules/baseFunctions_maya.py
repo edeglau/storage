@@ -62,11 +62,11 @@ class BaseClass():
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20)) 
-        cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:self.cleanObjHist()) 
-        cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:self.cleanObj())      
+        cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:self.cleanObjHist(winName)) 
+        cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:self.cleanObj(winName))      
         cmds.showWindow(window)
 
-    def cleanObjHist(self):
+    def cleanObjHist(self, winName):
         result = cmds.confirmDialog ( 
             title='Clean object', 
             message="Warning! Any Orig shape and history will be deleted on all selected objects!", 
@@ -78,13 +78,14 @@ class BaseClass():
             pass
         else:
             print "nothing collected"         
-        self.cleaningFunctionCallup()
-        self.clearHistoryCallup() 
+        self.cleaningFunctionCallup(winName)
+        self.clearHistoryCallup(winName) 
+    
 
-    def cleanObj(self):
-        self.cleaningFunctionCallup()
+    def cleanObj(self, winName):
+        self.cleaningFunctionCallup(winName)
 
-    def clearHistoryCallup(self):
+    def clearHistoryCallup(self, winName):
         objSel=cmds.ls(sl=1, fl=1)
         for each in objSel:        
             cmds.delete(each, ch=1)
@@ -102,6 +103,9 @@ class BaseClass():
                         print "renamed "+item[0]+" to "+each+"Shape"
             except:
                 print "Object has no shapes. Passing on cleaning shapes."
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName) 
+
 
     def freeTheAttrs(self, each):
         getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
@@ -113,7 +117,7 @@ class BaseClass():
 
             
 
-    def cleaningFunctionCallup(self):
+    def cleaningFunctionCallup(self, winName):
         '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
         objSel=cmds.ls(sl=1, fl=1)
         # getparentObj=cmds.listRelatives(objSel, c=1)
@@ -148,6 +152,8 @@ class BaseClass():
                 self.freeTheAttrs(each)                
             except:
                 pass
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName) 
 
     def cleaningFunctionCallupV1(self):
         '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
