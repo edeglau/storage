@@ -36,7 +36,7 @@ BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
 
-scriptPath="//rigModules"
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 sys.path.append(str(scriptPath))
 
 
@@ -147,6 +147,7 @@ class ToolFunctions(object):
         self.getSetTyp=optionMenu( label='SetType', cc=lambda *args:self.change_set(), w=120, ann="Select set type to edit(Dynamic ncloth constraints or Blenshape memberships)")
         menuItem( label="Deformer sets")       
         menuItem( label="Dynamic sets")
+        menuItem( label="Set memberships")
         self.setMenu=cmds.optionMenu( label=windowName, ann=annot)
 #        for each in getAllSets:
 #            cmds.menuItem( label=each)    
@@ -156,6 +157,7 @@ class ToolFunctions(object):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
         deformSets=["blendShape", "simpleBlendShape", "cluster"]
+        memberSets=["transform"]
         getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         if getSetType=="Dynamic sets":
             menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
@@ -181,7 +183,22 @@ class ToolFunctions(object):
             cmds.optionMenu(self.setMenu, e=1)
             for each in collectBlendSets:
                 cmds.menuItem( label=each)
-
+        elif getSetType=="Set memberships":                
+            menuItems = cmds.optionMenu(self.setMenu, q=True, ill=True)
+            if menuItems:
+                cmds.deleteUI(menuItems)             
+            getAllSets=[(each) for each in cmds.ls(typ="objectSet")]
+            collectBlendSets=[]
+            for each in getAllSets:
+                try:
+                    keepEach=[(connectedObj) for connectedObj in cmds.listConnections(each, s=1) for eachMember in memberSets if cmds.nodeType(connectedObj) ==eachMember]
+                    if keepEach:
+                        collectBlendSets.append(each)
+                except:
+                    pass            
+            cmds.optionMenu(self.setMenu, e=1)
+            for each in getAllSets:
+                cmds.menuItem( label=each) 
 
     def _edit_sets_win(self, arg=None):
         '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -204,39 +221,53 @@ class ToolFunctions(object):
 
     def _add_to_set(self, querySet):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        This adds the current selection to the current blendshape set membership in the drop down menu
+        This adds the current selection to the current set membership in the drop down menu
         --------------------------------------------------------------------------------------------------------------------------------------'''
+        setMembers=["Deformer sets", "Set memberships"]
         getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         getSel=self.selection_grab()
         if getSetType=="Dynamic sets":
             for each in getSel:
                 cmds.select(querySet, add=1)
-                maya.mel.eval( 'dynamicConstraintMembership "add";' )              
-        elif getSetType=="Deformer sets":   
+                maya.mel.eval( 'dynamicConstraintMembership "add";' ) 
+        else:
+            getSetType=[(each) for each in setMembers if getSetType == each]            
             if getSel and querySet:
                 for each in getSel:
                     cmds.sets(each, add=querySet)
             else:
                 print self.default_error()
-                return
+                return 
+
             
     def _remove_from_set(self, querySet):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        This removes the current selection from the current blendshape set membership in the drop down menu
+        This removes the current selection from the current set membership in the drop down menu
         --------------------------------------------------------------------------------------------------------------------------------------'''
+        setMembers=["Deformer sets", "Set memberships"]
         getSetType=optionMenu(self.getSetTyp, q=1, v=1)  
         getSel=self.selection_grab()
         if getSetType=="Dynamic sets":
             for each in getSel:
                 cmds.select(querySet, add=1)
                 maya.mel.eval( 'dynamicConstraintMembership "remove";' )            
-        elif getSetType=="Deformer sets":            
+        else:
+            getSetType=[(each) for each in setMembers if getSetType == each]           
             if getSel and querySet:
                 for each in getSel:
                     cmds.sets(each, rm=querySet)
             else:
                 print self.default_error()
-                return            
+                return 
+
+
+        # elif getSetType=="Deformer sets":   
+        #     if getSel and querySet:
+        #         for each in getSel:
+        #             cmds.sets(each, add=querySet)
+        #     else:
+        #         print self.default_error()
+        #         return       
 
             
     ###########################################################################
@@ -646,7 +677,40 @@ class ToolFunctions(object):
             getBaseClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
             cmds.parent(name, each)      
     def _rivet(self, arg=None):
-        maya.mel.eval( "rivet;" )
+        getSel=cmds.ls(sl=1, fl=1)
+        edgeBucket=[]
+        if ".vtx[" in getSel[0]:
+            pass
+        else:
+            print "You need to make some vertex selections for this tool to operate on."
+            return
+        for each in getSel:
+            getComponent = cmds.polyInfo(each, ve=True)
+            getVerts=getComponent[0].split(':')[1]
+            edgeCount=re.findall(r'\d+', getVerts)    
+            edgeBucket.append(edgeCount[:2])
+        for item in edgeBucket:
+            cmds.select("pPlane1.e["+item[0]+"]", r=1)
+            cmds.select("pPlane1.e["+item[1]+"]", add=1)
+            maya.mel.eval( 'rivet();' )
+
+    def _point_const(self, arg=None):
+        getSel=cmds.ls(sl=1, fl=1)
+        edgeBucket=[]
+        if ".vtx[" in getSel[0]:
+            pass
+        else:
+            print "You need to make some vertex selections for this tool to operate on."
+        for each in getSel:
+            getObj=getSel[0].split('.')[0]
+            getUVmap = cmds.polyListComponentConversion(each, fv=1, tuv=1)
+            getCoords=cmds.polyEditUV(getUVmap, q=1)
+            getNew=cmds.spaceLocator(n=each+"_loc")
+            cmds.select(each, r=1)
+            cmds.select(getNew[0], add=1)
+            buildConst=cmds.pointOnPolyConstraint(each, getNew[0], mo=0, offset=(0.0, 0.0, 0.0))
+            cmds.setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
+            cmds.setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])    
 
     def _rivet_obj(self, arg=None): 
         selObj=cmds.ls(sl=1, fl=1)
@@ -838,7 +902,13 @@ class ToolFunctions(object):
 
 
     def _blend_colour_window(self, arg=None):
-        getSel=cmds.ls(sl=1)        
+        getSel=cmds.ls(sl=1)
+        selObj=cmds.ls(sl=1)
+        if len(selObj)>3:
+            pass
+        else:
+            print "Select 4 objects: a controller with a user attribute added(which it will ask you to choose), a follow object(middle chain), then a '0' rotate/scale leading object(EG: FK chain) and a '1' rotate/scale leading object (EG:IK chain)"
+            return               
         global attributeSel
         geteattr=cmds.listAttr (getSel[0], ud=1)        
         winName = "select attribute to link the switch constraint driven key to"
@@ -870,7 +940,7 @@ class ToolFunctions(object):
         if len(selObj)>3:
             pass
         else:
-            print "select a controller with a user attribute, a follow object, then a '0' rotate/scale leading object and a '1' rotate/scale leading object"
+            print "Select 4 objects: a controller with a user attribute added(which it will ask you to choose), a follow object(middle chain), then a '0' rotate/scale leading object(EG: FK chain) and a '1' rotate/scale leading object (EG:IK chain)"
             return
         Controller=selObj[0]
         firstChild=selObj[1]
