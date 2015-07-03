@@ -23,7 +23,7 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath="rigModules"
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -156,7 +156,8 @@ class ToolKitUI(object):
         # cmds.button (label='Grp insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._grp_insert)          
         # cmds.button (label='Clstr insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._clstr_insert)
         # cmds.button (label='Jnt insert', ann="Inserts a group above a controller or object, zeroes out object. USES: changing default position in a rig controller",  p='MiniRigsButtonLayout', command = self._jnt_insert)
-        cmds.button (label='Rivet', ann="Surface constraint. Uses the common Rivet tool built by Michael Bazhutkin. (must have mel script installed in scripts folder), constrains a locator to two selected edges on a surface.", p='MiniRigsButtonLayout', command = self._rivet)             
+        cmds.button (label='Multi Rivet', ann="places multiple rivets based on vert selection.", p='MiniRigsButtonLayout', command = self._rivet)             
+        cmds.button (label='Multi Point', ann="places multiple point constrained locators based on vert selection.", p='MiniRigsButtonLayout', command = self._point_const)             
         cmds.button (label='Rivet Obj', ann="Uses the common Rivet tool built by Michael Bazhutkin. Adds selected object to a new created rivet. Select two edges of one object and then the object you want to rivet to the first. USES: buttons", p='MiniRigsButtonLayout', command = self._rivet_obj)             
         cmds.button (label='Bone rivet', ann="Builds a rivet and parents a joint to that locator for skinning geometry to. USES: eyelashes", p='MiniRigsButtonLayout', command = self._bone_rivet) 
         cmds.button (label='Joint chain', ann="builds a simple bone chain based on guides. USES: insect leg chains with no prebuilt rig", p='MiniRigsButtonLayout', command = self._build_joints) 
@@ -195,6 +196,8 @@ class ToolKitUI(object):
         cmds.button (label='Duplicate Move', p='ToolButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='ToolButtonLayout', command = self._shade_network)
         cmds.button (label='PolyCheck', p='ToolButtonLayout', command = self._poly_check) 
+        cmds.button (label='**Dynsettings', bgc=[0.33, 0.27, 0.30], ann="Sets cloth defaults",p='ToolButtonLayout', command = self._cloth_dyn)
+        cmds.button (label='**SkinDEF', bgc=[0.33, 0.27, 0.30], ann="sets prime skin deformer values.",p='ToolButtonLayout', command = self._skin_def)        
 #        cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)                               
 #        cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
 #        cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)                             
@@ -298,7 +301,7 @@ class ToolKitUI(object):
         toolClass._shade_network()
 
     def _rivet(self, arg=None):
-        maya.mel.eval( "rivet;" )
+        toolClass._rivet()
 
     def _revert(self, arg=None):
         maya.mel.eval( "revert();" )
@@ -410,7 +413,10 @@ class ToolKitUI(object):
 
     def _rivet_obj(self, arg=None): 
         toolClass._rivet_obj()
-        
+
+    def _point_const(self, arg=None): 
+        toolClass._point_const()
+
     def _disappear(self, arg=None):
         toolClass._disappear()
                 
@@ -700,4 +706,5 @@ class ToolKitUI(object):
 inst = ToolKitUI()
 inst.create()
 
+python("playblast = None");
 
