@@ -6,34 +6,34 @@ Swim Stream
 
 '''
 
-'''Swim stream'''
-__author__ = "Elise Deglau"
-__version__ = 1.00
-'This work is licensed under a Creative Commons License'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
-
 import maya.cmds as cmds
 from functools import partial
 from string import *
 import re
 import maya.mel
-##the following library outmeshs/inmeshs is determining the connections of the network per input>>node>>output. Currently set to accommodate rig edits. Edit to suit need.
+
+global outmeshs
+global inmeshs
+
+##the follofocusObjg library outmeshs/inmeshs is determining the connections of the network per input>>node>>output. Currently set to accommodate rig edits. Edit to suit need.
 outmeshs=["outputGeometry", "outputGeometry[0]", "outMesh", "outputMesh", "worldMesh", "worldMesh[0]", "_outMesh", "output" ]
 inmeshs=["input[0].inputGeometry", "inputGeometry", "inMesh", "inputMesh", "basePoints", "input"]
 
+
+
 class ui(object):
-    def __init__(self, winName="swimtWindow"):
+    def __init__(self, winName="swimtwindow"):
         self.winTitle = "Stream swimming - Developer mode"
         self.winName = winName
 
     def create(self):
-        global drown
-        global urp
+        global downStreamDest
+        global upStreamSource
         global ctAt_name
         global nd_name
         global add_in
         global ndeLst
-        global joe
+        # global focusObj
         global jotl
         global sel_ON
         global sel_PN
@@ -44,64 +44,64 @@ class ui(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=800, h=480 )
 
         cmds.menuBarLayout(h=30)
-        fileMenu = cmds.menu( label='clean interface', pmc=self.clnint )
+        # fileMenu = cmds.menu( label='clean interface', pmc=self.clnint )
         cmds.rowColumnLayout  (' JrRow ', nr=3, nch=3, rat=[(1, 'top', 0),(2, 'bottom', 0)], rh=[(1, 50),(2, 450)], w=680)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=2, borderStyle='out', bv=1, p='JrRow')
         cmds.rowLayout  (' KrRow ', p='LrRow', numberOfColumns=50, w=680, h=50)
         cmds.gridLayout('KR_sh', p='KrRow', numberOfColumns=6, cellWidthHeight=(90, 20))
-        cmds.button( label='outliner', c=self.olw , w=90, p='KR_sh')
-        cmds.button( label='hypergraph', c=self.hg , w=90, p='KR_sh')
-        cmds.button( label='update graph', c=self.hgu , w=90, p='KR_sh')
-        cmds.button( label='connnect edit', c=self.cw , w=90, p='KR_sh')
-        cmds.button( label='hypershade', c=self.hsw , w=90, p='KR_sh')
-        cmds.button( label='add attribute', c=self.ada , w=90, p='KR_sh')
-        cmds.button( label='edit attribute', c=self.ea , w=90, p='KR_sh')
-        cmds.button( label='channel control', c=self.chan , w=90, p='KR_sh')
-        cmds.button( label='set driven key', c=self.sdk , w=90, p='KR_sh')
-        cmds.button( label='script editor', c=self.scrpted , w=90, p='KR_sh')
+        # cmds.button( label='outliner', c=self.olw , w=90, p='KR_sh')
+        # cmds.button( label='hypergraph', c=self.hg , w=90, p='KR_sh')
+        # cmds.button( label='update graph', c=self.hgu , w=90, p='KR_sh')
+        # cmds.button( label='connnect edit', c=self.cw , w=90, p='KR_sh')
+        # cmds.button( label='hypershade', c=self.hsw , w=90, p='KR_sh')
+        # cmds.button( label='add attribute', c=self.ada , w=90, p='KR_sh')
+        # cmds.button( label='edit attribute', c=self.ea , w=90, p='KR_sh')
+        # cmds.button( label='channel control', c=self.chan , w=90, p='KR_sh')
+        # cmds.button( label='set driven key', c=self.sdk , w=90, p='KR_sh')
+        # cmds.button( label='script editor', c=self.scrpted , w=90, p='KR_sh')
         #cmds.button( label='float Att', c=self.fltAtt , w=90, p='KR_sh')
 
         cmds.rowLayout  (' rMainRow ', w=150, numberOfColumns=6, cw6=[160, 500, 1, 1, 1, 1], ct6=[ 'both', 'right', 'right',  'right', 'both', 'both'], p='JrRow')
         cmds.columnLayout ('KLrColumn1', parent = 'rMainRow')
         cmds.setParent ('KLrColumn1')##################find node
-        cmds.text (label='Selection arrays', p='KLrColumn1')
-        cmds.separator(h=10, p='KLrColumn1')
-        cmds.gridLayout('IO_sh', p='KLrColumn1', numberOfColumns=2, cellWidthHeight=(80, 20))
-        cmds.button (label='grab node', p='IO_sh', command = self.fndNd )
-        cmds.button (label='grab name', p='IO_sh', command = self.findName )
-        cmds.button (label='filter node', p='IO_sh', command = self.selNd )
-        cmds.popupMenu(button=1)
-        cmds.menuItem  (label='filter selected by type and make list', command = self.selNd )
-        cmds.menuItem  (label='filter selected by type and add to list', command = self.adfltnd )
-        cmds.button (label='filter name', p='IO_sh', command = self.selname )
-        cmds.popupMenu(button=1)
-        cmds.menuItem  (label='filter selected by name and make list', command = self.selname )
-        cmds.menuItem  (label='filter selected by name and add to list', command = self.adfltnm )
-        #cmds.button (label='sel all node', p='IO_sh', command = self.selAl )
-        cmds.popupMenu(button=1)
-        #cmds.menuItem  (label='select all scene by type and make list', command = self.selAl )
-        cmds.menuItem  (label='select all scene by type and add to list', command = self.adaltnd )
-        cmds.button (label='sel all name', p='IO_sh', command = self.selAlname )
-        cmds.popupMenu(button=1)
-        cmds.menuItem  (label='select all scene by name and make list', command = self.selAlname )
-        cmds.menuItem  (label='select all scene by name and add to list', command = self.adaltnm )
-        cmds.text (label='name or node type',  p='KLrColumn1')
-        cmds.gridLayout('PO_sm', p='KLrColumn1', numberOfColumns=2, cellWidthHeight=(120, 25))
-        nd_name=cmds.textField(w=120, h=25, p='PO_sm')
-        cmds.button (label='find', command = self.fnd , p='PO_sm', w=40, ann='find this name in list below')
-        cmds.text (label='selection list', p='KLrColumn1')
-        cmds.textField(nd_name, edit=True, enterCommand=('cmds.setFocus(\"' + nd_name + '\")'))
-        ndeLst=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.selNod , dcc=self.nodesel2 , dkc=self.nodesel2 , io=True, w=150, h=220, p='KLrColumn1')
-        cmds.gridLayout('IO_sm', p='KLrColumn1', numberOfColumns=4, cellWidthHeight=(40, 20))
-        cmds.button (label='clr', command = self.clr , p='IO_sm')
-        cmds.button (label='+', command = self.pls , p='IO_sm')
-        cmds.button (label='-', command = self.mns , p='IO_sm')
-        cmds.button (label='><', command = self.swp , p='IO_sm', ann='swap out selected in list with selected in scene')
-        cmds.button (label='selal', command = self.sall , p='IO_sm', w=40, ann='select all')
-        cmds.button (label='sel- ', command = self.snon , p='IO_sm', w=40, ann='select none')
-        cmds.button (label='sort', command = self.srt , p='IO_sm', w=40, ann='sort alphabetically-numerally')
-        cmds.button (label='set', command = self.mkset , p='IO_sm', w=40, ann='create set from selected in list')
+        # cmds.text (label='Selection arrays', p='KLrColumn1')
+        # cmds.separator(h=10, p='KLrColumn1')
+        # cmds.gridLayout('IO_sh', p='KLrColumn1', numberOfColumns=2, cellWidthHeight=(80, 20))
+        # cmds.button (label='grab node', p='IO_sh', command = self.fndNd )
+        # cmds.button (label='grab name', p='IO_sh', command = self.findName )
+        # cmds.button (label='filter node', p='IO_sh', command = self.selNd )
+        # cmds.popupMenu(button=1)
+        # cmds.menuItem  (label='filter selected by type and make list', command = self.selNd )
+        # cmds.menuItem  (label='filter selected by type and add to list', command = self.adfltnd )
+        # cmds.button (label='filter name', p='IO_sh', command = self.selname )
+        # cmds.popupMenu(button=1)
+        # cmds.menuItem  (label='filter selected by name and make list', command = self.selname )
+        # cmds.menuItem  (label='filter selected by name and add to list', command = self.adfltnm )
+        # #cmds.button (label='sel all node', p='IO_sh', command = self.selAl )
+        # cmds.popupMenu(button=1)
+        # #cmds.menuItem  (label='select all scene by type and make list', command = self.selAl )
+        # cmds.menuItem  (label='select all scene by type and add to list', command = self.adaltnd )
+        # cmds.button (label='sel all name', p='IO_sh', command = self.selAlname )
+        # cmds.popupMenu(button=1)
+        # cmds.menuItem  (label='select all scene by name and make list', command = self.selAlname )
+        # cmds.menuItem  (label='select all scene by name and add to list', command = self.adaltnm )
+        # cmds.text (label='name or node type',  p='KLrColumn1')
+        # cmds.gridLayout('PO_sm', p='KLrColumn1', numberOfColumns=2, cellWidthHeight=(120, 25))
+        # nd_name=cmds.textField(w=120, h=25, p='PO_sm')
+        # cmds.button (label='find', command = self.fnd , p='PO_sm', w=40, ann='find this name in list below')
+        # cmds.text (label='selection list', p='KLrColumn1')
+        # cmds.textField(nd_name, edit=True, enterCommand=('cmds.setFocus(\"' + nd_name + '\")'))
+        # ndeLst=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.selNod , dcc=self.nodesel2 , dkc=self.nodesel2 , io=True, w=150, h=220, p='KLrColumn1')
+        # cmds.gridLayout('IO_sm', p='KLrColumn1', numberOfColumns=4, cellWidthHeight=(40, 20))
+        # cmds.button (label='clr', command = self.clr , p='IO_sm')
+        # cmds.button (label='+', command = self.pls , p='IO_sm')
+        # cmds.button (label='-', command = self.mns , p='IO_sm')
+        # cmds.button (label='><', command = self.swp , p='IO_sm', ann='swap out selected in list with selected in scene')
+        # cmds.button (label='selal', command = self.sall , p='IO_sm', w=40, ann='select all')
+        # cmds.button (label='sel- ', command = self.snon , p='IO_sm', w=40, ann='select none')
+        # cmds.button (label='sort', command = self.srt , p='IO_sm', w=40, ann='sort alphabetically-numerally')
+        # cmds.button (label='set', command = self.mkset , p='IO_sm', w=40, ann='create set from selected in list')
 
         cmds.frameLayout('SB', label='StreamSwim', li=180, la="center", borderStyle='etchedIn', bv=1, p='rMainRow', w=480, h=400, mw=10)
         cmds.rowLayout  (' SS_window_row ', w=150, numberOfColumns=6, cw6=[150, 150, 150, 1, 1, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='SB')
@@ -119,14 +119,14 @@ class ui(object):
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='seloff', command = self.suoff )
         cmds.menuItem  (label='selon', command = self.suon )
-        urp=cmds.textScrollList( numberOfRows=8,ra=1, allowMultiSelection=False, sc=self.strnupOFF , dcc=self.strselup , dkc=self.strselup , p= 'rColumn1', w=150, h=330)
+        self.upStreamSource=cmds.textScrollList( numberOfRows=8,ra=1, allowMultiSelection=False, sc=self.strnupOFF , dcc=self.strselup , dkc=self.strselup , p= 'rColumn1', w=150, h=330)
         cmds.gridLayout('IO_sL', p='rColumn1', numberOfColumns=4, cellWidthHeight=(35, 20))
         cmds.button (label='clr', command = self.clrup , p='IO_sL')
         cmds.button (label='-', command = self.mnsup , p='IO_sL')
 
         cmds.setParent ('rColumn2')##################link buttons
         cmds.gridLayout('uplst_st', p='rColumn2', numberOfColumns=2, cellWidthHeight=(75, 20))
-        joe=cmds.text(label='no focus', p='rColumn2', rs=0, w=150, fn="boldLabelFont", h=50)
+        self.focusObj=cmds.text(label='no focus', p='rColumn2', rs=0, w=150, fn="boldLabelFont", h=50)
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='CW Left', command = self.cwlL )
         cmds.menuItem  (label='CW Right', command = self.cwlR )
@@ -135,7 +135,7 @@ class ui(object):
         
         ##################buttons
         cmds.gridLayout('sl_Grd', p='rColumn2', numberOfColumns=1, cellWidthHeight=(150, 20))
-        cmds.button (label='Focus', command = self.focsSel , p='sl_Grd', w=150, h=20)
+        cmds.button (label='Focus', p='sl_Grd',  w=150, h=20, command = lambda *args:self.focsSel())
         cmds.button (label='Append connections', command = self.appcon , p='sl_Grd', w=150, h=20)
         cmds.gridLayout('gash', p='rColumn2', numberOfColumns=2, cellWidthHeight=(75, 20))
         cmds.separator (h=20, p='rColumn2', vis=1, w=150)
@@ -146,13 +146,14 @@ class ui(object):
         cmds.separator (h=30, p='rColumn2', vis=1, w=150)
         add_in=cmds.text("Connect", al='center', p='rColumn2', rs=0, w=150)
         cmds.gridLayout('a_f', p='rColumn2', numberOfColumns=2, cellWidthHeight=(75, 20))
-        cmds.button (label='bypass', command = self.bypss , p='a_f')
+        cmds.button (label='bypass', p='a_f', command = lambda *args:self.bypss(focusObj=cmds.text(self.focusObj, q=1, label=1), selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1), selectedDest=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)))
         cmds.button ('sn', label='AttLockin')
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='unlock', command = self.unlckin )
         cmds.menuItem  (label='lock', command = self.lckin )
-        cmds.button (label='<<Insert', command = self.upstreamInsert  , p='a_f')
-        cmds.button (label='Insert>>', command = self.downstreamInsert  , p='a_f')
+        cmds.button (label='<<Insert', p='a_f', command = lambda *args:self.upstreamInsert(focusObj=cmds.text(self.focusObj, q=1, label=1), selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)))
+        cmds.button (label='Insert>>', p='a_f', command = lambda *args:self.downstreamInsert(focusObj=cmds.text(self.focusObj, q=1, label=1), selectedDest=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)))
+        # cmds.button (label='Insert>>', command = self.downstreamInsert  , p='a_f')
         cmds.button (label='<<Connect', command = self.upstrcon  , p='a_f')
         cmds.button (label='Connect>>', command = self.dnstrcon   , p='a_f')
         cmds.button (label='<<Choice', command = self.chN_in , p='a_f')
@@ -169,7 +170,7 @@ class ui(object):
         cmds.popupMenu(button=1)
         cmds.menuItem  (label='seloff', command = self.sdoff )
         cmds.menuItem  (label='selon', command = self.sdon )
-        drown=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=False, sc=self.strngOFF , dcc=self.strseldn , dkc=self.strseldn , p= 'rColumn3', io=True, w=150, h=330)
+        self.downStreamDest=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=False, sc=self.strngOFF , dcc=self.strseldn , dkc=self.strseldn , p= 'rColumn3', io=True, w=150, h=330)
         cmds.gridLayout('IO_sR', p='rColumn3', numberOfColumns=4, cellWidthHeight=(35, 20))
         cmds.button (label='clr', command = self.clrdn , p='IO_sR')
         cmds.button (label='-', command = self.mnsdn , p='IO_sR')
@@ -315,42 +316,42 @@ class ui(object):
             cmds.sets()
     
     def clrdn(self, arg=None):
-        cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+        cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
     
     def mnsdn(self, arg=None):
-        shrt=cmds.textScrollList(drown, q=1, selectItem=1)
+        shrt=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
         if shrt<1:
             print 'select item to subtract from list'
-        cmds.textScrollList(drown, e=1, ri=shrt, w=150, h=330)
+        cmds.textScrollList(self.downStreamDest, e=1, ri=shrt, w=150, h=330)
     
     def clrup(self, arg=None):
-        cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+        cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
     
     def mnsup(self, arg=None):
-        shrt=cmds.textScrollList(urp, q=1, selectItem=1)
+        shrt=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         if shrt<1:
             print 'select item to subtract from list'
-        cmds.textScrollList(urp, e=1, ri=shrt, w=150, h=330)
+        cmds.textScrollList(self.upStreamSource, e=1, ri=shrt, w=150, h=330)
     
     def suoff(self, arg=None):
-        cmds.textScrollList(urp, e=1, sc="strnupOFF()", w=150, h=330)
+        cmds.textScrollList(self.upStreamSource, e=1, sc="strnupOFF()", w=150, h=330)
         cmds.text(sel_PN, e=1, label='seloff', w=75)
     
     def suon(self, arg=None):
-        cmds.textScrollList(urp, e=1, sc="strnup()", w=150, h=330)
+        cmds.textScrollList(self.upStreamSource, e=1, sc="strnup()", w=150, h=330)
         cmds.text(sel_PN, e=1, label='selon', w=75)
     
     def sdoff(self, arg=None):
-        cmds.textScrollList(drown, e=1, sc="strngOFF()", w=150, h=330)
+        cmds.textScrollList(self.downStreamDest, e=1, sc="strngOFF()", w=150, h=330)
         cmds.text(sel_ON, e=1, label='seloff', w=75)
     
     def sdon(self, arg=None):
-        cmds.textScrollList(drown, e=1, sc="strng()", w=150, h=330)
+        cmds.textScrollList(self.downStreamDest, e=1, sc="strng()", w=150, h=330)
         cmds.text(sel_ON, e=1, label='selon',  w=75)
     
     def appcon(self, arg=None):
-        bH_i=cmds.textScrollList(urp, q=1, ai=1)
-        bH_d=cmds.textScrollList(drown, q=1, ai=1)
+        bH_i=cmds.textScrollList(self.upStreamSource, q=1, ai=1)
+        bH_d=cmds.textScrollList(self.downStreamDest, q=1, ai=1)
         n_str=cmds.ls(sl=1)
         if n_str<1:
             print 'select item to add to list'
@@ -363,26 +364,26 @@ class ui(object):
                 print 'item has no output'
             if bH_i<0:
                 for u in range (len(ls_str)):
-                    cmds.textScrollList(urp, e=1, a=ls_str[u], w=150, h=330)
+                    cmds.textScrollList(self.upStreamSource, e=1, a=ls_str[u], w=150, h=330)
             if bH_i>0:
                 for u in range (len(ls_str)):
                     if ls_str[u] in bH_i:
-                        cmds.textScrollList(urp, e=1, da=1, w=150, h=330)
+                        cmds.textScrollList(self.upStreamSource, e=1, da=1, w=150, h=330)
                         print '%s'%ls_str[u]+' already in list'
-                        cmds.textScrollList(urp, e=1, si=ls_str[u], w=150, h=330)
+                        cmds.textScrollList(self.upStreamSource, e=1, si=ls_str[u], w=150, h=330)
                     else:
-                        cmds.textScrollList(urp, e=1, a=ls_str[u], w=150, h=330)
+                        cmds.textScrollList(self.upStreamSource, e=1, a=ls_str[u], w=150, h=330)
             if bH_d<0:
                 for u in range (len(dn_str)):
-                    cmds.textScrollList(drown, e=1, a=dn_str[u], w=150, h=330)
+                    cmds.textScrollList(self.downStreamDest, e=1, a=dn_str[u], w=150, h=330)
             if bH_d>0:
                 for u in range (len(dn_str)):
                     if dn_str[u] in bH_d:
-                        cmds.textScrollList(drown, e=1, da=1, w=150, h=330)
+                        cmds.textScrollList(self.downStreamDest, e=1, da=1, w=150, h=330)
                         print '%s'%dn_str[u]+' already in list'
-                        cmds.textScrollList(drown, e=1, si=dn_str[u], w=150, h=330)
+                        cmds.textScrollList(self.downStreamDest, e=1, si=dn_str[u], w=150, h=330)
                     else:
-                        cmds.textScrollList(drown, e=1, a=dn_str[u], w=150, h=330)
+                        cmds.textScrollList(self.downStreamDest, e=1, a=dn_str[u], w=150, h=330)
     
     def srt(self, arg=None):
         bH_i=cmds.textScrollList(ndeLst, q=1, ai=1)
@@ -459,7 +460,7 @@ class ui(object):
                         else:
                             cmds.textScrollList(ndeLst, e=1, a=hg[u], w=150, h=220)
     
-    def focsSel(self, arg=None):##################focus on selected in scene
+    def focsSel(self):##################focus on selected in scene
         n_str=cmds.ls(sl=1)
         undg=len(n_str)
         if undg<1:
@@ -467,18 +468,18 @@ class ui(object):
         else:
             ls_str=cmds.listConnections( n_str[0], d=0, s=1, p=1, sh=1)
             if ls_str<1:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
             dn_str=cmds.listConnections( n_str[0], s=0, d=1, p=1, sh=1)
             if dn_str<1:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(drown, e=1, append=dn_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, append=dn_str[0::1], w=150, h=330)
             print n_str[0]
-            cmds.text(joe, e=1, label='%s'%n_str[0], rs=0)
+            cmds.text(self.focusObj, e=1, label='%s'%n_str[0], rs=0)
     
     def sall(self, arg=None):
         bH_i=cmds.textScrollList(ndeLst, q=1, ai=1)
@@ -509,20 +510,20 @@ class ui(object):
                 cmds.textScrollList(ndeLst, e=1, a=n_str[0::1],  w=150, h=220)
     
     def inL(self, arg=None):    #################
-        o_str=cmds.text(add_in, q=1, label=1)
-        if o_str<1:
+        selectedSource=cmds.text(add_in, q=1, label=1)
+        if selectedSource<1:
             print 'no insert has been identified'
         else:
-            cmds.select(o_str, r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 0;" )
+            cmds.select(selectedSource, r=1)
+            maya.mel.eval( "connectwindowFillFromActiveList 0;" )
     
     def otR(self, arg=None):    #################
-        o_str=cmds.text(add_in, q=1, label=1)
-        if o_str<1:
+        selectedSource=cmds.text(add_in, q=1, label=1)
+        if selectedSource<1:
             print 'no insert has been identified'
         else:
-            cmds.select(o_str, r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 1;" )
+            cmds.select(selectedSource, r=1)
+            maya.mel.eval( "connectwindowFillFromActiveList 1;" )
     
     
     def insertsel(self, arg=None):
@@ -536,60 +537,60 @@ class ui(object):
         n_str=cmds.ls(sl=1)
         job=len(n_str)
         if job==1:
-            cmds.text(joe, e=1, label='%s'%n_str[0], rs=0)
+            cmds.text(self.focusObj, e=1, label='%s'%n_str[0], rs=0)
         else:
-            cmds.text(joe, e=1, label='nothing selected', rs=0)
+            cmds.text(self.focusObj, e=1, label='nothing selected', rs=0)
     
     def cw(self, arg=None):#################
-        maya.mel.eval( "connectWindow;" )
+        maya.mel.eval( "connectwindow;" )
     
     
     def cwlL(self, arg=None):    #################
-        klo=cmds.text(joe, q=1, label=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
         cmds.select(klo, r=1)
-        maya.mel.eval( "connectWindowFillFromActiveList 0;" )
+        maya.mel.eval( "connectwindowFillFromActiveList 0;" )
     
     
     def cwlR(self, arg=None):
-        klo=cmds.text(joe, q=1, label=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
         cmds.select(klo, r=1)
-        maya.mel.eval( "connectWindowFillFromActiveList 1;" )
+        maya.mel.eval( "connectwindowFillFromActiveList 1;" )
     
     def upL(self, arg=None):    #################
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        if o_str<1:
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        if selectedSource<1:
             print 'select from the upstream scroll-list to assign in the left connection editor window'
         else:
-            p_str=o_str[0].split('.')
+            p_str=selectedSource[0].split('.')
             cmds.select(p_str[0], r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 0;" )
+            maya.mel.eval( "connectwindowFillFromActiveList 0;" )
     
     def upR(self, arg=None):    #################
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        if o_str<1:
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        if selectedSource<1:
             print 'select from the upstream scroll-list to assign in the right connection editor window'
         else:
-            p_str=o_str[0].split('.')
+            p_str=selectedSource[0].split('.')
             cmds.select(p_str[0], r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 1;" )
+            maya.mel.eval( "connectwindowFillFromActiveList 1;" )
     
     def dnL(self, arg=None):    #################
-        o_str=cmds.textScrollList(drown, q=1, selectItem=1)
-        if o_str<1:
+        selectedSource=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
+        if selectedSource<1:
             print 'select from the downstream scroll-list to assign in the left connection editor window'
         else:
-            p_str=o_str[0].split('.')
+            p_str=selectedSource[0].split('.')
             cmds.select(p_str[0], r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 0;" )
+            maya.mel.eval( "connectwindowFillFromActiveList 0;" )
     
     def dnR(self, arg=None):    #################
-        o_str=cmds.textScrollList(drown, q=1, selectItem=1)
-        if o_str<1:
+        selectedSource=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
+        if selectedSource<1:
             print 'select from the downstream scroll-list to assign in the right connection editor window'
         else:
-            p_str=o_str[0].split('.')
+            p_str=selectedSource[0].split('.')
             cmds.select(p_str[0], r=1)
-            maya.mel.eval( "connectWindowFillFromActiveList 1;" )
+            maya.mel.eval( "connectwindowFillFromActiveList 1;" )
     
     def chan(self, arg=None):    #################
         maya.mel.eval( "ChannelControlEditor;;" )
@@ -601,7 +602,7 @@ class ui(object):
         maya.mel.eval( "AddAttribute;" )
     
     def hsw(self, arg=None):    #################
-        maya.mel.eval( "HypershadeWindow;" )
+        maya.mel.eval( "Hypershadewindow;" )
     
     def scrpted(self, arg=None):    #################
         maya.mel.eval( "ScriptEditor;" )
@@ -610,7 +611,7 @@ class ui(object):
         maya.mel.eval( "SetDrivenKeyOptions;" )
     
     def olw(self, arg=None):    #################
-        maya.mel.eval( "OutlinerWindow;" )
+        maya.mel.eval( "Outlinerwindow;" )
     
     def clr(self, arg=None):##################
         cmds.textScrollList(ndeLst, e=1, ra=1, w=150, h=220)
@@ -626,23 +627,23 @@ class ui(object):
                     en_str.append(ls_str[r])
         fs_nm=en_str[0].split('.')
         cmds.select(fs_nm[0], r=1)
-        cmds.text(joe, e=1, label='%s'%fs_nm[0], rs=0)
+        cmds.text(self.focusObj, e=1, label='%s'%fs_nm[0], rs=0)
         shrt=cmds.ls(sl=1)
         if shrt > 0:
             cmds.select(shrt, r=1)
-            cmds.text(joe, e=1, label='%s'%shrt[0], rs=0)
+            cmds.text(self.focusObj, e=1, label='%s'%shrt[0], rs=0)
             ls_str=cmds.listConnections( shrt[0], s=1, d=0, p=1, sh=1)
             if ls_str<1:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
             ds_str=cmds.listConnections( shrt[0], s=0, d=1, p=1, sh=1)
             if ds_str<1:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(drown, e=1, append=ds_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, append=ds_str[0::1], w=150, h=330)
     
     def dnstr(self, arg=None):##################>>downstream select
         n_str=cmds.ls(sl=1)[0]
@@ -654,23 +655,23 @@ class ui(object):
                     en_str.append(ls_str[r])
         fs_nm=en_str[0].split('.')
         cmds.select(fs_nm[0], r=1)
-        cmds.text(joe, e=1, label='%s'%fs_nm[0], rs=0)
+        cmds.text(self.focusObj, e=1, label='%s'%fs_nm[0], rs=0)
         shrt=cmds.ls(sl=1)
         if shrt > 0:
             cmds.select(shrt, r=1)
-            cmds.text(joe, e=1, label='%s'%shrt[0], rs=0)
+            cmds.text(self.focusObj, e=1, label='%s'%shrt[0], rs=0)
             ls_str=cmds.listConnections( shrt[0], s=1, d=0, p=1, sh=1)
             if ls_str<1:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
             ds_str=cmds.listConnections( shrt[0], s=0, d=1, p=1, sh=1)
             if ds_str<1:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(drown, e=1, append=ds_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, append=ds_str[0::1], w=150, h=330)
     
     def fndNd(self, arg=None):###################find node type
         klo=cmds.ls(sl=1)
@@ -753,7 +754,7 @@ class ui(object):
             cmds.textScrollList(ndeLst, e=1, append=jack[0::1], w=150, h=220)
     
     def hg(self, arg=None):##################open hypergraph
-        maya.mel.eval( "HypergraphHierarchyWindow;" )
+        maya.mel.eval( "HypergraphHierarchywindow;" )
     
     def hgu(self, arg=None):##################update hypergraph to selected
         maya.mel.eval(' showDGLevel hyperGraphPanel2HyperGraphEd; ')
@@ -761,9 +762,9 @@ class ui(object):
     #    maya.mel.eval(' fitPanel -selected;')
     
     def link (self, arg=None):#################relinker
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        d_str=cmds.textScrollList(drown, q=1, selectItem=1)
-        cmds.connectAttr(o_str[0], d_str[0], f=1)
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        d_str=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
+        cmds.connectAttr(selectedSource[0], d_str[0], f=1)
     
     def nodesel (self, arg=None):###################list node type scene selection
         n_wgh=cmds.ls(sl=1)
@@ -824,10 +825,10 @@ class ui(object):
     def clnint(self, arg=None):
         cmds.DisplayWireframe()
         windows = cmds.lsUI(wnd=1)
-        nt_win=['CommandWindow', 'MayaWindow', 'scriptEditorPanel1Window', 'swimtWindow', 'shelfEditorWin', 'ColorEditor' ]
-        for i in range(len(nt_win)):
-            if nt_win[i] in windows:
-                windows.remove(nt_win[i])
+        nt_focusObj=['Commandwindow', 'Mayawindow', 'scriptEditorPanel1window', 'swimtwindow', 'shelfEditorfocusObj', 'ColorEditor' ]
+        for i in range(len(nt_focusObj)):
+            if nt_focusObj[i] in windows:
+                windows.remove(nt_focusObj[i])
         cmds.deleteUI(windows, window=1)
     
     
@@ -837,95 +838,108 @@ class ui(object):
         n_str=cmds.ls(sl=1)
         ls_str=cmds.listConnections( n_str, d=0, s=1, p=1, sh=1)
         if ls_str<1:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
         dn_str=cmds.listConnections( n_str[0], s=0, d=1, p=1, sh=1)
         if dn_str<1:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(drown, e=1, append=dn_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, append=dn_str[0::1], w=150, h=330)
         print n_str[0]
-        cmds.text(joe, e=1, label='%s'%n_str[0], rs=0)
+        cmds.text(self.focusObj, e=1, label='%s'%n_str[0], rs=0)
     
     def re_foc(self, arg=None):
-        rf=cmds.text(joe, q=1, label=1)
+        rf=cmds.text(self.focusObj, q=1, label=1)
         cmds.select('%s'%rf, r=1)
         n_str=cmds.ls(sl=1)
         ls_str=cmds.listConnections( n_str, d=0, s=1, p=1, sh=1)
         if ls_str<1:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
         dn_str=cmds.listConnections( n_str[0], s=0, d=1, p=1, sh=1)
         if dn_str<1:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(drown, e=1, append=dn_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, append=dn_str[0::1], w=150, h=330)
         print n_str[0]
-        cmds.text(joe, e=1, label='%s'%n_str[0], rs=0)
+        cmds.text(self.focusObj, e=1, label='%s'%n_str[0], rs=0)
     
     
     
     def strselup(self, arg=None):###################text scroll list upstream functions
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        p_str=o_str[0].split('.')
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        p_str=selectedSource[0].split('.')
         cmds.select(p_str[0], r=1)
         ls_str=cmds.listConnections( p_str[0], s=1, d=0, p=1, sh=1)
         if ls_str<1:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
         dn_str=cmds.listConnections( p_str[0], s=0, d=1, p=1, sh=1)
         if dn_str<1:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(drown, e=1, append=dn_str[0::1], w=150, h=330)
-        cmds.text(joe, e=1, label='%s'%p_str[0], rs=0)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, append=dn_str[0::1], w=150, h=330)
+        cmds.text(self.focusObj, e=1, label='%s'%p_str[0], rs=0)
     
     def strseldn(self, arg=None):###################text scroll list downstream functions
-        sm_str=cmds.textScrollList(drown, q=1, selectItem=1)
+        sm_str=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
         sp_str=sm_str[0].split('.')
         cmds.select(sp_str[0], r=1)
         ls_str=cmds.listConnections( sp_str[0], s=1, d=0, p=1, sh=1)
         if ls_str<1:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
         dn_str=cmds.listConnections( sp_str[0], d=1, s=0, sh=1, p=1)
         if dn_str<1:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
         else:
-            cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-            cmds.textScrollList(drown, e=1, append=dn_str[0::1], w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+            cmds.textScrollList(self.downStreamDest, e=1, append=dn_str[0::1], w=150, h=330)
         print sp_str[0]
-        cmds.text(joe, e=1, label='%s'%sp_str[0], rs=0)
+        cmds.text(self.focusObj, e=1, label='%s'%sp_str[0], rs=0)
     
     def nodesel2(self, arg=None):
         shrt=cmds.textScrollList(ndeLst, q=1, selectItem=1)
         if shrt > 0:
             cmds.select(shrt, r=1)
-            cmds.text(joe, e=1, label='%s'%shrt[0], rs=0)
+            cmds.text(self.focusObj, e=1, label='%s'%shrt[0], rs=0)
             ls_str=cmds.listConnections( shrt[0], s=1, d=0, p=1, sh=1)
             if ls_str<1:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(urp, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(urp, e=1, append=ls_str[0::1], w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.upStreamSource, e=1, append=ls_str[0::1], w=150, h=330)
             ds_str=cmds.listConnections( shrt[0], s=0, d=1, p=1, sh=1)
             if ds_str<1:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
             else:
-                cmds.textScrollList(drown, e=1, ra=1, w=150, h=330)
-                cmds.textScrollList(drown, e=1, append=ds_str[0::1], w=150, h=330)
-    def bypss (self, arg=None):
+                cmds.textScrollList(self.downStreamDest, e=1, ra=1, w=150, h=330)
+                cmds.textScrollList(self.downStreamDest, e=1, append=ds_str[0::1], w=150, h=330)
+
+    def bypss (self, focusObj, selectedSource, selectedDest):
+        if selectedSource and selectedDest:
+            pass
+        else:
+            print "Must select connections from both lists"
+            return
+        foundDestinationPlug=cmds.connectionInfo(selectedSource, dfs=1)
+        cmds.connectAttr(selectedSource[0], selectedDest[0], f=1)
+        cmds.disconnectAttr(selectedSource[0], foundDestinationPlug[0])
+        print selectedSource[0]+', '+ selectedDest[0]+' has been connected'
+        print selectedSource[0]+', '+ foundDestinationPlug[0]+' has been disconnected'
+
+    def bypssV1 (self, arg=None):
         n_str=cmds.text(joe, q=1)
         b_str=cmds.ls(sl=1)
         o_str=cmds.textScrollList(urp, q=1, selectItem=1)
@@ -939,15 +953,15 @@ class ui(object):
         cmds.disconnectAttr(o_str[0], up_des[0])
         print o_str[0]+', '+ d_str[0]+' has been connected'
         print o_str[0]+', '+ up_des[0]+' has been disconnected'
-    
+
     def chN_in (self, arg=None):#### build a choice node going in
-        n_str=cmds.text(joe, q=1, label=1)
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        if o_str<1:
+        n_str=cmds.text(self.focusObj, q=1, label=1)
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        if selectedSource<1:
             print 'you need to select from the up stream scroll list for insert choice'
         else:
-            up_des=cmds.connectionInfo(o_str, dfs=1)
-            str_updes=up_des[0]
+            foundDestinationPlug=cmds.connectionInfo(selectedSource, dfs=1)
+            str_updes=foundDestinationPlug[0]
             gh_o=str_updes.split('.')
             IP_g=gh_o[1:]
             Ct_g=[]
@@ -958,14 +972,14 @@ class ui(object):
                 Al_Lnk=gh_o[1:2]+Al_Lst
                 myString="".join(Al_Lnk)
             upchoice=cmds.choice(n_str, at='%s'%myString)
-            print 'you have inserted a choice node at: '+ '%s'%o_str[0]+', %s'%n_str[0]+'.'+'%s'%myString
+            print 'you have inserted a choice node at: '+ '%s'%selectedSource[0]+', %s'%n_str[0]+'.'+'%s'%myString
     
     def chN_ot (self, arg=None):##build a choice node going out
-        n_str=cmds.text(joe, q=1, label=1)
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        if o_str>1:
-            up_des=cmds.connectionInfo(o_str, dfs=1)
-        d_str=cmds.textScrollList(drown, q=1, selectItem=1)
+        n_str=cmds.text(self.focusObj, q=1, label=1)
+        selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
+        if selectedSource>1:
+            foundDestinationPlug=cmds.connectionInfo(selectedSource, dfs=1)
+        d_str=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
         drn_src=cmds.connectionInfo(d_str, sfd=1)
         drn_des=cmds.connectionInfo(drn_src, dfs=1)
         str_dndes=drn_des[0]
@@ -980,59 +994,115 @@ class ui(object):
             myString="".join(Al_Lnk)
         downchoice=cmds.choice(d_str, at='%s'%myString)
         print 'you have inserted a choice node at: '+ '%s'%drn_src+', %s'%d_str
+
+    def upstreamInsert (self, focusObj, selectedSource):
+        selfObj=cmds.ls(sl=1, fl=1)
+        getFocusPlug=cmds.connectionInfo(selectedSource[0], dfs=1)
+        for eachSelObj in selfObj:
+            getOutPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+            getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+            for each in getInPlug:
+                findConnections=cmds.connectionInfo(eachSelObj+"."+each, sfd=1)  
+                if findConnections:
+                    getInPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
+                else:
+                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+                    if getGrp:
+                        for item in getGrp:
+                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, sfd=1)
+                            if not getConnect:
+                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
+                                if len(getInput)==1:
+                                    getInPlug=getInput
+            for each in getOutPlug:
+                findConnections=cmds.connectionInfo(eachSelObj+"."+each, dfs=1)  
+                if findConnections:
+                    getOutPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
+                else:
+                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+                    if getGrp:
+                        for item in getGrp:
+                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, dfs=1)
+                            if not getConnect:
+                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
+                                if len(getInput)==1:
+                                    getOutPlug=getInput
+            cmds.connectAttr( selectedSource[0], eachSelObj+'.'+getInPlug[0], f=1)
+            cmds.disconnectAttr(selectedSource[0], getFocusPlug[0])
+            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], getFocusPlug[0], f=1)
+
+    # def upstreamInsertV2 (self, focusObj, selectedSource):
+    #     selfObj=cmds.ls(sl=1, fl=1)
+    #     for focusObj in selfObj:
+    #     # getPluggedSrc=[(each) for each in cmds.listConnections(focusObj, s=1, d=0, p=1, sh=1) if selectedSource[0] in each.split(".")[1]]
+    #     getFocusPlug=cmds.connectionInfo(selectedSource[0], dfs=1)
+    #     # getOutPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for outputType in outmeshs if outputType in each]
+    #     getOutPlug=[(attrib) for attrib in cmds.listAttr (selfObj[0], c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+    #     # getInPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for inputType in inmeshs if inputType in each]
+    #     getInPlug=[(attrib) for attrib in cmds.listAttr (selfObj[0], c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+    #     cmds.connectAttr( selectedSource[0], selfObj[0]+'.'+getInPlug[0], f=1)
+    #     cmds.connectAttr( selfObj[0]+'.'+getOutPlug[0], getFocusPlug[0], f=1)
+
+    # def upstreamInsertV1 (self, focusObj):
+    #     collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
+    #     selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)##source
+    #     outputPlug=[]
+    #     inputPlug=[]
+    #     if selectedSource>0:
+    #         foundDestinationPlug=cmds.connectionInfo(selectedSource, dfs=1)##destination info
+    #     else:
+    #         print "select source from upstream scroll-list"
+    #     getoutPut=[(eachOutPlug) for eachOutPlug in outmeshs for eachAttr in collectedAttr]
+    #     for eachOutPlug in outmeshs:
+    #         for eachAttr in collectedAttr:
+    #             if eachOutPlug in eachAttr:
+    #                 outputPlug.append(eachOutPlug)
+    #     for eachInPlug in inmeshs:
+    #         for eachAttr in collectedAttr:
+    #             if eachInPlug in eachAttr:
+    #                 inputPlug.append(eachInPlug)
+    #     dn_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
+    #     # cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%foundDestinationPlug[0], f=1)
+    #     # print '%s'%focusObj+'.%s'%outputPlug[0]+', '+'%s'%foundDestinationPlug[0] + ' has been connected'
+    #     # cmds.connectAttr( '%s'%selectedSource[0], '%s'%focusObj+'.%s'%inputPlug[0], f=1)
+    #     # print '%s'%selectedSource[0]+', '+'%s'%focusObj+'.%s'%inputPlug[0] + ' has been connected'
     
-    def upstreamInsert (self, arg=None):
-        win=cmds.text(add_in, q=1, label=1)##insert
-        glogged=cmds.attributeInfo(win, all=1)##insert info
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)##source
-        stich=[]
-        sew=[]
-        if o_str>0:
-            up_des=cmds.connectionInfo(o_str, dfs=1)##destination info
-        else:
-            print "select source from upstream scroll-list"
-        for i in range(len(outmeshs)):
-            for r in range(len(glogged)):
-                if outmeshs[i] in glogged[r]:
-                    stich.append(outmeshs[i])
-        for i in range(len(inmeshs)):
-            for r in range(len(glogged)):
-                if inmeshs[i] in glogged[r]:
-                    sew.append(inmeshs[i])
-        dn_str=cmds.listConnections( win, s=1, d=0, p=1, sh=1)
-        cmds.connectAttr( '%s'%win+'.%s'%stich[0], '%s'%up_des[0], f=1)
-        print '%s'%win+'.%s'%stich[0]+', '+'%s'%up_des[0] + ' has been connected'
-        cmds.connectAttr( '%s'%o_str[0], '%s'%win+'.%s'%sew[0], f=1)
-        print '%s'%o_str[0]+', '+'%s'%win+'.%s'%sew[0] + ' has been connected'
-    
-    def downstreamInsert (self, arg=None):
-        win=cmds.text(add_in, q=1, label=1)##insert
-        glogged=cmds.attributeInfo(win, all=1)##insert info
-        o_str=cmds.textScrollList(drown, q=1, selectItem=1)##source
-        stich=[]
-        sew=[]
-        if o_str<0:
+    def downstreamInsert (self, focusObj, selectedDest):
+        selfObj=cmds.ls(sl=1, fl=1)
+        getFocusPlug=cmds.connectionInfo(selectedDest[0], sfd=1)
+        getSelectedOutPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for outputType in outmeshs if outputType in each]
+        getSelectedInPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for inputType in inmeshs if inputType in each]
+        cmds.connectAttr( getFocusPlug[0], selfObj[0]+'.'+getSelectedInPlug[0], f=1)
+        cmds.connectAttr( selfObj[0]+'.'+getSelectedOutPlug[0], selectedDest[0], f=1) 
+
+    def downstreamInsertV1 (self, arg=None):
+        focusObj=cmds.text(add_in, q=1, label=1)##insert
+        collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
+        selectedSource=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)##source
+        outputPlug=[]
+        inputPlug=[]
+        if selectedSource<0:
             print "select source from upstream scroll-list"
         else:
-            dn_des=cmds.connectionInfo(o_str, sfd=1)##destination info
+            dn_des=cmds.connectionInfo(selectedSource, sfd=1)##destination info
             for i in range(len(inmeshs)):
-                for r in range(len(glogged)):
-                    if inmeshs[i] in glogged[r]:
-                        sew.append(inmeshs[i])
+                for r in range(len(collectedAttr)):
+                    if inmeshs[i] in collectedAttr[r]:
+                        inputPlug.append(inmeshs[i])
             for i in range(len(outmeshs)):
-                for r in range(len(glogged)):
-                    if outmeshs[i] in glogged[r]:
-                        stich.append(outmeshs[i])
-            dn_str=cmds.listConnections( win, s=0, d=1, p=1, sh=1)
-            oit= '%s'%win+'.'+'%s'%stich[0]
-            iit='%s'%win+'.'+'%s'%sew[0]
-            spaz=cmds.text(joe, q=1, label=1)#focus
+                for r in range(len(collectedAttr)):
+                    if outmeshs[i] in collectedAttr[r]:
+                        outputPlug.append(outmeshs[i])
+            dn_str=cmds.listConnections( focusObj, s=0, d=1, p=1, sh=1)
+            oit= '%s'%focusObj+'.'+'%s'%outputPlug[0]
+            iit='%s'%focusObj+'.'+'%s'%inputPlug[0]
+            spaz=cmds.text(self.focusObj, q=1, label=1)#focus
             dop_str=cmds.listConnections( spaz, s=1, d=0, p=1, sh=1)
-            dip_str=cmds.listConnections( win, s=0, d=1, p=1, sh=1)
+            dip_str=cmds.listConnections( focusObj, s=0, d=1, p=1, sh=1)
             if dop_str>0:
                 if oit==dop_str[0]:
                     cmds.disconnectAttr(dop_str[0], dip_str[0])
-            frip_str=cmds.listConnections( win, s=1, d=0, p=1, sh=1)
+            frip_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
             if frip_str>0:
                 fip_str=frip_str[0].split('.')
                 fop_str=cmds.listConnections( fip_str[0], s=0, d=1, p=1, sh=1)
@@ -1040,65 +1110,65 @@ class ui(object):
                     cmds.disconnectAttr(frip_str[0], fop_str[0])
                     cmds.connectAttr(frip_str[0], dip_str[0], f=1)
                     print '%s'%frip_str[0]+', %s'%dip_str[0]+' has been connected'
-            cmds.connectAttr( '%s'%dn_des, '%s'%win+'.%s'%sew[0], f=1)
-            print'%s'%dn_des+', '+'%s'%win+'.%s'%sew[0] + ' has been connected'
-            cmds.connectAttr( '%s'%win+'.%s'%stich[0], '%s'%o_str[0], f=1)
-            print '%s'%win+'.%s'%stich[0]+', '+'%s'%o_str[0] + ' has been connected'
+            cmds.connectAttr( '%s'%dn_des, '%s'%focusObj+'.%s'%inputPlug[0], f=1)
+            print'%s'%dn_des+', '+'%s'%focusObj+'.%s'%inputPlug[0] + ' has been connected'
+            cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%selectedSource[0], f=1)
+            print '%s'%focusObj+'.%s'%outputPlug[0]+', '+'%s'%selectedSource[0] + ' has been connected'
     
     def upstrcon (self, arg=None):
-        win=cmds.ls(sl=1)[0]##insert
-        if win==0:
+        focusObj=cmds.ls(sl=1)[0]##insert
+        if focusObj==0:
             print 'select something to connect'
-        glogged=cmds.attributeInfo(win, all=1)##insert info
-        o_str=cmds.text(joe, q=1, label=1)#focus
-        dn_str=cmds.listConnections( win, s=1, d=0, p=1, sh=1)
-        plogged=cmds.attributeInfo(o_str, all=1)##insert info
-        stich=[]
-        sew=[]
+        collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
+        selectedSource=cmds.text(self.focusObj, q=1, label=1)#focus
+        dn_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
+        plogged=cmds.attributeInfo(selectedSource, all=1)##insert info
+        outputPlug=[]
+        inputPlug=[]
         for g in range(len(inmeshs)):
             if inmeshs[g] in plogged:
-                sew.append(inmeshs[g])
+                inputPlug.append(inmeshs[g])
         for i in range(len(outmeshs)):
-            if outmeshs[i] in glogged:
-                stich.append(outmeshs[i])
+            if outmeshs[i] in collectedAttr:
+                outputPlug.append(outmeshs[i])
         if dn_str>0:
-            joined='%s'%o_str+'.'+'%s'%stich[0]
-            joiner='%s'%win+'.'+'%s'%sew[0]
+            joined='%s'%selectedSource+'.'+'%s'%outputPlug[0]
+            joiner='%s'%focusObj+'.'+'%s'%inputPlug[0]
             if joined==dn_str[0]:
                 print '%s'%joined +' is already connected to %s'%joiner+ '. Cannot make cycle in this fashion.'
         else:
-            cmds.connectAttr( '%s'%win+'.%s'%stich[0], '%s'%o_str+'.%s'%sew[0], f=1)
-            print '%s'%win+'.%s'%stich[0]+', %s'%o_str+ '.%s' %sew[0] + ' has been connected'
+            cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%selectedSource+'.%s'%inputPlug[0], f=1)
+            print '%s'%focusObj+'.%s'%outputPlug[0]+', %s'%selectedSource+ '.%s' %inputPlug[0] + ' has been connected'
     
     def dnstrcon (self, arg=None):
-        o_str=cmds.ls(sl=1)##insert
-        if o_str==0:
+        selectedSource=cmds.ls(sl=1)##insert
+        if selectedSource==0:
             print 'select something to connect'
-        win=cmds.text(joe, q=1, label=1)#focus
-        glogged=cmds.attributeInfo(win, all=1)##insert info
-        plogged=cmds.attributeInfo(o_str, all=1)##insert info
-        dn_str=cmds.listConnections( o_str, s=0, d=1, p=1, sh=1)
-        stich=[]
-        sew=[]
+        focusObj=cmds.text(self.focusObj, q=1, label=1)#focus
+        collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
+        plogged=cmds.attributeInfo(selectedSource, all=1)##insert info
+        dn_str=cmds.listConnections( selectedSource, s=0, d=1, p=1, sh=1)
+        outputPlug=[]
+        inputPlug=[]
         for g in range(len(inmeshs)):
             if inmeshs[g] in plogged:
-                sew.append(inmeshs[g])
+                inputPlug.append(inmeshs[g])
         for i in range(len(outmeshs)):
-            if outmeshs[i] in glogged:
-                stich.append(outmeshs[i])
+            if outmeshs[i] in collectedAttr:
+                outputPlug.append(outmeshs[i])
         if dn_str>0:
-            joined='%s'%win+'.'+'%s'%sew[0]
-            joiner='%s'%o_str[0]+'.'+'%s'%stich[0]
+            joined='%s'%focusObj+'.'+'%s'%inputPlug[0]
+            joiner='%s'%selectedSource[0]+'.'+'%s'%outputPlug[0]
             if joined==dn_str[0]:
                 print '%s'%joined +' is already connected to %s'%joiner+ '. Cannot make cycle in this fashion.'
             else:
-                for h in range(len(o_str)):
-                    cmds.connectAttr( '%s'%win+'.%s'%stich[0], '%s'%o_str[h]+'.%s'%sew[0], f=1)
-                    print '%s'%win+'.%s'%stich[0]+', %s'%o_str+ '.%s' %sew[0] + ' has been connected'
+                for h in range(len(selectedSource)):
+                    cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%selectedSource[h]+'.%s'%inputPlug[0], f=1)
+                    print '%s'%focusObj+'.%s'%outputPlug[0]+', %s'%selectedSource+ '.%s' %inputPlug[0] + ' has been connected'
     
     def unlckin (self, arg=None):
-        klo=cmds.text(joe, q=1, label=1)
-        dw=cmds.textScrollList(urp, q=1, selectItem=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
+        dw=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         if dw<1:
             print "you must make a selection in the 'up-stream' scroll-list to unlock from"
         else:
@@ -1113,8 +1183,8 @@ class ui(object):
             print '%s'%hint[0]+"attribute has been unlocked"
     
     def lckin (self, arg=None):
-        klo=cmds.text(joe, q=1, label=1)
-        dw=cmds.textScrollList(urp, q=1, selectItem=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
+        dw=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         if dw<1:
             print "you must make a selection in the 'up-stream' scroll-list to lock from"
         else:
@@ -1129,10 +1199,10 @@ class ui(object):
             print '%s'%hint[0]+ " has been locked"
     
     def strnup(self, arg=None):###################select upstream function
-        jri=cmds.textScrollList(urp, q=1, selectItem=1)
+        jri=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         yru=cmds.connectionInfo(jri[0], dfs=1)
-        klo=cmds.text(joe, q=1, label=1)
-        dw=cmds.textScrollList(urp, q=1, selectItem=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
+        dw=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         hint=[]
         dn_des=cmds.connectionInfo(dw, dfs=1)
         ilo=cmds.connectionInfo( dn_des[0], gla=1)
@@ -1144,10 +1214,10 @@ class ui(object):
         cmds.select(eff[0], r=1)
     
     def strnupOFF(self, arg=None):###################select upstream function
-        jri=cmds.textScrollList(urp, q=1, selectItem=1)
+        jri=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         yru=cmds.connectionInfo(jri[0], dfs=1)
-        klo=cmds.text(joe, q=1, label=1)
-        dw=cmds.textScrollList(urp, q=1, selectItem=1)
+        klo=cmds.text(self.focusObj, q=1, label=1)
+        dw=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)
         hint=[]
         dn_des=cmds.connectionInfo(dw, dfs=1)
         ilo=cmds.connectionInfo( dn_des[0], gla=1)
@@ -1159,7 +1229,7 @@ class ui(object):
     
     
     def strng(self, arg=None):##################select downstream function
-        jri=cmds.textScrollList(drown, q=1, selectItem=1)
+        jri=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
         yru=cmds.connectionInfo(jri[0], sfd=1)
         if jri > 0:
                 if yru > 0:
@@ -1168,7 +1238,7 @@ class ui(object):
         cmds.select(eff[0], r=1)
     
     def strngOFF(self, arg=None):##################select downstream function
-        jri=cmds.textScrollList(drown, q=1, selectItem=1)
+        jri=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)
         yru=cmds.connectionInfo(jri[0], sfd=1)
         if jri > 0:
                 if yru > 0:
