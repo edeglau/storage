@@ -15,40 +15,45 @@ import maya.mel
 global outmeshs
 global inmeshs
 
+global downStreamDest
+global upStreamSource
+global ctAt_name
+global nd_name
+global add_in
+global ndeLst
+# global focusObj
+global jotl
+global sel_ON
+global sel_PN
+
 ##the follofocusObjg library outmeshs/inmeshs is determining the connections of the network per input>>node>>output. Currently set to accommodate rig edits. Edit to suit need.
-outmeshs=["outputGeometry", "outputGeometry[0]", "outMesh", "outputMesh", "worldMesh", "worldMesh[0]", "_outMesh", "output" ]
-inmeshs=["input[0].inputGeometry", "inputGeometry", "inMesh", "inputMesh", "basePoints", "input"]
+# outmeshs=["outputGeometry", "outputGeometry[0]", "outMesh", "outputMesh", "worldMesh", "worldMesh[0]", "_outMesh", "output" ]
+outmeshs=["outputGeometry", "outMesh", "outputMesh", "_outMesh", "output"]
+# inmeshs=["input[0].inputGeometry", "inputGeometry", "inMesh", "inputMesh", "basePoints", "input"]
+inmeshs=["inputGeometry", "inMesh", "inputMesh", "input"]
 
-
-
-class ui(object):
-    def __init__(self, winName="swimtwindow"):
+class SSD(object):
+    '''--------------------------------------------------------------------------------------------------------------------------------------
+    Interface Layout
+    --------------------------------------------------------------------------------------------------------------------------------------'''          
+    def __init__(self, winName="Stream swimming - Developer mode"):
         self.winTitle = "Stream swimming - Developer mode"
         self.winName = winName
 
     def create(self):
-        global downStreamDest
-        global upStreamSource
-        global ctAt_name
-        global nd_name
-        global add_in
-        global ndeLst
-        # global focusObj
-        global jotl
-        global sel_ON
-        global sel_PN
-
+        
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
 
-        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=800, h=480 )
+        self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=350, h=300)
+
 
         cmds.menuBarLayout(h=30)
         # fileMenu = cmds.menu( label='clean interface', pmc=self.clnint )
-        cmds.rowColumnLayout  (' JrRow ', nr=3, nch=3, rat=[(1, 'top', 0),(2, 'bottom', 0)], rh=[(1, 50),(2, 450)], w=680)
+        cmds.rowColumnLayout  (' JrRow ', nr=3, nch=3, rat=[(1, 'top', 0),(2, 'bottom', 0)], rh=[(1, 1),(2, 450)], w=680)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=2, borderStyle='out', bv=1, p='JrRow')
-        cmds.rowLayout  (' KrRow ', p='LrRow', numberOfColumns=50, w=680, h=50)
+        cmds.rowLayout  (' KrRow ', p='LrRow', numberOfColumns=50, w=680, h=1)
         cmds.gridLayout('KR_sh', p='KrRow', numberOfColumns=6, cellWidthHeight=(90, 20))
         # cmds.button( label='outliner', c=self.olw , w=90, p='KR_sh')
         # cmds.button( label='hypergraph', c=self.hg , w=90, p='KR_sh')
@@ -62,7 +67,7 @@ class ui(object):
         # cmds.button( label='script editor', c=self.scrpted , w=90, p='KR_sh')
         #cmds.button( label='float Att', c=self.fltAtt , w=90, p='KR_sh')
 
-        cmds.rowLayout  (' rMainRow ', w=150, numberOfColumns=6, cw6=[160, 500, 1, 1, 1, 1], ct6=[ 'both', 'right', 'right',  'right', 'both', 'both'], p='JrRow')
+        cmds.rowLayout  (' rMainRow ', w=150, numberOfColumns=6, cw6=[1, 1, 1, 1, 1, 1], ct6=[ 'both', 'right', 'right',  'right', 'both', 'both'], p='JrRow')
         cmds.columnLayout ('KLrColumn1', parent = 'rMainRow')
         cmds.setParent ('KLrColumn1')##################find node
         # cmds.text (label='Selection arrays', p='KLrColumn1')
@@ -153,9 +158,14 @@ class ui(object):
         cmds.menuItem  (label='lock', command = self.lckin )
         cmds.button (label='<<Insert', p='a_f', command = lambda *args:self.upstreamInsert(focusObj=cmds.text(self.focusObj, q=1, label=1), selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)))
         cmds.button (label='Insert>>', p='a_f', command = lambda *args:self.downstreamInsert(focusObj=cmds.text(self.focusObj, q=1, label=1), selectedDest=cmds.textScrollList(self.downStreamDest, q=1, selectItem=1)))
-        # cmds.button (label='Insert>>', command = self.downstreamInsert  , p='a_f')
-        cmds.button (label='<<Connect', command = self.upstrcon  , p='a_f')
-        cmds.button (label='Connect>>', command = self.dnstrcon   , p='a_f')
+        cmds.button (label='<<Connect', ann='', p='a_f', command = lambda *args:self.upstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        cmds.button (label='Connect>>', ann='', p='a_f', command = lambda *args:self.dnstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='(f)<<Connect(f)', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.upstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='(f)Connect>>(f)', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.dnstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='(f)<<Connect', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.upstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='(f)Connect>>', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.dnstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='<<Connect(f)', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.upstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
+        # cmds.button (label='Connect>>(f)', ann='connects via new path if multi accessible', p='a_f', command = lambda *args:self.dnstrcon(focusObj=cmds.text(self.focusObj, q=1, label=1)))
         cmds.button (label='<<Choice', command = self.chN_in , p='a_f')
         cmds.button (label='Choice>>', command = self.chN_ot , p='a_f')
 
@@ -177,6 +187,216 @@ class ui(object):
 
         cmds.showWindow(self.window)
 
+
+    def upstrcon (self, focusObj):
+        selfObj=cmds.ls(sl=1, fl=1)
+        for eachSelObj in selfObj:        
+            getInPlug=self.getPlugIn(focusObj)
+            getOutPlug=self.getPlugOut(eachSelObj)               
+            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], focusObj+'.'+getInPlug, f=1) 
+
+
+    def dnstrcon (self, focusObj):
+        selfObj=cmds.ls(sl=1, fl=1)
+        for eachSelObj in selfObj:                  
+            getInPlug=self.getPlugIn(eachSelObj)
+            getOutPlug=self.getPlugOut(focusObj)
+            self.checkFocusPlug(focusObj, getOutPlug[0], getInPlug)               
+            cmds.connectAttr( focusObj+'.'+getOutPlug[0], eachSelObj+'.'+getInPlug, f=1) 
+
+
+    def upstrconFrc(self, focusObj):
+        selfObj=cmds.ls(sl=1, fl=1)
+        for eachSelObj in selfObj:        
+            getInPlug=self.getPlugInForce(focusObj)
+            getOutPlug=self.getPlugOutForce(eachSelObj)               
+            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], focusObj+'.'+getInPlug, f=1) 
+
+
+    def dnstrconFrc(self, focusObj):
+        selfObj=cmds.ls(sl=1, fl=1)
+        for eachSelObj in selfObj:                  
+            getInPlug=self.getPlugInForce(eachSelObj)
+            getOutPlug=self.getPlugOutForce(focusObj)
+            self.checkFocusPlug(focusObj, getOutPlug[0], getInPlug)               
+            cmds.connectAttr( focusObj+'.'+getOutPlug[0], eachSelObj+'.'+getInPlug, f=1) 
+
+    def getPlugOutForce(self, focusObj):
+        getOutPlug=[(attrib) for attrib in cmds.listAttr (focusObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+        for each in getOutPlug:
+            getLowerAtt=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+            if getLowerAtt != None:
+                for item in getLowerAtt:
+                    findConnections=[cmds.connectionInfo(focusObj+"."+item, dfs=1) for eachMesh in outmeshs if eachMesh in cmds.connectionInfo(focusObj+"."+item, dfs=1)]
+                    if findConnections:                  
+                        findConnectionNums=self.hasNumbers(findConnections[0].split(".")[1])
+                        if findConnectionNums ==True:
+                            extractEdge=re.sub("\D", "", str(item))
+                            newNum=int(extractEdge)+1
+                            getOutPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), item)
+                        else:
+                            getGrp=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+                            if getGrp:
+                                for eachitem in getGrp:
+                                    getOutPut=cmds.listAttr (focusObj+"."+eachitem, c=1)
+                                    if len(getOutPut)==1:
+                                        getOutPlug=getOutPut
+                    else:
+                        getOutPlug=[item]
+        return getOutPlug
+
+    def getPlugInForce(self, eachSelObj):
+        print "begin in"
+        getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+        for each in getInPlug:
+            getLowerAtt=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+            if getLowerAtt != None:
+                for item in getLowerAtt:
+                    if "groupId" not in str(item):
+                        try:
+                            getConnections=cmds.listAttr (eachSelObj+'.'+item, c=1, iu=1, m=1) 
+                            getPlug=getConnections[1]
+                            findNums=self.hasNumbers(getPlug)
+                            if findNums ==True:
+                                findConnect=cmds.connectionInfo(eachSelObj+"."+getPlug, sfd=1)
+                                if findConnect:
+                                    extractEdge=re.sub("\D", "", str(getPlug))
+                                    newNum=int(extractEdge)+1
+                                    getNewPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), getPlug)
+                                    getInPlug=[getNewPlug]
+                            else:
+                                getInPlug=getConnections[1]
+                        except:
+                            pass          
+            else:
+                getInPlug=[each]
+        return getInPlug[0]         
+
+
+    def checkFocusPlug(self, focusObj, getOutPlug, getInPlug):
+        outplug=focusObj+'.'+getOutPlug
+        inplug=focusObj+'.'+getInPlug
+        getSourcePlugOnFocus=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
+        getDestPlugOnFocus=cmds.listConnections( focusObj, s=0, d=1, p=1, sh=1)
+        if getSourcePlugOnFocus>0:
+            if outplug==getSourcePlugOnFocus[0]:
+                cmds.disconnectAttr(getSourcePlugOnFocus[0], getDestPlugOnFocus[0])           
+        if getSourcePlugOnFocus>0:
+            if inplug==getDestPlugOnFocus[0]:
+                cmds.disconnectAttr(getSourcePlugOnFocus[0], getDestPlugOnFocus[0])
+            # dn_str=cmds.listConnections( focusObj, s=0, d=1, p=1, sh=1)
+            # oit= '%s'%focusObj+'.'+'%s'%outputPlug[0]
+            # iit='%s'%focusObj+'.'+'%s'%inputPlug[0]
+            # spaz=cmds.text(self.focusObj, q=1, label=1)#focus
+            # dop_str=cmds.listConnections( spaz, s=1, d=0, p=1, sh=1)
+            # dip_str=cmds.listConnections( focusObj, s=0, d=1, p=1, sh=1)
+            # if dop_str>0:
+            #     if oit==dop_str[0]:
+            #         cmds.disconnectAttr(dop_str[0], dip_str[0])
+            # frip_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
+            # if frip_str>0:
+            #     fip_str=frip_str[0].split('.')
+            #     fop_str=cmds.listConnections( fip_str[0], s=0, d=1, p=1, sh=1)
+            #     if iit==fop_str[0]:
+            #         cmds.disconnectAttr(frip_str[0], fop_str[0])
+
+
+    def getPlugOut(self, focusObj):
+        getOutPlug=[(attrib) for attrib in cmds.listAttr (focusObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+        for each in getOutPlug:
+            getLowerAtt=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+            if getLowerAtt != None:
+                for item in getLowerAtt:
+                    findConnections=[cmds.connectionInfo(focusObj+"."+item, dfs=1) for eachMesh in outmeshs if eachMesh in cmds.connectionInfo(focusObj+"."+item, dfs=1)]
+                    if findConnections:                  
+                        findConnectionNums=self.hasNumbers(findConnections[0].split(".")[1])
+                        if findConnectionNums ==True:
+                            extractEdge=re.sub("\D", "", str(item))
+                            newNum=int(extractEdge)+1
+                            getOutPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), item)
+                        else:
+                            getGrp=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+                            if getGrp:
+                                for eachitem in getGrp:
+                                    getOutPut=cmds.listAttr (focusObj+"."+eachitem, c=1)
+                                    if len(getOutPut)==1:
+                                        getOutPlug=getOutPut
+                    else:
+                        getOutPlug=[item]
+        return getOutPlug
+
+    def getPlugIn(self, eachSelObj):
+        print "begin in"
+        getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+        for each in getInPlug:
+            getLowerAtt=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+            if getLowerAtt != None:
+                for item in getLowerAtt:
+                    if "groupId" not in str(item):
+                        try:
+                            getConnections=cmds.listAttr (eachSelObj+'.'+item, c=1, iu=1, m=1) 
+                            getPlug=getConnections[1]
+                            findNums=self.hasNumbers(getPlug)
+                            if findNums ==True:
+                                findConnect=cmds.connectionInfo(eachSelObj+"."+getPlug, sfd=1)
+                                if findConnect:
+                                    extractEdge=re.sub("\D", "", str(getPlug))
+                                    newNum=int(extractEdge)+1
+                                    getNewPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), getPlug)
+                                    getInPlug=[getNewPlug]
+                            else:
+                                getInPlug=getConnections[1]
+                        except:
+                            pass          
+            else:
+                getInPlug=[each]
+        return getInPlug[0]           
+
+
+    def getPlugInV0(self, eachSelObj):
+        print "begin in"
+        getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+        for each in getInPlug:
+            getLowerAtt=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+            if getLowerAtt != None:
+                for item in getLowerAtt:
+                    if "groupId" not in str(item):
+                        print item+" is initial multi"
+                        findNums=self.hasNumbers(item)
+                        findConnections=[cmds.connectionInfo(eachSelObj+"."+item, sfd=1) for eachMesh in outmeshs if eachMesh in cmds.connectionInfo(eachSelObj+"."+item, sfd=1)]
+                        if findConnections:
+                            print "found connections"
+                            findConnectionNums=self.hasNumbers(findConnections[0].split(".")[1])
+                            if findConnectionNums ==True:
+                                print findConnections+" has numbers"
+                                extractEdge=re.sub("\D", "", str(item))
+                                newNum=int(extractEdge)+1
+                                getInPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), item)
+                            else:
+                                print "  no more numbers"
+                                getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1) 
+                                getGrp=[(eachItem) for eachItem in getGrp for eachMesh in outmeshs if eachMesh in eachItem]
+                                if getGrp:
+                                    print "more multi"
+                                    for eachItem in getGrp:
+                                        getInput=cmds.listAttr (eachSelObj+"."+eachItem, c=1)
+                                        if len(getInput)==1:
+                                            getInPlug=getInput[0]
+                                else:
+                                    print "no more multi"
+                                    print item
+                                    getInPlug=item
+                        else:
+                            print item
+                            getInPlug=item
+            else:
+                getInPlug=each
+        print str(getInPlug)+" In"
+        return getInPlug           
+
+
+    def hasNumbers(self, inputString):
+        return any(char.isdigit() for char in inputString)
 
 
 
@@ -939,20 +1159,6 @@ class ui(object):
         print selectedSource[0]+', '+ selectedDest[0]+' has been connected'
         print selectedSource[0]+', '+ foundDestinationPlug[0]+' has been disconnected'
 
-    def bypssV1 (self, arg=None):
-        n_str=cmds.text(joe, q=1)
-        b_str=cmds.ls(sl=1)
-        o_str=cmds.textScrollList(urp, q=1, selectItem=1)
-        if o_str>1:
-            up_des=cmds.connectionInfo(o_str, dfs=1)
-        d_str=cmds.textScrollList(drown, q=1, selectItem=1)
-        if d_str>1:
-            drn_src=cmds.connectionInfo(d_str, sfd=1)
-            drn_des=cmds.connectionInfo(drn_src, dfs=1)
-        cmds.connectAttr(o_str[0], d_str[0], f=1)
-        cmds.disconnectAttr(o_str[0], up_des[0])
-        print o_str[0]+', '+ d_str[0]+' has been connected'
-        print o_str[0]+', '+ up_des[0]+' has been disconnected'
 
     def chN_in (self, arg=None):#### build a choice node going in
         n_str=cmds.text(self.focusObj, q=1, label=1)
@@ -994,78 +1200,6 @@ class ui(object):
             myString="".join(Al_Lnk)
         downchoice=cmds.choice(d_str, at='%s'%myString)
         print 'you have inserted a choice node at: '+ '%s'%drn_src+', %s'%d_str
-
-    def upstreamInsert (self, focusObj, selectedSource):
-        selfObj=cmds.ls(sl=1, fl=1)
-        getFocusPlug=cmds.connectionInfo(selectedSource[0], dfs=1)
-        for eachSelObj in selfObj:
-            getOutPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
-            getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
-            for each in getInPlug:
-                findConnections=cmds.connectionInfo(eachSelObj+"."+each, sfd=1)  
-                if findConnections:
-                    getInPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
-                else:
-                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
-                    if getGrp:
-                        for item in getGrp:
-                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, sfd=1)
-                            if not getConnect:
-                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
-                                if len(getInput)==1:
-                                    getInPlug=getInput
-            for each in getOutPlug:
-                findConnections=cmds.connectionInfo(eachSelObj+"."+each, dfs=1)  
-                if findConnections:
-                    getOutPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
-                else:
-                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
-                    if getGrp:
-                        for item in getGrp:
-                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, dfs=1)
-                            if not getConnect:
-                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
-                                if len(getInput)==1:
-                                    getOutPlug=getInput
-            cmds.connectAttr( selectedSource[0], eachSelObj+'.'+getInPlug[0], f=1)
-            cmds.disconnectAttr(selectedSource[0], getFocusPlug[0])
-            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], getFocusPlug[0], f=1)
-
-    # def upstreamInsertV2 (self, focusObj, selectedSource):
-    #     selfObj=cmds.ls(sl=1, fl=1)
-    #     for focusObj in selfObj:
-    #     # getPluggedSrc=[(each) for each in cmds.listConnections(focusObj, s=1, d=0, p=1, sh=1) if selectedSource[0] in each.split(".")[1]]
-    #     getFocusPlug=cmds.connectionInfo(selectedSource[0], dfs=1)
-    #     # getOutPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for outputType in outmeshs if outputType in each]
-    #     getOutPlug=[(attrib) for attrib in cmds.listAttr (selfObj[0], c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
-    #     # getInPlug=[(each) for each in cmds.attributeInfo(selfObj[0],all=1) for inputType in inmeshs if inputType in each]
-    #     getInPlug=[(attrib) for attrib in cmds.listAttr (selfObj[0], c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
-    #     cmds.connectAttr( selectedSource[0], selfObj[0]+'.'+getInPlug[0], f=1)
-    #     cmds.connectAttr( selfObj[0]+'.'+getOutPlug[0], getFocusPlug[0], f=1)
-
-    # def upstreamInsertV1 (self, focusObj):
-    #     collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
-    #     selectedSource=cmds.textScrollList(self.upStreamSource, q=1, selectItem=1)##source
-    #     outputPlug=[]
-    #     inputPlug=[]
-    #     if selectedSource>0:
-    #         foundDestinationPlug=cmds.connectionInfo(selectedSource, dfs=1)##destination info
-    #     else:
-    #         print "select source from upstream scroll-list"
-    #     getoutPut=[(eachOutPlug) for eachOutPlug in outmeshs for eachAttr in collectedAttr]
-    #     for eachOutPlug in outmeshs:
-    #         for eachAttr in collectedAttr:
-    #             if eachOutPlug in eachAttr:
-    #                 outputPlug.append(eachOutPlug)
-    #     for eachInPlug in inmeshs:
-    #         for eachAttr in collectedAttr:
-    #             if eachInPlug in eachAttr:
-    #                 inputPlug.append(eachInPlug)
-    #     dn_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
-    #     # cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%foundDestinationPlug[0], f=1)
-    #     # print '%s'%focusObj+'.%s'%outputPlug[0]+', '+'%s'%foundDestinationPlug[0] + ' has been connected'
-    #     # cmds.connectAttr( '%s'%selectedSource[0], '%s'%focusObj+'.%s'%inputPlug[0], f=1)
-    #     # print '%s'%selectedSource[0]+', '+'%s'%focusObj+'.%s'%inputPlug[0] + ' has been connected'
     
     def downstreamInsert (self, focusObj, selectedDest):
         selfObj=cmds.ls(sl=1, fl=1)
@@ -1114,33 +1248,87 @@ class ui(object):
             print'%s'%dn_des+', '+'%s'%focusObj+'.%s'%inputPlug[0] + ' has been connected'
             cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%selectedSource[0], f=1)
             print '%s'%focusObj+'.%s'%outputPlug[0]+', '+'%s'%selectedSource[0] + ' has been connected'
+
+
+    def upstreamInsert (self, focusObj, selectedSource):
+        selfObj=cmds.ls(sl=1, fl=1)
+        getFocusPlug=cmds.connectionInfo(selectedSource[0], dfs=1)
+        for eachSelObj in selfObj:
+            getOutPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+            getInPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+            for each in getInPlug:
+                findConnections=cmds.connectionInfo(eachSelObj+"."+each, sfd=1)  
+                if findConnections:
+                    getInPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
+                else:
+                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+                    if getGrp:
+                        for item in getGrp:
+                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, sfd=1)
+                            if not getConnect:
+                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
+                                if len(getInput)==1:
+                                    getInPlug=getInput
+            for each in getOutPlug:
+                findConnections=cmds.connectionInfo(eachSelObj+"."+each, dfs=1)  
+                if findConnections:
+                    getOutPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
+                else:
+                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+                    if getGrp:
+                        for item in getGrp:
+                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, dfs=1)
+                            if not getConnect:
+                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
+                                if len(getInput)==1:
+                                    getOutPlug=getInput
+            cmds.connectAttr( selectedSource[0], eachSelObj+'.'+getInPlug[0], f=1)
+            cmds.disconnectAttr(selectedSource[0], getFocusPlug[0])
+            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], getFocusPlug[0], f=1)
+
+
+                              
+
+    def dnstrconV2 (self, focusObj):
+        selfObj=cmds.ls(sl=1, fl=1)
+        for eachSelObj in selfObj:   
+            getOutPlug=[(attrib) for attrib in cmds.listAttr (focusObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]     
+            for each in getOutPlug:
+                getLowerAtt=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+                if getLowerAtt != None:
+                    for item in getLowerAtt:
+                        findConnections=[cmds.connectionInfo(focusObj+"."+item, dfs=1) for eachMesh in inmeshs if eachMesh in cmds.connectionInfo(focusObj+"."+item, sfd=1)]
+                        if len(findConnections)>0:
+                            extractEdge=re.sub("\D", "", str(item))
+                            newNum=int(extractEdge)+1
+                            getInPlug=sub_Name=re.sub(r'\d[1-9]*', str(newNum), item)
+                        else:
+                            getGrp=cmds.listAttr (focusObj+"."+each, c=1, iu=1, m=1)
+                            if getGrp:
+                                for item in getGrp:
+                                    getConnect=cmds.connectionInfo(focusObj+"."+item, dfs=1)
+                                    if not getConnect:
+                                        getInput=cmds.listAttr (focusObj+"."+item, c=1)
+                                        if len(getInput)==1:
+                                            getOutPlug=getInput
+            getInPlug=[(attrib) for attrib in cmds.listAttr (focusObj, c=1, iu=1, m=0) for item in inmeshs if item ==attrib]
+            #getOutPlug=[(attrib) for attrib in cmds.listAttr (eachSelObj, c=1, iu=1, m=0) for item in outmeshs if item ==attrib]
+            for each in getInPlug:
+                findConnections=cmds.connectionInfo(eachSelObj+"."+each, dfs=1)  
+                if findConnections:
+                    getOutPlug=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=0)
+                else:
+                    getGrp=cmds.listAttr (eachSelObj+"."+each, c=1, iu=1, m=1)
+                    if getGrp:
+                        for item in getGrp:
+                            getConnect=cmds.connectionInfo(eachSelObj+"."+item, dfs=1)
+                            if not getConnect:
+                                getInput=cmds.listAttr (eachSelObj+"."+item, c=1)
+                                if len(getInput)==1:
+                                    getOutPlug=getInput                                        
+            cmds.connectAttr( eachSelObj+'.'+getOutPlug[0], focusObj+'.'+getInPlug, f=1) 
     
-    def upstrcon (self, arg=None):
-        focusObj=cmds.ls(sl=1)[0]##insert
-        if focusObj==0:
-            print 'select something to connect'
-        collectedAttr=cmds.attributeInfo(focusObj, all=1)##insert info
-        selectedSource=cmds.text(self.focusObj, q=1, label=1)#focus
-        dn_str=cmds.listConnections( focusObj, s=1, d=0, p=1, sh=1)
-        plogged=cmds.attributeInfo(selectedSource, all=1)##insert info
-        outputPlug=[]
-        inputPlug=[]
-        for g in range(len(inmeshs)):
-            if inmeshs[g] in plogged:
-                inputPlug.append(inmeshs[g])
-        for i in range(len(outmeshs)):
-            if outmeshs[i] in collectedAttr:
-                outputPlug.append(outmeshs[i])
-        if dn_str>0:
-            joined='%s'%selectedSource+'.'+'%s'%outputPlug[0]
-            joiner='%s'%focusObj+'.'+'%s'%inputPlug[0]
-            if joined==dn_str[0]:
-                print '%s'%joined +' is already connected to %s'%joiner+ '. Cannot make cycle in this fashion.'
-        else:
-            cmds.connectAttr( '%s'%focusObj+'.%s'%outputPlug[0], '%s'%selectedSource+'.%s'%inputPlug[0], f=1)
-            print '%s'%focusObj+'.%s'%outputPlug[0]+', %s'%selectedSource+ '.%s' %inputPlug[0] + ' has been connected'
-    
-    def dnstrcon (self, arg=None):
+    def dnstrconV1 (self, arg=None):
         selectedSource=cmds.ls(sl=1)##insert
         if selectedSource==0:
             print 'select something to connect'
@@ -1246,6 +1434,6 @@ class ui(object):
                     
                     
 
-inst = ui()
+inst = SSD()
 inst.create()
                     
