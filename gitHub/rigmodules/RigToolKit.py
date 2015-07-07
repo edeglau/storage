@@ -23,17 +23,29 @@ __version__ = 1.00
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-scriptPath="//rigModules"
-sys.path.append(str(scriptPath))
-
-getToolArrayPath=str(scriptPath)+"/Tools.py"
-exec(open(getToolArrayPath))
-toolClass=ToolFunctions()
-
-
-getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
-exec(open(getBasePath))
-getBaseClass=BaseClass()
+if "Windows" in OSplatform:
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+    
+    
+    getBasePath=str(scriptPath)+"\baseFunctions_maya.py"
+    exec(open(getBasePath))
+    getBaseClass=BaseClass()   
+     
+if "Linux" in OSplatform: 
+    scriptPath="//rigModules"
+    sys.path.append(str(scriptPath))
+    
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+    
+    
+    getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+    exec(open(getBasePath))
+    getBaseClass=BaseClass()
 
 
 

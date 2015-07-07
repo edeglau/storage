@@ -36,14 +36,7 @@ BbxName="eyeDirGuide"
 BbxFilepath="G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\"+BbxName+".ma"
 
 
-scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
-sys.path.append(str(scriptPath))
 
-
-
-getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
-exec(open(getBasePath))
-getBaseClass=BaseClass()
 
 
 
@@ -55,10 +48,27 @@ getfilePath=str(abspath(getsourcefile(lambda _: None)))
 print getfilePath
 if "Windows" in OSplatform:
     gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
+    
+    getBasePath=str(scriptPath)+"\baseFunctions_maya.py"
+    exec(open(getBasePath))
+    getBaseClass=BaseClass()    
+    
 if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
+    
+    
+    
+    getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+    exec(open(getBasePath))
+    getBaseClass=BaseClass()
     gtepiece=getfilePath.split("/")  
 # gtepiece=getfilePath.split("/")
-getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 # basepath=str(getRigModPath)+"/baseFunctions_maya.py"
 # exec(open(basepath))
