@@ -15,7 +15,7 @@ from pymel.core import *
 #     gtepiece=getfilePath.split("/")  
 
 # # getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-# getRigModPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules//"
+# getRigModPath="////"
 
 
 # sys.path.append(str(getRigModPath))
@@ -89,8 +89,10 @@ sys.path.append(str(toolClass))
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 guide="_guide"
 # clstrctrl="_Clst_jnt_Ctrl"
 
