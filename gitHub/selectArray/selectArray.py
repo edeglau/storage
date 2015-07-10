@@ -10,18 +10,29 @@ from functools import partial
 from string import *
 import re
 import maya.mel
+
+'''Select Array'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
 
 '''----------------------------------------------------------INSTALL:make a shelf button with the following python code:
 import sys
-filepath=( 'G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\selectArray\\' )
+filepath=( '<filepath' )
 sys.path.append(str(filepath))
 import selectArray
 reload (selectArray)
 selectArray.SelectionPalettUI()
+
+OR 
+
+
+exec(open('<//path//file.py>'))
+ToolKitUI()
 ----------------------------------------------------------'''
 
 '''====================================================================================================================================
@@ -30,22 +41,37 @@ can be modified to add object components and node types:
 ====================================================================================================================================''' 
          
 
+global objectCommonalityWarning
+global closeWindow
+
 objectCommonalityWarning=[
                           'transform',
                           'mesh',
                           'joint',
                           'shape',
-                          'nurbsCurve'
+                          'nurbsCurve',
+                          'objectSet'
                           ]
+
+# closeWindow=[
+#             'CommandWindow', 
+#             'MayaWindow', 
+#             'scriptEditorPanel1Window', 
+#             'selectArrayWindow', 
+#             'shelfEditorWin', 
+#             'ColorEditor',
+#             'hyperGraphPanel',
+#             'hyperShadePanel' ]
 
 closeWindow=[
             'CommandWindow', 
             'MayaWindow', 
-            'scriptEditorPanel1Window', 
-            'selectArrayWindow', 
             'shelfEditorWin', 
-            'ColorEditor' ]
-
+            'ColorEditor',
+            'outlinerPanel1Window',
+            'scriptEditorPanel1Window',
+            'Rig_Tool_Kit',
+            'selectArrayWindow']
 
 class SelectionPalettUI(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -63,7 +89,9 @@ class SelectionPalettUI(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=270, h=550 )
 
         cmds.menuBarLayout(h=30)
-        self.fileMenu = cmds.menu( label='Clean Interface', pmc=self.clear_superflous_windows)
+        # self.fileMenu = cmds.menu( label='Clean Interface', pmc=self.clear_superflous_windows)
+        self.fileMenu = cmds.menu( label='Clean Interface', pmc=lambda *args:self.clear_superflous_windows())
+        
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -216,17 +244,19 @@ class SelectionPalettUI(object):
         This clears the interface of window clutter and puts display in wire to lower file load time
         ----------------------------------------------------------------------------------'''          
         windows = cmds.lsUI(wnd=1)
-        for eachWindow in closeWindow:
-            if eachWindow in windows:
-                windows.remove(eachWindow)
-        cmds.deleteUI(windows, window=1)
-        
+        getDeleteWindows=((each) for each in windows if each not in closeWindow)
+        for each in getDeleteWindows:
+            try:
+                print each
+                cmds.deleteUI(each, window=1)
+            except:
+                pass
     
     def _get_node_property(self, arg=None):
         '''----------------------------------------------------------------------------------
         This grabs the node property of selected object
         ----------------------------------------------------------------------------------'''          
-        selectedObject=cmds.ls(sl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objListLength=len(selectedObject)
         if objListLength:
             if objListLength > 1:
@@ -243,7 +273,7 @@ class SelectionPalettUI(object):
         '''----------------------------------------------------------------------------------
         This grabs the named property of selected object
         ----------------------------------------------------------------------------------'''          
-        selectedObject=cmds.ls(sl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objListLength=len(selectedObject)
         if objListLength:
             if objListLength >= 1:
@@ -313,7 +343,8 @@ class SelectionPalettUI(object):
             if selectedObject:
                 self.adding_to_list_function_main(selectedObject, foundExistantListObj)                                          
         else:
-            self.selection_field_error()                       
+            self.selection_field_error()          
+                    
     
     def _create_list_by_all_name(self, arg=None):
         '''----------------------------------------------------------------------------------
@@ -351,7 +382,7 @@ class SelectionPalettUI(object):
         This filters all selected objects by name in field and create a list from it
         ----------------------------------------------------------------------------------'''
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objFiltered=[(eachObj) for eachObj in selectedObject if nameFieldText in cmds.nodeType(eachObj)]
         if nameFieldText and selectedObject and objFiltered:
             self.repopulate_list(objFiltered)
@@ -364,7 +395,7 @@ class SelectionPalettUI(object):
         ----------------------------------------------------------------------------------'''          
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
         listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objFiltered=[(eachObj) for eachObj in selectedObject if nameFieldText in cmds.nodeType(eachObj)]
         if nameFieldText and selectedObject and objFiltered:
             self.adding_to_list_function_main(objFiltered, listArray)
@@ -378,7 +409,7 @@ class SelectionPalettUI(object):
         This filters all selected objects by name in field and create a list from it
         ----------------------------------------------------------------------------------'''
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objFiltered=[(eachSelObj)for eachSelObj in selectedObject if nameFieldText in eachSelObj]
         if nameFieldText and selectedObject and objFiltered:
             self.repopulate_list(objFiltered)
@@ -392,7 +423,7 @@ class SelectionPalettUI(object):
         ----------------------------------------------------------------------------------'''          
         listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
         nameFieldText=cmds.textField(self.nodeName,q=True, text=True)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         objFiltered=[(eachSelObj)for eachSelObj in selectedObject if nameFieldText in eachSelObj]
         if nameFieldText and selectedObject and objFiltered:
             self.adding_to_list_function_main(objFiltered, listArray)
@@ -514,7 +545,7 @@ class SelectionPalettUI(object):
         Adds selected objects to the list
         ----------------------------------------------------------------------------------'''          
         listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         if selectedObject:
             self.adding_to_list_function_main(selectedObject, listArray)  
             
@@ -535,7 +566,7 @@ class SelectionPalettUI(object):
         ----------------------------------------------------------------------------------'''          
         selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
         listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        selectedObject=cmds.ls(sl=1, fl=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
         if selectedObject:
             if selectedObject[0] in listArray:
                 cmds.textScrollList(self.nodeList, e=1, si=selectedObject)
