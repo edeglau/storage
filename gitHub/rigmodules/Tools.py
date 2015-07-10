@@ -22,11 +22,13 @@ getFolderName=getpass.getuser()
 
 trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]  
 
-'''MG rigging tool functions'''
+'''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 photoshop = r"C:\\Program Files\\Adobe\\Adobe Photoshop CC 2014\\Photoshop.exe"
 gimp="C:\\Program Files\\GIMP 2\\bin\\gimp-2.6.exe"
@@ -2449,6 +2451,7 @@ class ToolFunctions(object):
                 for eachAttribute in getListedAttr:
                     try:
                         findFact=cmds.listConnections( eachChildTree+'.'+eachAttribute, d=False, s=True )
+                        # findFact=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
                         if findFact==None:
                             try:
                                 attrVal=cmds.getAttr(eachChildTree+"."+eachAttribute)
