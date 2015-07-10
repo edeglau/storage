@@ -7,8 +7,10 @@ Created on Apr 8, 2014
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 from pymel.core import *
 import maya.cmds as cmds
 import sys, os, glob
@@ -255,7 +257,7 @@ class BaseClass():
         if "Linux" in OSplatform:
             if not os.path.exists(objFolderPath): os.makedirs(objFolderPath)
             # cmds.pluginInfo("C://Program Files//Autodesk//Maya2015//bin//plug-ins//objExport.mll", e=1, autoload=True) 
-            getname=cmds.ls(sl=1)
+            getname=cmds.ls(sl=1, fl=1)
             cmds.select(cl=1)
             for each in getname:
                 cmds.select(each)
