@@ -1,10 +1,4 @@
 
-
-
-======================================================================================================
-
-
-
 ####expressions
 
 
@@ -112,9 +106,9 @@ import deformerControl
 reload (deformerControl)
 getClass=deformerControl.DeformerControl()    
 
-exec(open('/usr//rigModules/RigToolKit.py'))
+exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/rigModules/RigToolKit.py'))
 ToolKitUI()
-exec(open('//usr//RigToolKit.py'))
+exec(open('//usr//people//elise-d//workspace//sandBox//rigModules//RigToolKit.py'))
 ToolKitUI()
 
 secondpart=cmds.ls(sl=1)
@@ -1678,6 +1672,57 @@ wire(w="med_lead_crv", n="wire_def", gw=0, en=1.000000, ce=0.000000, li=1.000000
 
 
 
+from pymel.core import *
+
+
+getNames=ls(sl=1, fl=1)
+getFirstGrp = getNames[0].split(".")[0]
+getSecondGrp = getNames[-1:][0].split(".")[0]
+
+
+firstList=[(each) for each in getNames if each.split(".")[0]==getFirstGrp]
+secondList=[(each) for each in getNames if each.split(".")[0]==getSecondGrp]
+
+cmds.select(firstList)
+cmds.CreateCurveFromPoly()
+getFirstCurve=cmds.ls(sl=1, fl=1)
+getFirstCurveInfo=ls(sl=1, fl=1)
+numberCV=getFirstCurveInfo[0].numCVs()
+print numberCV
+
+cmds.delete(getFirstCurve[0], ch=1)
+
+cmds.select(secondList)
+cmds.CreateCurveFromPoly()
+getSecondCurve=cmds.ls(sl=1, fl=1)
+getSecondCurveInfo=ls(sl=1, fl=1)
+print getSecondCurveInfo[0].numCVs()
+cmds.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
+getSecondCurve=cmds.ls(sl=1, fl=1)
+getSecondCurveInfo=ls(sl=1, fl=1)
+cmds.delete(getSecondCurve[0], ch=1)
+#cmds.rebuildCurve(getSecondCurve[0], ch=0, rpo=1, rt=0, end=0, kr=2, kcp=0, kep=1, kt=1, s=numberCV, d=3, tol=1e-06)
+print getSecondCurveInfo[0].numCVs()
+
+#cmds.select(cmds.ls(getFirstGrp)[0], r=1)
+cmds.select(getFirstCurve[0], r=1)
+cmds.wire(cmds.ls(getFirstGrp)[0])
+#cmds.CreateWrap()
+
+#cmds.select(cmds.ls(getSecondGrp)[0], r=1)
+cmds.select(getSecondCurve[0], r=1)
+cmds.wire(cmds.ls(getSecondGrp)[0])
+#cmds.CreateWrap()
+
+cmds.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0)) 
+
+
+
+
+
+
+
+
 
 getSel=ls(sl=1)
 for each in getSel:
@@ -2333,23 +2378,126 @@ for each in getSel:
 exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/Values//LimitValues.py'))
 ValueClass()
 
+exec(open('/usr/people/elise-d/workspace/techAnimTools/personal/elise-d/SSD//SSD.py'))
+ui()
+
+
+
+objSel=cmds.ls(sl=1, fl=1)
+getparentObj=cmds.listRelatives(selObj, c=1)
+for each in objSel:
+    getShapes=cmds.listRelatives(each, c=1, typ="shape")
+    print getShapes
+    cmds.polySoftEdge(each, a=180, ch=1)
+    cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
+    cmds.delete(each, ch=1)
+    for item in getShapes:
+        if "Orig" in item:
+            cmds.delete(item)
+
+
+nucleus1_wind_CTRL.windSpeed = abs( noise( frame * 0.05) *20)
+
+getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
+objSel=cmds.ls(sl=1, fl=1)
+getparentObj=cmds.listRelatives(objSel, c=1)
+for each in objSel:
+    for eachAttr in getdef:
+        cmds.setAttr(each+eachAttr, lock=0)
+        cmds.setAttr(each+eachAttr, cb=1)   
+        cmds.setAttr(each+eachAttr, k=1)  
+        print each+eachAttr+" is now visible in channel box"
+    if ":" in each:
+        newName=each.split(":")[-1:]
+        cmds.rename(each, newName)
+        print "renamed "+each+" to "+newName
+    getControllerListAttr=cmds.listAttr (objSel, ud=1)
+    if getControllerListAttr:
+        for eachAttr in getControllerListAttr:
+            cmds.setAttr(each+"."+eachAttr, l=0)
+            cmds.deleteAttr(each+"."+eachAttr)
+            print "deleted "+each+"."+eachAttr
+    cmds.polySoftEdge(each, a=180, ch=1)
+    cmds.makeIdentity(each, a=True, t=1, r=1, s=1, n=0)
+    print "zeroed out transforms for "+each
+    cmds.delete(each, ch=1)
+    print "deleted history on "+each
+    getShapes=cmds.listRelatives(each, c=1, typ="shape")
+    print getShapes
+    for item in getShapes:
+        if "Orig" in item:
+            item=cmds.ls(item)
+            cmds.delete(item[0])
+            print "deleted "+item[0]
+        if "output" in item:
+            item=cmds.ls(item)
+            cmds.rename(item[0], each+"Shape")
+            print "renamed "+item[0]+" to "+each+"Shape"
+
+getAll=cmds.ls()
+for allthings in getAll:
+    getFirstAttr=cmds.listAttr (allthings, w=1, a=1, s=1,u=1)
+    for item in getFirstAttr:
+        if "mult" in item:
+            print allthings+" has "+item
+
+
+
+AbcExport -j "-frameRange 1 120 -dataFormat ogawa -root |pCube1 -file /jobs/pan/070_PD/070_PD_0010/maya/cache/alembic/test.abc";
+
+string $each[]=each
+string $path[]=path
+AbcExport -j "-frameRange 1 120 -dataFormat ogawa -root $each -file $path";
+
+
+
+
+
+
+fileName="//usr//people//elise-d//"
+
 selObj=cmds.ls(sl=1, fl=1)
-pluginTypes=["AlembicNode"]
-filterNode=["geometryFilter"]
-exempt=["tweak"]
 for each in selObj:
+    fileName=fileName+str(each)+'.txt'    
+    if "Windows" in OSplatform:    
+        # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+        # printFolder=re.sub(r'/',r'\\', folderPath)       
+        if not os.path.exists(fileName): os.makedirs(fileName) 
+    if "Linux" in OSplatform:
+        open(fileName, 'w')
+    inp=open(fileName, 'w+')
+    selObj=cmds.ls(sl=1, fl=1)
+    filterNode=["animCurve"]
+    dirDict={}
+    getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+    getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
     try:
-        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)     
-        for eachsource in ls_str:
-            getInputDef=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for eachFilter in filterNode for eachExempt in exempt if eachConnected==eachFilter and eachExempt not in eachsource] 
-            getpluggedDefItem=[(eachConnected) for eachConnected in cmds.nodeType(cmds.ls(eachsource.split(".")[0]), i=1) for pluginTypes in deformerTypes if eachConnected ==pluggedDefItem]
-            if getInputDef:
-                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
-                print eachsource +" ---> "+downStrDest[0]
-                print getInputDef
-            elif getpluggedDefItem:
-                downStrDest=cmds.connectionInfo(eachsource, dfs=1)
-                print eachsource +" ---> "+downStrDest[0]
-                print getpluggedDefItem
+        ls_str=cmds.listConnections(each, d=0, s=1, p=1, sh=1)
+        keepLS=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
+        if keepLS:
+            for eachsource in ls_str:
+                remove=each+"_"
+                removeobj=eachsource.split(remove)[1]
+                eachsource=removeobj.split(".")[0]
+                getListedAttr=[(attrib) for attrib in listAttr (each) if attrib==eachsource]         
+                attibute=getListedAttr[0]
+                frames=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, timeChange=True)
+                values=cmds.keyframe(each, attribute=getListedAttr[0], time=(getStrtRange,getEndRange), query=True, valueChange=True)
+                print attibute
+                inp.write(str(attibute)+";")
+                for eachframe, valueitem in map(None, frames, values):
+                    #inp.write(str(eachframe)+":"+str(valueitem)+'\n')
+                    makeDict={eachframe:valueitem}
+                    print str(makeDict)
+                    dirDict.update(makeDict)
+                    #print dirDict
+                inp.write(str(dirDict)+'\n')
+                print "saved as "+fileName
+        inp.close()  
     except:
         pass
+
+
+
+
+
