@@ -7,7 +7,8 @@ import maya.mel
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
@@ -35,7 +36,7 @@ class MultiFunctionClass(object):
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
+        cmds.gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
         colMenu=cmds.optionMenu( label='Functions', w=300)
         cmds.menuItem( label="orient_constraint" )#1
         cmds.menuItem( label="aim_constraint")#2
@@ -49,6 +50,7 @@ class MultiFunctionClass(object):
         self.selfU=cmds.textField(text="12")
         cmds.text("width spans(extrude)")
         self.selfV=cmds.textField(text="1")
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(300, 20))
         cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = lambda *args:self.perform_multi_function(selfU=cmds.textField(self.selfU, q=1,text=1), selfV=cmds.textField(self.selfV, q=1,text=1)))
         # cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = self.perform_multi_function)
         cmds.showWindow(self.window)
