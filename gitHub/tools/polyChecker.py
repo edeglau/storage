@@ -1,9 +1,18 @@
 
-
-##Author: Elise Deglau
 import re
 import maya.cmds as cmds
 from functools import partial
+
+
+
+'''MG rigging modules'''
+__author__ = "Elise Deglau"
+__version__ = 1.00
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
+
 
 class PolyUI():
     def __init__(self, winName="checker"):
@@ -12,18 +21,40 @@ class PolyUI():
     def create(self):
         if cmds.window(self.winName, exists=True):
             cmds.deleteUI(self.winName)
-        self.window = cmds.window(self.winName, title=self.winTitle, w=350, h=300 )
+        self.window = cmds.window(self.winName, title=self.winTitle, w=250, h=150)
         cmds.rowLayout (' MainRow ', numberOfColumns=2)
         cmds.columnLayout ('Column1', cat = ('both', 0), adjustableColumn = True , parent = 'MainRow')
         cmds.columnLayout ('Column2', cat = ('both', 0), parent = 'MainRow')
         cmds.setParent ('Column1')
-        cmds.button (label='Check Ngons', command = self.singleNgons)
-        cmds.button (label='Check Poly', command = self.singlePoly)
-        cmds.button (label='Check Poles', command = self.poles)
+        cmds.button (label='Check (faces) Ngons', command = self.singleNgons)
+        cmds.button (label='Check (Object) Poly', command = self.singlePoly)
+        cmds.button (label='Check (Vertices) Poles', command = self.poles)
         cmds.showWindow(self.window)
 
+    def selection_grab(self):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Common selection query
+        --------------------------------------------------------------------------------------------------------------------------------------'''        
+        getSel=cmds.ls(sl=1, fl=1)
+        if getSel:
+            pass
+        else:
+            print "You need to make a selection for this tool to operate on."
+            return
+        return getSel
+
     def singleNgons(self, arg=None):
-        pObjn=cmds.ls(sl=True, fl=1)
+        selObj=self.selection_grab()
+        if selObj:
+            pass
+        else:
+            print "select polygon faces"
+            return      
+        if ".f[" in selObj[0]:
+            pass
+        else:
+            print "You need to make a selection of faces for this tool to interrogate."
+            return               
         cmds.select(cl=True)
         if cmds.objExists("Ngons")==True:
             cmds.delete("Ngons")
@@ -31,9 +62,9 @@ class PolyUI():
         if cmds.objExists("Tris")==True:
             cmds.delete("Tris")
         cmds.sets(n="Tris", co=3)        
-        for face in pObjn:
-            gross = cmds.polyInfo(face, fe=True)
-            getVerts=gross[0].split(':')[1]
+        for face in selObj:
+            getComponent = cmds.polyInfo(face, fe=True)
+            getVerts=getComponent[0].split(':')[1]
             edgeCount=re.findall(r'\d+', getVerts) 
             if (len(edgeCount))>=5:
                 cmds.ConvertSelectionToVertices(face)
@@ -47,36 +78,61 @@ class PolyUI():
                 print "Tri found"           
         cmds.select('Tris', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True)
-        if (len(acksel))==0:
+        errorFound=cmds.ls(sl=True)
+        if (len(errorFound))==0:
             cmds.delete("Tris")
         cmds.select('Ngons', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True, fl=1)
-        if (len(acksel))==0:
-            cmds.delete("Ngons")             
+        errorFound=cmds.ls(sl=True, fl=1)
+        if (len(errorFound))==0:
+            cmds.delete("Ngons")       
+
+
     def singlePoly(self, arg=None):
-        pObjp = cmds.ls (sl=True, fl=1)
+        selObj=self.selection_grab()
+        if selObj:
+            pass
+        else:
+            print "select a polygon object"
+            return    
+        if "." in selObj[0]:
+            print "You need to select a polygon object to interogate.(check that you are not in component mode)"
+            return     
+        else:
+            pass 
         cmds.select(cl=True)
         if cmds.objExists("PolyIssues")==True:
             cmds.delete("PolyIssues")
         cmds.sets(n="PolyIssues", co=5)
-        cmds.select(pObjp)
-        jack=cmds.polyInfo(pObjp, lf=True, nme=True, nmv=True )
-        cmds.select (jack)
-        cmds.ConvertSelectionToVertices(jack)
-        if jack>0:
+        cmds.select(selObj)
+        errorFound=cmds.polyInfo(selObj, lf=True, nme=True, nmv=True )
+        cmds.select (errorFound)
+        cmds.ConvertSelectionToVertices(errorFound)
+        if errorFound>0:
             print "Polygon error found"
             cmds.sets( fe='PolyIssues')
         cmds.select('PolyIssues', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True)
-        if (len(acksel))==0:
+        errorFound=cmds.ls(sl=True)
+        if (len(errorFound))==0:
             cmds.delete("PolyIssues")
+
+
+
     def poles(self, arg=None):
-        pObj=list()
-        crap=list()
-        pObjd = cmds.ls (sl=True, fl=1)
+        listOne=list()
+        listTwo=list()
+        selObj=self.selection_grab()
+        if selObj:
+            pass
+        else:
+            print "select polygon vertices"
+            return        
+        if ".vtx[" in selObj[0]:
+            pass
+        else:
+            print "You need to make a selection of vertices for this tool to interrogate."
+            return                  
         cmds.selectMode(object=True)
         jim=cmds.ls (sl=True)
         cmds.select(cl=True)
@@ -89,9 +145,9 @@ class PolyUI():
         if cmds.objExists("starpoles")==True:
             cmds.delete("starpoles")
         cmds.sets(n="starpoles", co=7)
-        for each in pObjd:
-            gross = cmds.polyInfo(each, ve=True)
-            getVerts=gross[0].split(':')[1]
+        for each in selObj:
+            getComponent = cmds.polyInfo(each, ve=True)
+            getVerts=getComponent[0].split(':')[1]
             edgeCount=re.findall(r'\d+', getVerts)
             if (len(edgeCount))==3:
                 cmds.sets(each, fe='Npoles')
@@ -101,18 +157,18 @@ class PolyUI():
                 cmds.sets(each, fe='starpoles')
         cmds.select('starpoles', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True)
-        if (len(acksel))==0:
+        errorFound=cmds.ls(sl=True)
+        if (len(errorFound))==0:
             cmds.delete("starpoles")
         cmds.select('Npoles', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True)
-        if (len(acksel))==0:
+        errorFound=cmds.ls(sl=True)
+        if (len(errorFound))==0:
             cmds.delete("Npoles")
         cmds.select('Epoles', r=True, ne=True)
         cmds.pickWalk(d='Up')
-        acksel=cmds.ls(sl=True)
-        if (len(acksel))==0:
+        errorFound=cmds.ls(sl=True)
+        if (len(errorFound))==0:
             cmds.delete("Epoles")
 
 inst = PolyUI()
