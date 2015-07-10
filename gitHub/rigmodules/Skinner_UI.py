@@ -13,8 +13,10 @@ import operator
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 # infFolderPath="C:\\temp\\influences\\"
 # xmlFolderPath="C:\\temp\\xmlskin\\"
 filepath= os.getcwd()
