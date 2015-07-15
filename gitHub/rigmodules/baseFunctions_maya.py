@@ -8,8 +8,10 @@ Created on Apr 8, 2014
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 from pymel.core import *
 import maya.cmds as cmds
@@ -51,22 +53,33 @@ class BaseClass():
         reload (SSD)
         getClass=SSD.ui()
 
-    def cleanModels(self, arg=None):       
-        winName = "Clean object"
-        winTitle = winName
-        if cmds.window(winName, exists=True):
-                cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=100 )
-        cmds.menuBarLayout(h=30)
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
-        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
-        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        cmds.setParent ('selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20)) 
-        cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:self.cleanObjHist(winName)) 
-        cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:self.cleanObj(winName))      
-        cmds.showWindow(window)
+    # def cleanModels(self, arg=None):       
+    #     winName = "Clean object"
+    #     winTitle = winName
+    #     if cmds.window(winName, exists=True):
+    #             cmds.deleteUI(winName)
+    #     window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=100 )
+    #     cmds.menuBarLayout(h=30)
+    #     stringField='''"Clean model" (script)wipes history, resets transforms and averages normals on a
+    # model(modelling)
+    #     "CLEAN+HISTORY" - button
+    #         * Step 1: Select object
+    #         * Step 2: pressing this button cleans history, zeros out object and
+    #             cleans shape name, removes custom attr, averages normals(hard edges)
+    #     "CLEAN" - button
+    #         * Step 1: Select object
+    #         * Step 2: pressing this button zeros out object and
+    #             cleans shape name, removes custom attr, averages normals(hard edges)'''
+    #     self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))           
+    #     cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+    #     cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+    #     cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+    #     cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+    #     cmds.setParent ('selectArrayColumn')
+    #     cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20)) 
+    #     cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:self.cleanObjHist(winName)) 
+    #     cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:self.cleanObj(winName))      
+        # cmds.showWindow(window)
 
     def cleanObjHist(self, winName):
         result = cmds.confirmDialog ( 
