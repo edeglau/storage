@@ -26,8 +26,10 @@ trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 
 photoshop = r"C:\\Program Files\\Adobe\\Adobe Photoshop CC 2014\\Photoshop.exe"
@@ -149,6 +151,12 @@ class ToolFunctions(object):
                 cmds.deleteUI(winName)
         theWindow = cmds.window(winName, title=winTitle, tbm=1, w=600, h=150 )
         cmds.menuBarLayout(h=30)
+        stringField='''"Edit sets" - (launches window)this tool allows for adding and subtracting of verts to a 
+    blenshape or a dynamic constraint set or a regular objectSet
+        * Step 1: Set the type of set from the drop down menu
+        * Step 2: Select objects/verts
+        * Step 3: add or remove  '''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))            
         cmds.rowColumnLayout  (rowColumnLayout, nr=1, w=600)
         cmds.frameLayout('frameLayout', label='', lv=0, nch=1, borderStyle='out', bv=1, p=rowColumnLayout)
         cmds.rowLayout  ('rowLayout', w=600, numberOfColumns=6, p=rowColumnLayout)
@@ -984,6 +992,7 @@ class ToolFunctions(object):
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
 
         cmds.menuBarLayout(h=30)
+
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -1031,6 +1040,14 @@ class ToolFunctions(object):
                 cmds.deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
         cmds.menuBarLayout(h=30)
+        stringField='''"Copy single Attribute" (launches window) copies one attribute value to another selected
+    object's attribute
+        * Step 1: select two objects
+        * Step 2: launch window
+        * Step 3: select attribute of first object in drop down menu  
+        * Step 4: select attribute of second object in drop down menu          
+        * Step 5: press continue set the value of the second attribute from the first'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))         
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -1109,6 +1126,16 @@ class ToolFunctions(object):
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
 
         menuBarLayout(h=30)
+        stringField='''"Fast attr alias" (launches window)creates a custom attribute on the second selected object
+    to hook up the attribute of the first object to.(handy to link an attribute to a
+    controller)
+        * Step 1: select 2 objects
+        * Step 2: launch window
+        * Step 3: select attribute of first object in drop down menu      
+        * Step 4: set a desired name of attribute in second field on second object
+        * Step 5: press continue will create an attribute on second object to override
+            the attribute selected on the first'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))         
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -1194,8 +1221,38 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=200)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=450, h=250)
         menuBarLayout(h=30)
+        stringField='''"Fetch Attribute" (launches window)an interface to query a selected items attributes that
+    you can hunt by name portion or values. You can also change attribute value through this
+    window if number values apply(handy for heavy attribute lists like on skinDef)
+        * Step 1: select object(s)
+        * Step 2: launch window
+        * Step 3: enter a partial name in the "search" window beside the 
+            "Fetch Attribute Name" button
+        * Step 3(alternative: enter a value in the "search" window beside the 
+            "Fetch Attribute Value" button            
+        * Step 4: pressing the button beside either feild will repopulate the
+            drop down menu with the attributes that have these names or values
+        * Step 5(optional): fill in the "Change Value" field with a new value
+        * Step 6: press the "Apply Value" button to change the attribute that
+            is currently visible in the drop down menu
+        * Step 7(optional): select a new object or keep current object selected
+        * Step 8: press "Refresh Selection" will repopulate the drop down menu
+            with current selection's full attributes
+        "REFRESH SELECTION" - button
+            Repopulates the drop down menu with attributes from current
+                selection
+        "APPLY VALUE" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "FETCH ATTRIBUTE NAME" - button
+            Repopulates the drop down menu with all attributes on selected
+                object that matches this name
+        "FETCH ATTRIBUTE VALUE" - button
+            Repopulates the drop down menu with all attributes on selected
+                object that matches this value'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))         
         rowColumnLayout  (' selectArrayRow ', nr=1, w=450)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
@@ -1362,13 +1419,13 @@ class ToolFunctions(object):
                     
                         
     def _copy_into_grp(self, arg=None):
-        getSel=ls(sl=1)
-        getFirst=getSel[:-1]
-        getGrp=getSel[-1]
-        for each in getFirst:
-            newDupe=duplicate(each)
-            parent(newDupe, getGrp)
-            rename(newDupe[0], each)
+        getSel=ls(sl=1, fl=1)
+        getFirst=ls(getSel[0])
+        getGrp=getSel[1:]
+        for each in getSel:
+            newDupe=duplicate(getFirst)
+            parent(newDupe, each)
+            rename(newDupe, getFirst[0])
 
     def _createSDK_alias_window(self, arg=None):
         getSel=ls(sl=1, fl=1)  
@@ -1463,8 +1520,54 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
         menuBarLayout(h=30)
+        stringField='''"Set Range Multi Attr" (launches window)This has a window that will call up a list of
+    attributes. you can then set a range in which a group of items attributes can be changed
+    to that range. It has random option that will set a random value within the range. and
+    relative so that if you want to transform in local, it will only range within a local
+    area(randomizing curve CV position for example) or make a range of attributes across
+    multiple items for more random feel(ive been using this to randomize cvs on curves)
+        "Randomizing globally"
+            * Step 1: select multiple objects(more than 2)
+            * Step 2: launch window
+            * Step 3: Select attribute from dropdown(this will set same attribute on all)
+            * Step 4: Set randomize to "on"
+            * Step 5: Leave relative to "off"
+            * Step 6: Set a minimal range and a maximum range
+            * Step 7: pressing "go" will set the attribute on all to a randomized value
+                within the range set that will be in absolute world value (location only)
+        "Randomizing relatively"
+            * Step 1: select multiple objects(more than 2)
+            * Step 2: launch window
+            * Step 3: Select attribute from dropdown(this will set same attribute on all)
+            * Step 4: Set randomize to "on"
+            * Step 5: Leave relative to "on"
+            * Step 6: Set a minimal range and a maximum range
+            * Step 7: pressing "go" will set the attribute on all to a randomized value
+                within the range set that will be in a relative value of current value
+                (location only)
+        "Range globally"
+            * Step 1: select multiple objects(more than 2)
+            * Step 2: launch window
+            * Step 3: Select attribute from dropdown(this will set same attribute on all)
+            * Step 4: Set randomize to "off"
+            * Step 5: Leave relative to "off"
+            * Step 6: Set a minimal range and a maximum range
+            * Step 7: pressing "go" will set the attribute on all to a uniformed value
+                divided within the range that will be in absolute world value
+                (location only)
+        "Range relatively"
+            * Step 1: select multiple objects(more than 2)
+            * Step 2: launch window
+            * Step 3: Select attribute from dropdown(this will set same attribute on all)
+            * Step 4: Set randomize to "off"
+            * Step 5: Leave relative to "on"
+            * Step 6: Set a minimal range and a maximum range
+            * Step 7: pressing "go" will set the attribute on all to a uniformed value
+                divided within the range that will be in relative value of current value
+                (location only)  '''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -1561,6 +1664,15 @@ class ToolFunctions(object):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
         menuBarLayout(h=30)
+        stringField='''"Cull CV" (launches window)removes every first or every other cv in a selection(you can use 
+    this to remove the (1) cv will remove the second in chain(as the vine tool fails if 
+    second and first cv are too close together). also has a rebuild function to rebuild a 
+    mass of curves using mathematic array and matching now
+        * Step 1: Select curve(s)
+        * Step 2: determine if you want to rebuild by number or remove a CV
+        * Step 3: if rebuilding, select math type from dropdown menu
+        * Step 4: Press either ok button depending on which one you decide '''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))          
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -1728,7 +1840,7 @@ class ToolFunctions(object):
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
-        cmds.menuBarLayout(h=30)
+        cmds.menuBarLayout(h=30)        
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -1932,6 +2044,7 @@ class ToolFunctions(object):
         window = cmds.window(winName, title=winTitle, tbm=1, w=200, h=100 )
 
         cmds.menuBarLayout(h=30)
+
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -1968,6 +2081,22 @@ class ToolFunctions(object):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
         menuBarLayout(h=30)
+        stringField='''"Plot vertex" - (launches window)if you're familiar with rivets, it's similar except that 
+    there is no dependency set up. it bakes a locator in space for the animation duration 
+    to the face or vertex of your choice
+        "PLOT"
+            * Step 1: Select a vertex
+            * Step 2: press "plot" - locator will follow vertex anim
+        "PLOT EACH"
+            * Step 1: Select multiple vertex
+            * Step 2: press "plot each" - locator will follow each vertex anim
+        "ONION"
+            * Step 1: Select a vertex
+            * Step 2: press "onion" - locators will be created at each frame
+        "LOCATE"
+            * Step 1: Select a vertex or a group of vertices
+            * Step 2: press "locate" - a locator will place in center of selection'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
         rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -2003,8 +2132,35 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=150 )
         menuBarLayout(h=30)
+        stringField='''"Hidden Grp" (launches window) an interface to toggle visibility on grped heirarchy
+        "EYEDROPPER NAME" - button
+            * Step 1: Select object with a desired name
+            * Step 2: pressing this button populates the name field with selected
+        "TOGGLE NAME" - button
+            * Step 1: fill in feild('*' is legal wildcard char)
+            * Step 2: press"Toggle name"
+        "TOGGLE EXCLUDE PEERS" - button
+            * Step 1: select object under a grouped heirarchy
+            * Step 2: press this button toggles visibility of all of it's peers
+        "TOGGLE CHILDREN" - button
+            * Step 1: Select parent GRP
+            * Step 2: pressing this button toggles visibilty of first level
+                children
+        "TOGGLE LEAF CHILDREN" - button
+            * Step 1: Select parent GRP
+            * Step 2: pressing this button toggles visibilty of children inside of
+                tree
+        "CHILDREN OFF"
+            * Step 1: Select parent GRP
+            * Step 2: pressing this button deactivates visibilty of first level
+                children
+        "CHILDREN ON"
+            * Step 1: Select parent GRP
+            * Step 2: pressing this button activates visibilty of first level
+                children'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))           
         rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -2130,6 +2286,26 @@ class ToolFunctions(object):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=620, h=100 )
         cmds.menuBarLayout(h=30)
+        stringField='''"Save Anim/Attr" (launches window)a home made scripted save anim keys and attribute values
+    into external file(s)(works on a heirarchy). Put full file path with preferred name of
+    object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
+    more to save from add selected at top. Will save out a file
+    EG:"/usr/people/<user>/joint4.txt"
+        * Step 1: select object
+        * Step 2: pressing save will create .txt files that will contain the animation
+            and attriute values for heirarchy(if applicable) within the path indicated
+            and name of file indicated in field 
+         "ADD SELECTION" - button
+            Adds a slot for new object (each parent is added seperately)
+        "SAVE" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated
+        "ATTR DICT" - button
+            prints out an attriubute dictionary for personal use(see script editor)
+            useful for writing a "setAttr" script on custom setups'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
         cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
         cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(620, 20))   
@@ -2189,6 +2365,27 @@ class ToolFunctions(object):
                 cmds.deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=280 )
         cmds.menuBarLayout(h=30)
+        stringField='''"Load Anim/Attr" (launches window)Opens anim keys and attribute values from external file(s)
+    (works on a heirarchy). Put full path with no of object in the text field("/usr/people/
+    <user>/"). Press refresh and it will repopulate the drop down for available .txt files;
+    stick to the name of your object to reload anim
+        * Step 1: select object - needs to have a matching name
+        * Step 2: fill in path(without name EG: "/usr/people/<user>/")
+        * Step 3: press "refresh folder"
+        * Step 4: if text file available, it should populate in the 
+            drop down menu. Check path name and if animation is saved first
+            if drop down remains empty
+        * Step 5: press "Load" button will load animation onto selection
+         "REFRESH FOLDER" - button
+            Adds a slot for new object (each parent is added seperately)
+        "WORKPATH" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "LOAD" - button
+            loads animation
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated '''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='selectArrayRow')
@@ -2569,6 +2766,14 @@ class ToolFunctions(object):
                 cmds.deleteUI(self.winName)
         self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
         cmds.menuBarLayout(h=30)
+        stringField='''Change multi file contents (launches window)home made change contents of all files in a
+    specific folder(eg: names of a joint in an xml skin export)
+        * Step 1: launch window
+        * Step 2: set path in feild with name of file('*' acts as a wildcard)
+        * Step 3: fill in the "old string" field with the string you wish to replace
+        * Step 4: Fill in the "new string" field with the string you wish to override with
+        * Step 5: pressing "Change" will rewrite all content of files indicated in path'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))           
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=6, p='selectArrayRow')
@@ -2605,6 +2810,15 @@ class ToolFunctions(object):
                 cmds.deleteUI(self.winName)
         self.window = cmds.window(self.winName, title=self.winName, tbm=1, w=800, h=300 )
         cmds.menuBarLayout(h=30)
+        stringField='''Change multi file names (launches window)home made change the names of all files in a
+    specific folder(eg: render images)
+        * Step 1: launch window
+        * Step 2: set path in feild (no file name)
+        * Step 3: set file name portion('*' acts as a wildcard)
+        * Step 3: fill in the "old string" field with the string you wish to replace
+        * Step 4: Fill in the "new string" field with the string you wish to override with
+        * Step 5: pressing "Change" will rewrite all names of files to new name'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))           
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=6, p='selectArrayRow')
@@ -2770,12 +2984,14 @@ class ToolFunctions(object):
     def curve_rig(self):
         influenceList=["StarSphere", "Controller"]
         buildStyle=["Curve", "Guides"]
-        winName = "Create chain"
+        winName = "Create curve rig"
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
         menuBarLayout(h=30)
+        stringField="Curve Rig - (launches window)simple curve rig, no FK or IK."
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
         rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')      
         rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
@@ -2851,3 +3067,54 @@ class ToolFunctions(object):
                 cmds.delete(deleteCnstrnt[0])   
             except:
                 pass
+
+
+
+    def helpWin(self, stringField):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Interface Layout
+        --------------------------------------------------------------------------------------------------------------------------------------'''
+        # def helpPage(self, arg=None):
+        winName = "Description"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=800 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 800)) 
+        self.list=cmds.scrollField( editable=False, wordWrap=True, w=700, text=str(stringField))
+        showWindow(window)
+
+
+    def cleanModels(self, arg=None):       
+        winName = "Clean object"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=100 )
+        cmds.menuBarLayout(h=30)
+        stringField='''"Clean model" (script)wipes history, resets transforms and averages normals on a
+    model(modelling)
+        "CLEAN+HISTORY" - button
+            * Step 1: Select object
+            * Step 2: pressing this button cleans history, zeros out object and
+                cleans shape name, removes custom attr, averages normals(hard edges)
+        "CLEAN" - button
+            * Step 1: Select object
+            * Step 2: pressing this button zeros out object and
+                cleans shape name, removes custom attr, averages normals(hard edges)'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))           
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(240, 20)) 
+        cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:getBaseClass.cleanObjHist(winName)) 
+        cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:getBaseClass.cleanObj(winName))  
+        showWindow(window)
