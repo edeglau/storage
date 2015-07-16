@@ -16,8 +16,11 @@ __version__ = 1.00
 from pymel.core import *
 import maya.cmds as cmds
 import sys, os, glob
-
 import maya.mel
+
+
+
+
 getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
@@ -26,6 +29,13 @@ guideFolderPath=folderPath+"Guides\\"
 infFolderPath=folderPath+"Influences\\"
 xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
+
+# filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+# print filepath
+# sys.path.append(str(filepath))
+# import Tools
+# reload (Tools)
+# toolClass=Tools.ToolFunctions()
 
 # getfilePath=str(__file__)
 # filepath= os.getcwd()
@@ -70,7 +80,7 @@ class BaseClass():
     #         * Step 1: Select object
     #         * Step 2: pressing this button zeros out object and
     #             cleans shape name, removes custom attr, averages normals(hard edges)'''
-    #     self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))           
+    #     self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))           
     #     cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=500)
     #     cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
     #     cmds.rowLayout  (' rMainRow ', w=500, numberOfColumns=6, p='selectArrayRow')
@@ -2414,7 +2424,17 @@ class BaseClass():
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-        menuBarLayout(h=30)
+        cmds.menuBarLayout(h=30)
+        stringField='''"Controller" (launches window)some premade shapes for controllers that will be created at
+    selections. can also choose to create multiple locators and joints. Will add a constraint
+    with selection
+        * Step 1: select object(s)
+        * Step 2: launch window
+        * Step 3: set size
+        * Step 4: select shape type of controller from drop down menu
+        * Step 5: press "go" will create a controller in which selected objects are
+            constrained to'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
@@ -2455,7 +2475,18 @@ class BaseClass():
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
-        menuBarLayout(h=30)
+        cmds.menuBarLayout(h=30)
+        stringField='''"Shapes Tool" (launches window)some premade shapes that will be created at selections. can
+    also choose to create multiple locators and joints. These are not constrained with the
+    selection so it' only creates a shape and nothing more (unlike "Controller" which will
+    add a constraint with selection")
+        * Step 1: select object(s)
+        * Step 2: launch window
+        * Step 3: set size
+        * Step 4: select shape type of controller from drop down menu
+        * Step 5: press "go" will create a controller shape at position of selected object
+            but won't constrain anything'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))
         rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
