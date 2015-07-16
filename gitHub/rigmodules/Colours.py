@@ -1,16 +1,39 @@
 import maya.cmds as cmds
 from functools import partial
 from string import *
-import re
+import re, platform, sys
 import maya.mel
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
+OSplatform=platform.platform()
+
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()      
+    
+if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+
+    gtepiece=getfilePath.split("/")  
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 
 class ColourPalet(object):
@@ -29,6 +52,13 @@ class ColourPalet(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=300, h=100 )
 
         cmds.menuBarLayout(h=30)
+        stringField='''"Colours"  (launches window)colour multiple objects(controllers) without having to go through
+    attribute editor
+        * Step 1: select object(s)
+        * Step 2: launch window
+        * Step 3: set colour from dropdown menu
+        * Step 4: press "go" will change the display colors of all selected items'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))        
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -65,7 +95,7 @@ class ColourPalet(object):
         cmds.menuItem( label='Purple' )#24
         cmds.menuItem( label='Black' ) #25
         cmds.menuItem( label='Grey' ) #26
-        cmds.button (label='Change Selection', w=150, p='listBuildButtonLayout', command = self._change_colour)
+        cmds.button (label='Go', w=150, p='listBuildButtonLayout', command = self._change_colour)
         cmds.showWindow(self.window)
 
     def _change_colour(self, arg=None):
