@@ -1,8 +1,27 @@
-import sys, os
+import sys, os, platform
 from pymel.core import *
+OSplatform=platform.platform()
 
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
 
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()      
+    
+if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
 
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+
+    gtepiece=getfilePath.split("/")  
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 
 # from inspect import getsourcefile
@@ -15,7 +34,7 @@ from pymel.core import *
 #     gtepiece=getfilePath.split("/")  
 
 # # getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-# getRigModPath="////"
+# getRigModPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules//"
 
 
 # sys.path.append(str(getRigModPath))
@@ -90,8 +109,10 @@ sys.path.append(str(toolClass))
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 guide="_guide"
 # clstrctrl="_Clst_jnt_Ctrl"
@@ -111,7 +132,12 @@ class ChainRig(object):
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=150 )
-        menuBarLayout(h=30)
+        cmds.menuBarLayout(h=30)
+        stringField='''"ChainRig" - (launches window) FK and IK chain(use the tail guide layout) if you've chosen a 
+    particular axis for your guides, use the same axis for your controls.(the spheres have a 
+    colored shape to help guide the dimensions they are building in. (this is still in 
+    development. use at own risk)'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))  
         rowColumnLayout  (' selectArrayRow ', nr=1, w=350)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')      
         rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
