@@ -7,8 +7,11 @@ Created on Mar 3, 2011
 '''Renamer'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
 
 import maya.cmds as cmds
 from functools import partial
@@ -16,6 +19,33 @@ from string import *
 import re, sys, os
 from inspect import getsourcefile
 from os.path import abspath
+
+import platform
+OSplatform=platform.platform()
+
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()      
+    
+if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+
+    gtepiece=getfilePath.split("/")  
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+
+
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
 #getfilePath=str('__file__')
 filepath= os.getcwd()
@@ -45,6 +75,9 @@ class myUI:
             cmds.deleteUI(self.winName)
 
         self.window = cmds.window(self.winName, title=self.winTitle, w=100, h=50 )
+        cmds.menuBarLayout(h=30)
+        stringField='''to be continued'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))         
         cmds.rowLayout  (' rMainRow ', numberOfColumns=5)
         cmds.columnLayout ('rColumn1', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
         cmds.columnLayout ('rColumn2', rs=3, cat = ('both', 0), parent = 'rMainRow', adjustableColumn=True, w=150)
