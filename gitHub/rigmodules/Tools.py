@@ -49,7 +49,7 @@ from inspect import getsourcefile
 from os.path import abspath
 
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
-print getfilePath
+
 if "Windows" in OSplatform:
     gtepiece=getfilePath.split("\\")
     getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
@@ -71,7 +71,6 @@ if "Linux" in OSplatform:
     exec(open(getBasePath))
     getBaseClass=BaseClass()
     gtepiece=getfilePath.split("/")  
-# gtepiece=getfilePath.split("/")
     getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 # basepath=str(getRigModPath)+"/baseFunctions_maya.py"
@@ -1226,7 +1225,8 @@ class ToolFunctions(object):
         stringField='''"Fetch Attribute" (launches window)an interface to query a selected items attributes that
     you can hunt by name portion or values. You can also change attribute value through this
     window if number values apply(handy for heavy attribute lists like on skinDef)
-        * Step 1: select object(s)
+
+        * Step 1: select object
         * Step 2: launch window
         * Step 3: enter a partial name in the "search" window beside the 
             "Fetch Attribute Name" button
@@ -1240,6 +1240,7 @@ class ToolFunctions(object):
         * Step 7(optional): select a new object or keep current object selected
         * Step 8: press "Refresh Selection" will repopulate the drop down menu
             with current selection's full attributes
+
         "REFRESH SELECTION" - button
             Repopulates the drop down menu with attributes from current
                 selection
@@ -2291,10 +2292,12 @@ class ToolFunctions(object):
     object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
     more to save from add selected at top. Will save out a file
     EG:"/usr/people/<user>/joint4.txt"
+
         * Step 1: select object
         * Step 2: pressing save will create .txt files that will contain the animation
             and attriute values for heirarchy(if applicable) within the path indicated
             and name of file indicated in field 
+
          "ADD SELECTION" - button
             Adds a slot for new object (each parent is added seperately)
         "SAVE" - button
@@ -2369,6 +2372,7 @@ class ToolFunctions(object):
     (works on a heirarchy). Put full path with no of object in the text field("/usr/people/
     <user>/"). Press refresh and it will repopulate the drop down for available .txt files;
     stick to the name of your object to reload anim
+
         * Step 1: select object - needs to have a matching name
         * Step 2: fill in path(without name EG: "/usr/people/<user>/")
         * Step 3: press "refresh folder"
@@ -2376,6 +2380,7 @@ class ToolFunctions(object):
             drop down menu. Check path name and if animation is saved first
             if drop down remains empty
         * Step 5: press "Load" button will load animation onto selection
+
          "REFRESH FOLDER" - button
             Adds a slot for new object (each parent is added seperately)
         "WORKPATH" - button
@@ -3079,15 +3084,15 @@ class ToolFunctions(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=800 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=400 )
         menuBarLayout(h=30)
         rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
         frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
         rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 800)) 
-        self.list=cmds.scrollField( editable=False, wordWrap=True, w=700, text=str(stringField))
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 400)) 
+        self.list=cmds.scrollField( editable=False, wordWrap=True, ebg=1,bgc=[0.11, 0.15, 0.15], w=700, text=str(stringField))
         showWindow(window)
 
 
@@ -3100,6 +3105,7 @@ class ToolFunctions(object):
         cmds.menuBarLayout(h=30)
         stringField='''"Clean model" (script)wipes history, resets transforms and averages normals on a
     model(modelling)
+
         "CLEAN+HISTORY" - button
             * Step 1: Select object
             * Step 2: pressing this button cleans history, zeros out object and
