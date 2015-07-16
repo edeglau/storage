@@ -9,7 +9,63 @@ __version__ = 1.00
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
 # 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
+# TopicDict={"File/Session":0, "MiniRigs":10, "Tools":30,"Controllers":40,"Attributes":50,"Modelling":80, "External Folders":70}
+# TopicDict=["Attributes","Controllers", "External Folders","File/Session","MiniRigs", "Modelling", "Tools"]
+TopicDict=["*File/Session", 
+"*MiniRigs", 
+"*Tools",
+"*Controllers",
+"*Attributes",
+"*Modelling", 
+"*External Folders"]
 
+SubTopics=["Guides Tool", 
+"Insert Grp/Clst/Jnt", 
+"CurveRig", "ChainRig", 
+"Multi Rivet", 
+"Multi Point", 
+"Connect to curve", 
+"Select array tool", 
+"Renamer tool", 
+"Edit sets", 
+"Cull CVs", 
+"Plot Vertrex",
+"Multi Functions",
+"Hidden Grp",
+"Copy To Grps",
+"Match Matrix",
+"Reset Selected",
+"Wipe Anim From Obj",
+"Shade Network Sel",
+"Duplicate Move",
+"Controller",
+"Shapes Tool",
+"Colours",
+"Combine Shapes",
+"Fetch Attribute",
+"Fast Float",
+"Fast Attr Alias",
+"Copy Single Attr",
+"Set Range Multi Attr",
+"Copy Anim/Att",
+"Transfer Mass Attr",
+"Blend Groups",
+"Reshape To Edge",
+"Poly Check",
+"Build Curve",
+"Clean Model",
+"Mirror Blend",
+"Save Attr/Anim",
+"Load Attr/Anim",
+"Change Multi File Contents",
+"Change Multi File Names",
+"Export Multiple Obj",
+"Open Image Gimp",
+"Open Work Folder"
+]
+
+SubTopics=sorted(SubTopics)
+TopicDict=TopicDict+SubTopics
 
 class helpClass(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -28,8 +84,13 @@ class helpClass(object):
         rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
-        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 800)) 
-        self.list=cmds.scrollField( editable=False, wordWrap=True, w=700, text=
+        cmds.gridLayout('findlayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(300, 25 ))
+        self.colMenu=cmds.optionMenu( label='Topics', w=200, cc=lambda *args:self._find_in_list())
+        for key in TopicDict:
+            cmds.menuItem( label=key)        
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 800))     
+        self.list=cmds.scrollLayout( ebg=1, pe=1, bgc=[0.11, 0.15, 0.15],w=700)
+        self.info=cmds.text(al="left", label=
 '''Button interface: what the buttons do
 
 File/session
@@ -54,42 +115,40 @@ Guides tool (launches another toolkit window) launches another interface to plac
     lays out some sphere guides (this will layout the rig skel+controllers for an autorig
     system)
 
-"Tail":(launches window)this lays out a line of guides in a range that you set( eg: -15 /15 
-    will layout a chosen number in a range within this value in a direction)
-        * Step 1: set axis on direction to layout guides
-        * Step 2: set name of guides(the autorig uses this name to detect the correct
-            guide string to build from so you can build with multiple in same scene 
-            with unique names)
-        * Step 3: set amount
-        * Step 4: set size
-        * Step 5: set range: this will determine the length and position to layout the
-            guides in a straight line
-
-"Build Guides" (lanches a window to name)will build a guide per selected item(objects, verts 
-    and cvs)
-        * Step 1: Select a series of objects or components(verts) and set a name
-        * Step 1(alternative): Select nothing and create with a set name. This will
-            place guide at origin
-
-"Clean guides" (script)clears all guides in your scene(generally not needed after a rig is 
-    built but dont use if more than one rig with more than one guide set. will wipe all 
-    '_guide' from scene
-
+        *More information can be found in "help" menu on this tool's interface
 
 "Insert grp/clst/jnt"(dropdown) inserts selections under their own group whilst zeroing out 
     (handy for sandwiching a control in a rig), or adds a cluster or joint skin to selection
+        * Step 1: Select items
+        * Step 2: execute script will add object to a group, cluster or joint
 
+        "GROUP"  will place group to object's current transform, parent object under group,
+            and will put the group within the same heirarchy structure as object was
+            previously creating a buffer in transform(common in rigging to zero out a
+            controller especially if a shift needed to happen)
+        "CLUSTER" will add the object to a cluster and place cluster at object's current
+            transform
+        "JOINT" will skin object to joint and place joint at object's transform
 
 "Curve Rig" - (launches window)simple curve rig, no FK or IK.
+
+        *More information can be found in "help" menu on this tool's interface
 
 "ChainRig" - (launches window) FK and IK chain(use the tail guide layout) if you've chosen a 
     particular axis for your guides, use the same axis for your controls.(the spheres have a 
     colored shape to help guide the dimensions they are building in. (this is still in 
     development. use at own risk)
 
+        *More information can be found in "help" menu on this tool's interface
+
 "Multi Rivet" (script)creates multiple rivets on selection of points
+        * Step 1: Select vertices
+        * Step 2: run script will place a rivet at each point
 
 "Multi Point" (script)creates mulitple Point on Poly constraints on selection of points
+        * Step 1: Select vertices
+        * Step 2: run script will place a locator at each point with a point on poly
+            constraint
 
 "Connect to curve" - (script)add objects to a curve. 
         * Step 1: Select curve first 
@@ -101,80 +160,45 @@ Guides tool (launches another toolkit window) launches another interface to plac
 Tools
 
 
-"Select array tool" - (launches window)a tool i built up for just finding nodes and making a 
-    temp work area of selections of verts. (constantly using this to find things in full 
-    scenes by name and node type)
+"Select array tool" - (launches window)a tool for finding nodes and making a 
+    temp work area of selections of verts. (find things in full scenes by name
+    and node type)
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Renamer tool" - (launches window)a basic renamer. has the ability to strip number, shift 
     name parts, remove underscores, shift numbers, remove isolated numbers, replace names 
     in bulk
 
+        *More information can be found in "help" menu on this tool's interface
+
 "Edit sets" - (launches window)this tool allows for adding and subtracting of verts to a 
     blenshape or a dynamic constraint set or a regular objectSet
-        * Step 1: Set the type of set from the drop down menu
-        * Step 2: Select objects/verts
-        * Step 3: add or remove  
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Cull CV" (launches window)removes every first or every other cv in a selection(you can use 
     this to remove the (1) cv will remove the second in chain(as the vine tool fails if 
     second and first cv are too close together). also has a rebuild function to rebuild a 
     mass of curves using mathematic array and matching now
-        * Step 1: Select curve(s)
-        * Step 2: determine if you want to rebuild by number or remove a CV
-        * Step 3: if rebuilding, select math type from dropdown menu
-        * Step 4: Press either ok button depending on which one you decide
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Plot vertex" - (launches window)if you're familiar with rivets, it's similar except that 
     there is no dependency set up. it bakes a locator in space for the animation duration 
     to the face or vertex of your choice
-        "PLOT"
-            * Step 1: Select a vertex
-            * Step 2: press "plot" - locator will follow vertex anim
-        "PLOT EACH"
-            * Step 1: Select multiple vertex
-            * Step 2: press "plot each" - locator will follow each vertex anim
-        "ONION"
-            * Step 1: Select a vertex
-            * Step 2: press "onion" - locators will be created at each frame
-        "LOCATE"
-            * Step 1: Select a vertex or a group of vertices
-            * Step 2: press "locate" - a locator will place in center of selection
+        
+        *More information can be found in "help" menu on this tool's interface
 
 "MultiFunctions" (launches window)does a mass constraint or extrude. Constrains all items 
     to the first selected item or extrudes first selected item as a tube along several 
     curves
-        * Step 1: select object to constrain items to(or run on path)
-        * Step 2: select multiple objects to constrain (or run a path on)
-        * Step 3: select function from dropdown menu
-        * Step 4: if using paths, set length and wide spans
-        * Step 5: Press go      
+
+        *More information can be found in "help" menu on this tool's interface     
 
 "Hidden Grp" (launches window) an interface to toggle visibility on grped heirarchy
-        "EYEDROPPER NAME" - button
-            * Step 1: Select object with a desired name
-            * Step 2: pressing this button populates the name field with selected
-        "TOGGLE NAME" - button
-            * Step 1: fill in feild('*' is legal wildcard char)
-            * Step 2: press"Toggle name"
-        "TOGGLE EXCLUDE PEERS" - button
-            * Step 1: select object under a grouped heirarchy
-            * Step 2: press this button toggles visibility of all of it's peers
-        "TOGGLE CHILDREN" - button
-            * Step 1: Select parent GRP
-            * Step 2: pressing this button toggles visibilty of first level
-                children
-        "TOGGLE LEAF CHILDREN" - button
-            * Step 1: Select parent GRP
-            * Step 2: pressing this button toggles visibilty of children inside of
-                tree
-        "CHILDREN OFF"
-            * Step 1: Select parent GRP
-            * Step 2: pressing this button deactivates visibilty of first level
-                children
-        "CHILDREN ON"
-            * Step 1: Select parent GRP
-            * Step 2: pressing this button activates visibilty of first level
-                children
+        
+        *More information can be found in "help" menu on this tool's interface
 
 
 "Copy To Grps" (script) Select object and group nodes group and it will create a copied 
@@ -214,30 +238,20 @@ Controllers:
 "Controller" (launches window)some premade shapes for controllers that will be created at
     selections. can also choose to create multiple locators and joints. Will add a constraint
     with selection
-        * Step 1: select object(s)
-        * Step 2: launch window
-        * Step 3: set size
-        * Step 4: select shape type of controller from drop down menu
-        * Step 5: press "go" will create a controller in which selected objects are
-            constrained to
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Shapes Tool" (launches window)some premade shapes that will be created at selections. can
     also choose to create multiple locators and joints. These are not constrained with the
     selection so it' only creates a shape and nothing more (unlike "Controller" which will
     add a constraint with selection")
-        * Step 1: select object(s)
-        * Step 2: launch window
-        * Step 3: set size
-        * Step 4: select shape type of controller from drop down menu
-        * Step 5: press "go" will create a controller shape at position of selected object
-            but won't constrain anything
+    
+        *More information can be found in "help" menu on this tool's interface
 
 "Colours"  (launches window)colour multiple objects(controllers) without having to go through
     attribute editor
-        * Step 1: select object(s)
-        * Step 2: launch window
-        * Step 3: set colour from dropdown menu
-        * Step 4: press "go" will change the display colors of all selected items
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Combine shapes" (script)this merges shapes together to make one object transform(custom
     controller)
@@ -251,32 +265,8 @@ Attributes:
 "Fetch Attribute" (launches window)an interface to query a selected items attributes that
     you can hunt by name portion or values. You can also change attribute value through this
     window if number values apply(handy for heavy attribute lists like on skinDef)
-        * Step 1: select object(s)
-        * Step 2: launch window
-        * Step 3: enter a partial name in the "search" window beside the 
-            "Fetch Attribute Name" button
-        * Step 3(alternative: enter a value in the "search" window beside the 
-            "Fetch Attribute Value" button            
-        * Step 4: pressing the button beside either feild will repopulate the
-            drop down menu with the attributes that have these names or values
-        * Step 5(optional): fill in the "Change Value" field with a new value
-        * Step 6: press the "Apply Value" button to change the attribute that
-            is currently visible in the drop down menu
-        * Step 7(optional): select a new object or keep current object selected
-        * Step 8: press "Refresh Selection" will repopulate the drop down menu
-            with current selection's full attributes
-        "REFRESH SELECTION" - button
-            Repopulates the drop down menu with attributes from current
-                selection
-        "APPLY VALUE" - button
-            Will change the value on the attribute that is currently
-                visible in the drop down menu
-        "FETCH ATTRIBUTE NAME" - button
-            Repopulates the drop down menu with all attributes on selected
-                object that matches this name
-        "FETCH ATTRIBUTE VALUE" - button
-            Repopulates the drop down menu with all attributes on selected
-                object that matches this value
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Fast float" (launches window)creates a 0-1 fast float. handy for making an attribute to hook
     up blends, constraints etc.
@@ -288,20 +278,13 @@ Attributes:
 "Fast attr alias" (launches window)creates a custom attribute on the second selected object
     to hook up the attribute of the first object to.(handy to link an attribute to a
     controller)
-        * Step 1: select 2 objects
-        * Step 2: launch window
-        * Step 3: select attribute of first object in drop down menu      
-        * Step 4: set a desired name of attribute in second field on second object
-        * Step 5: press continue will create an attribute on second object to override
-            the attribute selected on the first
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Copy single Attribute" (launches window) copies one attribute value to another selected
     object's attribute
-        * Step 1: select two objects
-        * Step 2: launch window
-        * Step 3: select attribute of first object in drop down menu  
-        * Step 4: select attribute of second object in drop down menu          
-        * Step 5: press continue set the value of the second attribute from the first
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Set Range Multi Attr" (launches window)This has a window that will call up a list of
     attributes. you can then set a range in which a group of items attributes can be changed
@@ -309,45 +292,7 @@ Attributes:
     relative so that if you want to transform in local, it will only range within a local
     area(randomizing curve CV position for example) or make a range of attributes across
     multiple items for more random feel(ive been using this to randomize cvs on curves)
-        "Randomizing globally"
-            * Step 1: select multiple objects(more than 2)
-            * Step 2: launch window
-            * Step 3: Select attribute from dropdown(this will set same attribute on all)
-            * Step 4: Set randomize to "on"
-            * Step 5: Leave relative to "off"
-            * Step 6: Set a minimal range and a maximum range
-            * Step 7: pressing "go" will set the attribute on all to a randomized value
-                within the range set that will be in absolute world value (location only)
-        "Randomizing relatively"
-            * Step 1: select multiple objects(more than 2)
-            * Step 2: launch window
-            * Step 3: Select attribute from dropdown(this will set same attribute on all)
-            * Step 4: Set randomize to "on"
-            * Step 5: Leave relative to "on"
-            * Step 6: Set a minimal range and a maximum range
-            * Step 7: pressing "go" will set the attribute on all to a randomized value
-                within the range set that will be in a relative value of current value
-                (location only)
-        "Range globally"
-            * Step 1: select multiple objects(more than 2)
-            * Step 2: launch window
-            * Step 3: Select attribute from dropdown(this will set same attribute on all)
-            * Step 4: Set randomize to "off"
-            * Step 5: Leave relative to "off"
-            * Step 6: Set a minimal range and a maximum range
-            * Step 7: pressing "go" will set the attribute on all to a uniformed value
-                divided within the range that will be in absolute world value
-                (location only)
-        "Range relatively"
-            * Step 1: select multiple objects(more than 2)
-            * Step 2: launch window
-            * Step 3: Select attribute from dropdown(this will set same attribute on all)
-            * Step 4: Set randomize to "off"
-            * Step 5: Leave relative to "on"
-            * Step 6: Set a minimal range and a maximum range
-            * Step 7: pressing "go" will set the attribute on all to a uniformed value
-                divided within the range that will be in relative value of current value
-                (location only)  
+        *More information can be found in "help" menu on this tool's interface
 
 "copyAnim/Att" (script)copies the animation curves and attribute values from one object to
     another
@@ -398,18 +343,8 @@ Modelling
                 to edge and also match the facing angle(plane on plane)
 
 "PolyCheck" (launches window)checks poles and ngons on component selections
-        "Check (faces) Ngons" - button
-            * Step 1: select faces of a polygon object
-            * Step 2: launch script will create sets that will highlight any tris or ngons
-                (more than 4 sided polies)
-        "Check (Object) Poly" - button
-            * Step 1: select polygon object
-            * Step 2: launch script will clean manifold faces or errors in poly(cleanup poly
-                function in maya)
-        "Check (vertices) Poles" - button
-            * Step 1: select vertices of a polygon object
-            * Step 2: launch script will create sets that will highlight poles(edges)
-                that are more or less than 4 eges coming out of a vertex
+    
+        *More information can be found in "help" menu on this tool's interface
 
 "Build Curve" (script)use to build a curve based on selection. Best to use guide layouts on
     selected vertice and then use this to create curve
@@ -441,60 +376,26 @@ External folders
 "Save Anim/Attr" (launches window)a home made scripted save anim keys and attribute values
     into external file(s)(works on a heirarchy). Put full file path with preferred name of
     object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
-    more to save from add selected at top. Will save out a file
-    EG:"/usr/people/<user>/joint4.txt"
-        * Step 1: select object
-        * Step 2: pressing save will create .txt files that will contain the animation
-            and attriute values for heirarchy(if applicable) within the path indicated
-            and name of file indicated in field 
-         "ADD SELECTION" - button
-            Adds a slot for new object (each parent is added seperately)
-        "SAVE" - button
-            Will change the value on the attribute that is currently
-                visible in the drop down menu
-        "OPEN FOLDER" - button
-            opens the folder window for path indicated
-        "ATTR DICT" - button
-            prints out an attriubute dictionary for personal use(see script editor)
-            useful for writing a "setAttr" script on custom setups
+    more to save from add selected at top. Will save out a txt file.
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Load Anim/Attr" (launches window)Opens anim keys and attribute values from external file(s)
     (works on a heirarchy). Put full path with no of object in the text field("/usr/people/
     <user>/"). Press refresh and it will repopulate the drop down for available .txt files;
-    stick to the name of your object to reload anim
-        * Step 1: select object - needs to have a matching name
-        * Step 2: fill in path(without name EG: "/usr/people/<user>/")
-        * Step 3: press "refresh folder"
-        * Step 4: if text file available, it should populate in the 
-            drop down menu. Check path name and if animation is saved first
-            if drop down remains empty
-        * Step 5: press "Load" button will load animation onto selection
-         "REFRESH FOLDER" - button
-            Adds a slot for new object (each parent is added seperately)
-        "WORKPATH" - button
-            Will change the value on the attribute that is currently
-                visible in the drop down menu
-        "LOAD" - button
-            loads animation
-        "OPEN FOLDER" - button
-            opens the folder window for path indicated    
+    stick to the name of your object to reload anim.
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Change multi file contents" (launches window)home made change contents of all files in a
     specific folder(eg: names of a joint in an xml skin export)
-        * Step 1: launch window
-        * Step 2: set path in feild with name of file('*' acts as a wildcard)
-        * Step 3: fill in the "old string" field with the string you wish to replace
-        * Step 4: Fill in the "new string" field with the string you wish to override with
-        * Step 5: pressing "Change" will rewrite all content of files indicated in path
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Change multi file names" (launches window)home made change the names of all files in a
     specific folder(eg: render images)
-        * Step 1: launch window
-        * Step 2: set path in feild (no file name)
-        * Step 3: set file name portion('*' acts as a wildcard)
-        * Step 3: fill in the "old string" field with the string you wish to replace
-        * Step 4: Fill in the "new string" field with the string you wish to override with
-        * Step 5: pressing "Change" will rewrite all names of files to new name
+
+        *More information can be found in "help" menu on this tool's interface
 
 "Export multiple obj" export multiple selections into separate .obj files.
     ("/usr/people/<user>/")
@@ -513,4 +414,187 @@ External folders
 
 
 ''')
+
+
         showWindow(window)
+
+    def _find_in_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This locates the object by name in list
+        ----------------------------------------------------------------------------------'''          
+        queryColor=cmds.optionMenu(self.colMenu, q=1, sl=1)    
+        getSel=cmds.ls(sl=1)
+        if queryColor==1:#Files
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+        elif queryColor==2:#Minirigs
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 180))
+        elif queryColor==3:#Tools
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 850))
+        elif queryColor==4:#Controllers
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1845))
+        elif queryColor==5:#Attributes
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2170))
+        elif queryColor==6:#Modelling
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2755))
+        elif queryColor==7:#External
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==8:#Blend grps
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 600))
+        elif queryColor==9:#Build Curve
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 90))
+        elif queryColor==10:#Chain Rig
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 550))
+        elif queryColor==11:#Chang Multi File Contents
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==12:#Chang Multi File
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==13:#Clean Model
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 50))
+        elif queryColor==14:#colours
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2030))
+        elif queryColor==15:#Combine Shapes
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2100))
+        elif queryColor==16:#Connect To Curve
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 755))
+        elif queryColor==17:#Controller
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1870))
+        elif queryColor==18:#CopyAnimAttr
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2630))
+        elif queryColor==19:#Copy Single Attr
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2450))
+        elif queryColor==20:#Copy To grps
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1380))
+        elif queryColor==21:#Cull CV
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1100))            
+        elif queryColor==22:#Curve Rig
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 500))
+        elif queryColor==23:#Duplicate Move
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1745))
+        elif queryColor==24:#Edit sets
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1050))
+        elif queryColor==25:#Export multi obj
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==26:#Fast Attr Alias
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2350))
+        elif queryColor==27:#Fast Attr Alias
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2250))
+        elif queryColor==28:#Fetch Attribute
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2200))
+        elif queryColor==29:#Guides
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 240))
+        elif queryColor==30:#Hidden grp
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1350))
+        elif queryColor==31:#Insert grp
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 300))
+        elif queryColor==32:#Load Attr/Anim
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==33:#Match Matrix
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1500)) 
+        elif queryColor==34:#Mirror Blend
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==35:#Multi functions
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1250))
+        elif queryColor==36:#Multi Point
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 700))
+        elif queryColor==37:#Multi Rivet
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 650))
+        elif queryColor==38:#Open image gimp
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==39:#Open work folder
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==40:#PlotVertex
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1200))
+        elif queryColor==41:#PolyCheck
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 110))
+        elif queryColor==42:#Renamer
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 950))
+        elif queryColor==43:#Reset selected
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1550))
+        elif queryColor==44:#Reshape to edge
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 350))
+        elif queryColor==45:#save attr/anim
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 8000))
+        elif queryColor==46:#Select array
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 880))
+        elif queryColor==47:#Set Range Multi
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2530))
+        elif queryColor==48:#Shade Network sel
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1645))
+        elif queryColor==49:#Shapes tool
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1910))     
+        elif queryColor==50:#Transfer mass attr
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 2700))
+        elif queryColor==51:#Wipe Anim object
+            cmds.scrollLayout(self.list, e=1, sbp=("up", 8000))
+            cmds.scrollLayout(self.list, e=1, sbp=("down", 1620))
+        # cmds.scrollLayout(self.list, e=1, sl=1) 
+        # getList=listArray.split(" ")
+        # for each in getList:
+        #     print each
+        # if nameFieldText and listArray:
+        #     foundExistantListObj=[(eachObj) for eachObj in getList if nameFieldText in str(eachObj)]
+        #     if foundExistantListObj:
+        #         cmds.scrollLayout(self.list, e=1, sbp=200) 
+        #         # self.deselect_in_list_function()   
+        #         # self.select_list_item_function(foundExistantListObj)                  
+        #         print 'Objects containing "'+nameFieldText+'" found'
+        #     else:
+        #         cmds.scrollLayout(self.list, e=1, sl=0)                        
+        #         print 'Objects containing "' +nameFieldText+'" not found in this list.'
+        # else:
+        #     self.selection_field_error()       
+
+    # def deselect_in_list_function(self, arg=None):
+    #     '''----------------------------------------------------------------------------------
+    #     Common deselect in list function
+    #     ----------------------------------------------------------------------------------'''              
+    #     cmds.scrollLayout(self.list, e=1, sl=0)
+        
+    # def select_list_item_function(self, eachSortedObj):
+    #     '''----------------------------------------------------------------------------------
+    #     Common select in list function
+    #     ----------------------------------------------------------------------------------'''          
+    #     cmds.scrollLayout(self.list, e=1, sl=1) 
+
+    # def selection_field_error(self):
+    #     print "Check that there is a name in the field, spelling and/or if the list has anything in it"            
