@@ -9,34 +9,61 @@ from sys import stdin
 from pymel.core import *
 #import win32clipboard
 import operator
+
+
+import platform
 OSplatform=platform.platform()
+
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()      
+    
+if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+
+    gtepiece=getfilePath.split("/")  
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+
+
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons License'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
+global colour1
+global colour2
+global colour3
+pipelineguides=""
 
 
 colour1=13
 colour2=6
 colour3=27  
-pipelineguides="//usr//people//elise-d//maya//projects//default//data"
-filepath= os.getcwd()
+pipelineguides=""
 
-from inspect import getsourcefile
-from os.path import abspath
-getfilePath=str(abspath(getsourcefile(lambda _: None)))
-print getfilePath
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-if "Linux" in OSplatform: 
-    gtepiece=getfilePath.split("/")  
-# gtepiece=getfilePath.split("/")
-print gtepiece
-getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-print getRigModPath
+# filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+# sys.path.append(str(filepath))
+# import baseFunctions_maya
+# reload (baseFunctions_maya)
+# getClass=baseFunctions_maya.BaseClass()
 
+
+# filepath= os.getcwd()
 
 
 # sys.path.append(str(filepath))
@@ -44,12 +71,13 @@ print getRigModPath
 # gtepiece=getfilePath.split("\\")
 # getRigModPath='\\'.join(gtepiece[:-2])+"\\rigmodules\\"
 
+getRigModPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 #filepath=( 'D:\\code\\git\\LiquidGit\\Liquid_egit\\guides\\' )
 
 getScenePath=cmds.file(q=1, location=1)
 getPathSplit=getScenePath.split("/")
 folderPath='\\'.join(getPathSplit[:-1])+"\\"
-
+global getClass
 sys.path.append(str(getRigModPath))
 import baseFunctions_maya
 reload (baseFunctions_maya)
@@ -60,73 +88,65 @@ infFolderPath=folderPath+"Influences\\"
 xmlFolderPath=folderPath+"XMLskinWeights\\"
 # filepath= os.getcwd()
 # sys.path.append(str(filepath))
-class GuideUI():
+class GuideUI(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
     Interface Layout
     --------------------------------------------------------------------------------------------------------------------------------------'''          
-    # def __init__(self, winName="rigGuides"):
-    def create(self, arg=None):
-        winName="rigGuides"
+    def __init__(self, winName="rigGuides"):
         self.winTitle = "rigGuides"
-        self.winName = winName    
+        self.winName = winName
+
+    def create(self):
+        
         if cmds.window(self.winName, exists=True):
                 cmds.deleteUI(self.winName)
 
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=300, h=300, bgc=[0.5, 0.45, 0.3] )
 
         cmds.menuBarLayout(h=30)
+        stringField='''Guides tool (launches another toolkit window) launches another interface to place guides;
+    lays out some sphere guides (this will layout the rig skel+controllers for an autorig
+    system)
+
+"Tail":(launches window)this lays out a line of guides in a range that you set( eg: -15 /15 
+    will layout a chosen number in a range within this value in a direction)
+        * Step 1: set axis on direction to layout guides
+        * Step 2: set name of guides(the autorig uses this name to detect the correct
+            guide string to build from so you can build with multiple in same scene 
+            with unique names)
+        * Step 3: set amount
+        * Step 4: set size
+        * Step 5: set range: this will determine the length and position to layout the
+            guides in a straight line
+
+"Build Guides" (lanches a window to name)will build a guide per selected item(objects, verts 
+    and cvs)
+        * Step 1: Select a series of objects or components(verts) and set a name
+        * Step 1(alternative): Select nothing and create with a set name. This will
+            place guide at origin
+
+"Clean guides" (script)clears all guides in your scene(generally not needed after a rig is 
+    built but dont use if more than one rig with more than one guide set. will wipe all 
+    '_guide' from scene'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))   
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=290)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
 
         cmds.rowLayout  (' rMainRow ', w=350, numberOfColumns=6, p='selectArrayRow')
-        cmds.scrollLayout ('selectArrayColumn', parent = 'rMainRow',w=350, h=400 )
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
         cmds.gridLayout('listBuildButtonLayout',bgc=[0.7, 0.65, 0.5] , p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
-
-
-        cmds.frameLayout('Externalfiles', bgc=[0.15, 0.15, 0.15], cll=1, label='External Files', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
-        cmds.gridLayout('listBuildButtonLayout', p='Externalfiles', numberOfColumns=2, cellWidthHeight=(150, 20))               
-        cmds.button (label='Save Guides',bgc=[0.9, 0.85, 0.7], p='listBuildButtonLayout', command = self.save_guides)
-        cmds.button (label='Open Guides',bgc=[0.9, 0.85, 0.7], p='listBuildButtonLayout', command = self.open_guides)
-
-        cmds.frameLayout('sep0', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
-        cmds.separator(h=1, p='sep0', bgc=[0.0, 0.0, 0.0]) 
-
-        cmds.frameLayout('Templates', bgc=[0.15, 0.15, 0.15], cll=1, cl=0, label='Templates', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
-        cmds.gridLayout('TemplatesButtonLayout', p='Templates', numberOfColumns=2, cellWidthHeight=(150, 20))            
-        cmds.button (label='Biped',bgc=[0.8, 0.75, 0.6], p='TemplatesButtonLayout', command = self.template_guides)
-        cmds.button (label='Quad-w-Paw',bgc=[0.8, 0.75, 0.6], p='TemplatesButtonLayout', command = self.template_quad_toe_guides)
-        cmds.button (label='Quad-w-Hoof',bgc=[0.8, 0.75, 0.6], p='TemplatesButtonLayout', command = self.template_quad_hoof_guides)
-        cmds.frameLayout('sep1', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
-        cmds.separator(h=1, p='sep1', bgc=[0.0, 0.0, 0.0]) 
-
-        cmds.frameLayout('PartialTemplates', bgc=[0.15, 0.15, 0.15], cll=1, cl=1, label='Partial Templates', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
-        cmds.gridLayout('PartialTemplatesButtonLayout', p='PartialTemplates', numberOfColumns=2, cellWidthHeight=(150, 20))      
-
-        cmds.button (label='Paw', p='PartialTemplatesButtonLayout', command = self.template_toe_guides)
-        cmds.button (label='Hoof', p='PartialTemplatesButtonLayout', command = self.template_hoof_guides)
-        cmds.button (label='Arm Guides', p='PartialTemplatesButtonLayout', command = self.build_arm_guides)
-        cmds.button (label='Q-Arm', p='PartialTemplatesButtonLayout', command = self.template_qarm_guides)
-        cmds.button (label='Foot', p='PartialTemplatesButtonLayout', command = self.build_foot_guides)        
-        cmds.button (label='Leg', p='PartialTemplatesButtonLayout', command = self.build_leg_guides)
-        cmds.button (label='Neck', p='PartialTemplatesButtonLayout', command = self.build_neck_guides)
-        cmds.button (label='Q-Spine', p='PartialTemplatesButtonLayout', command = self.template_quad_spine_guides)
-        cmds.button (label='Spine', p='PartialTemplatesButtonLayout', command = self.build_spine_guides)
-        cmds.button (label='Hand', p='PartialTemplatesButtonLayout', command = self.build_hand_guides)
-        cmds.button (label='Tail', p='PartialTemplatesButtonLayout', command = self.build_tail_guides)    
-        cmds.button (label='Previs face', p='PartialTemplatesButtonLayout', command = self.build_previs_face_guides)    
-        cmds.button (label='Aface', p='PartialTemplatesButtonLayout', command = self.build_anim_face_guides)    
-
-        cmds.frameLayout('sep2', cll=1, bgc=[0.0, 0.0, 0.0], label='File/session', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
-        cmds.separator(h=1, p='sep2', bgc=[0.0, 0.0, 0.0]) 
-
-        cmds.frameLayout('Editting', bgc=[0.15, 0.15, 0.15], cll=1, cl=0, label='Editting', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn') 
-        cmds.gridLayout('EdittingButtonLayout', p='Editting', numberOfColumns=2, cellWidthHeight=(150, 20))      
-        cmds.button (label='Build Guide ',bgc=[0.8, 0.75, 0.6], p='EdittingButtonLayout', command = self.build_helper_guides)    
-        cmds.button (label='Recreate Guides ',bgc=[0.8, 0.75, 0.6], p='EdittingButtonLayout', command = self._recreate_guide)                          
-        cmds.button (label='Clean Guides ',bgc=[0.8, 0.75, 0.6], p='EdittingButtonLayout', command = self._clean_guide)                          
-        cmds.text(label="" , bgc=[0.5, 0.45, 0.3])          
+        cmds.text(label="Partial Templates",bgc=[0.5, 0.45, 0.3])          
+        cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
+        cmds.button (label='Tail', p='listBuildButtonLayout', command = self.build_tail_guides)    
+        cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
+        cmds.text(label="Editting",bgc=[0.5, 0.45, 0.3])          
+        cmds.text(label="",bgc=[0.5, 0.45, 0.3]) 
+        cmds.button (label='Build Guide ',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self.build_helper_guides)    
+        # cmds.button (label='Recreate Guides ',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self._recreate_guide)                          
+        cmds.button (label='Clean Guides ',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self._clean_guide)      
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')
 #         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
 #         cmds.text (label='http://creativecommons.org/licenses/by/4.0/', hl=1, w=350, al='left', p='selectArrayColumn')        
@@ -148,7 +168,7 @@ class GuideUI():
                 name=getName.split("_jnt")[0]+"_guide"
             transformWorldMatrix, rotateWorldMatrix=getClass.locationXForm(each)
             getClass.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
-#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3)
+#             Guide=getClass.makeguide_shapes(name, colour1, colour2, colour3) 
 #             cmds.move(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide,r=1, rpr=1 )
 #             cmds.rotate(transformWorldMatrix[0], transformWorldMatrix[1], transformWorldMatrix[2], Guide )  
     def _clean_guide(self, arg=None):
@@ -586,27 +606,20 @@ class GuideUI():
             os.startfile(path)
                      
     def _save_guide_function(self):
-        fileSavePath=cmds.file(q=1, location=1)
-        getPath= '/'.join(fileSavePath.split('/')[:-1])+'/'
-        print getPath+" file save path"
-        if fileSavePath =="unknown":
+        filename=cmds.file(q=1, location=1)
+        if getScenePath =="unknown":
             print "This file has not been saved into a location yet. Cannot determine where you want to put this."
             return
         else:
             pass        
         filename=cmds.textField(fileName, q=1, text=True)
-        print filename
         if filename:
             pass
         else:
             print "you need to give it a name"
-            return   
-        if "Windows" in OSplatform:
-            printFolder=getPath+filename+".txt"
-            if not os.path.exists(printFolder): os.makedirs(printFolder) 
-        if "Linux" in OSplatform:
-            printFolder=getPath+filename+".txt"   
-            if not os.path.exists(printFolder):open(printFolder, 'w')
+            return    
+        printFolder=guideFolderPath+filename+".txt"
+        if not os.path.exists(guideFolderPath): os.makedirs(guideFolderPath)         
         self.guide_writer(printFolder)
         
     def _save_to_pipeline(self):
@@ -620,7 +633,7 @@ class GuideUI():
         self.guide_writer(printFolder)
         
     def guide_writer(self, printFolder):
-        getGuides=cmds.ls("*_guide")
+        getGuides=cmds.ls("*guide")
         inp=open(printFolder, 'w+')
         for each in getGuides:
             transform=cmds.xform(each , q=True, ws=1, t=True)
@@ -740,21 +753,16 @@ class GuideUI():
         else:
             print "no path entered"
             return
-        try:
-            filename=cmds.optionMenu(fileDropName, q=1, v=1)
-            printFolder=getPath+"\\"+filename
-        except:
-            if "\\" in getPath:
-                filename=getPath.split("\\")[-1:][0]
-            elif "/" in getPath:
-                filename=getPath.split("/")[-1:][0]        
-            printFolder=getPath
+        filename=cmds.optionMenu(fileDropName, q=1, v=1)
+        printFolder=getPath+"\\"+filename
 #         if fileSaveName:
 #             printFolder=fileSaveName
 #         else:
 #             printFolder=folderPath+filename
+        print printFolder
         Ggrp=cmds.CreateEmptyGroup()
         getName=filename.split(".")[0]
+        print getName
         cmds.rename(Ggrp, "Guides_"+getName+"_grp")
         inp=open(printFolder, 'r')
         
@@ -820,6 +828,7 @@ class GuideUI():
             getDeleted=cmds.ls("*_guide1")
             for each in getDeleted:
                 cmds.delete(each) 
+           
 
     def build_tail_guides(self, arg=None):
         axisList=["X", "Y", "Z"]  
@@ -848,14 +857,11 @@ class GuideUI():
         self.size=cmds.textField(w=40, h=25, p='listBuildButtonLayout', text="10")
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(80, 18)) 
         cmds.text(label="range", w=80, h=25) 
-        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="-20.0")
-        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="20.0")  
+        self.firstMinValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="0.0")
+        self.firstMaxValue=cmds.textField(w=40, h=25, p='txvaluemeter', text="1.0")  
         gridLayout('BuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))             
         button (label='Go', p='BuildButtonLayout', command = lambda *args:self.create_tail_guides(firstMinValue=float(textField(self.firstMinValue,q=1, text=1)), firstMaxValue=float(textField(self.firstMaxValue,q=1, text=1)), amount=int(textField(self.amount,q=1, text=1)), size=int(textField(self.size,q=1, text=1)), namefield=textField(self.namefield,q=1, text=1), direction=optionMenu(direction, q=1, v=1)))
         showWindow(window)
-
-
-
 
     def create_tail_guides(self, firstMinValue, firstMaxValue, amount, size, namefield, direction):
         nameBucket=[]
@@ -872,47 +878,6 @@ class GuideUI():
                 newname=namefield+stringname+"_guide"
                 if objExists(newname):
                     newname=getClass.nameExist(namefield, namePortionTwo)             
-            nameBucket.append(newname)  
-        getSelected=range(amount)
-        BucketValue=getClass.Percentages(getSelected, firstMinValue, firstMaxValue)
-        guideDict={}
-        for eachName, eachValue in map(None, nameBucket, BucketValue):
-            if direction=="X":
-                nrx=eachValue
-                nry=0
-                nrz=0  
-            if direction=="Y":
-                nrx=0
-                nry=eachValue
-                nrz=0   
-            if direction=="Z":
-                nrx=0
-                nry=0
-                nrz=eachValue            
-            getValueBucket=(nrx, nry, nrz)
-            print getValueBucket
-            lineData={eachName:getValueBucket}       
-            guideDict.update(lineData)  
-        Ggrp=cmds.CreateEmptyGroup()
-        cmds.rename(Ggrp, "Guides_"+namefield+"_grp")
-        for key, value in guideDict.items():
-            Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
-            cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
-            cmds.parent(key,"Guides_"+namefield+"_grp")
-
-    def create_tail_guidesV1(self, firstMinValue, firstMaxValue, amount, size, namefield, direction):
-        colour1=13
-        colour2=6
-        colour3=27          
-        nameBucket=[]
-        for each in range(amount):
-            numbername=each+1
-            stringname=str(numbername)
-            numbername=[each for each in stringname]
-            if len(numbername)==1:
-                newname=namefield+'0'+stringname+"_guide"
-            elif len(numbername)>1:
-                newname=namefield+stringname+"_guide"
             nameBucket.append(newname)  
         getSelected=range(amount)
         BucketValue=getClass.Percentages(getSelected, firstMinValue, firstMaxValue)
@@ -1030,5 +995,5 @@ class GuideUI():
 
 
 
-# inst = GuideUI()
-# inst.create()
+inst = GuideUI()
+inst.create()
