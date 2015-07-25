@@ -695,7 +695,7 @@ class ToolFunctions(object):
             grpname=each.split("_jnt")[0]+"_dir_grp"
             getBaseClass.buildCtrl(each, name, grpname, transformWorldMatrix, rotateWorldMatrix, size, colour, nrx, nry, nrz)   
             cmds.parent(name, each)      
-    def _rivet(self, arg=None):
+    def rivet(self, arg=None):
         getSel=cmds.ls(sl=1, fl=1)
         edgeBucket=[]
         if ".vtx[" in getSel[0]:
@@ -703,17 +703,23 @@ class ToolFunctions(object):
         else:
             print "You need to make some vertex selections for this tool to operate on."
             return
-        for each in getSel:
+        for each in getSel:       
             getComponent = cmds.polyInfo(each, ve=True)
             getVerts=getComponent[0].split(':')[1]
-            edgeCount=re.findall(r'\d+', getVerts)    
+            edgeCount=re.findall(r'\d+', getVerts)
             edgeBucket.append(edgeCount[:2])
         for item in edgeBucket:
-            cmds.select("pPlane1.e["+item[0]+"]", r=1)
-            cmds.select("pPlane1.e["+item[1]+"]", add=1)
+            if ".vtx" in getSel[0]:
+                getObj=getSel[0].split(".vtx")[0]
+            else:
+                getObj=getSel[0]       
+            cmds.select(getObj+".e["+item[0]+"]", r=1)
+            cmds.select(getObj+".e["+item[1]+"]", add=1)
             maya.mel.eval( 'rivet();' )
+            newname=getObj.split(":")[-1:][0]+"_e_"+item[0]+"_rvt"
+            cmds.rename(cmds.ls(sl=1, fl=1)[0], newname)
 
-    def _point_const(self, arg=None):
+    def point_const(self, arg=None):
         getSel=cmds.ls(sl=1, fl=1)
         edgeBucket=[]
         if ".vtx[" in getSel[0]:
@@ -721,10 +727,18 @@ class ToolFunctions(object):
         else:
             print "You need to make some vertex selections for this tool to operate on."
         for each in getSel:
-            getObj=getSel[0].split('.')[0]
+            if ":" in each:
+                findName=each.split(":")[-1:][0]
+            else:
+                findName=each
+            if ":" in getSel[0]:
+                getObj=getSel[0].split(":")[-1:]
+            else:
+                getObj=getSel
+            getObj=getObj[0].split('.')[0]
             getUVmap = cmds.polyListComponentConversion(each, fv=1, tuv=1)
             getCoords=cmds.polyEditUV(getUVmap, q=1)
-            getNew=cmds.spaceLocator(n=each+"_loc")
+            getNew=cmds.spaceLocator(n=str(findName)+"ploc")
             cmds.select(each, r=1)
             cmds.select(getNew[0], add=1)
             buildConst=cmds.pointOnPolyConstraint(each, getNew[0], mo=0, offset=(0.0, 0.0, 0.0))
@@ -988,18 +1002,18 @@ class ToolFunctions(object):
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
 
-        window = cmds.window(winName, title=winTitle, tbm=1, w=350, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=100 )
 
         cmds.menuBarLayout(h=30)
 
-        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=150)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='selectArrayRow')
         cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
         cmds.setParent ('selectArrayColumn')
         cmds.separator(h=10, p='selectArrayColumn')
-        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(300, 20))
         cmds.text(label=getFirst[0])
         cmds.text(label=getSecond)        
         attributeFirstSel=cmds.optionMenu( label='From')
@@ -1016,7 +1030,14 @@ class ToolFunctions(object):
         getSecondattr=cmds.optionMenu(attributeSecondSel, q=1, v=1) 
         getFirstAttr=getFirst[0]  
         for each in getFirst:    
-            cmds.connectAttr(getSecond+"."+getSecondattr, each+"."+getFirstattr, f=1)
+            getAttributeOne=Attribute(each+"."+getFirstattr)
+            getAttributeTwo=Attribute(getSecond+"."+getSecondattr)
+            try:
+                Attribute.connect(getAttributeOne, getAttributeTwo, f=1)
+            except:
+                print "can't connect. Trying override"
+                Attribute.connect(getAttributeOne, getAttributeTwo+"[0]", f=1)
+            # cmds.connectAttr( each+"."+getFirstattr, getSecond+"."+getSecondattr,f=1)
 
     def _quickCopy_single_Attr_window(self, arg=None):
         getSel=ls(sl=1, fl=1)  
@@ -1261,10 +1282,12 @@ class ToolFunctions(object):
         setParent ('selectArrayColumn')
         separator(h=10, p='selectArrayColumn')
    
-        gridLayout('valuebuttonlayout', p='selectArrayColumn', numberOfColumns=3, cellWidthHeight=(150, 20))
-        text(label="Att Value:", p='valuebuttonlayout', align="left")
-        self.attrVal=text(label="Select from drop down", p='valuebuttonlayout')
-        button (label='Refresh Selection', p='valuebuttonlayout', command = lambda *args:self._refresh())
+        gridLayout('valuebuttonlayout', p='selectArrayColumn', numberOfColumns=5, cellWidthHeight=(100, 20))
+        text(label="Att Value:", p='valuebuttonlayout', align="left", w=50)
+        self.attrVal=text(label="Select from drop down", p='valuebuttonlayout', w=100)
+        text(label="Att Type:", p='valuebuttonlayout', align="right", w=50)
+        self.attrType=text(label="", p='valuebuttonlayout', w=100)       
+        button (label='Refresh Selection', p='valuebuttonlayout',  w=100, command = lambda *args:self._refresh())
 #        button (label='Get Current Value', p='valuebuttonlayout', command = lambda *args:self._get_attr(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)))
         gridLayout('listBuildLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(450, 20))   
         self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
@@ -1367,11 +1390,13 @@ class ToolFunctions(object):
         newAttr=getattr(getSel[0],getFirstattr)
         try:
             getChangeAttr=getattr(getSel[0],getFirstattr).get()
+            getTypeAttr=getAttr(getSel[0]+"."+getFirstattr, type=1)
             pass
         except:
             print "Can't obtain value for "+getSel[0],getFirstattr
             return               
         cmds.text(self.attrVal, e=1, label=getChangeAttr )
+        cmds.text(self.attrType, e=1, label=getTypeAttr )
         
     def _apply_att(self, getFirstattr, makeAttr):
         getSel=ls(sl=1, fl=1)        
@@ -2722,7 +2747,126 @@ class ToolFunctions(object):
                     else:
                         pass
 
-    def _load_anim_single(self, printFolder, grabFileName):
+
+    def saveSelection(self, arg=None): 
+        selObj=ls(sl=1, fl=1, sn=1)
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+        winName = "Save selected externally"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=620, h=100 )
+        cmds.menuBarLayout(h=30)
+        stringField='''"Save selected" (launches window)a home made scripted save selection externally.
+    Put full file path with preferred name of
+    object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
+    more to save from add selected at top. Will save out a file
+    EG:"/usr/people/<user>/joint4.txt"
+
+        * Step 1: select object or components
+        * Step 2: pressing save will create .txt files that will contain the component names within the
+            path indicated and name of file indicated in field 
+
+         "ADD SELECTION" - button
+            Adds a slot for new object (each parent is added seperately)
+        "SAVE" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated
+        "ATTR DICT" - button
+            prints out an attriubute dictionary for personal use(see script editor)
+            useful for writing a "setAttr" script on custom setups'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')      
+        cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20))         
+        fieldBucket=[]
+        objNameFile=newfolderPath+str(selObj[0])
+        cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+        self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=objNameFile)
+        cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_select(fileName=cmds.textField(self.getName, q=1, text=1)))            
+        cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window) 
+
+    def _save_select(self, fileName):   
+        selObj=cmds.ls(sl=1, fl=1)        
+        fileName=fileName+'_select.txt'
+        print fileName
+        if "Windows" in OSplatform:         
+            if not os.path.exists(fileName): os.makedirs(fileName) 
+        if "Linux" in OSplatform:
+            inp=open(fileName, 'w+')
+        filterNode=["animCurve"]
+        dirDict={}
+        getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+        getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+        for each in selObj:
+            try:
+                inp.write(str(each+",")) 
+            except:
+                pass
+        inp.close()   
+        print "saved as "+fileName
+
+    def openSelection(self, arg=None):
+        getScenePath=cmds.file(q=1, location=1)
+        files, getPath, newfolderPath, filebucket=self.getWorkPath(getScenePath)    
+        winName = "Open external selection"
+        winTitle = winName
+        openFolderPath=folderPath+"\\"   
+        selObj=cmds.ls(sl=1, fl=1)
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=280 )
+        cmds.menuBarLayout(h=30)
+        stringField='''"Load selection" (launches window) Opens a selection. Put full path with no
+    of object in the text field("/usr/people/<user>/").
+    Press refresh and it will repopulate the drop down for available .txt files;
+    stick to the name of your object to reload anim
+
+        * Step 1: select object - needs to have a matching name
+        * Step 2: fill in path(without name EG: "/usr/people/<user>/")
+        * Step 3: press "refresh folder"
+        * Step 4: if text file available, it should populate in the 
+            drop down menu. Check path name and if animation is saved first
+            if drop down remains empty
+        * Step 5: press "Load" button will load animation onto selection
+
+         "REFRESH FOLDER" - button
+            Adds a slot for new object (each parent is added seperately)
+        "WORKPATH" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "LOAD" - button
+            loads animation
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated '''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.button (label='refresh folder', p='listBuildButtonLayout', command = lambda *args:self.refresh_text()) 
+        cmds.button (label='workpath', p='listBuildButtonLayout', command = lambda *args:self.refresh_work_text())      
+        self.fileDropName=cmds.optionMenu( label='files')
+        for each in filebucket:
+            cmds.menuItem( label=each) 
+        self.pathFile=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath) 
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_selection(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
+        cmds.showWindow(window)
+
+    def _load_selection(self, printFolder, grabFileName):
         import ast
         notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
         printFolder=printFolder+grabFileName    
@@ -2732,37 +2876,202 @@ class ToolFunctions(object):
         else:
             print printFolder+"does not exist"
             return 
-        for each in selObj:
-            attribute_container=[]
-            getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-            List = open(printFolder).readlines()
-            for aline in List:
-                if ">>" in aline:
-                    getObj=aline.split('>>')[0]
-                    getExistantInfo=aline.split('>>')[1]
-                    if getExistantInfo!="\n":
-                        findAtt=getExistantInfo.split("<")
-                        for eachInfo in findAtt:
-                            getAnimDicts=eachInfo.split(";")
-                            for eachctrl in xrange(len(getAnimDicts) - 1):
-                                current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-                                # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value) 
-                                gethis=ast.literal_eval(next_item)
-                                try:
-                                    if len(gethis)<2:
-                                        for key, value in gethis.items():
-                                            for listeditem in getListedAttr:
-                                                if current_item==listeditem:
-                                                    cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-                                    else:
-                                         for key, value in gethis.items():
-                                            for listeditem in getListedAttr:
-                                                if current_item==listeditem:
-                                                    cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
-                                except:
-                                    pass                                              
-                    else:
-                        pass
+        getBucket=[]
+        attribute_container=[]
+        List = open(printFolder).readlines()
+        for aline in List:
+            if "," in aline:
+                getObj=aline.split(',')
+            else:
+                getObj=aline
+        for item in getObj:
+            if item != "":
+                getBucket.append(item)
+        cmds.select(getBucket)                
+
+    def saveConnection(self, arg=None): 
+        selObj=ls(sl=1, fl=1, sn=1)
+        getScenePath=cmds.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"        
+        if "Windows" in OSplatform:
+            newfolderPath=re.sub(r'/',r'\\', folderPath)
+        if "Linux" in OSplatform:
+            newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+        winName = "Save connections"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=620, h=100 )
+        cmds.menuBarLayout(h=30)
+        stringField='''"Save selected" (launches window)a home made scripted save selection externally.
+    Put full file path with preferred name of
+    object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
+    more to save from add selected at top. Will save out a file
+    EG:"/usr/people/<user>/joint4.txt"
+
+        * Step 1: select object or components
+        * Step 2: pressing save will create .txt files that will contain the component names within the
+            path indicated and name of file indicated in field 
+
+         "ADD SELECTION" - button
+            Adds a slot for new object (each parent is added seperately)
+        "SAVE" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated
+        "ATTR DICT" - button
+            prints out an attriubute dictionary for personal use(see script editor)
+            useful for writing a "setAttr" script on custom setups'''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
+        cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')      
+        cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20))         
+        fieldBucket=[]
+        objNameFile=newfolderPath+str(selObj[0])
+        cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+        self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=objNameFile)
+        cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_connection(fileName=cmds.textField(self.getName, q=1, text=1)))
+        cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window) 
+
+    def _save_connection(self, fileName):   
+        selObj=cmds.ls(sl=1, fl=1)        
+        fileName=fileName+'_connect.txt'
+        if "Windows" in OSplatform:    
+            # folderPath='/'.join(fileName.split('/')[:-1])+"/"
+            # printFolder=re.sub(r'/',r'\\', folderPath)       
+            if not os.path.exists(fileName): os.makedirs(fileName) 
+        if "Linux" in OSplatform:
+            inp=open(fileName, 'w+')
+        dirDict={}
+        getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration 
+        getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration 
+        sourceOutBucket=[]
+        sourceInBucket=[]        
+        for each in selObj: 
+            getOutPutConnection=cmds.listConnections(each, p=1, c=1, s=0, d=1)
+            for eachController, eachChild in map(None, getOutPutConnection[::2], getOutPutConnection[1::2]):
+                getPlug="MainOBJ"+eachController.split(".")[1]  
+                getoutConnection=getPlug+">"+eachChild
+                sourceOutBucket.append(getoutConnection)
+            # getOutputSrc=getOutPutConnection[0::2]
+            # getOutputDest=getOutPutConnection[1::2]
+            getInputConnection=cmds.listConnections(each, p=1, c=1, s=1, d=0)
+            # getInputSrc=getInputConnection[0::2] 
+            # getInputDest=getInputConnection[1::2] 
+            for eachController, eachChild in map(None, getInputConnection[::2], getInputConnection[1::2]):
+                getPlug="MainOBJ"+eachController.split(".")[1]  
+                getinConnection=eachChild+">"+getPlug
+                sourceInBucket.append(getinConnection)
+        for each in getInputSrc:
+            inp.write("output$")        
+            inp.write(str(each))
+        inp.write("\n")
+        for each in getInputSrc:
+            inp.write("input$")            
+            inp.write(str(each))
+        inp.close()   
+        print "saved as "+fileName
+
+
+    def openConnectionIN(self, arg=None):
+        getScenePath=cmds.file(q=1, location=1)
+        files, getPath, newfolderPath, filebucket=self.getWorkPath(getScenePath)    
+        winName = "Open external selection"
+        winTitle = winName
+        openFolderPath=folderPath+"\\"   
+        selObj=cmds.ls(sl=1, fl=1)
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=280 )
+        cmds.menuBarLayout(h=30)
+        stringField='''"Load selection" (launches window) Opens a selection. Put full path with no
+    of object in the text field("/usr/people/<user>/").
+    Press refresh and it will repopulate the drop down for available .txt files;
+    stick to the name of your object to reload anim
+
+        * Step 1: select object - needs to have a matching name
+        * Step 2: fill in path(without name EG: "/usr/people/<user>/")
+        * Step 3: press "refresh folder"
+        * Step 4: if text file available, it should populate in the 
+            drop down menu. Check path name and if animation is saved first
+            if drop down remains empty
+        * Step 5: press "Load" button will load animation onto selection
+
+         "REFRESH FOLDER" - button
+            Adds a slot for new object (each parent is added seperately)
+        "WORKPATH" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "LOAD" - button
+            loads animation
+        "OPEN FOLDER" - button
+            opens the folder window for path indicated '''
+        self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=600, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=1, cellWidthHeight=(480, 20)) 
+        cmds.button (label='refresh folder', p='listBuildButtonLayout', command = lambda *args:self.refresh_text()) 
+        cmds.button (label='workpath', p='listBuildButtonLayout', command = lambda *args:self.refresh_work_text())      
+        self.fileDropName=cmds.optionMenu( label='files')
+        for each in filebucket:
+            cmds.menuItem( label=each) 
+        self.pathFile=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath) 
+        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_connection_in(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
+        cmds.showWindow(window)
+
+    def _load_connection_in(self, printFolder, grabFileName):
+        import ast
+        selObj=cmds.ls(sl=1, fl=1) 
+        printFolder=printFolder+grabFileName
+        if os.path.exists(printFolder):
+            pass
+        else:
+            print printFolder+"does not exist"
+            return 
+        getBucket=[]
+        attribute_container=[]
+        List = open(printFolder).readlines()
+        for aline in List:
+            if "input$" in aline:
+                getInput=aline.split("$")[1]
+                getObj=getInput.split(',')
+        for item in getObj:
+            getoutputSrc=item.split(">")[0]
+            dataFromTextFile=dataFromTextFile.replace("MainOBJ", selObj[0])
+            getinputSrc=getObj.split(">")[1] 
+            cmds.connectAttr(dataFromTextFile, getinputSrc, f=1)
+
+
+    def _load_connection_in(self, printFolder, grabFileName):
+        import ast
+        selObj=cmds.ls(sl=1, fl=1) 
+        printFolder=printFolder+grabFileName
+        if os.path.exists(printFolder):
+            pass
+        else:
+            print printFolder+"does not exist"
+            return 
+        getBucket=[]
+        attribute_container=[]
+        List = open(printFolder).readlines()
+        for aline in List:
+            if "output$" in aline:
+                getInput=aline.split("$")[1]
+                getObj=getInput.split(',')
+        for item in getObj:
+            getoutputSrc=item.split(">")[0]
+            dataFromTextFile=dataFromTextFile.replace("MainOBJ", selObj[0])
+            getinputSrc=getObj.split(">")[1] 
+            cmds.connectAttr(dataFromTextFile, getinputSrc, f=1)
+
     def change_file_countents_UI(self):
         getScenePath=cmds.file(q=1, location=1)
         getScenePath="//"+getScenePath+"//"
@@ -3124,3 +3433,16 @@ class ToolFunctions(object):
         cmds.button (label='clean+history', p='listBuildButtonLayout', command = lambda *args:getBaseClass.cleanObjHist(winName)) 
         cmds.button (label='clean', p='listBuildButtonLayout', command = lambda *args:getBaseClass.cleanObj(winName))  
         showWindow(window)
+
+
+    def fix_cam(self, arg=None):
+        focusedThing=cmds.ls(sl=1, fl=1)
+        maya.mel.eval( "postModelEditorSelectCamera modelPanel4 modelPanel4 0;" )
+        getOldCam=cmds.ls(sl=1, fl=1)[0]
+        newcam=cmds.camera()
+        cmds.select(newcam[0], r=1)
+        cmds.select(getOldCam, add=1)
+        getBaseClass.massTransfer()
+        cmds.select(focusedThing, r=1)
+        cmds.viewFit()
+        cmds.delete(newcam[0])
