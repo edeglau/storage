@@ -2954,30 +2954,27 @@ class ToolFunctions(object):
         for each in selObj: 
             getOutPutConnection=cmds.listConnections(each, p=1, c=1, s=0, d=1)
             for eachController, eachChild in map(None, getOutPutConnection[::2], getOutPutConnection[1::2]):
-                getPlug="MainOBJ"+eachController.split(".")[1]  
+                getPlug="MainOBJ."+eachController.split(".")[1]  
                 getoutConnection=getPlug+">"+eachChild
-                sourceOutBucket.append(getoutConnection)
-            # getOutputSrc=getOutPutConnection[0::2]
-            # getOutputDest=getOutPutConnection[1::2]
+                if "initialShadingGroup" not in eachChild or "dagSetMembers" not in eachChild:
+                    sourceOutBucket.append(getoutConnection)
             getInputConnection=cmds.listConnections(each, p=1, c=1, s=1, d=0)
-            # getInputSrc=getInputConnection[0::2] 
-            # getInputDest=getInputConnection[1::2] 
             for eachController, eachChild in map(None, getInputConnection[::2], getInputConnection[1::2]):
-                getPlug="MainOBJ"+eachController.split(".")[1]  
+                getPlug="MainOBJ."+eachController.split(".")[1]  
                 getinConnection=eachChild+">"+getPlug
-                sourceInBucket.append(getinConnection)
-        for each in getInputSrc:
-            inp.write("output$")        
-            inp.write(str(each))
-        inp.write("\n")
-        for each in getInputSrc:
-            inp.write("input$")            
-            inp.write(str(each))
+                if "instObjGroups" not in getPlug:
+                    sourceInBucket.append(getinConnection)
+        inp.write("output$") 
+        for each in sourceOutBucket:
+            inp.write(str(each)+",")
+        inp.write("input$")         
+        for each in sourceInBucket:           
+            inp.write(str(each)+",")
         inp.close()   
         print "saved as "+fileName
 
 
-    def openConnectionIN(self, arg=None):
+    def openConnection(self, arg=None):
         getScenePath=cmds.file(q=1, location=1)
         files, getPath, newfolderPath, filebucket=self.getWorkPath(getScenePath)    
         winName = "Open external selection"
@@ -3023,9 +3020,16 @@ class ToolFunctions(object):
         for each in filebucket:
             cmds.menuItem( label=each) 
         self.pathFile=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath) 
-        cmds.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_connection_in(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Load in', p='listBuildButtonLayout', command = lambda *args:self._load_connection_in(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Load out', p='listBuildButtonLayout', command = lambda *args:self._load_connection_out(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
+        cmds.button (label='Load both', p='listBuildButtonLayout', command = lambda *args:self._load_connection_both(printFolder=cmds.textField(self.pathFile, q=1, text=1), grabFileName=cmds.optionMenu(self.fileDropName, q=1, v=1))) 
         cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.pathFile, q=1, text=1)))         
         cmds.showWindow(window)
+
+
+    def _load_connection_both(self, printFolder, grabFileName):
+        self._load_connection_in(printFolder, grabFileName)
+        self._load_connection_out(printFolder, grabFileName)
 
     def _load_connection_in(self, printFolder, grabFileName):
         import ast
@@ -3041,17 +3045,23 @@ class ToolFunctions(object):
         List = open(printFolder).readlines()
         for aline in List:
             if "input$" in aline:
-                getInput=aline.split("$")[1]
-                getObj=getInput.split(',')
+                getInput=aline.split("input$")[1]
+        getObj=getInput.split(',')
         for item in getObj:
-            getoutputSrc=item.split(">")[0]
-            dataFromTextFile=dataFromTextFile.replace("MainOBJ", selObj[0])
-            getinputSrc=getObj.split(">")[1] 
-            cmds.connectAttr(dataFromTextFile, getinputSrc, f=1)
+            if len(item)>0:
+                getOutSourcePlug=item.split(">")[0]
+                getSocket=item.split(">")[1] 
+                socket=getSocket.replace("MainOBJ", selObj[0])
+                print "connecting: "+str(getOutSourcePlug)+">"+socket
+                try:
+                    cmds.connectAttr(getOutSourcePlug, socket, f=1)
+                    print "connected: "+str(getOutSourcePlug)+">"+socket
+                except:
+                    print "can't connect: "+str(getOutSourcePlug)+">"+socket
+                    pass
 
 
-    def _load_connection_in(self, printFolder, grabFileName):
-        import ast
+    def _load_connection_out(self, printFolder, grabFileName):
         selObj=cmds.ls(sl=1, fl=1) 
         printFolder=printFolder+grabFileName
         if os.path.exists(printFolder):
@@ -3064,13 +3074,21 @@ class ToolFunctions(object):
         List = open(printFolder).readlines()
         for aline in List:
             if "output$" in aline:
-                getInput=aline.split("$")[1]
-                getObj=getInput.split(',')
+                getOutput=aline.split("output$")[1]
+                getInput=getOutput.split("input$")[0]
+        getObj=getInput.split(',')
         for item in getObj:
-            getoutputSrc=item.split(">")[0]
-            dataFromTextFile=dataFromTextFile.replace("MainOBJ", selObj[0])
-            getinputSrc=getObj.split(">")[1] 
-            cmds.connectAttr(dataFromTextFile, getinputSrc, f=1)
+            if len(item)>0:         
+                getOutSourcePlug=item.split(">")[0]
+                sourcePlug=getOutSourcePlug.replace("MainOBJ", selObj[0])
+                getSocket=item.split(">")[1] 
+                print "connecting: "+str(sourcePlug)+">"+getSocket
+                try:
+                    cmds.connectAttr(sourcePlug, getSocket, f=1)
+                    print "connected: "+str(sourcePlug)+">"+getSocket
+                except:
+                    print "can't connect: "+str(sourcePlug)+">"+getSocket
+                    pass
 
     def change_file_countents_UI(self):
         getScenePath=cmds.file(q=1, location=1)
