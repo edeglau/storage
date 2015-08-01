@@ -2501,3 +2501,64 @@ for each in selObj:
 
 
 
+scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+sys.path.append(str(scriptPath))
+
+getToolArrayPath=str(scriptPath)+"/Tools.py"
+exec(open(getToolArrayPath))
+toolClass=ToolFunctions()
+
+
+getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+exec(open(getBasePath))
+getBaseClass=BaseClass()
+
+focusedThing=cmds.ls(sl=1, fl=1)
+maya.mel.eval( "postModelEditorSelectCamera modelPanel4 modelPanel4 0;" )
+getOldCam=cmds.ls(sl=1, fl=1)[0]
+newcam=cmds.camera()
+cmds.select(newcam[0], r=1)
+cmds.select(getOldCam, add=1)
+cmds.pickWalk(direction="down")
+getBaseClass.massTransfer()
+cmds.select(focusedThing[0])
+
+
+
+
+selObj=cmds.ls(sl=1, fl=1)           
+getOutPutConnection=cmds.listConnections(selObj[0], p=1, c=1, s=0, d=1)
+for cord, socket in map(None, getOutPutConnection[::2], getOutPutConnection[1::2]):
+    getPlug=selObj[1]+"."+cord.split(".")[1]  
+    if "initialShadingGroup" not in socket or "dagSetMembers" not in socket:
+        try:
+            cmds.connectAttr(getPlug, eachChild, f=1)
+            print "connected: "+str(getPlug)+">"+socket
+        except:
+            print "can't connect: "+str(getPlug)+">"+socket
+            pass
+getInputConnection=cmds.listConnections(selObj[0], p=1, c=1, s=1, d=0)
+for cord, socket in map(None, getInputConnection[::2], getInputConnection[1::2]):
+    getSocket=selObj[1]+"."+socket.split(".")[1]  
+    try:
+        cmds.connectAttr(cord, getSocket, f=1)
+        print "connected: "+str(cord)+">"+str(getSocket)
+    except:
+        print "can't connect: "+str(cord)+">"+str(getSocket)
+        pass
+
+
+getAll=cmds.ls("*")
+getName=["wind", "turbulence", "Wind", "noise", "Noise", "Turbulence"]
+for each in getAll:
+    Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) for thing in getName if thing in attrItem]
+    if len(Attrs)>0:
+        for item in Attrs:
+            try:
+                print each+"."+item
+                print cmds.getAttr(each+"."+item)
+                cmds.setAttr(each+"."+item, 0)
+                print "set "+each+"."+item+" to 0"
+            except:
+                print "can't set "+each+"."+item
+                pass
