@@ -8,56 +8,20 @@ objects in scene.
 import maya.cmds as cmds
 from functools import partial
 from string import *
-import re, sys, platform
+import re
 import maya.mel
-OSplatform=platform.platform()
-
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
-    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
-    sys.path.append(str(scriptPath))
-
-    getToolArrayPath=str(scriptPath)+"\Tools.py"
-    exec(open(getToolArrayPath))
-    toolClass=ToolFunctions()      
-    
-if "Linux" in OSplatform: 
-    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
-    sys.path.append(str(scriptPath))
-
-    getToolArrayPath=str(scriptPath)+"/Tools.py"
-    exec(open(getToolArrayPath))
-    toolClass=ToolFunctions()
-
-    gtepiece=getfilePath.split("/")  
-    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
-
-
-'''Select Array'''
-
 __author__ = "Elise Deglau"
 __version__ = 1.00
-'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
-'http://creativecommons.org/licenses/by/4.0/'
-# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
 
 '''----------------------------------------------------------INSTALL:make a shelf button with the following python code:
 import sys
-filepath=( '<filepath' )
+filepath=( 'G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\selectArray\\' )
 sys.path.append(str(filepath))
 import selectArray
 reload (selectArray)
 selectArray.SelectionPalettUI()
-
-OR 
-
-
-exec(open('<//path//file.py>'))
-ToolKitUI()
 ----------------------------------------------------------'''
 
 '''====================================================================================================================================
@@ -114,76 +78,8 @@ class SelectionPalettUI(object):
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=270, h=550 )
 
         cmds.menuBarLayout(h=30)
-        stringField='''
-        
-    Select array tool" - (launches window)a tool for finding nodes and making a 
-        temp work area of selections of verts. (find things in full scenes by name
-        and node type)
-
-    WALKTHROUGH
-        To populate list with selected objects    
-            * Step 1: select objects
-            * Step 2: press "+"
-        To filter through a selection and add to list via name or node filter    
-            * Step 1: select an object
-            * Step 2: The "grab" buttons at top will auto fill in "Name or node type"
-                or manually fill in name/type in the field
-            * Step 3: make new selection containing a group of objects 
-            * Step 4: "Filter node/name" drop down to make or add to current list
-                with only the items that fit the criteria in the field
-        Build list from entire scene    
-            * Step 1: select an object
-            * Step 2: The "grab" buttons at top will auto fill in "Name or node type"
-                or manually fill in name/type in the field
-            * Step 3: "name or node type" drop downs make or add to a list from global
-                scene
-        Find in list
-            * Step 1: select an object
-            * Step 2: The "grab" buttons at top will auto fill in "Name or node type"
-                or manually fill in name/type in the field
-            * Step 3: "find" will select the objects in list that have the same name
-
-    INTERFACE
-        "GRAB" buttons
-            Query your selection for the name or node type of selected object in scene
-            and feedback the name or type into the field beside the find button.
-            Used to populate list based on type or partial name
-        "FILTER" buttons
-            Filters ove a selection for a node or name type and create a list or add
-            to list.
-        "ALL" buttons
-            Selects all node or name types in the entire scene and creates or adds to
-            current list
-        "FIND" button
-            Finds and slects from the list based on the name typed into the feild
-        "FIND TYPE"
-            Finds and slects from the list based on the node type listed in the feild
-        "FILTER"
-            Rebuilds the list based on the selected in the list(use with caution)
-        SELECTION LIST field
-            Work palette to hold the user build selection list
-        "clr" button
-            Clears list
-        "+" button
-            Adds current selection to list
-        "-"
-            Removes selected item in list
-        "><"
-            Swap an item in list
-                * Step 1: select a list item
-                * Step 2: select object
-                * Step 3: "find" will select the objects in list that have the same name
-        "selal"
-            Selects all in list
-        "sel-"
-            Deselects all in list
-        "sort"
-            Sort your list alphabetically-numerally
-        "set"
-            Create a selection set based on selected in the list
-                '''
-        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))  
-        # self.fileMenu = cmds.menu( label='Clean Interface', pmc=lambda *args:self.clear_superflous_windows())
+        # self.fileMenu = cmds.menu( label='Clean Interface', pmc=self.clear_superflous_windows)
+        self.fileMenu = cmds.menu( label='Clean Interface', pmc=lambda *args:self.clear_superflous_windows())
         
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=600)
 
@@ -224,7 +120,7 @@ class SelectionPalettUI(object):
         cmds.menuItem  (label='Select in list only', command = self._find_in_list_type)
         cmds.menuItem  (label='Select in list and scene', command = self._find_in_list_and_select_type)
         cmds.button (label='Filter', command = self._make_select_list, p='searchLayout', w=20, ann='make list from selected')  
-        # cmds.button (label='Refresh', command = self._refresh_list, p='searchLayout', w=20, ann='refresh list')     
+        cmds.button (label='Refresh', command = self._refresh_list, p='searchLayout', w=20, ann='refresh list')     
         self.listCountLabel=cmds.text (label='Selection list', p='selectArrayColumn')
         self.nodeList=cmds.textScrollList( numberOfRows=8, ra=1, allowMultiSelection=True, sc=self.list_item_selectability, io=True, w=550, h=300, p='selectArrayColumn')
         cmds.gridLayout('listArrangmentButtonLayout', p='selectArrayColumn', numberOfColumns=4, cellWidthHeight=(40, 20))
@@ -575,7 +471,7 @@ class SelectionPalettUI(object):
     
     def _refresh_list(self, arg=None):
         getSelected=cmds.textScrollList(self.nodeList, q=1, ai=1)
-        getall=cmds.ls(sl=1, fl=1)
+        getall=cmds.ls()
         getObj=[(each) for each in getall for item in getSelected if each == item]
         self.repopulate_list(getObj)
     
