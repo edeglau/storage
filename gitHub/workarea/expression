@@ -1,0 +1,116 @@
+
+####expressions
+
+
+nucleus1_wind_CTRL.windSpeed = abs( noise( frame * .05) * 8)
+turbulenceField1.magnitude=abs( noise( frame * .05) * 8)
+vortexField1.magnitude=turbulenceField1.magnitude
+locator1_WIND.localWind = (abs(noise(time * 1) * 12) -.5)
+.O[0] = (abs(noise(time))/5) + .1
+
+
+#sin wave
+f(x) = A+sin(B+x*C)*D
+
+#noise sin
+
+$sine = sin(frame);
+
+$formula = rand($sine);
+
+$sine = sin(frame * .001);
+locator1_WIND.localWind =  abs( noise($sine) *4);
+locator1_WIND.localWind =  abs( noise(sin(frame* .001) *4);
+locator1_WIND.localWind =  abs( noise(sin(frame* .001)*8)*2)
+
+
+
+nucleus1_wind_CTRL.windSpeed = abs( noise( frame * 0.05) *20)
+
+
+
+##Bird feather - offset rotation based off of one.
+
+int $currentTime=`currentTime -q`;
+int $offset=5;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW02_CTRL.rotateY=$getPos;
+int $offset=7;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW03_CTRL.rotateY=$getPos;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW04_CTRL.rotateY=$getPos/8;
+int $offset=12;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime L_ROW01_CTRL.rotateY`;
+L_ROW05_CTRL.rotateY=$getPos/6;
+int $offset=15;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+L_G_ROW01_CTRL.rotateY=$getPos/4;
+int $offset=17;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+L_G_ROW02_CTRL.rotateY=$getPos/4;
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=5;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW02_CTRL.rotateY=$getPos;
+int $offset=7;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW03_CTRL.rotateY=$getPos;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW04_CTRL.rotateY=$getPos/8;
+int $offset=12;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_ROW05_CTRL.rotateY=$getPos/6;
+int $offset=15;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_G_ROW01_CTRL.rotateY=$getPos/4;
+int $offset=17;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime R_ROW01_CTRL.rotateY`;
+R_G_ROW02_CTRL.rotateY=$getPos/4;
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=-1;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime defaultADeformSD_CTRL_Ctrl.rotateX`;
+l_lesserRow001UnderWingCoverts007_stickyDeformer_1_CTRL.rotateZ=$getPos;
+int $offset=1;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime defaultADeformSD_CTRL_Ctrl.rotateX`;
+l_lesserRow001UnderWingCoverts011_stickyDeformer_1_CTRL.rotateZ=$getPos;
+
+
+
+int $currentTime=`currentTime -q`;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime pSphere1.rotateY`;
+pSphere4.rotateY=$getPos;
+
+int $currentTime=`currentTime -q`;
+int $offset=10;
+$offsetTime=$currentTime-$offset;
+$getPos=`getAttr -t $offsetTime l_lesserRow001UnderWingCoverts007_stickyDeformer_1_CTRL.rotateZ`;
+defaultADeformSD_CTRL_Ctrl.rotateZ=$getPos;
+
+
+
+
