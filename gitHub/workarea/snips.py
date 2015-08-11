@@ -2562,3 +2562,12 @@ for each in getAll:
             except:
                 print "can't set "+each+"."+item
                 pass
+
+
+
+getSel=cmds.ls(sl=1)
+getNEWTONOBJ=getSel[:-1]
+getLAST=getSel[-1:]
+for each in getNEWTONOBJ:
+    cmds.select(getLAST, r=1)
+    getNewton=cmds.newton(each)
