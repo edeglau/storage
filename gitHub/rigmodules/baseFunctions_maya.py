@@ -31,11 +31,10 @@ xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
 
 # filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
-# print filepath
-# sys.path.append(str(filepath))
-# import Tools
-# reload (Tools)
-# toolClass=Tools.ToolFunctions()
+sys.path.append(str(folderPath))
+import Tools
+reload (Tools)
+toolClass=Tools.ToolFunctions()
 
 # getfilePath=str(__file__)
 # filepath= os.getcwd()
