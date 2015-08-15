@@ -1,16 +1,40 @@
 import maya.cmds as cmds
 from functools import partial
 from string import *
-import re
+import re, platform
 import maya.mel
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
 'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
 # 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
-'http://creativecommons.org/licenses/by-sa/3.0/au/'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
+OSplatform=platform.platform()
+
+if "Windows" in OSplatform:
+    gtepiece=getfilePath.split("\\")
+    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"\Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()      
+    
+if "Linux" in OSplatform: 
+    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+    sys.path.append(str(scriptPath))
+
+    getToolArrayPath=str(scriptPath)+"/Tools.py"
+    exec(open(getToolArrayPath))
+    toolClass=ToolFunctions()
+
+
+    gtepiece=getfilePath.split("/")  
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 class MultiFunctionClass(object):
     '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -26,8 +50,16 @@ class MultiFunctionClass(object):
                 cmds.deleteUI(self.winName)
 
         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=300, h=100 )
-
         cmds.menuBarLayout(h=30)
+        stringField='''"MultiFunctions" (launches window)does a mass constraint or extrude. Constrains all items 
+    to the first selected item or extrudes first selected item as a tube along several 
+    curves
+        * Step 1: select object to constrain items to(or run on path)
+        * Step 2: select multiple objects to constrain (or run a path on)
+        * Step 3: select function from dropdown menu
+        * Step 4: if using paths, set length and wide spans
+        * Step 5: Press go'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:toolClass.helpWin(stringField))  
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
 
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -45,6 +77,8 @@ class MultiFunctionClass(object):
         cmds.menuItem( label="extrude_tube")#5    
         cmds.menuItem( label="extrude_path")#5          
         cmds.menuItem( label="xform")#6 
+        # cmds.menuItem( label="multi point")#6 
+        # cmds.menuItem( label="multi rivet")#6                 
         cmds.gridLayout('dimensions', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 20))
         cmds.text("length spans(extrude)")
         self.selfU=cmds.textField(text="12")
@@ -88,6 +122,10 @@ class MultiFunctionClass(object):
                 getTranslation, getRotation=self.locationXForm(getParent)
                 each.setTranslation(getTranslation)
                 each.setTranslation(getRotation)
+            # elif ConstraintType==8:#xform                
+            #     toolClass.point_const()
+            # elif ConstraintType==9:#xform                
+            #     toolClass.rivet()                
             else:
                 print "nothing performed"         
             
