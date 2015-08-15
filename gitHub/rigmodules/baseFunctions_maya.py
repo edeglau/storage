@@ -31,10 +31,11 @@ xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
 
 # filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
-sys.path.append(str(folderPath))
-import Tools
-reload (Tools)
-toolClass=Tools.ToolFunctions()
+# print filepath
+# sys.path.append(str(filepath))
+# import Tools
+# reload (Tools)
+# toolClass=Tools.ToolFunctions()
 
 # getfilePath=str(__file__)
 # filepath= os.getcwd()
@@ -111,6 +112,12 @@ class BaseClass():
 
     def clearHistoryCallup(self, winName):
         objSel=cmds.ls(sl=1, fl=1)
+        if len(objSel)>1:
+            if "." in objSel[1]:
+                objSel=cmds.ls(objSel[1].split(".")[0])
+            else:
+                objSel=objSel        
+            print objSel
         for each in objSel:        
             cmds.delete(each, ch=1)
             print "deleted history on "+each
@@ -144,6 +151,12 @@ class BaseClass():
     def cleaningFunctionCallup(self, winName):
         '''this deletes history, smooths and unlocks normals, removes user defined attributes, unused shapes and freezes out transformes'''
         objSel=cmds.ls(sl=1, fl=1)
+        if len(objSel)>1:
+            if "." in objSel[1]:
+                objSel=cmds.ls(objSel[1].split(".")[0])
+            else:
+                objSel=objSel        
+            print objSel
         # getparentObj=cmds.listRelatives(objSel, c=1)
         for each in objSel:
             getControllerListAttr=cmds.listAttr (each, ud=1)
@@ -2783,6 +2796,7 @@ class BaseClass():
             cmds.rotate(-rotated[0], -rotated[1], rotated[2], eachChild)
 
     def massTransfer(self):
+        '''alternates a selection to sequentially mass transfer attributes from pairs of objects'''
 #        selObj=self.selection_grab()
         selObj=cmds.ls(sl=1)
         if len(selObj)<2:
@@ -2791,6 +2805,32 @@ class BaseClass():
             pass
         for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
             getControllerListAttr=listAttr (eachController, w=1, a=1, s=1, u=1)
+            getChildListAttr=listAttr (eachChild, w=1, a=1, s=1, u=1)
+            for eachControllerAttr, eachChildAttr in map(None, getControllerListAttr, getChildListAttr):
+                if eachControllerAttr == eachChildAttr:
+                    try:
+                        getChildObj=ls(eachChild)[0]
+                        getChildAttrToChange=getattr(getChildObj, eachChildAttr)
+                        getParentObj=ls(eachController)[0]
+                        getChangeAttr=getattr(getParentObj,eachControllerAttr).get()
+                        print "setting"+ eachChild, eachChildAttr, getChangeAttr                    
+                        getChildAttrToChange.set(getChangeAttr)
+                    except:
+                        print eachChild, eachChildAttr+" skipped (locked or otherwise)"
+                        pass
+
+
+    def massTransfer2(self):
+        '''one to all: this function can already be done via transfer anim/attributes'''
+#        selObj=self.selection_grab()
+        selObj=cmds.ls(sl=1)
+        if len(selObj)<2:
+            print "select more than one object"
+        else:
+            pass
+        eachController=selObj[0]
+        getControllerListAttr=listAttr (eachController, w=1, a=1, s=1, u=1)
+        for eachChild in selObj[1:]:
             getChildListAttr=listAttr (eachChild, w=1, a=1, s=1, u=1)
             for eachControllerAttr, eachChildAttr in map(None, getControllerListAttr, getChildListAttr):
                 if eachControllerAttr == eachChildAttr:
@@ -3767,6 +3807,55 @@ class BaseClass():
             self.plot_vert()
 
 
+    def space_vert(self, amount, direction):
+        '''offsets a vert from another'''
+        if direction=="X":
+            moveVert=amount, 0.0, 0.0
+        if direction=="Y":
+            moveVert=0.0, amount, 0.0
+        if direction=="Y":
+            moveVert=0.0, 0.0, amount
+        selObj=cmds.ls(sl=1, fl=1)   
+        firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
+        if len(firstpart)==len(secondpart):
+            pass
+        else:
+            print "Odd number in length. Please pick exactly same amount of verts between two rows"
+            return
+        for leadingVert, followVert in map(None, firstpart, secondpart):
+            getloc=cmds.spaceLocator(n=leadingVert+"cnstr_lctr")
+            transform=cmds.xform(leadingVert, q=True, ws=1, t=True)
+            cmds.xform(getloc[0], ws=1, t=transform)  
+            cmds.normalConstraint(leadingVert, getloc[0])
+            cmds.duplicate(getloc[0], rr=1, n="temp_cnstr_lctr")
+            cmds.move(moveVert, "temp_cnstr_lctr", r=1, os=1)
+            offsetTransform=cmds.xform("temp_cnstr_lctr", q=True, ws=1, t=True)
+            cmds.xform(followVert, ws=1, t=offsetTransform)
+            cmds.delete("temp_cnstr_lctr")
+            cmds.delete(getloc[0])
+
+
+    def space_vertV1(self):
+        '''offsets a vert from another'''
+        selObj=cmds.ls(sl=1, fl=1)   
+        leadingVert=selObj[0]
+        followVert= selObj[1] 
+        firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
+        for leadingVert, followVert in map(None, firstpart, secondpart):
+            getloc=cmds.spaceLocator(n=leadingVert+"cnstr_lctr")
+            transform=cmds.xform(leadingVert, q=True, ws=1, t=True)
+            cmds.xform(getloc[0], ws=1, t=transform)  
+            cmds.normalConstraint(leadingVert, getloc[0])
+            cmds.duplicate(getloc[0], rr=1, n="temp_cnstr_lctr")
+            cmds.move(0, 0, .03, "temp_cnstr_lctr", r=1, os=1)
+            offsetTransform=cmds.xform("temp_cnstr_lctr", q=True, ws=1, t=True)
+            cmds.xform(followVert, ws=1, t=offsetTransform)
+            cmds.delete("temp_cnstr_lctr")
+            cmds.delete(getloc[0])
+
+        # for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
+
+
 
 
     # def plot_each_vertV1(self):
@@ -3931,9 +4020,9 @@ class BaseClass():
             newObj=cmds.duplicate(parentObj,n=parentObj+str(number))
             cmds.xform(newObj[0], ws=1, t=transformWorldMatrix)
             cmds.xform(newObj[0], ws=1, ro=rotateWorldMatrix)  
-            cmds.select(parentObj, r=1)
-            cmds.select(newObj[0], add=1)      
-            cmds.parent(newObj[0],getParent)
+            # cmds.select(parentObj, r=1)
+            # cmds.select(newObj[0], add=1)      
+            # cmds.parent(newObj[0],getParent)
     
     def locationXForm(self, each):
         getObj=ls(each)[0]
