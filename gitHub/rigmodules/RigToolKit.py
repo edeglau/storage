@@ -16,7 +16,7 @@ import operator
 OSplatform=platform.platform()
 trans=[".tx", ".ty", ".tz", ".rx", ".ry", ".rz", ".sx", ".sy", ".sz"]  
 
-python("playblast = None");
+
 
 '''MG rigging modules'''
 __author__ = "Elise Deglau"
@@ -28,7 +28,7 @@ __version__ = 1.00
 
 
 
-scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+scriptPath=""
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -104,6 +104,7 @@ class ToolKitUI(object):
         cmds.button (label='Outliner win',bgc=[0.65, 0.75, 0.75], p='listBuildButtonLayout', command = self.outlinerWindow_callup)
         cmds.button (label='Clean Interface', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = lambda *args:self.clear_superflous_windows())
         cmds.button (label='Help', bgc=[0.2, 0.2, 0.2],p='listBuildButtonLayout', command = self._help)
+        cmds.button (label='Gimme expressions', bgc=[0.2, 0.2, 0.2],p='listBuildButtonLayout', command = self._help)        
         cmds.button (label='revert', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = self._revert)
         cmds.button (label='fix playblast', bgc=[0.2, 0.2, 0.2], p='listBuildButtonLayout', command = self._fix_playblast)
         cmds.button (label='fix undos', bgc=[0.2, 0.2, 0.2], ann="This turns undos back on", p='listBuildButtonLayout', command = self._turn_on_undo)
@@ -191,8 +192,7 @@ class ToolKitUI(object):
         cmds.button (label='SDK Any', ann="Select your driving object and then a group of objects to set the driven. This detects the attribute from the driver you can select and sets a driven key on all transforms (tx, ty, tz, rx, ry, rz) of selected objects. Useful for setting predetermined phonemes in a facerig", bgc=[0.55, 0.6, 0.6],p='AttributeButtonLayout', command = self._set_any)
         cmds.button (label='Copy Anim/Att', ann="transfers animation and attribute settings to another", p='AttributeButtonLayout',command = self._transfer_anim_attr)
         cmds.button (label='Transfer Mass Attr', ann="Transfers attributes from one group of objects to another group of objects. Alternate a selections between objects to objects you want to transfer to. Not restricted to transform", p='AttributeButtonLayout', command = self._tran_att)
-        # cmds.button (label='Save Anim', ann="saves anim into an external file into project", p='AttributeButtonLayout', command = self._save_anim)
-        # cmds.button (label='Load Anim', ann="loads anim from an external file into project", p='AttributeButtonLayout', command = self._load_anim)
+        # cmds.button (label='Transfer Mass Attr2', ann="Transfers attributes from one object to group of selected objects. a selections between object to objects you want to transfer to. Not restricted to transform", p='AttributeButtonLayout', command = self._tran_att_mass)
         cmds.frameLayout('sep5', cll=1, bgc=[0.0, 0.0, 0.0], label='', lv=0, nch=1, borderStyle='out', bv=5, p='selectArrayColumn')
         cmds.separator(h=1, p='sep5')
         cmds.frameLayout('ControllerFrameLayout', bgc=[0.15, 0.15, 0.15], cll=1, cl=0, label='Controllers', lv=1, nch=1, borderStyle='out', bv=1, w=345, fn="tinyBoldLabelFont", p='selectArrayColumn')
@@ -235,6 +235,7 @@ class ToolKitUI(object):
         cmds.button (label='Export multiple obj', bgc=[0.25, 0.25, 0.25], ann="Exports a group of selected objects as separate .obj files.",p='ExtFolderButtonLayout', command = self._exp_obj)
         cmds.button (label='Open Image PS', bgc=[0.2, 0.2, 0.2], ann="Select a texture node and this will open the texture file in photoshop - change the file path in 'photohop' at the top to your local exe", p='ExtFolderButtonLayout', command = self._open_texture_file_ps)
         cmds.button (label='Open Image Gimp', bgc=[0.2, 0.2, 0.2], ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='ExtFolderButtonLayout', command = self._open_texture_file_gmp)
+        cmds.button (label='Open Web', bgc=[0.2, 0.2, 0.2], ann="Select a texture node and this will open the texture file in gimp - change the file path in 'gimp' at the top to your local exe",p='ExtFolderButtonLayout', command = self._open_web)        
         cmds.button (label='Open Work folder', bgc=[0.2, 0.2, 0.2], ann="Opens the folder in which the current open file is located. Refresh this interface if opening a new file elsewhere.", p='ExtFolderButtonLayout', command = self._open_work_folder)
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn', fn="smallObliqueLabelFont")      
         # cmds.text (label='http://creativecommons.org/licenses/by-sa/3.0/au/',w=500, al='left', fn="smallObliqueLabelFont", p='selectArrayColumn')      
@@ -371,7 +372,10 @@ class ToolKitUI(object):
 
     def _open_texture_file_gmp(self, arg=None):
         toolClass._open_texture_file_gmp()
-        
+
+    def _open_web(self, arg=None):
+        toolClass.open_web()
+
     def _open_work_folder(self, arg=None):
         toolClass._open_work_folder()           
             
@@ -462,6 +466,10 @@ class ToolKitUI(object):
         
     def _tran_att(self, arg=None):
         getBaseClass.massTransfer()      
+
+        
+    def _tran_att_mass(self, arg=None):
+        getBaseClass.massTransfer2() 
 
     def _reset_asset(self, arg=None):
         getBaseClass.clearAnim()    
@@ -635,5 +643,4 @@ class ToolKitUI(object):
 
 inst = ToolKitUI()
 inst.create()
-
 
