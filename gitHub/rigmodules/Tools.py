@@ -728,6 +728,10 @@ class ToolFunctions(object):
 
     def point_const(self, arg=None):
         getSel=cmds.ls(sl=1, fl=1)
+        self.point_const_callup(getSel)
+
+
+    def point_const_callup(self, getSel):
         edgeBucket=[]
         if ".vtx[" in getSel[0]:
             pass
@@ -1252,9 +1256,12 @@ class ToolFunctions(object):
 #        global makeAttr   
         window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=550)
         menuBarLayout(h=30)
-        stringField='''"Fetch Attribute" (launches window)an interface to query a selected items attributes that
+        stringField='''"Fetch Attribute" (launches window)an interface to query items attributes that
     you can hunt by name portion or values. You can also change attribute value through this
-    window if number values apply.
+    window if number values apply. Can also query scene for all objects with a particular attribute
+    or value.
+
+        Query object for attributes:
 
         * Step 1: select object
         * Step 2: launch window
@@ -1271,8 +1278,24 @@ class ToolFunctions(object):
         * Step 8: press "Refresh Selection" will repopulate the drop down menu
             with current selection's full attributes
 
+        Query scene for objects with attributes:
+
+        * Step 1: launch window
+        * Step 2: enter a partial name in the "search" window beside the 
+            "Fetch Attribute Name" button
+        * Step 4(alternative: enter a value in the "search" window beside the 
+            "Fetch Attribute Value" button            
+        * Step 5: pressing the button beside either feild will repopulate the
+            drop down menu with the attributes that have these names or values
+        * Step 6(optional): fill in the "Change Value" field with a new value
+        * Step 7: press the "Apply Value" button to change the attribute that
+            is currently visible in the drop down menu
+        * Step 8(optional): press "Apply All" will change all attributes in 
+            dropdown to new value(EG: resetting all wind attributes to 0.0
+            to reset wind in scene to none)
+
         "REFRESH SELECTION" - button
-            Repopulates the drop down menu with attributes from current
+            Repopulates the drop down menu with attributes from new/current
                 selection
         "APPLY VALUE" - button
             Will change the value on the attribute that is currently
@@ -1300,24 +1323,25 @@ class ToolFunctions(object):
         gridLayout('srch4attButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
         text(label="Search:", align="left", w=50) 
         findAttr=textField(AttributeName, text="Enter name EG:'translate'")
-        button (label='Fetch Attribute by Name',  bgc=[0.55, 0.6, 0.6], p='srch4attButtonLayout', command = lambda *args:self._find_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1)))
-        text(label="Search:", align="left", w=50)
+        cmds.button (label='Fetch Attribute Name',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_att(getName=textField(findAttr, q=1, text=1)))
+        text(label="Search:", align="left", w=50) 
         valueAttr=textField(text="Enter value EG:'1.0'")
-        button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], p='srch4attButtonLayout', command = lambda *args:self._find_value(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), attribute=textField(findAttr, q=1, text=1), values=textField(valueAttr, q=1, text=1)))
+        button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), values=textField(valueAttr, q=1, text=1)))
         gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
         self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
         for each in getFirstAttr:
             menuItem( label=each)
         gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
         text(label="Change Value:", align="left", w=50)        
-        makeAttrObj=textField(w=150, text="enter value EG:'50'")
-        button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttr, q=1, text=1)))
+        makeAttr=textField(w=150, text="enter value EG:'50'")
+        button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=textField(makeAttr, q=1, text=1)))
         #search object by attribute
         cmds.frameLayout('title2', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Objects by Attribute', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
         gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(98, 20))          
         text(label="Att Value:", p='valuebuttonlayout2', align="left", w=50)
         self.attrValObj=text(label="Select from drop down", p='valuebuttonlayout2', w=100)
         text(label="Att Type:", p='valuebuttonlayout2', align="right", w=50)
+        self.attrTypeObj=text(label="", p='valuebuttonlayout2', w=100) 
         self.select=text(label="select on", p='valuebuttonlayout2', al="right", w=100)  
         cmds.popupMenu(button=1)
         self.selectOn=cmds.menuItem  (label='select on', command = self._change_to_select_on)
@@ -1328,20 +1352,74 @@ class ToolFunctions(object):
         button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=textField(findAttrObj, q=1, text=1)))
         text(label="Search:", align="left", w=50)
         valueAttrObj=textField(text="Enter value EG:'1.0'")
-        button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=optionMenu(self.objAtt, q=1, ill=1), attribute=textField(findAttrObj, q=1, text=1), values=textField(valueAttrObj, q=1, text=1)))
+        button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=optionMenu(self.objAtt, q=1, ill=1), values=textField(valueAttrObj, q=1, text=1)))
         gridLayout('findObjByAttrGLayout', p='title2', numberOfColumns=1, cellWidthHeight=(445, 20))
         self.objAtt=optionMenu( label='Found', cc=lambda *args:self.change_attr_output_obj())
         for each in getFirstAttr:
             menuItem( label=getSel[0]+"."+each)
         gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=4, cellWidthHeight=(115, 20))
         text(label="Change Value:", align="left", w=50)        
-        makeAttr=textField(w=150, text="enter value EG:'50'")      
-        button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self._apply_att_obj(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttrObj, q=1, text=1)))
-        button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self._apply_att_obj(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttrObj, q=1, text=1)))
+        makeAttrObj=textField(w=150, text="enter value EG:'50'")      
+        button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttrObj, q=1, text=1)))
+        button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=textField(makeAttrObj, q=1, text=1)))
         showWindow(window)   
 
+
+    def _apply_att(self, getFirstattr, makeAttr):
+        try:
+            makeAttr=float(makeAttr)
+        except:
+            print "Field must have number"
+        try:
+            cmds.setAttr(getFirstattr, makeAttr)
+            pass
+        except:
+            print "Unable to change "+getFirstattr+" in this way"
+            return
+        getChangeAttr=cmds.getAttr(getFirstattr)
+        self.count_attr_output(getChangeAttr) 
+
+    def apply_att_callup(self, getFirstattr, makeAttr):
+        getFirstattr=[getFirstattr]
+        for each in getFirstattr:
+            print each
+            getChangeAttr=getAttr(each)
+            try:
+                makeAttr=float(makeAttr)
+            except:
+                print "Field must have number"
+            try:
+                cmds.setAttr(each, makeAttr)
+                pass
+            except:
+                print "Unable to change "+each+" in this way"
+                return
+            getChangeAttr=getAttr(each)
+            self.count_attr_output_obj(getChangeAttr) 
+
+    def apply_att_callup_all(self, makeAttr):
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            for each in menuItems:
+                getThing=menuItem(each, q=1, label=1)   
+                getChangeAttr=getAttr(getThing)
+                try:
+                    makeAttr=float(makeAttr)
+                except:
+                    print "Field must have number"
+                try:
+                    cmds.setAttr(getThing, makeAttr)
+                    pass
+                except:
+                    print "Unable to change "+each+" in this way"
+                    return
+            self.count_attr_output_obj(getChangeAttr) 
+
     def _change_to_select_on(self, arg=None):
-        cmds.
+        print "tool error: button function not built yet"
+
+    def _change_to_select_off(self, arg=None):
+        print "tool error: button function not built yet"
 
     def _refresh(self, arg=None):
         menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
@@ -1361,22 +1439,79 @@ class ToolFunctions(object):
         select(newAttr, add=1)
         self.count_attr_output(getChangeAttr) 
         print newAttr, getChangeAttr
-        
-    def _find_att(self, getFirstattr, attribute):   
+
+
+    def _find_att(self, getName):       
+        getSel=cmds.ls(sl=1, fl=1)
+        if "," in getName:
+            getName=getName.split(", ")
+        else:
+            getName=[getName]
+        collectAttr=[]
+        for each in getSel:
+            print each
+            Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) for attrName in getName if attrName in attrItem]
+            if len(Attrs)>0:        
+                for item in Attrs:
+                    print item
+                    newItem=each+"."+item
+                    print newItem
+                    collectAttr.append(newItem) 
+        getChangeAttr=getAttr(collectAttr[0]) 
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)    
+        self.count_attr_output(getChangeAttr)
+        print getChangeAttr
+
+
+    def _find_attV0(self, getFirstattr, attribute):         
+        print getFirstattr
+        if ", " in getFirstattr:
+            getFirstattr=getFirstattr.split(",")
+        else:
+            getFirstattr=[getFirstattr]
+        print getFirstattr
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
+        for each in getFirstattr:
+            find=menuItem(each, q=1, label=1)
+            if attribute in find:
+                collectAttr.append(find) 
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get() 
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+    def _find_attV1(self, getFirstattr, attribute):     
         try:
             getSel=ls(sl=1, fl=1)      
             getFirst=getSel[0]
         except:
             print "must select something"
-            return       
-        collectAttr=[]
+            return
         if ", " in getFirstattr:
             getFirstattr=getFirstattr.split(",")
         else:
-            getFirstattr=[getFirstattr]       
+            getFirstattr=[getFirstattr]
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
-            if attribute in find:
+            if each in find:
                 collectAttr.append(find) 
         optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
         newAttr=getattr(getSel[0],collectAttr[0])
@@ -1413,7 +1548,31 @@ class ToolFunctions(object):
         for each in getListAttr:
             menuItem(label=each, parent=self.objAtt)  
 
-    def _find_value(self, getFirstattr, attribute, values):
+    def _find_value_obj(self, getFirstattr, values):
+        try:
+            values=float(values) 
+        except:
+            values=int(values)        
+        getAll=cmds.ls("*")
+        collectAttr=[]
+        for each in getAll:
+            try:
+                Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) if cmds.getAttr(each+"."+attrItem)==values]
+            except:
+                pass
+            if len(Attrs)>0:        
+                for item in Attrs:
+                    newItem=each+"."+item
+                    collectAttr.append(newItem)
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.objAtt, e=1) 
+        for each in getListAttr:
+            menuItem(label=each, parent=self.objAtt)  
+
+    def _find_value(self, getFirstattr, values):
         try:
             values=float(values) 
         except:
@@ -1452,18 +1611,22 @@ class ToolFunctions(object):
     def change_attr_output(self):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
-        getSel=ls(sl=1, fl=1)
         getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)  
-        newAttr=getattr(getSel[0],getFirstattr)
+        cmds.getAttr(getFirstattr)
         try:
-            getChangeAttr=getattr(getSel[0],getFirstattr).get()
-            getTypeAttr=getAttr(getSel[0]+"."+getFirstattr, type=1)
+            getChangeAttr=cmds.getAttr(getFirstattr)
+            getTypeAttr=getAttr(getFirstattr, type=1)
             pass
         except:
-            print "Can't obtain value for "+getSel[0],getFirstattr
+            print "Can't obtain value for "+getFirstattr
             return               
         cmds.text(self.attrVal, e=1, label=getChangeAttr )
         cmds.text(self.attrType, e=1, label=getTypeAttr )
+
+    def count_attr_output_obj(self, getChangeAttr):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------''' 
+        cmds.text(self.attrValObj, e=1, label=getChangeAttr )
 
     def change_attr_output_obj(self):
         '''----------------------------------------------------------------------------------
@@ -1480,22 +1643,7 @@ class ToolFunctions(object):
         cmds.text(self.attrValObj, e=1, label=getAttr )
         cmds.text(self.attrTypeObj, e=1, label=getTypeAttr )
 
-    def _apply_att(self, getFirstattr, makeAttr):
-        getSel=ls(sl=1, fl=1)        
-#        getAttri=optionMenu(attributeFirstSel, q=1, v=1)
-        getChangeAttr=getattr(getSel[0],getFirstattr)
-        try:
-            makeAttr=float(makeAttr)
-        except:
-            print "Field must have number"
-        try:
-            getChangeAttr.set(makeAttr)
-            pass
-        except:
-            print "Unable to change "+getSel[0],getFirstattr+" in this way"
-            return
-        getChangeAttr=getattr(getSel[0],getFirstattr).get()
-        self.count_attr_output(getChangeAttr) 
+
        
 
     def _erase_anim(self, arg=None):
@@ -2227,7 +2375,7 @@ class ToolFunctions(object):
         self.direction=cmds.optionMenu( label='Attributes')
         for each in getDir:
             cmds.menuItem( label=each)       
-        button (label='offset', p='txvaluemeter', command = lambda *args:self._offset_verts(amount=cmds.textField(self.amount, q=1, t=1), direction=cmds.optionMenu(self.direction, q=1, v=1)))        
+        button (label='offset', p='txvaluemeter', command = lambda *args:self._offset_verts(amount=cmds.textField(self.amount, q=1, text=1), direction=cmds.optionMenu(self.direction, q=1, v=1)))        
         showWindow(window)
 
     def locator_select_verts(self, arg=None):
@@ -2243,8 +2391,8 @@ class ToolFunctions(object):
         getBaseClass.plot_vert()
 
 
-    def _offset_verts(self, arg=None):
-        getBaseClass.space_vert()
+    def _offset_verts(self, amount, direction):
+        getBaseClass.space_vert(amount, direction)
         
     def _plot_each_vert(self, arg=None):
         getBaseClass.plot_each_vert()
