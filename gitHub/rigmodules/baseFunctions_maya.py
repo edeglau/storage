@@ -18,7 +18,7 @@ import maya.cmds as cmds
 import sys, os, glob
 import maya.mel
 
-
+from numpy import arange
 
 
 getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
@@ -3766,21 +3766,28 @@ class BaseClass():
         cmds.delete(getLocation) 
 
 
+
+
     def plot_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
-        selObj=cmds.ls(sl=1, fl=1)       
+        selObj=cmds.ls(sl=1, fl=1)      
         if len(selObj)>0:
             pass
         else:
             print "Select 1 object" 
             return     
-        getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
-        getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
+        getTopRange=cmds.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
+        getLowRange=cmds.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
+        edgeBucket=[]
+        getRange=arange(getLowRange,getTopRange, 1 )
+        # getRange=cmds.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
+        # getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
         getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
         cmds.normalConstraint(selObj[0], getloc[0])
         placeloc=cmds.spaceLocator(n=selObj[0]+"lctr")
-        for each in range(getRange):
-            transform=cmds.xform(selObj, q=True, ws=1, t=True)
+        for each in getRange:
+            cmds.currentTime(each)            
+            transform=cmds.xform(selObj[0], q=True, ws=1, t=True)
             if len(transform)<4:
                 pass
             else:
@@ -3796,7 +3803,8 @@ class BaseClass():
             rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
             cmds.xform(placeloc[0], ws=1, ro=rotate)  
             cmds.SetKeyRotate(placeloc[0])
-            maya.mel.eval( "playButtonStepForward;" )
+            cmds.currentTime(each)
+            # maya.mel.eval( "playButtonStepForward;" )
         cmds.delete(getloc[0])
 
     def plot_each_vert(self):
@@ -3809,11 +3817,44 @@ class BaseClass():
 
     def space_vert(self, amount, direction):
         '''offsets a vert from another'''
+        amount=float(amount)
+        selObj=cmds.ls(sl=1, fl=1)   
+        firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
+        if len(firstpart)==len(secondpart):
+            pass
+        else:
+            print "Odd number in length. Please pick exactly same amount of verts between two rows"
+            return
+        for leadingVert, followVert in map(None, firstpart, secondpart):
+            # getloc=cmds.spaceLocator(n=leadingVert+"cnstr_lctr")
+            transform=cmds.xform(leadingVert, q=True, ws=1, t=True)
+            # cmds.xform(getloc[0], ws=1, t=transform)  
+            # cmds.normalConstraint(leadingVert, getloc[0])
+            # cmds.duplicate(getloc[0], rr=1, n="temp_cnstr_lctr")
+            if direction=="X":
+                cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
+                cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)
+            if direction=="Y":
+                cmds.move(transform[0], transform[1]+amount, transform[2], followVert, os=1, ls=1)
+            if direction=="Z":       
+                cmds.xform(followVert, ws=1, t=transform)        
+                # cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
+                cmds.move(0.0, 0.0, amount, followVert, r=1, ls=1)                
+                    # cmds.move(transform[0], transform[1], transform[2]+amount, followVert, os=1, ls=1)
+            # offsetTransform=cmds.xform("temp_cnstr_lctr", q=True, ws=1, t=True)
+            # cmds.xform(followVert, ws=1, t=offsetTransform)
+            # cmds.delete("temp_cnstr_lctr")
+            # cmds.delete(getloc[0])
+
+
+    def space_vertV1(self):
+        '''offsets a vert from another'''
+        amount=float(amount)
         if direction=="X":
-            moveVert=amount, 0.0, 0.0
+            moveVert=[amount, 0.0, 0.0]
         if direction=="Y":
             moveVert=0.0, amount, 0.0
-        if direction=="Y":
+        if direction=="Z":
             moveVert=0.0, 0.0, amount
         selObj=cmds.ls(sl=1, fl=1)   
         firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
@@ -3828,26 +3869,7 @@ class BaseClass():
             cmds.xform(getloc[0], ws=1, t=transform)  
             cmds.normalConstraint(leadingVert, getloc[0])
             cmds.duplicate(getloc[0], rr=1, n="temp_cnstr_lctr")
-            cmds.move(moveVert, "temp_cnstr_lctr", r=1, os=1)
-            offsetTransform=cmds.xform("temp_cnstr_lctr", q=True, ws=1, t=True)
-            cmds.xform(followVert, ws=1, t=offsetTransform)
-            cmds.delete("temp_cnstr_lctr")
-            cmds.delete(getloc[0])
-
-
-    def space_vertV1(self):
-        '''offsets a vert from another'''
-        selObj=cmds.ls(sl=1, fl=1)   
-        leadingVert=selObj[0]
-        followVert= selObj[1] 
-        firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
-        for leadingVert, followVert in map(None, firstpart, secondpart):
-            getloc=cmds.spaceLocator(n=leadingVert+"cnstr_lctr")
-            transform=cmds.xform(leadingVert, q=True, ws=1, t=True)
-            cmds.xform(getloc[0], ws=1, t=transform)  
-            cmds.normalConstraint(leadingVert, getloc[0])
-            cmds.duplicate(getloc[0], rr=1, n="temp_cnstr_lctr")
-            cmds.move(0, 0, .03, "temp_cnstr_lctr", r=1, os=1)
+            cmds.move(moveVert[0], moveVert[1], moveVert[2], "temp_cnstr_lctr", r=1, ls=1)
             offsetTransform=cmds.xform("temp_cnstr_lctr", q=True, ws=1, t=True)
             cmds.xform(followVert, ws=1, t=offsetTransform)
             cmds.delete("temp_cnstr_lctr")
