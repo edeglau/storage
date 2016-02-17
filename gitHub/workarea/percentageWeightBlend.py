@@ -3,9 +3,13 @@ from numpy import arange
 
 getBlendShape=cmds.ls(sl=1, fl=1)
 getSource=cmds.listConnections(getBlendShape[0], s=1)
-for each in getSource:
-  if cmds.nodeType(each)=="transform":
-    getPlug=[(link) for link in cmds.listConnections(cmds.listRelatives(each, s=1)[0], p=1, c=1, d=1) if "worldSpace" in str(link) and "Orig" not in str(link)]]
+
+for each in xrange(len(getSource)-1):
+  current_item, next_item=getSource[each], getSource[each+1]
+  if "inputTarget" in current_item:
+    print current_item, next_item
+  
+  
 BlendShapeNode="blendShape12"
 rangeObjsWithBlends=arange(0, 168, 1)
 getCVrange=arange(0, 25, 1)
