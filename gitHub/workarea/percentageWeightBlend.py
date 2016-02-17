@@ -1,36 +1,43 @@
 from numpy import arange
+
 from pymel.core import *
 
+#BlendShapeNode="blendShape12"
+#rangeObjsWithBlends=arange(0, 168, 1)
+#getCVrange=arange(0, 25, 1)
+
+
+
+collectNewNumbers=[]
 
 getBlendShape=cmds.ls(sl=1, fl=1)
+
+
+minWeightValue=0.0#input
+maxWeightValue=1.0#input
+
+
+
 getSource=cmds.listConnections(getBlendShape[0], s=1)
 blendShapeInputs={}
+
+
 for each in xrange(len(getSource)-1):
   current_item, next_item=getSource[each], getSource[each+1]
   if "inputTarget" in current_item:
-    print current_item, next_item
     findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
     createDict={findAttributeName:next_item}
     blendShapeInputs.update(createDict)
-for key, value in blendShapeInputs.items():
-  next_item=ls(value)[0]
-  for eachcv in next_item.cv:
-    findName=eachcv.name()
-    buildAttribute=key+findName.split('v')[2]
+    
     
 getCurve=blendShapeInputs.items()[0][1]
 defaultCVrange=arange(0, len(ls(getCurve)[0].cv), 1)
-getCVrange=defaultCVrange
+getCVrange=defaultCVrange#input
 rangeObjsWithBlends=arange(len(blendShapeInputs, 1)
-    
-  
-  
-BlendShapeNode="blendShape12"
-rangeObjsWithBlends=arange(0, 168, 1)
-getCVrange=arange(0, 25, 1)
-collectNewNumbers=[]
-minWeightValue=0.0
-maxWeightValue=1.0
+
+
+BlendShapeNode=getBlendShape
+
 '''add first value to bucket'''
 collectNewNumbers.append(minWeightValue)  #store min value in bucket
 '''find incremental percentile to add to bucket'''
@@ -43,8 +50,27 @@ BucketValue=[(key+1)*getPercentile*.01 for key in range(len(getSeln))]#reference
 for each in BucketValue:#Add each value to the minimum number to get true value to add to bucket if in case minimum is not 0.0
     getNum=minWeightValue+each
     collectNewNumbers.append(getNum)#add all midrange values to bucket
+for blendConnection, eachCurve in blendShapeInputs.items()::
+  next_item=ls(value)[0]
+  for eachcv, targetWeightValue in map(None, next_item.cv, collectNewNumbers):
+    findName=eachcv.name()
+    buildAttribute=key+findName.split('v')[2]
+    cmds.setAttr(buildAttribute, targetWeightValue)
+
+
+
+
+
+
+
+##############################################
 '''add last value to bucket'''
 collectNewNumbers.append(maxWeightValue)#now add the max value to bucket
 for eachCurve in rangeObjsWithBlends:
     for cvNum, targetWeightValue in map(None, getCVrange, collectNewNumbers):
-        cmds.setAttr(BlendShapeNode+".inputTarget["+str(eachCurve)+"].inputTargetGroup[0].targetWeights]""+str(cvNum)+]", targetWeightValue)
+
+
+    
+for key, value in blendShapeInputs.items():
+  next_item=ls(value)[0]
+  for eachcv in next_item.cv:
