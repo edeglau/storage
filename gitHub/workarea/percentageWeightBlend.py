@@ -1,4 +1,5 @@
 from numpy import arange
+from pymel.core import *
 
 
 getBlendShape=cmds.ls(sl=1, fl=1)
@@ -9,6 +10,10 @@ for each in xrange(len(getSource)-1):
   if "inputTarget" in current_item:
     print current_item, next_item
     findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
+    for each in current_item:
+      next_item=ls(next_item)[0]
+      for eachcv in next_item_cv:
+        
     
   
   
