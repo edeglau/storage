@@ -2,7 +2,7 @@
   from numpy import arange
   BlendShapeNode="blendShape12"
   rangeObjsWithBlends=arange(0, 168, 1)
-  getCVrange=arange(0, 25, 1))
+  getCVrange=arange(0, 25, 1)
   collectNewNumber=[]
   minWeightValue=0.0
   maxWeightValue=1.0
@@ -21,5 +21,5 @@
   '''add last value to bucket'''
   collectNewNumbers.append(maxWeightValue)
   for eachCurve in rangeObjsWithBlends:
-    for cvNum, targetWeightValue in map(None, getCVrange, collectNewNumbers):
-      cmds.setAttr(BlendShapeNode+".inputTarget["+str(eachCurve)+"].inputTargetGroup[0].targetWeights]""+str(cvNum)+]", targetWeightValue)
+      for cvNum, targetWeightValue in map(None, getCVrange, collectNewNumbers):
+          cmds.setAttr(BlendShapeNode+".inputTarget["+str(eachCurve)+"].inputTargetGroup[0].targetWeights]""+str(cvNum)+]", targetWeightValue)
