@@ -18,7 +18,10 @@ for key, value in blendShapeInputs.items():
     findName=eachcv.name()
     buildAttribute=key+findName.split('v')[2]
     
-        
+getCurve=blendShapeInputs.items()[0][1]
+defaultCVrange=arange(0, len(ls(getCurve)[0].cv), 1)
+getCVrange=defaultCVrange
+rangeObjsWithBlends=arange(len(blendShapeInputs, 1)
     
   
   
