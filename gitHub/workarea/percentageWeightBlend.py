@@ -8,6 +8,8 @@ for each in xrange(len(getSource)-1):
   current_item, next_item=getSource[each], getSource[each+1]
   if "inputTarget" in current_item:
     print current_item, next_item
+    findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
+    
   
   
 BlendShapeNode="blendShape12"
