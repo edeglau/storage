@@ -4,15 +4,20 @@ from pymel.core import *
 
 getBlendShape=cmds.ls(sl=1, fl=1)
 getSource=cmds.listConnections(getBlendShape[0], s=1)
-
+blendShapeInputs={}
 for each in xrange(len(getSource)-1):
   current_item, next_item=getSource[each], getSource[each+1]
   if "inputTarget" in current_item:
     print current_item, next_item
     findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
-    for each in current_item:
-      next_item=ls(next_item)[0]
-      for eachcv in next_item_cv:
+    createDict={findAttributeName:next_item}
+    blendShapeInputs.update(createDict)
+for key, value in blendShapeInputs.items():
+  next_item=ls(value)[0]
+  for eachcv in next_item.cv:
+    findName=eachcv.name()
+    buildAttribute=key+findName.split('v')[2]
+    
         
     
   
