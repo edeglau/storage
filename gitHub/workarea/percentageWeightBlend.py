@@ -50,6 +50,22 @@ BucketValue=[(key+1)*getPercentile*.01 for key in range(len(getSeln))]#reference
 for each in BucketValue:#Add each value to the minimum number to get true value to add to bucket if in case minimum is not 0.0
     getNum=minWeightValue+each
     collectNewNumbers.append(getNum)#add all midrange values to bucket
+setAttrDict={}
+for each, targetWeightValue in map(None, getCVrange, collectNewNumbers):
+    for blendConnection, eachCurve in map(None, getCVrange, collectNewNumbers):
+        next_item=ls(eachCurve)[0]
+            findName=eachCV.name()
+            builtAttribute=blendConnection+findName.split('.cv')[0]
+            if eachCV.index == each:
+                makeDict={builtAttribute:targetWeightValue}
+                setAttrDict.update(makeDict)
+for key, value in setAttrDict.index():
+     cmds.setAttr(key, value)
+print "blends are done"
+
+
+
+
 for blendConnection, eachCurve in blendShapeInputs.items()::
   next_item=ls(value)[0]
   for eachcv, targetWeightValue in map(None, next_item.cv, collectNewNumbers):
