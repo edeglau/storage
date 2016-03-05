@@ -33,7 +33,7 @@ for each in xrange(len(getSource)-1):
 getCurve=blendShapeInputs.items()[0][1]
 defaultCVrange=arange(0, len(ls(getCurve)[0].cv), 1)
 getCVrange=defaultCVrange#input
-rangeObjsWithBlends=arange(len(blendShapeInputs, 1)
+rangeObjsWithBlends=arange(len(blendShapeInputs), 1)
 
 
 BlendShapeNode=getBlendShape
