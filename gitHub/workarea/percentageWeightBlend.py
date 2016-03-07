@@ -2,6 +2,15 @@ from numpy import arange
 
 from pymel.core import *
 
+
+class percBlndWeight(QtGui.QMainWindow):
+  def __init__(self):
+    QtGui.QMainWindow.__init(self)
+
+
+
+
+
 #BlendShapeNode="blendShape12"
 #rangeObjsWithBlends=arange(0, 168, 1)
 #getCVrange=arange(0, 25, 1)
