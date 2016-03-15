@@ -29,14 +29,24 @@ maxWeightValue=1.0#input
 
 getSource=cmds.listConnections(getBlendShape[0], s=1)
 blendShapeInputs={}
-
+getDest=cmds.listConnections(getBlendShape[0], d=1)
+setInputList=[]
+outPutCurve=[]
 
 for each in xrange(len(getSource)-1):
   current_item, next_item=getSource[each], getSource[each+1]
   if "inputTarget" in current_item:
     findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
-    createDict={findAttributeName:next_item}
+    setInputList.append(findAttribute)
+for each in xrange(len(getDest)-1):
+  current_item, next_item=getDest[each], getDest[each+1]
+  if "outputGeometry" in current_item:
+    outPutCurve.append(next_item)
+for each, item in map(None, setInputList, outPutCurve):
+    createDict={each:item}
     blendShapeInputs.update(createDict)
+
+
     
     
 getCurve=blendShapeInputs.items()[0][1]
