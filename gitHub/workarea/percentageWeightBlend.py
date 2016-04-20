@@ -9,6 +9,43 @@ class percBlndWeight(QtGui.QMainWindow):
 
 
 
+def exectute_go(self):
+    getSel=cmds.ls(sl=1, fl=1)
+    getShape, getTransform=self.getTransformsAndShapes(getSel)
+    getBlendShape=self.getBlendShapeNodeSelected()
+    blendShapeInputCurves=self.makeBlendShapeAttrDictionary(getBlendShape)
+    weightList, getCVrange=self.buildWeigthBucket(getTransforms)
+    self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
+
+def makeBlendshapeAttrDictionary(self, getBlendShape):
+    setInputList=[]
+    outPutCurve=[]
+    for each in xrange(len(getSource)-1):
+        current_item, next_item=getSource[each], getSource[each+1]
+        if "inputTarget" in current_item:
+            findAttribute=current_item.split("inputTargetItem")[0]+"targetWeights"
+            setInputList.append(findAttribute)
+    for each in xrange(len(getDest)-1):
+        current_item, next_item=getDest[each], getDest[each+1]
+        if "outputGeometry" in current_item:
+        outPutCurve.append(next_item)
+    for each, item in map(None, setInputList, outPutCurve):
+        createDict={each:item}
+        blendShapeInputs.update(createDict)
+    return blendShapeInputCurves
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 #BlendShapeNode="blendShape12"
