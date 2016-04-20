@@ -45,8 +45,7 @@ def buildWeigthBucket(self, getSel)
     getCVrange=arange(endCV, 1)
     minWeightValue, maxWeightValue=0.0, 1.0
     weightList=[]
-    lengthList=[]
-    getBaseClass.Percentages(getCVrange, 0.0, 1.0)
+    lengthList=getBaseClass.Percentages(getCVrange, 0.0, 1.0)
     for each in lengthList:
         getInfo=cmds.gradientControlNoAttr(self.curveGUI, q=1, valueAtPoint=each)
         weightList.append(getInfo)
