@@ -1,0 +1,9 @@
+getUVmap = polyListComponentConversion(each, fv=1, tuv=1)
+getCoords=polyEditUV(getUVmap, q=1)
+plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
+getNew=spaceLocator(n=plocName)
+select(leadVert, r=1)
+select(getNew[0], add=1)
+buildConst=pointOnPolyConstraint(leadVert, getNew, mo=0, offset=(0.0, 0.0, 0.0))
+setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
+setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1]
