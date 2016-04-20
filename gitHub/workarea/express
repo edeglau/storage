@@ -6,10 +6,10 @@ drivingAtt='.rotateX'
 followAtt='.rotateX'
 getChildren=getSelected[1:]
 print "int $currentTime=`currentTime -q`;"
-for each in getChildren:
-	num=(additive * each.index())
+for each in xrange(len(getChildren) -1):
+	num=(additive * each)
 	takeNum=initial+num
 	print "int $offset="+str(takeNum)+";"
 	print "$offsetTime=$currentTime-$offest;"
 	print "$getPos=`getAttr -t $offsetTime "+master+drivingAtt+"`;"
-	print each+followAtt+"=$getPos;"
+	print getChildren[each]+followAtt+"=$getPos;"
