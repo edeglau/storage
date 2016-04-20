@@ -1,7 +1,8 @@
 from numpy import arange
 
 from pymel.core import *
-
+import baseFunctions_maya
+getBaseClass=baseFunctions_maya.BaseClass()
 
 class percBlndWeight(QtGui.QMainWindow):
   def __init__(self):
@@ -45,7 +46,7 @@ def buildWeigthBucket(self, getSel)
     minWeightValue, maxWeightValue=0.0, 1.0
     weightList=[]
     lengthList=[]
-    lengthList=self.Percentages(getCVrange, 0.0, 1.0)
+    getBaseClass.Percentages(getCVrange, 0.0, 1.0)
     for each in lengthList:
         getInfo=cmds.gradientControlNoAttr(self.curveGUI, q=1, valueAtPoint=each)
         weightList.append(getInfo)
