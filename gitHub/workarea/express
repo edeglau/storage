@@ -1,0 +1,13 @@
+getSelected=cmds.ls(sl=1)
+master=getSelected[0]
+initial=5
+additive=2
+drivingAtt='.rotateY'
+followAtt='.rotateY'
+getChildren=getSelected[1:]
+print "int $currentTime=`currentTime -q`;"
+print "int $offset=intial"
+for each in getChildren:
+	print "$getPos=`getAttr -t $offsetTime "+master+drivingAtt+"`;"
+	print each+followAtt+"=$getPos;"
+	
