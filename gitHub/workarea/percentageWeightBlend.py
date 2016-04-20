@@ -18,6 +18,19 @@ def exectute_go(self):
     self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 
 
+def buildWeigthBucket(self, getSel)
+    getCurveForFindingCV=ls(getSel)[0]
+    endCV=len(getCurveForFindingCV.cv)
+    getCVrange=arange(endCV, 1)
+    minWeightValue, maxWeightValue=0.0, 1.0
+    weightList=[]
+    lengthList=[]
+    lengthList=self.Percentages(getCVrange, 0.0, 1.0)
+    for each in lengthList:
+        getInfo=cmds.gradientControlNoAttr(self.curveGUI, q=1, valueAtPoint=each)
+        weightList.append(getInfo)
+    return weightList, getCVrange
+    
 def getTranformsAndShapes(self, getSel):
     getShape=[(grab) for item in getSel for grab in cmds.listRelatives(item, ad=1, typ="shape", f=1) if "Orig" not in grab]
     getcurveTransforms=[(eachParentTransform) for eachShape in getShape for eachPArentTRansform in cmds.listRelatives(cmds.ls(eachShape), p=1, f=1)]
