@@ -1,11 +1,24 @@
 from numpy import arange
-
 from pymel.core import *
-
-
-
 import baseFunctions_maya
 getBaseClass=baseFunctions_maya.BaseClass()
+
+
+blendShapes=[]
+getSel=cmds.ls(sl=1, fl=1)
+if len(getSel)<1:
+	print "select smething"
+else:
+	try:
+		getShape=[(grab) for item in getSel for grab in cmds.listRelatives(item, ad=1, typ="shape") if "Orig" not in grab]
+		getCurveTransforms=[(eachParentTransform) for eachShape in getShape for eachParentTransform in cmds.listRelatives(cmds.ls(eachShape)[0], p=1)]
+		for eachItem in getShape:
+			eachconnect=cmds.listConnections((cmds.ls(eachItem)[0]))
+			blendShapes=[(blended) for blended in eachconnect if cmds.nodeType(cmds.ls(blended)[0]) =="blendShape"]
+		blendShapes=list(set(blendShapes))
+	except:
+		print "Selected not right type"
+
 
 class blendShapeCurveWEights():
 	def __init__(self, winName=blends):
