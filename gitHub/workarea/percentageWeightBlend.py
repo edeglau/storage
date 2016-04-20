@@ -17,6 +17,12 @@ def exectute_go(self):
     weightList, getCVrange=self.buildWeigthBucket(getTransforms)
     self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 
+
+def getTranformsAndShapes(self, getSel):
+    getShape=[(grab) for item in getSel for grab in cmds.listRelatives(item, ad=1, typ="shape", f=1) if "Orig" not in grab]
+    getcurveTransforms=[(eachParentTransform) for eachShape in getShape for eachPArentTRansform in cmds.listRelatives(cmds.ls(eachShape), p=1, f=1)]
+    return getShape, getcurveTransforms
+
 def makeBlendshapeAttrDictionary(self, getBlendShape):
     setInputList=[]
     outPutCurve=[]
