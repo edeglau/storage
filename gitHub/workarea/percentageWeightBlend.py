@@ -1,14 +1,30 @@
 from numpy import arange
 
 from pymel.core import *
+
+
+
 import baseFunctions_maya
 getBaseClass=baseFunctions_maya.BaseClass()
 
-class percBlndWeight(QtGui.QMainWindow):
-  def __init__(self):
-    QtGui.QMainWindow.__init(self)
-
-
+class blendShapeCurveWEights():
+	def __init__(self, winName=blends):
+		self.winTitle="blends"
+		self.winName=winName
+	def createBlendWin(self):
+		if cmds.window(self.winName, exists=True):
+			cmds.deleteUI(self.winName)
+		self.window=cmds.window(self.winName, title=self.winTitle, tbm=1, w=380, h=300)
+		cmds.rowColumnLayout('selectArrWin' , nr=1, w=300, h=300)
+		cmds.frameLayout("lrow", label="", lv=0, nch=1, borderStyle='out', bv=1,, p='selectArrWin')
+		self.blendShape_node=cmds.optionMenu(label="blendshape", w=150)
+		for each in blendsShapes:
+			cmds.menuItem(label=each)
+		cmds.columnLayout()
+		self.curveGUI=cmds.gradientControlNoAttr("falloffCurve", h=90)
+		
+		cmds.button(label"set", command=lambda *args:self.execute_go())
+		cmds.showWindow()
 
 def exectute_go(self):
     getSel=cmds.ls(sl=1, fl=1)
