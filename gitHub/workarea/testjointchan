@@ -1,0 +1,16 @@
+getSel=cmds.ls(sl, fl=1)
+jointsuf="_jnt"
+bucket=[]
+for each in getSel:
+	cmds.select(each)
+	getcurve=ls(each)
+	for item in getcurve:
+		for indexNumber in item.cv:
+			transMat=indexNumber.getPosition()
+			getNum="%03d" %(indexNumber.index(),)
+			getName=str(getcurve[0])+"_cv_"+ctr(getNum)
+			jointnames=str(getName_jointsuf)
+			buildJoint=cmds.joint(n=jointnames, p=transMat)
+			getJoint=ls(buildJoint)[0]
+	getRoot=cmds.listRelatives(each, c=1, type="joint")
+	cmds.joint(getRoot, e=1, children=1, zso=1, oj="xyz", sao="yup", spa=1)
