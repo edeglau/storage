@@ -1,3 +1,8 @@
+for each in getDriverObjects:
+    for grabDriverPoints in each.vts:
+        grabItems.append(grabDriverPoints)
+for leadVert in getDriverObjects:
+grabDriverPoints=[(each) for each in grabItems if leadVert.getPosition("world")==each.getPosition("world")]
 getUVmap = polyListComponentConversion(each, fv=1, tuv=1)
 getCoords=polyEditUV(getUVmap, q=1)
 plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
@@ -6,4 +11,11 @@ select(leadVert, r=1)
 select(getNew[0], add=1)
 buildConst=pointOnPolyConstraint(leadVert, getNew, mo=0, offset=(0.0, 0.0, 0.0))
 setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
-setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])
+setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
+select(cl=1)
+jointName=str(grabDriverPoints[0].split(".")[0]+"_"+str(leadVert.index())+"_jnt"
+getjoint=joint(n=jointName)
+xform(jointName, ws=1, t=leadVert.getPosition("world"))
+parent(getjoint, getNew)
+getMeshName=grabDriverPoints[0].node()
+skinCluster(jointName, getMeshName)
