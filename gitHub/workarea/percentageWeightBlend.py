@@ -17,6 +17,12 @@ def exectute_go(self):
     weightList, getCVrange=self.buildWeigthBucket(getTransforms)
     self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 
+
+def getBlendShapeNodeSelected(self)
+    blendName=cmds.optionMenu(self.blendShape_Node, q=1, sl=1)
+    getBlendShape=cmds.optionMenu(self.blendShape_Node, q=1, value=1)
+    return getBlendShape
+    
 def blendWeigthExecutionCallup(self, CVrange, weightList, blendShapeInputCurves, getSel)
     setAttrDict={}
     for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
