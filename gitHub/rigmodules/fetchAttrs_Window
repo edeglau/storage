@@ -283,7 +283,7 @@
     	getChangeAttr=cmds.getAttr(getFirstattr)
     	self.count_attr_output(getChangeAttr)
         
-    def apply_att_callup(self, getFirstattr, makeAttr):
+    def apply_att_callupV1(self, getFirstattr, makeAttr):
         getFirstattr=[getFirstattr]
         for each in getFirstattr:
             print each
@@ -301,7 +301,7 @@
             getChangeAttr=getAttr(each)
             self.count_attr_output_obj(getChangeAttr) 
 
-    def apply_att_callup_all(self, makeAttr):
+    def apply_att_callup_allV1(self, makeAttr):
         menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
         if menuItems:
             for each in menuItems:
@@ -318,6 +318,45 @@
                     print "Unable to change "+each+" in this way"
                     return
             self.count_attr_output_obj(getChangeAttr) 
+
+
+	def apply_att_callup(self, getFirstattr, makeAttr):
+		getFirstattr=[getFirstattr]
+		for each in getFirstattr:
+			getChangeAttr=getAttr(each)
+			self.att_change_callup(each, makeAttr)
+			getChangeAttr=getAttr(each)
+			self.count_attr_output_obj(getChangeAttr)
+			
+	def apply_att_change_callup_all(self, makeAttr):
+		menuItems=cmds.optionMenu(self.objAtt, q=1, ill=1)
+		if menuItems:
+			for each in menuItems:
+				getThing=menuItem(each, q=1, label=1)
+				getChangeAttr=getAttr(getThing)
+				self.att_change_callup(getThing, makeAttr)
+			self.count_attr_output_obj(getChangeAttr)
+			
+	def att_change_callup(self, eachObj, makeAttr):
+		try:
+			makeAttr=float(makeAttr)
+		except:
+			print "Field must have number"
+		try:
+			cmds.setAttr(eachObj, makeAttr)
+		except:
+			print "Unable to change "+eachObj+" in this way"
+			return
+		
+		
+		
+	def att_change_callupV1(self, getFirstattr, makeAttr):
+		getFirstattr=[getFirstattr]
+		for each in getFirstattr:
+			getChangeAttr=getAttr(each)
+			self.att_change_callup(each, makeAttr)
+			getChangeAttr=getAttr(each)
+			self.count_attr_output_obj(getChangeAttr)
 
     def _change_to_select_on(self, arg=None):
         print "tool error: button function not built yet"
