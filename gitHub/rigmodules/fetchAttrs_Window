@@ -600,4 +600,5 @@ class fetchAttrs(object):
         cmds.text(self.attrTypeObj, e=1, label=getTypeAttr )
 
 
-       
+inst=fetchAttrs()
+inst._findAttr_window()
