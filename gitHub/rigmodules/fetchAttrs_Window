@@ -1,4 +1,17 @@
+from pymel.core import *
+import maya.mel
+from string import *
+from functools import partial
+import re, plateform, sys
+import maya.cmds as cmds
 
+OSplatform=platform.platform()
+
+import Tools
+toolClass=Tools.ToolFunctions()
+
+class fetchAttrs(object):
+	
     def _findAttr_window(self, arg=None): 
         winName = "Fetch Attributes"
         winTitle = winName
