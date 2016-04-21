@@ -1,5 +1,4 @@
 
-
     def _findAttr_window(self, arg=None): 
         winName = "Fetch Attributes"
         winTitle = winName
@@ -125,9 +124,130 @@
         makeAttrObj=textField(w=150, text="enter value EG:'50'")      
         button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttrObj, q=1, text=1)))
         button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=textField(makeAttrObj, q=1, text=1)))
-        showWindow(window)   
+        showWindow(window)  
+        
+    def helpWin(self, stringField):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Interface Layout
+        --------------------------------------------------------------------------------------------------------------------------------------'''
+        # def helpPage(self, arg=None):
+        winName = "Description"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=400 )
+        menuBarLayout(h=30)
+        rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
+        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
+        columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 400)) 
+        self.list=cmds.scrollField( editable=False, wordWrap=True, ebg=1,bgc=[0.11, 0.15, 0.15], w=700, text=str(stringField))
+        showWindow(window)
 
 
+
+    
+    '''==========================================================================================================================================
+    BOTTOM BUTTON FUNCTIONS
+    =========================================================================================================================================='''          
+    
+    def _clear_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        this clears the list
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, ra=1)
+        self.count_objects_in_list() 
+        
+    def _add_selected_to_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        Adds selected objects to the list
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
+        if selectedObject:
+            self.adding_to_list_function_main(selectedObject, listArray)  
+            
+    def _remove_from_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This removes the selected item in the list from the list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        if selectedListItems<1:
+            print 'Select item to subtract from list.'
+        else:
+            cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+            self.count_objects_in_list() 
+    
+    def _swap_with_selected(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This swaps the selected list item with the selected object
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
+        if selectedObject:
+            if selectedObject[0] in listArray:
+                cmds.textScrollList(self.nodeList, e=1, si=selectedObject)
+                self.already_in_list_error(selectedObject)
+            else:
+                cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+                cmds.textScrollList(self.nodeList, e=1, a=selectedObject[0::1])
+                self.count_objects_in_list()         
+        else:
+            print 'Select list item first and then object to swap with.'
+    
+    def _select_all_in_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This selects all items in list
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        if listArray:
+            self.select_list_item_function(listArray)
+            cmds.select(listArray)           
+        else:
+            print "List is empty."
+            
+    def _clear_selection(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This clears the selection of the items in the list
+        ----------------------------------------------------------------------------------'''          
+        self.deselect_in_list_function()
+    
+    def _sort_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This sorts the list by alphabetical and numerical
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        if listArray:
+            sortedObjList=sorted(listArray, key=lower)
+            self.repopulate_list(sortedObjList)                              
+        else:
+            print "Check that list is present."
+            
+    def _make_set_from_selection_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This create a set from selected items in list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        if selectedListItems:
+            result = cmds.promptDialog( 
+                title='Confirm', 
+                message='Name of set:', 
+                button=['Continue','Cancel'],
+                defaultButton='Continue', 
+                cancelButton='Cancel', 
+                dismissString='Cancel' )
+            if result == 'Continue':
+                text = cmds.promptDialog(query=True, text=True)
+                cmds.sets(n=text)
+            else:
+                print "create set cancelled"
+                return
+        else:
+            print "Select something from selection list."
+            
     def _apply_att(self, getFirstattr, makeAttr):
         try:
             makeAttr=float(makeAttr)
@@ -142,6 +262,27 @@
         getChangeAttr=cmds.getAttr(getFirstattr)
         self.count_attr_output(getChangeAttr) 
 
+
+
+    '''======================================================================================================================================
+    TOP BUTTON FUNCTIONS
+    ======================================================================================================================================'''  
+    
+    def list_item_selectability(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This selects items in scene from list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        cmds.select(selectedListItems, r=1)
+        self.count_objects_in_list()
+        print selectedListItems
+        
+        
+    def apply_att(self, getFirstattr, makeAttr):
+    	self.att_change_callup(getFirstattr, makeAttr)
+    	getChangeAttr=cmds.getAttr(getFirstattr)
+    	self.count_attr_output(getChangeAttr)
+        
     def apply_att_callup(self, getFirstattr, makeAttr):
         getFirstattr=[getFirstattr]
         for each in getFirstattr:
