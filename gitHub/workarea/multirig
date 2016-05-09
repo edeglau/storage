@@ -1,10 +1,25 @@
 
-meshName=ls(sl=1, fl=1)
+meshName=pm.ls(sl=1, fl=1)
+mainMesh=[(each) for each in meshName if each.nodeType()=="mesh"]
 getDriverObjects=[(each) for each in meshName if each.nodeType()=="mesh"]
 grabItems=[]
-getSurfaceObj=mainMesh[0].node()
-getParentModelTransform=listRelatives(getSurfaceObj, p=1, typ="transform")[0]
+getSurfaceObj=pm.PyNode(mainMesh[0]).node()
+getParentModelTransform=pm.listRelatives(getSurfaceObj, p=1, typ="transform")[0]
 grabDriverPoints=[(item) for item in each.vtx for each in getDriverObjects]
+pm.select(cl=1)
+getRigGrp=pm.group(n=str(getSurfaceObj)+"_Rigs")
+pm.select(cl=1)
+getRigLocGrp=pm.group(n=str(getSurfaceObj)+"_Locs")
+pm.PyNode(getRigLocGrp).visibility.set(0)
+pm.select(cl=1)
+getRigJntGrp=pm.group(n=str(getSurfaceObj)+"_Jnts")
+pm.PyNode(getRigJntGrp).visibility.set(0)
+pm.select(cl=1)
+getRigCtrlGrp=pm.group(n=str(getSurfaceObj)+"_Ctrl")
+pm.select(cl=1)
+pm.parent(getRigJntGrp, getRigGrp)
+pm.parent(getRigLocGrp, getRigGrp)
+pm.parent(getRigCtrlGrp, getRigGrp)
 for each in getDriverObjects:
     for grabDriverPoints in each.vts:
         grabItems.append(grabDriverPoints)
