@@ -26,9 +26,9 @@ pm.parent(getRigLocGrp, getRigGrp)
 pm.parent(getRigCtrlGrp, getRigGrp)
 rigPartSet=cmds.sets(n="rigParts_ctrls", co=3)
 for each in getDriverObjects:
-    for grabDriverPoints in pm.PyNode(each).vts:
+    for grabDriverPoints in pm.PyNode(each).vtx:
         grabItems.append(grabDriverPoints)
-for leadVert in getDriverObjects:
+for leadVert in mainMesh:
 	rotLocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_rloc"
 	getrotNew=pm.spaceLocator(n=rotLocName)
 	pm.normalConstraint(leadVert, rotLocName)
@@ -37,10 +37,10 @@ for leadVert in getDriverObjects:
 	transformWroldMatrix=leadVert.getPosition('world')
 	plocName=leadVert.split('.')[0]+"_"+str(leadVert.index())+"_ploc"
     grabDriverPoints=[(eachpoint) for eachpoint in grabItems if transformWroldMatrix==eachpoint.getPosition("world")]
-    getUVmap = polyListComponentConversion(leadVert, fv=1, tuv=1)
-    getCoords=polyEditUV(getUVmap, q=1)
+    getUVmap = pm.polyListComponentConversion(leadVert, fv=1, tuv=1)
+    getCoords=pm.polyEditUV(getUVmap, q=1)
     plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
-    getNew=spaceLocator(n=plocName)
+    getNew=pm.spaceLocator(n=plocName)
     pm.parent(getNew, getRigLocGrp)
     pm.select(leadVert, r=1)
     pm.select(getNew, add=1)
