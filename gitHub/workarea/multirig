@@ -5,7 +5,7 @@ getDriverObjects=[(each) for each in meshName if each.nodeType()=="mesh"]
 grabItems=[]
 getSurfaceObj=pm.PyNode(mainMesh[0]).node()
 getParentModelTransform=pm.listRelatives(getSurfaceObj, p=1, typ="transform")[0]
-grabDriverPoints=[(item) for item in each.vtx for each in getDriverObjects]
+grabDriverPoints=[(item) for item in pm.PyNode(each).vtx for each in getDriverObjects]
 pm.select(cl=1)
 getRigGrp=pm.group(n=str(getSurfaceObj)+"_Rigs")
 pm.select(cl=1)
@@ -21,7 +21,7 @@ pm.parent(getRigJntGrp, getRigGrp)
 pm.parent(getRigLocGrp, getRigGrp)
 pm.parent(getRigCtrlGrp, getRigGrp)
 for each in getDriverObjects:
-    for grabDriverPoints in each.vts:
+    for grabDriverPoints in pm.PyNode(each).vts:
         grabItems.append(grabDriverPoints)
 for leadVert in getDriverObjects:
     grabDriverPoints=[(each) for each in grabItems if leadVert.getPosition("world")==each.getPosition("world")]
