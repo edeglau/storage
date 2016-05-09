@@ -33,10 +33,10 @@ for leadVert in getDriverObjects:
 	pm.normalConstraint(leadVert, rotLocName)
 	rotate=pm.xform(rotLocName, q=1, ws=1, ro=1)
 	pm.delete(getrotNew)
-	transformWroldMatrix=pm.PyNode(leadVert).getPosition('world')
+	transformWroldMatrix=leadVert.getPosition('world')
 	plocName=leadVert.split('.')[0]+"_"+str(leadVert.index())+"_ploc"
-    grabDriverPoints=[(eachpoint) for eachpoint in grabItems if transformWroldMatrix==pm.PyNode(each).getPosition("world")]
-    getUVmap = polyListComponentConversion(each, fv=1, tuv=1)
+    grabDriverPoints=[(eachpoint) for eachpoint in grabItems if transformWroldMatrix==eachpoint.getPosition("world")]
+    getUVmap = polyListComponentConversion(leadVert, fv=1, tuv=1)
     getCoords=polyEditUV(getUVmap, q=1)
     plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
     getNew=spaceLocator(n=plocName)
