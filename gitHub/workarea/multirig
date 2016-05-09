@@ -48,7 +48,7 @@ for leadVert in getDriverObjects:
     pm.setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
     pm.setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
     pm.select(cl=1)
-    jointName=str(grabDriverPoints[0].split(".")[0]+"_"+str(leadVert.index())+"_jnt"
+    jointName=str(grabDriverPoints[0].split(".")[0])+"_"+str(leadVert.index())+"_jnt"
     getjoint=pm.joint(n=jointName)
     pm.xform(jointName, ws=1, t=leadVert.getPosition("world"))
     pm.parent(getjoint, getNew)
