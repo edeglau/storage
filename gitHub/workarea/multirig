@@ -24,6 +24,7 @@ pm.select(cl=1)
 pm.parent(getRigJntGrp, getRigGrp)
 pm.parent(getRigLocGrp, getRigGrp)
 pm.parent(getRigCtrlGrp, getRigGrp)
+rigPartSet=cmds.sets(n="rigParts_ctrls", co=3)
 for each in getDriverObjects:
     for grabDriverPoints in pm.PyNode(each).vts:
         grabItems.append(grabDriverPoints)
