@@ -1,7 +1,11 @@
 
 meshName=pm.ls(sl=1, fl=1)
-mainMesh=[(each) for each in meshName if each.nodeType()=="mesh"]
-getDriverObjects=[(each) for each in meshName if each.nodeType()=="mesh"]
+mainMesh=[(each) for each in meshName if pm.PyNode(each).nodeType()=="mesh"]
+getDriverObjects=[(each) for each in meshName if pm.PyNode(each).nodeType()=="transform"]
+try:
+	getDriverObjects=[(each) for each in cmds.listRelatives(getDriverObjects, c=1) if pm.PyNode(each).nodeType()=="transform"]	
+except:
+	getDriverObjects=getDriverObjects
 grabItems=[]
 getSurfaceObj=pm.PyNode(mainMesh[0]).node()
 getParentModelTransform=pm.listRelatives(getSurfaceObj, p=1, typ="transform")[0]
@@ -24,11 +28,19 @@ for each in getDriverObjects:
     for grabDriverPoints in pm.PyNode(each).vts:
         grabItems.append(grabDriverPoints)
 for leadVert in getDriverObjects:
-    grabDriverPoints=[(each) for each in grabItems if leadVert.getPosition("world")==each.getPosition("world")]
+	rotLocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_rloc"
+	getrotNew=pm.spaceLocator(n=rotLocName)
+	pm.normalConstraint(leadVert, rotLocName)
+	rotate=pm.xform(rotLocName, q=1, ws=1, ro=1)
+	pm.delete(getrotNew)
+	transformWroldMatrix=pm.PyNode(leadVert).getPosition('world')
+	plocName=leadVert.split('.')[0]+"_"+str(leadVert.index())+"_ploc"
+    grabDriverPoints=[(eachpoint) for eachpoint in grabItems if transformWroldMatrix==pm.PyNode(each).getPosition("world")]
     getUVmap = polyListComponentConversion(each, fv=1, tuv=1)
     getCoords=polyEditUV(getUVmap, q=1)
     plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
     getNew=spaceLocator(n=plocName)
+    
     select(leadVert, r=1)
     select(getNew[0], add=1)
     buildConst=pointOnPolyConstraint(leadVert, getNew, mo=0, offset=(0.0, 0.0, 0.0))
