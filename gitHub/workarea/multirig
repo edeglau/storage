@@ -45,8 +45,8 @@ for leadVert in mainMesh:
     pm.select(leadVert, r=1)
     pm.select(getNew, add=1)
     buildConst=pm.pointOnPolyConstraint(leadVert, getNew, mo=1, offset=(0.0,0.0,0.0))
-    pm.setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
-    pm.setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
+    pm.setAttr(buildConst+"."+getParentModelTransform+"U0", getCoords[0])
+    pm.setAttr(buildConst+"."+getParentModelTransform+"V0", getCoords[1])   
     pm.select(cl=1)
     jointName=str(grabDriverPoints[0].split(".")[0])+"_"+str(leadVert.index())+"_jnt"
     getjoint=pm.joint(n=jointName)
@@ -54,9 +54,9 @@ for leadVert in mainMesh:
     pm.parent(getjoint, getNew)
     getMeshName=grabDriverPoints[0].node()
     pm.skinCluster(jointName, getMeshName)
-    ctrlName=str(grabDriverPoints.split(".")[0])+"_"+str(leadVert.index())+"_Ctrl"
-    grpname=str(grabDriverPoints.split(".")[0])+"_"+str(leadVert.index())+"_grp"
-    num0, num1, num2, num3=.01, .008, .018, .014, 22
+    ctrlName=str(grabDriverPoints[0].split(".")[0])+"_"+str(leadVert.index())+"_Ctrl"
+    grpname=str(grabDriverPoints[0].split(".")[0])+"_"+str(leadVert.index())+"_grp"
+    num0, num1, num2, num3=.01, .008, .018, .014
     colour=13
     ctrlShape=baseClass.CCCircle(ctrlName, grpname, num0, num1, num2, num3 )
     pm.PyNode(ctrlShape).overrideEnabled.set(1)
@@ -68,5 +68,5 @@ for leadVert in mainMesh:
     pm.xform(grpObj[0], ws=1, t=transformWroldMatrix)
     pm.xform(grpObj[0], ws=1, ro=rotate)
     pm.parentConstraint(getNew, grpObj, mo=1)
-    pm.parentConstraint(ctrlName, getJoint, mo=1)
+    pm.parentConstraint(ctrlName, getjoint, mo=1)
     pm.parent(grpname, getRigCtrlGrp)
