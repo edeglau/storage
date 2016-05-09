@@ -44,7 +44,7 @@ for leadVert in getDriverObjects:
     pm.parent(getNew, getRigLocGrp)
     pm.select(leadVert, r=1)
     pm.select(getNew, add=1)
-    buildConst=pm.pointOnPolyConstraint(leadVert, getNew, mo=1, offset(0.0,0.0,0.0)
+    buildConst=pm.pointOnPolyConstraint(leadVert, getNew, mo=1, offset=(0.0,0.0,0.0))
     pm.setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
     pm.setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
     pm.select(cl=1)
