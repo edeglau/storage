@@ -40,16 +40,32 @@ for leadVert in getDriverObjects:
     getCoords=polyEditUV(getUVmap, q=1)
     plocName=leadVert.split(".")[0]+"_"+str(leadVert.index())+"_ploc"
     getNew=spaceLocator(n=plocName)
-    
-    select(leadVert, r=1)
-    select(getNew[0], add=1)
-    buildConst=pointOnPolyConstraint(leadVert, getNew, mo=0, offset=(0.0, 0.0, 0.0))
-    setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
-    setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
-    select(cl=1)
+    pm.parent(getNew, getRigLocGrp)
+    pm.select(leadVert, r=1)
+    pm.select(getNew, add=1)
+    buildConst=pm.pointOnPolyConstraint(leadVert, getNew, mo=1, offset(0.0,0.0,0.0)
+    pm.setAttr(buildConst[0]+"."+getObj+"U0", getCoords[0])
+    pm.setAttr(buildConst[0]+"."+getObj+"V0", getCoords[1])   
+    pm.select(cl=1)
     jointName=str(grabDriverPoints[0].split(".")[0]+"_"+str(leadVert.index())+"_jnt"
-    getjoint=joint(n=jointName)
-    xform(jointName, ws=1, t=leadVert.getPosition("world"))
-    parent(getjoint, getNew)
+    getjoint=pm.joint(n=jointName)
+    pm.xform(jointName, ws=1, t=leadVert.getPosition("world"))
+    pm.parent(getjoint, getNew)
     getMeshName=grabDriverPoints[0].node()
-    skinCluster(jointName, getMeshName)
+    pm.skinCluster(jointName, getMeshName)
+    ctrlName=str(grabDriverPoints.split(".")[0])+"_"+str(leadVert.index())+"_Ctrl"
+    grpname=str(grabDriverPoints.split(".")[0])+"_"+str(leadVert.index())+"_grp"
+    num0, num1, num2, num3=.01, .008, .018, .014, 22
+    colour=13
+    ctrlShape=baseClass.CCCircle(ctrlName, grpname, num0, num1, num2, num3 )
+    pm.PyNode(ctrlShape).overrideEnabled.set(1)
+    pm.PyNode(ctrlShape).overrideColor.set(colour)
+    #pm.setAttr(ctrlShape+".overrideEnabled
+    pm.group(n=grpname)
+    cmds.sets(ctrlName, add=rigPartSet)
+    grpObj=pm.ls(sl=1)
+    pm.xform(grpObj[0], ws=1, t=transformWroldMatrix)
+    pm.xform(grpObj[0], ws=1, ro=rotate)
+    pm.parentConstraint(getNew, grpObj, mo=1)
+    pm.parentConstraint(ctrlName, getJoint, mo=1)
+    pm.parent(grpname, getRigCtrlGrp)
