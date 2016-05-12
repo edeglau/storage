@@ -1,10 +1,17 @@
+getScenePathWorkPath=cmds.file(q=1, location=1)
+getScenePath=getScenePathWorkPath.split('/')[:1]
+getScenePath='/'.join(getScenePath)
+getScenePath=getScenePath+"/"
+getScene=cmds.file(q=1, sn=1, shn=1)
+
+
 getCachePath=cmds.workspace(listWorkspace=1)[1]+"/cache/nCache"
 
-
-getNsystems=cmds.ls(type="nCloth")
-cmds.select(getNSystems)
-getSel=cmds.ls(sl=1, fl=1)
-self.createCache_callup(getNsystems, getSel)
+def getCache(self):
+	getNsystems=cmds.ls(type="nCloth")
+	cmds.select(getNSystems)
+	getSel=cmds.ls(sl=1, fl=1)
+	self.createCache_callup(getNsystems, getSel)
 
 def createCache_callup(self, getNSystems, getSel):
 	maya.mel.eval('setCacheEnable 0 0 {};')
@@ -12,16 +19,26 @@ def createCache_callup(self, getNSystems, getSel):
 	maya.mel.eval(command)
 	maya.mel.eval('setCacheEnable 1 0 {};')
 
-
-
-
-def checkFile(self, interrogateName):
+def checkCacheFile(self, interrogateName):
 	path=getCachePath
 	grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
 	try:
 		findFiles=[(each) for each in files if each.split("_")[-1].split(".")[0].isdigit()]
 		getLast=max(findFiles)
 		subname=getLast.split("_")[-1].split("_")[0]
+		getNum="%04d" %(int(subname)+1,)
+		newName=interrogateName+getNum
+	except:
+		newName=interrogateName+0000
+	return newName
+
+def checkFile(self):
+	interrogateName=getScenePath.split(".")[0]
+	grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
+	try:
+		findFiles=[(each) for each in files if each.split(".")[-2:-1][0].isdigit()]
+		getLast=max(findFiles)
+		subname=getLast.split(".")[-2:-1][0]
 		getNum="%04d" %(int(subname)+1,)
 		newName=interrogateName+getNum
 	except:
