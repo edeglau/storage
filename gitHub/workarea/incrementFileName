@@ -1,5 +1,22 @@
+getCachePath=cmds.workspace(listWorkspace=1)[1]+"/cache/nCache"
+
+
+getNsystems=cmds.ls(type="nCloth")
+cmds.select(getNSystems)
+getSel=cmds.ls(sl=1, fl=1)
+self.createCache_callup(getNsystems, getSel)
+
+def createCache_callup(self, getNSystems, getSel):
+	maya.mel.eval('setCacheEnable 0 0 {};')
+	command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "0", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
+	maya.mel.eval(command)
+	maya.mel.eval('setCacheEnable 1 0 {};')
+
+
+
+
 def checkFile(self, interrogateName):
-	path='/'/'
+	path=getCachePath
 	grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
 	try:
 		findFiles=[(each) for each in files if each.split("_")[-1].split(".")[0].isdigit()]
