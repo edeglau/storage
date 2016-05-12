@@ -1,0 +1,12 @@
+def checkFile(self, interrogateName):
+	path='/'/'
+	grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
+	try:
+		findFiles=[(each) for each in files if each.split("_")[-1].split(".")[0].isdigit()]
+		getLast=max(findFiles)
+		subname=getLast.split("_")[-1].split("_")[0]
+		getNum="%04d" %(int(subname)+1,)
+		newName=interrogateName+getNum
+	else:
+		newName=interrogateName+0000
+	return newName
