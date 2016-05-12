@@ -7,6 +7,6 @@ def checkFile(self, interrogateName):
 		subname=getLast.split("_")[-1].split("_")[0]
 		getNum="%04d" %(int(subname)+1,)
 		newName=interrogateName+getNum
-	else:
+	except:
 		newName=interrogateName+0000
 	return newName
