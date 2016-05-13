@@ -57,14 +57,14 @@ def blendWeigthExecutionCallup(self, CVrange, weightList, blendShapeInputCurves,
     setAttrDict={}
     for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
         for blendConnection, eachCurve in blendShapeInputCurves.items():
-            next_item=ls(eachCurve)[0]
+            next_item=pm.ls(eachCurve)[0]
             if next_item in getSel:
-                for eachcv in next_item.cv:
-                findName=eachcv.name()
-                builtAttribute=blendConnection+findName.split('.cv')[1]
-                if eachCV.index == eachCVInCaptureRange:
-                    makeDict={builtAttribute:targetWeightValue}
-                    setAttrDict.update(makeDict)
+                for eachcv in pm.PyNode(next_item).cv:
+                	findName=eachcv.split('.cv')[1]
+                	builtAttribute=blendConnection+findName
+                	if eachCV.index == eachCVInCaptureRange:
+	                    makeDict={builtAttribute:targetWeightValue}
+	                    setAttrDict.update(makeDict)
     for key, value in setAttrDict.index():
         cmds.setAttr(key, value)
 
