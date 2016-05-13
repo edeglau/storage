@@ -14,10 +14,17 @@ def getCache(self):
 	self.createCache_callup(getNsystems, getSel)
 
 def createCache_callup(self, getNSystems, getSel):
-	maya.mel.eval('setCacheEnable 0 0 {};')
+	#maya.mel.eval('setCacheEnable 0 0 {};')
+	for each in getNSystems:
+		try:
+			grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
+			for cacheBlendsFound in grabCacheBlendsL
+				grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
+				for item in grabCacheFiles:
+					cmds.setAttr(cacheBlendsFound+"."+item, 0)
 	command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "0", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
 	maya.mel.eval(command)
-	maya.mel.eval('setCacheEnable 1 0 {};')
+	#maya.mel.eval('setCacheEnable 1 0 {};')
 
 def checkCacheFile(self, interrogateName):
 	path=getCachePath
