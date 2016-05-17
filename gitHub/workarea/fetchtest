@@ -591,11 +591,11 @@ class fetchAttrs(object):
     def change_attr_output(self):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
-        getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)  
+        getFirstattr=pm.optionMenu(self.attributeFirstSel, q=1, v=1)  
         cmds.getAttr(getFirstattr)
         try:
             getChangeAttr=cmds.getAttr(getFirstattr)
-            getTypeAttr=getAttr(getFirstattr, type=1)
+            getTypeAttr=pm.getAttr(getFirstattr, type=1)
             pass
         except:
             print "Can't obtain value for "+getFirstattr
@@ -611,7 +611,7 @@ class fetchAttrs(object):
     def change_attr_output_obj(self):
         '''----------------------------------------------------------------------------------
         ----------------------------------------------------------------------------------''' 
-        getFirstattr=optionMenu(self.objAtt, q=1, v=1)
+        getFirstattr=pm.optionMenu(self.objAtt, q=1, v=1)
         cmds.select(str(getFirstattr.split(".")[0]), r=1)
         try:
             getAttr=cmds.getAttr(getFirstattr)
