@@ -422,7 +422,7 @@ class fetchAttrs(object):
                 for item in Attrs:
                     newItem=each+"."+item
                     collectAttr.append(newItem) 
-        getChangeAttr=getAttr(collectAttr[0]) 
+        getChangeAttr=cmds.getAttr(collectAttr[0]) 
         menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
         if menuItems:
             cmds.deleteUI(menuItems)       
@@ -558,21 +558,23 @@ class fetchAttrs(object):
             getSel=pm.ls(getSel[0])
             find=cmds.menuItem(each, q=1, label=1)
             try:
-                foundAttr=getattr(getSel[0],find).get()
-            except:
-                pass
+            	theAttr=getSel[0]+'.'+find
+            	foundAttr=pm.PyNode(theAttr).get()
+                # foundAttr=getattr(getSel[0],find).get()
             if foundAttr == values:
                 print foundAttr
-                collectAttr.append(find)    
+                collectAttr.append(find)                 
+            except:
+                pass
         if len(collectAttr)>0:
         	pass
         else:
         	print "cannot find this attribute on anything"
         	return                
         cmds.optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0]) 
-        newAttr=pm.getattr(getSel[0],collectAttr[0])
+        newAttr=getattr(pm.PyNode(getSel[0]),collectAttr[0]).get()
         cmds.select(newAttr, add=1)
-        getChangeAttr=pm.getattr(getSel[0],collectAttr[0]).get() 
+        getChangeAttr=getattr(pm.PyNode(getSel[0]),collectAttr[0]).get() 
         menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
         if menuItems:
             cmds.deleteUI(menuItems)        
