@@ -516,7 +516,7 @@ class fetchAttrs(object):
         getListAttr=sorted(collectAttr) 
         cmds.optionMenu(self.objAtt, e=1) 
         for each in getListAttr:
-            menuItem(label=each, parent=self.objAtt)  
+            cmds.menuItem(label=each, parent=self.objAtt)  
 
     def _find_value_obj(self, getFirstattr, values):
         try:
