@@ -1,4 +1,5 @@
-from pymel.core import *
+#from pymel.core import *
+import pymel.core as pm
 import maya.mel
 from string import *
 from functools import partial
@@ -18,9 +19,9 @@ class fetchAttrs(object):
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         try:
-            getSel=ls(sl=1, fl=1)      
+            getSel=pm.ls(sl=1, fl=1)      
             getFirst=getSel[0]
-            getFirstAttr=listAttr (getFirst, w=1, a=1, s=1, u=1)      
+            getFirstAttr=pm.listAttr (getFirst, w=1, a=1, s=1, u=1)      
             getFirstAttr=sorted(getFirstAttr)               
         except:
             getFirst=[""]  
@@ -30,7 +31,7 @@ class fetchAttrs(object):
 #        global attributeFirstSel
 #        global makeAttr   
         window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=550)
-        menuBarLayout(h=30)
+        cmds.menuBarLayout(h=30)
         stringField='''"Fetch Attribute" (launches window)an interface to query items attributes that
     you can hunt by name portion or values. You can also change attribute value through this
     window if number values apply. Can also query scene for all objects with a particular attribute
@@ -82,62 +83,62 @@ class fetchAttrs(object):
             Repopulates the drop down menu with all attributes on selected
                 object that matches this value'''
         self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))         
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=480)
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
-        separator(h=10, p='selectArrayColumn')
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=480)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
         cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Attributes on Object', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
-        gridLayout('valuebuttonlayout', p='title1', numberOfColumns=5, cellWidthHeight=(98, 20))
-        text(label="Att Value:", p='valuebuttonlayout', align="left", w=50)
-        self.attrVal=text(label="Select from drop down", p='valuebuttonlayout', w=100)
-        text(label="Att Type:", p='valuebuttonlayout', align="right", w=50)
-        self.attrType=text(label="", p='valuebuttonlayout', w=100)       
-        button (label='Refresh Selection', p='valuebuttonlayout',  w=100, command = lambda *args:self._refresh())
-        gridLayout('srch4attButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-        text(label="Search:", align="left", w=50) 
-        findAttr=textField(AttributeName, text="Enter name EG:'translate'")
-        cmds.button (label='Fetch Attribute Name',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_att(getName=textField(findAttr, q=1, text=1)))
-        text(label="Search:", align="left", w=50) 
-        valueAttr=textField(text="Enter value EG:'1.0'")
-        button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=optionMenu(self.attributeFirstSel, q=1, ill=1), values=textField(valueAttr, q=1, text=1)))
-        gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
-        self.attributeFirstSel=optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
+        cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=5, cellWidthHeight=(98, 20))
+        cmds.text(label="Att Value:", p='valuebuttonlayout', align="left", w=50)
+        self.attrVal=cmds.text(label="Select from drop down", p='valuebuttonlayout', w=100)
+        cmds.text(label="Att Type:", p='valuebuttonlayout', align="right", w=50)
+        self.attrType=cmds.text(label="", p='valuebuttonlayout', w=100)       
+        cmds.button (label='Refresh Selection', p='valuebuttonlayout',  w=100, command = lambda *args:self._refresh())
+        cmds.gridLayout('srch4attButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Search:", align="left", w=50) 
+        findAttr=cmds.textField(AttributeName, text="Enter name EG:'translate'")
+        cmds.button (label='Fetch Attribute Name',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_att(getName=xmsa.textField(findAttr, q=1, text=1)))
+        cmds.text(label="Search:", align="left", w=50) 
+        valueAttr=cmds.textField(text="Enter value EG:'1.0'")
+        cmds.button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, ill=1), values=cmds.textField(valueAttr, q=1, text=1)))
+        cmds.gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
+        self.attributeFirstSel=cmds.optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
         for each in getFirstAttr:
-            menuItem( label=each)
-        gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-        text(label="Change Value:", align="left", w=50)        
-        makeAttr=textField(w=150, text="enter value EG:'50'")
-        button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=textField(makeAttr, q=1, text=1)))
+            cmds.menuItem( label=each)
+        cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Change Value:", align="left", w=50)        
+        makeAttr=cmdstextField(w=150, text="enter value EG:'50'")
+        cmds.button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=cmds.textField(makeAttr, q=1, text=1)))
         #search object by attribute
         cmds.frameLayout('title2', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Objects by Attribute', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
-        gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(98, 20))          
-        text(label="Att Value:", p='valuebuttonlayout2', align="left", w=50)
-        self.attrValObj=text(label="Select from drop down", p='valuebuttonlayout2', w=100)
+        cmds.gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(98, 20))          
+        cmds.text(label="Att Value:", p='valuebuttonlayout2', align="left", w=50)
+        self.attrValObj=cmds.text(label="Select from drop down", p='valuebuttonlayout2', w=100)
         text(label="Att Type:", p='valuebuttonlayout2', align="right", w=50)
         self.attrTypeObj=text(label="", p='valuebuttonlayout2', w=100) 
         self.select=text(label="select on", p='valuebuttonlayout2', al="right", w=100)  
         cmds.popupMenu(button=1)
         self.selectOn=cmds.menuItem  (label='select on', command = self._change_to_select_on)
         self.selectOff=cmds.menuItem  (label='select off', command = self._change_to_select_off)              
-        gridLayout('findbyattrButtonLayout', p='title2', numberOfColumns=3, cellWidthHeight=(148, 20))
-        text(label="Search:", align="left", w=50) 
-        findAttrObj=textField(AttributeName, text="Enter name EG:'translate'")
-        button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=textField(findAttrObj, q=1, text=1)))
-        text(label="Search:", align="left", w=50)
-        valueAttrObj=textField(text="Enter value EG:'1.0'")
-        button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=optionMenu(self.objAtt, q=1, ill=1), values=textField(valueAttrObj, q=1, text=1)))
-        gridLayout('findObjByAttrGLayout', p='title2', numberOfColumns=1, cellWidthHeight=(445, 20))
-        self.objAtt=optionMenu( label='Found', cc=lambda *args:self.change_attr_output_obj())
+        cmds.gridLayout('findbyattrButtonLayout', p='title2', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Search:", align="left", w=50) 
+        findAttrObj=cmds.textField(AttributeName, text="Enter name EG:'translate'")
+        cmds.button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=cmds.textField(findAttrObj, q=1, text=1)))
+        cmds.text(label="Search:", align="left", w=50)
+        valueAttrObj=cmds.textField(text="Enter value EG:'1.0'")
+        cmds.button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=cmds.optionMenu(self.objAtt, q=1, ill=1), values=cmds.textField(valueAttrObj, q=1, text=1)))
+        cmds.gridLayout('findObjByAttrGLayout', p='title2', numberOfColumns=1, cellWidthHeight=(445, 20))
+        self.objAtt=cmds.optionMenu( label='Found', cc=lambda *args:self.change_attr_output_obj())
         for each in getFirstAttr:
-            menuItem( label=getSel[0]+"."+each)
-        gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=4, cellWidthHeight=(115, 20))
-        text(label="Change Value:", align="left", w=50)        
-        makeAttrObj=textField(w=150, text="enter value EG:'50'")      
-        button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=optionMenu(self.objAtt, q=1, v=1), makeAttr=textField(makeAttrObj, q=1, text=1)))
-        button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=textField(makeAttrObj, q=1, text=1)))
-        showWindow(window)  
+            cmds.menuItem( label=getSel[0]+"."+each)
+        cmds.gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=4, cellWidthHeight=(115, 20))
+        cmds.text(label="Change Value:", align="left", w=50)        
+        makeAttrObj=cmds.textField(w=150, text="enter value EG:'50'")      
+        cmds.button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=cmds.optionMenu(self.objAtt, q=1, v=1), makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        cmds.button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        cmds.showWindow(window)  
         
     def helpWin(self, stringField):
         '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -149,15 +150,15 @@ class fetchAttrs(object):
         if cmds.window(winName, exists=True):
                 deleteUI(winName)
         window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=400 )
-        menuBarLayout(h=30)
-        rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
-        frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
-        columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        setParent ('selectArrayColumn')
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 400)) 
         self.list=cmds.scrollField( editable=False, wordWrap=True, ebg=1,bgc=[0.11, 0.15, 0.15], w=700, text=str(stringField))
-        showWindow(window)
+        cmds.showWindow(window)
 
 
 
