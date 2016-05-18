@@ -105,7 +105,7 @@ class safeRegen(QtGui.QMainWindow):
 				pass
 			self.incrementalSave()
 			try:
-				self.createCache()
+				self.createHCache()
 			except:
 				return
 			self.playblst()			
@@ -129,7 +129,7 @@ class safeRegen(QtGui.QMainWindow):
 			self.playblst()	
 		elif queryColor=='cache &+play all hr':
 			try:
-				self.createCache()
+				self.createHCache()
 			except:
 				return
 			self.playblst()	
@@ -138,28 +138,62 @@ class safeRegen(QtGui.QMainWindow):
 				self.createCacheselected()
 			except:
 				return
-			self.playblst()	
-
-
+			self.playblst()
+	
+	def incrementalSave(self):
+		maya.mel.eval('IncrementAndSave;')
+		getScenePath=cmds.file(q=1, location=1)
+		print "file save: "+getScenePath
+	
+	
+	def createCacheselected(self):
+		getSel=cmds.ls(sl=1, fl=1)
+		self.createCache_callup(getNsystems)
+		
+		
+	def createHCache(self):
+		getNsystems=cmds.ls(type="hairSystem")
+		cmds.select(getNSystems)
+		getSel=cmds.ls(sl=1, fl=1)
+		self.createCache_callup(getNsystems)
+		
 	def getCache(self):
 		getNsystems=cmds.ls(type="nCloth")
 		cmds.select(getNSystems)
 		getSel=cmds.ls(sl=1, fl=1)
-		self.createCache_callup(getNsystems, getSel)
+		self.createCache_callup(getNsystems)
 	
-	def createCache_callup(self, getNSystems, getSel):
+	def createCache_callup(self, getNSystems):
 		#maya.mel.eval('setCacheEnable 0 0 {};')
-		getScene, getShot, getShotScene, getSceneName=self.retrieveShotScene()
-		cachename=getNsystems[0]
-		for each in getNSystems:
-			try:
-				grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
-				for cacheBlendsFound in grabCacheBlendsL
-					grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
-					for item in grabCacheFiles:
-						cmds.setAttr(cacheBlendsFound+"."+item, 0)
-		command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "0", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
-		maya.mel.eval(command)
+		interroName=getNSystems[0]+"_"
+		newName=self.checkCacheFile(interroName)
+		findType=cmds.nodeType(getNSystems[0])
+		# getScene, getShot, getShotScene, getSceneName=self.retrieveShotScene()
+		# cachename=getNsystems[0]
+		if findType=="hairSystem":
+			for each in getNSystems:
+				try:
+					grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
+					for cacheBlendsFound in grabCacheBlendsL
+						grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
+						for item in grabCacheFiles:
+							cmds.setAttr(cacheBlendsFound+"."+item, 0)
+				except:
+					pass
+			command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "1", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
+			maya.mel.eval(command)
+		if findType=="nCloth":
+			for each in getNSystems:
+				try:
+					grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
+					for cacheBlendsFound in grabCacheBlendsL
+						grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
+						for item in grabCacheFiles:
+							cmds.setAttr(cacheBlendsFound+"."+item, 0)
+				except:
+					pass
+			command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "0", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
+			maya.mel.eval(command)			
 		#maya.mel.eval('setCacheEnable 1 0 {};')
 		# command='doCreateNcloth 5{"2", "1", "10", "OneFile", "1", "", "1", "", "0", "replace", "0", "1", "1", "0", "1", "mcx"};'
 
