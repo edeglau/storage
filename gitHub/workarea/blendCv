@@ -35,7 +35,7 @@ class blendShapeCurveWEights():
 		self.window=cmds.window(self.winName, title=self.winTitle, tbm=1, w=380, h=300)
 		
 		cmds.rowColumnLayout('selectArrWin' , nr=1, w=300, h=300)
-		cmds.frameLayout("lrow", label="", lv=0, nch=1, borderStyle='out', bv=1,, p='selectArrWin')
+		cmds.frameLayout("lrow", label="", lv=0, nch=1, borderStyle='out', bv=1, p='selectArrWin')
 		
 		self.blendShape_node=cmds.optionMenu(label="blendshape", w=150)
 		for each in blendsShapes:
@@ -43,7 +43,7 @@ class blendShapeCurveWEights():
 		cmds.columnLayout()
 		self.curveGUI=cmds.gradientControlNoAttr("falloffCurve", h=90)
 		
-		cmds.button(label"set", command=lambda *args:self.execute_go())
+		cmds.button(label="set", command=lambda *args:self.execute_go())
 		cmds.showWindow()
 
 	def exectute_go(self):
@@ -55,12 +55,12 @@ class blendShapeCurveWEights():
 	    self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 	
 	
-	def getBlendShapeNodeSelected(self)
+	def getBlendShapeNodeSelected(self):
 	    blendName=cmds.optionMenu(self.blendShape_Node, q=1, sl=1)
 	    getBlendShape=cmds.optionMenu(self.blendShape_Node, q=1, value=1)
 	    return getBlendShape
 	    
-	def blendWeigthExecutionCallup(self, CVrange, weightList, blendShapeInputCurves, getSel)
+	def blendWeigthExecutionCallup(self, CVrange, weightList, blendShapeInputCurves, getSel):
 	    setAttrDict={}
 	    for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
 	        for blendConnection, eachCurve in blendShapeInputCurves.items():
@@ -75,7 +75,7 @@ class blendShapeCurveWEights():
 	    for key, value in setAttrDict.index():
 	        cmds.setAttr(key, value)
 	
-	def buildWeigthBucket(self, getSel)
+	def buildWeigthBucket(self, getSel):
 	    getCurveForFindingCV=pm.ls(getSel)[0]
 	    endCV=len(pm.PyNode(getCurveForFindingCV).cv)
 	    getCVrange=arange(endCV, 1)
@@ -103,7 +103,7 @@ class blendShapeCurveWEights():
 	    for eachout in xrange(len(getDest)-1):
 	        current_item, next_item=getDest[eachout], getDest[eachout+1]
 	        if "outputGeometry" in current_item:
-	        outPutCurve.append(next_item)
+	        	outPutCurve.append(next_item)
 	    for eachInput, curveitem in map(None, setInputList, outPutCurve):
 	        createDict={eachInput:curveitem}
 	        blendShapeInputs.update(createDict)
