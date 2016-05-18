@@ -44,6 +44,7 @@ class blendShapeCurveWeights():
 		self.curveGUI=cmds.gradientControlNoAttr("falloffCurve", h=90)
 		
 		cmds.button(label="set", command=lambda *args:self.execute_go())
+		cmds.button(label="reset", command=lambda *args:self.reset_weight())
 		cmds.showWindow()
 
 	def execute_go(self):
@@ -61,6 +62,9 @@ class blendShapeCurveWeights():
 	    return getBlendShape
 	    
 	def blendWeightExecutionCallup(self, getCVrange, weightList, blendShapeInputCurves, getSel):
+		'''>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>..
+		cv weight name in blendshape template: cmds.select('blendShape1.inputTarget[1].inputTargetGroup[0].targetWeights[4]')
+		>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>'''
 	    setAttrDict={}
 	    for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
 	        for blendConnection, eachCurve in blendShapeInputCurves.items():
@@ -74,7 +78,35 @@ class blendShapeCurveWeights():
 		                    setAttrDict.update(makeDict)
 	    for key, value in setAttrDict.items():
 	        cmds.setAttr(key, value)
-	
+	        
+	def reset_weight(self):
+		getSel=[]
+		getSel=cmds.ls(sl=1, fl=1)
+		weightValue=0.0
+		getcurveForFindingCV=pm.ls(getSel[0])[0]
+		endCV=len(pm.PyNode(getCurveForFindingCV).cv)
+		getCVrange=arange(0, endCV, 1)
+		getBlendShape=self.getBlendShapeNodeSelected()
+		blendShapeInputs=self.makeBlendShapeAttrDictionary(getBlendShape, getSel)
+		weightList=[]
+		for each in range(len(getCVrange)):
+			weightList.append(weightValue)
+		setAttrDict={}
+		for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
+			for blendConnection, eachCurve in blendShapeInputs.items():
+				next_item=pm.ls(eachCurve)[0]
+	            if next_item in getSel:
+	                for eachCV in pm.PyNode(next_item).cv:
+	                	findName=eachCV.split('.cv')[1]
+	                	builtAttribute=blendConnection+findName
+	                	if eachCV.index() == eachCVInCaptureRange:
+		                    makeDict={builtAttribute:targetWeightValue}
+		                    setAttrDict.update(makeDict)
+	    for key, value in setAttrDict.items():
+	        cmds.setAttr(key, value)
+		
+		
+		
 	def buildWeightBucket(self, getSel):
 	    getCurveForFindingCV=pm.ls(getSel)[0]
 	    endCV=len(pm.PyNode(getCurveForFindingCV).cv)
