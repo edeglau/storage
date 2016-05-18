@@ -2571,3 +2571,31 @@ getLAST=getSel[-1:]
 for each in getNEWTONOBJ:
     cmds.select(getLAST, r=1)
     getNewton=cmds.newton(each)
+
+
+
+
+
+#get type of files in path
+path="/"
+if [(os.path.join(dirpath, name)) for dirpath, dirnames, files in os.walk(path) for name in files if name.lower().endswith('.tif')]:
+	format = '.tif'
+	
+#getList of frames
+getList=[(file.split(format)[0]) for root, dirs, files in os.walk(latestFolder) for file in files if file.endswith(format)]
+	
+#findingNumbers
+frameEndNum = "%04d"%(int(getFrameRange[1].split(".")[0]),)
+endFrame=re.sub("\d+$", "", getList[-1]+frameEndNum+format
+
+
+#if file is existing
+fullEndPath=path+endFrame
+if os.path.isfile(fullEndPath) ==False:
+	print "not here"
+	
+	
+	
+#getDictionaries
+getFrameRange=[str(shtime.get('aname'))]
+
