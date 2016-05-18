@@ -1,0 +1,11 @@
+import os, PyQt4, sys, glob, shutil
+import getpass
+import webbrowser
+#import win32clipboard
+from PyQt4 import QtGui, QtCore, Qt
+from PyQt4.QtCore import SIGNAL
+#from PyQt4.QtGui import *
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QKeySequence, QPushButton, QClipboard, QCheckBox, QHBoxLayout, \
+QPixmap, QLineEdit, QListWidget, QTextEdit, QComboBox
+import re
+getUser=getpass.getuser()
