@@ -69,7 +69,7 @@ class blendShapeCurveWeights():
 	                for eachcv in pm.PyNode(next_item).cv:
 	                	findName=eachcv.split('.cv')[1]
 	                	builtAttribute=blendConnection+findName
-	                	if eachCV.index == eachCVInCaptureRange:
+	                	if eachCV.index() == eachCVInCaptureRange:
 		                    makeDict={builtAttribute:targetWeightValue}
 		                    setAttrDict.update(makeDict)
 	    for key, value in setAttrDict.items():
