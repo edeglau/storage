@@ -76,8 +76,8 @@ class blendShapeCurveWEights():
 	        cmds.setAttr(key, value)
 	
 	def buildWeigthBucket(self, getSel)
-	    getCurveForFindingCV=ls(getSel)[0]
-	    endCV=len(getCurveForFindingCV.cv)
+	    getCurveForFindingCV=pm.ls(getSel)[0]
+	    endCV=len(pm.PyNode(getCurveForFindingCV).cv)
 	    getCVrange=arange(endCV, 1)
 	    minWeightValue, maxWeightValue=0.0, 1.0
 	    weightList=[]
