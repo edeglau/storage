@@ -51,7 +51,7 @@ class blendShapeCurveWeights():
 	    getShape, getTransform=self.getTransformsAndShapes(getSel)
 	    getBlendShape=self.getBlendShapeNodeSelected()
 	    blendShapeInputCurves=self.makeBlendShapeAttrDictionary(getBlendShape, getSel)
-	    weightList, getCVrange=self.buildWeightBucket(getTransforms)
+	    weightList, getCVrange=self.buildWeightBucket(getTransform)
 	    self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 	
 	
