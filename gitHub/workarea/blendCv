@@ -52,7 +52,7 @@ class blendShapeCurveWeights():
 	    getBlendShape=self.getBlendShapeNodeSelected()
 	    blendShapeInputCurves=self.makeBlendShapeAttrDictionary(getBlendShape, getSel)
 	    weightList, getCVrange=self.buildWeightBucket(getTransform)
-	    self.blendWeigthExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTransform)
+	    self.blendWeightExecutionCallup(getCVrange, weightList, blendShapeInputCurves, getTRansforms)
 	
 	
 	def getBlendShapeNodeSelected(self):
@@ -60,7 +60,7 @@ class blendShapeCurveWeights():
 	    getBlendShape=cmds.optionMenu(self.blendShape_Node, q=1, value=1)
 	    return getBlendShape
 	    
-	def blendWeigthExecutionCallup(self, CVrange, weightList, blendShapeInputCurves, getSel):
+	def blendWeightExecutionCallup(self, getCVrange, weightList, blendShapeInputCurves, getSel):
 	    setAttrDict={}
 	    for eachCVInCaptureRange, targetWeightValue in map(None, getCVrange, weightList):
 	        for blendConnection, eachCurve in blendShapeInputCurves.items():
@@ -72,7 +72,7 @@ class blendShapeCurveWeights():
 	                	if eachCV.index == eachCVInCaptureRange:
 		                    makeDict={builtAttribute:targetWeightValue}
 		                    setAttrDict.update(makeDict)
-	    for key, value in setAttrDict.index():
+	    for key, value in setAttrDict.items():
 	        cmds.setAttr(key, value)
 	
 	def buildWeightBucket(self, getSel):
