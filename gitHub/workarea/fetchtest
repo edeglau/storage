@@ -392,15 +392,15 @@ class fetchAttrs(object):
         menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
         if menuItems:
             cmds.deleteUI(menuItems)        
-        newSel=ls(sl=1, fl=1)
-        getListAttr=listAttr (newSel[0], w=1, a=1, s=1,u=1)
+        newSel=pm.ls(sl=1, fl=1)
+        getListAttr=pm.listAttr (newSel[0], w=1, a=1, s=1,u=1)
         getListAttr=sorted(getListAttr) 
         cmds.optionMenu(self.attributeFirstSel, e=1) 
         for each in getListAttr:
             menuItem(label=each, parent=self.attributeFirstSel)     
                 
     def _get_attr(self, getFirstattr):
-        getSel=ls(sl=1, fl=1)        
+        getSel=pm.ls(sl=1, fl=1)        
         newAttr=getattr(getSel[0],getFirstattr)
         getChangeAttr=getattr(getSel[0],getFirstattr).get()
         select(newAttr, add=1)
@@ -441,7 +441,7 @@ class fetchAttrs(object):
         else:
             getFirstattr=[getFirstattr]
         print getFirstattr
-        getSel=ls(sl=1, fl=1)        
+        getSel=pm.ls(sl=1, fl=1)        
         collectAttr=[]
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
@@ -463,7 +463,7 @@ class fetchAttrs(object):
 
     def _find_attV1(self, getFirstattr, attribute):     
         try:
-            getSel=ls(sl=1, fl=1)      
+            getSel=pm.ls(sl=1, fl=1)      
             getFirst=getSel[0]
         except:
             print "must select something"
@@ -472,7 +472,7 @@ class fetchAttrs(object):
             getFirstattr=getFirstattr.split(",")
         else:
             getFirstattr=[getFirstattr]
-        getSel=ls(sl=1, fl=1)        
+        getSel=pm.ls(sl=1, fl=1)        
         collectAttr=[]
         for each in getFirstattr:
             find=menuItem(each, q=1, label=1)
