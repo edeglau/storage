@@ -103,10 +103,13 @@ class fetchAttrs(object):
         cmds.text(label="Search:", align="left", w=50) 
         valueAttr=cmds.textField(text="Enter value EG:'1.0'")
         cmds.button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, ill=1), values=cmds.textField(valueAttr, q=1, text=1)))
-        cmds.gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
-        self.attributeFirstSel=cmds.optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
+        # cmds.gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
+        cmd.frameLayout('gridBuildLayout', lv=1, p='title1', w=550)
+        cmds.rowLayout('listBuildLayout', numberOfColumns=2, p='gridBuildLayout', w=550, cw2=(380, 60), columnAttach=[(1, 'left', 0)])
+        self.attributeFirstSel=cmds.optionMenu( label='Find', w=380, cc=lambda *args:self.change_attr_output())
         for each in getFirstAttr:
             cmds.menuItem( label=each)
+        cmds.button(label='Sel',p='listBuildLayout', w=60, command=lambda *args:self._sel_attr(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
         cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
         cmds.text(label="Change Value:", align="left", w=50)        
         makeAttr=cmds.textField(w=150, text="enter value EG:'50'")
@@ -398,7 +401,10 @@ class fetchAttrs(object):
         cmds.optionMenu(self.attributeFirstSel, e=1) 
         for each in getListAttr:
             menuItem(label=each, parent=self.attributeFirstSel)     
-                
+            
+    def _sel_attr(self,getFirstattr):  
+    	cmds.select(getFirstattr)
+    	
     def _get_attr(self, getFirstattr):
         getSel=pm.ls(sl=1, fl=1)        
         newAttr=getattr(getSel[0],getFirstattr)
