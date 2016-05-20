@@ -442,6 +442,41 @@ class fetchAttrs(object):
         self.count_attr_output(getChangeAttr)
         print getChangeAttr
 
+    def _find_type(self):       
+    	getFirstAttr=cmds.optionMenu(self.attributeFirstSel, q=1, ill=1)
+    	getTypeattr=cmds.optionMenu(self.typeAttr, q=1, v=1)
+        getSel=cmds.ls(sl=1, fl=1)
+        if "," in getFirstAttr:
+            getFirstAttr=getFirstAttr.split(", ")
+        else:
+            getFirstAttr=[getFirstAttr]
+        collectAttr=[]
+        for each in getSel:
+            print each
+            Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1)]
+            for item in Attrs:
+                newItem=each+"."+item
+                try:
+                	if cmds.getAttr(newItem, type=1)==getTypeattr:
+                		print "adding "+newItem+" "+getTypeattr
+		                collectAttr.append(newItem) 
+		        except:
+		        	print "not" +newItem
+		        	try:
+		        		print cmds.getAttr(newItem, type=1)
+		       		except:
+		       			pass
+		       		pass
+        getChangeAttr=cmds.getAttr(collectAttr[0]) 
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr) 
+        cmds.optionMenu(self.attributeFirstSel, e=1) 
+        for each in getListAttr:
+            cmds.menuItem(label=each, parent=self.attributeFirstSel)    
+        self.count_attr_output(getChangeAttr)
+        print getChangeAttr
 
     def _find_attV0(self, getFirstattr, attribute):         
         print getFirstattr
