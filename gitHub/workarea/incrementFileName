@@ -37,6 +37,8 @@ saveList=(
 	'cache &+play all clth',
 	'cache &+play all hr',
 	'cache &+play sel',
+	'cache all clth',
+	'cache all hr',
 	)
 	
 
@@ -139,6 +141,16 @@ class safeRegen(QtGui.QMainWindow):
 			except:
 				return
 			self.playblst()
+		elif queryColor=='cache all clth':
+			try:
+				self.createCache()
+			except:
+				return
+		elif queryColor=='cache all hr':
+			try:
+				self.createHCache()
+			except:
+				return
 	
 	def incrementalSave(self):
 		maya.mel.eval('IncrementAndSave;')
