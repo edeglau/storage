@@ -10,7 +10,21 @@ OSplatform=platform.platform()
 
 import Tools
 toolClass=Tools.ToolFunctions()
-
+dataTypeAttr=[
+	'bool',
+	'byte',
+	'double',
+	'doubleAngle',
+	'doubleLinear',
+	'enum',
+	'float',
+	'integer',
+	'long',
+	'short',
+	'string',
+	'vector',
+	'TdataCompound'
+	]
 class fetchAttrs(object):
 	
     def _findAttr_window(self, arg=None): 
@@ -104,9 +118,15 @@ class fetchAttrs(object):
         valueAttr=cmds.textField(text="Enter value EG:'1.0'")
         cmds.button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, ill=1), values=cmds.textField(valueAttr, q=1, text=1)))
         # cmds.gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
+        cmd.frameLayout('fetchAttTypeTop', lv=1, p='title1', w=550)
+        cmds.rowLayout('fetchAttTypeTopLayout', numberOfColumns=2, p='fetchAttTypeTop', w=550, cw2=(350, 60), columnAttach=[(1, 'left', 0)])
+        self.typeAttr=cmds.optionMenu( label='FindByType', w=350)
+        for each in dataTypeAttr:
+            cmds.menuItem( label=each)
+        cmds.button(label='getType',p='listBuildLayout', w=60, command=lambda *args:self._find_type())
+        self.attributeFirstSel=cmds.optionMenu( label='Find', w=380, cc=lambda *args:self.change_attr_output())
         cmd.frameLayout('gridBuildLayout', lv=1, p='title1', w=550)
         cmds.rowLayout('listBuildLayout', numberOfColumns=2, p='gridBuildLayout', w=550, cw2=(380, 60), columnAttach=[(1, 'left', 0)])
-        self.attributeFirstSel=cmds.optionMenu( label='Find', w=380, cc=lambda *args:self.change_attr_output())
         for each in getFirstAttr:
             cmds.menuItem( label=each)
         cmds.button(label='Sel',p='listBuildLayout', w=60, command=lambda *args:self._sel_attr(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
