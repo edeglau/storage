@@ -25,11 +25,32 @@ class pllstapp(QGui.QWidget):
     	self.layout.addLayout(self.buttonslayout)
     	self.setLayout(self.layout)
     	
-    def appendTo(self, List, selection):
+    def appendToV1(self, List, selection):
     	getName=self.a_spinner
     	theName=getName.currentText()
     	getPth=str(List.get(str(theName)))
     	mainFunct=ManagerMain()
     	mainFunct.addToFile(getPth, selection)
     	
+    def appendTo(self, List, selection):
+    	getName=self.a_spinner
+    	theName=getName.currentText()
+    	getPth=str(List.get(str(theName)))
+    	self.addToFile(getPth, selection)
+    	
+    def addToFile(getPth, selection):
+    	message="adding "+getPth+". continue?"
+    	reply=QtGui.QMessageBox.question(None, "Message", message, QtGui.QMessageBox.Yes,
+    									QtGui.QMessageBox.No)
+    	if reply == QtGui.QMessageBox.Yes:
+    		inp=open(FileBuild, 'a')
+    		inp.write('  ')
+    		for selecteditem in fileNamesToSave:
+    			inp.write(selecteditem)
+    			inp.write('  ')
+    		inp.close()
+    		print "created"+str(getPth)
+    	if reply ==QtGui.MessageBox.No:
+    		print "cancelled"
+    		return
 	
