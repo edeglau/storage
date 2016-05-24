@@ -1,0 +1,40 @@
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
+	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+import os.path
+from os.path import isfile, join
+from datetime import datetime
+
+class formWidget(QtGui.QWidget):
+	def __init__(self, detailMessge, title):
+		super(messageWidget, self).__init__()
+		self.initUI(detailMessge, title)
+	def initUI(self, detailMessge, title):
+		self.setWindowTitle(title)
+		print detailMessge
+		
+		self.layout = QVBoxLayout()
+		self.message=QLabel(detailMessge)
+		self.layout.addWidget(self.message)
+		self.setLayout(self.layout)
+		
+class messageWidget(QtGui.QWidget):
+	def __init__(self, detailMessge, title):
+		super(messageWidget, self).__init__()
+		self.initUI(detailMessge, title)
+	def initUI(self, detailMessge, title):
+		self.setWindowTitle(title)
+		print detailMessge
+		
+		self.layout = QVBoxLayout()
+		self.message=QLabel(detailMessge)
+		self.layout.addWidget(self.message)
+		self.setLayout(self.layout)
