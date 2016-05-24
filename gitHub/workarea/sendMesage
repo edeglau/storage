@@ -1,0 +1,63 @@
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
+	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+import os.path
+from os.path import isfile, join
+from datetime import datetime
+
+
+class sendmessageWidget(QtGui.QWidget):
+	def __init__(self, subject, to, cc, recipient, grouprecipient, queryID, body, multibody):
+		super(sendmessageWidget, self).__init__()
+		self.initUI(subject, to, cc, recipient, grouprecipient, queryID, body, multibody)
+		
+	def initUI(subject, to, cc, recipient, grouprecipient, queryID, body, multibody)
+		self.layout=QVBoxLayout()
+		self.directionsLabel=QLabel("How do you want to do this?")
+		self.layout.addWidget(self.directionsLabel)
+		self.btnLayout=QBoxLayout(1)
+		
+		self.msgngerbtn=QPushButton("messenger")
+		self.connect(self.msgngerbtn, SIGNAL("clicked()")
+					lambda: self.msngr_send(recipient, grouprecipient, body))
+		self.btnLayout.addWidget(self.msgngerbtn)
+		
+		self.emailbtn=QPushButton("email")
+		self.connect(self.emailbtn, SIGNAL("clicked()")
+					lambda: self.email_send(subject, to, cc, body))
+		self.btnLayout.addWidget(self.emailbtn)
+		
+	def msngr_send(self. recipient, grouprecipient, body)
+		self.msngrwidget=sendMsngrMultiWidget(body,  recipient, grouprecipient)
+		self.msngrwidget.show()
+		self.close()
+		
+	def email_send(self, subject, to, cc, body):
+		self.sendemail(subject, to, cc, body)
+		self.close()
+		
+
+
+	def sendemail(self,subject, to, cc, body ):
+		title = "error"
+		user=getUser+"@host.com"
+		try:
+			ccEmail=cc.replace(',', '; ')
+			ccString=''.join([(' -c' +x) for x in cc.split(';') if len(x)>1 and x.count('@')==1])
+			toString=''.join([(' ' +x) for x in to.split(';') if len(x)>1 and x.count'@')==1])
+			sendEmail='echo"%s" | mail -s "%s" %s %s' % (body, subject, cc, to)
+			os.open(sendEmail)
+			print "success"
+		except:
+			detailMessage= "failed"
+			print detailMessage
+			self.form_widget=messageWidget(detailMessage, title)
+			self.form_widget.show()
