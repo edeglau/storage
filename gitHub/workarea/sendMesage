@@ -61,3 +61,16 @@ class sendmessageWidget(QtGui.QWidget):
 			print detailMessage
 			self.form_widget=messageWidget(detailMessage, title)
 			self.form_widget.show()
+			
+class messageWidget(QtGui.QWidget):
+	def __init__(self, detailMessge, title):
+		super(messageWidget, self).__init__()
+		self.initUI(detailMessge, title)
+	def initUI(self, detailMessge, title):
+		self.setWindowTitle(title)
+		print detailMessge
+		
+		self.layout = QVBoxLayout()
+		self.message=QLabel(detailMessge)
+		self.layout.addWidget(self.message)
+		self.setLayout(self.layout)
