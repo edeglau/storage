@@ -1,0 +1,77 @@
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
+	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import *
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+import os.path
+from os.path import isfile, join
+from datetime import datetime
+
+winTitle="title"
+class typicalWindow(QtGui.QMainWindow):
+	def __init__(self):
+		QtGui.QMainWindow.__init__(self)
+		self.setWindowTitle(winTitle)
+		self.central_widget=QWidget(self)
+		self.setCentralWidget(self.central_widget)
+		self.masterLayout=QGridLayout(self.central_widget)
+		self.masterLayout.setAlignment(Qt.AlignTop)
+		
+		self.vertical_order_layout=QtGui.QBoxLayout(2)
+		self.vertical_order_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignVCenter)
+		self.masterLayout.addLayout(sel.vertical_order_layout, 0,0,1,1)
+		
+		self.topDivideLayout=QGridLayout()
+		self.botDivideLayout=QGridLayout()
+		self.upper_layout=QGridLayout()
+		
+		
+		self.topDivideLayout.addLayout(self.upper_layout, 0,0,1,1)
+		
+		self.lower_layout=QGridLayout()
+		self.lower_layout.setAlignment()
+		self.botDivideLayout.addLayout(self.lower_layout, 0,0,1,1)
+		
+		self.midLayout=QGridLayout()
+		self.midLayoutsetAlignment(Qt.AlignTop)
+		
+		self.base_layout=QGridLayout()
+		self.base_layout.setAlignment(Qt.AlignTop)
+		self.botDivideLayout.addLayout(self.base_layout, 4,0,1,1)
+		
+		sshFile=(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
+		self.styleData=sshFile.read()
+		sshFile.close
+		
+		self.setStyleSheet(self.styleData)
+		self.top=QtGui.QFrame(self)
+		self.top.setFrameShape(QtGui.QFrame.StyledPanel)
+		self.top.setLayout(self.topDivideLayout)
+		
+		self.bottom=QtGui.QFrame(self)
+		self.bottom.setFrameShape(QtGui.QFrame.StyledPanel)
+		self.top.setLayout(self.botDivideLayout)
+		
+		self.splitPlane=QtGui.QSplitter(QtCore.Qt.Vertical)
+		self.splitPlane.addWidget(self.top)
+		self.splitPlane.addWidget(self.bottom)
+		self.splitPlane.setSizes([650, 650])
+		self.vertical_order_layout.addWidget(self.splitPlane)
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
