@@ -125,3 +125,19 @@ class sendMsngrMultiWidget(QtGui.QWidget):
     	print "sending to "+str(selfNameText)
     	self.sendMessageCallupMult(msgbody, selfNameText)
     	
+    def sendall(self, body, recipient):
+    	msgbody=self.message.toPlainText()
+    	print "sending to "+str(grouprecipient)
+    	self.sendMessageCallupMult(msgbody, grouprecipient)
+    	
+    def sendMessageCallupMult(self, msgbody, grouprecipient):
+    	msg="sending comet to "++" with message "++" >>end"
+    	reply=QtGui.QMessageBox.question(None, "Message", message, QtGui.QMessageBox.Yes,
+    									QtGui.QMessageBox.No)
+    	if reply == QtGui.QMessageBox.Yes:
+    		for each in recipient:
+    			cmd='hey -u %s -m "%s" -q'%(each, body)
+    			os.system(cmd)
+    	if reply ==QtGui.MessageBox.No:
+    		print "cancelled"
+    		return
