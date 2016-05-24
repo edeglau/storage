@@ -1,0 +1,35 @@
+class pllstapp(QGui.QWidget):
+	def __init__(self, List, selection):
+    	super(pllstapp,self).__init__()
+    	self.initUI(List, selection)
+    def initUI(self, List, selection):
+    	self.layout=QVBoxLayout()
+    	self.DirectionsLabel=QLabel('which one do you want?')
+    	self.layout.addWidget(self.DirectionsLabel)
+    	self.buttonslayout=QBoxLayout(1)
+    	self.buttonslayout2=QBoxLayout(0)
+    	self.framesingle=QFrame()
+    	self.framesingle.setStyleSheet("border-width: 2px; border-color:#ffffff;")
+    	self.framesingle.setLayout(self.buttonslayout2)
+    	
+    	self.a_spinner=QComboBox()
+    	self.a_spinner.addItems(List.keys())
+    	self.buttonslayout2.addWidget(self.a_spinner)
+    	
+    	self.singlebtn=QPushButton("<append")
+    	self.connect(self.singlebtn, SIGNAL("clicked()"),
+    		lambda:self.appendTo(List, selection))
+    	self.buttonslayout2.addWidget(self.singlebtn)
+    	
+    	self.layout.addWidget(self.framesingle)
+    	self.layout.addLayout(self.buttonslayout)
+    	self.setLayout(self.layout)
+    	
+    def appendTo(self, List, selection):
+    	getName=self.a_spinner
+    	theName=getName.currentText()
+    	getPth=str(List.get(str(theName)))
+    	mainFunct=ManagerMain()
+    	mainFunct.addToFile(getPth, selection)
+    	
+	
