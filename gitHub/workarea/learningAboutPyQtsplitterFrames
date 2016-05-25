@@ -297,10 +297,25 @@ class typicalWindow(QtGui.QMainWindow):
 		self.spaceHold.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
 		self.frame_title_layout.addWidget(self.spaceHold, 0,0,1,1)
 		
-		self.head=QRadioBox("head")
-		self.head.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		self.radiobox.addWidget(self.head, 0,1,1,1)
+		self.over=QRadioBox("over")
+		self.over.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox.addWidget(self.over, 1,1,1,1)
+		
+		self.head_lbl=QLabel("from")
+		self.head_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox.addWidget(self.head_lbl, 1, 4,1,1)
+		
+		self.head_field=QTextEdit("")
+		self.head_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox.addWidget(self.head_field, 1, 5,1,1)
+		
+		self.toe_lbl=QLabel("til")
+		self.toe_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox.addWidget(self.toe_lbl, 1, 6,1,1)
+		
+		self.toe_field=QTextEdit("")
+		self.toe_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox.addWidget(self.toe_field, 1, 7,1,1)
 		
 		
 		
-		self.spaceHold.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
