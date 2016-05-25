@@ -91,6 +91,41 @@ class typicalWindow(QtGui.QMainWindow):
 		self.lower_layout.addLayout(self.frame_layout, 0,0,1,1)
 		
 		
+		self.frameWidget=QtGui.QGridLayout()
+		self.frameWidget.setContentsMargines(5,10,5,10)
+		self.frameOverride=QtGui.QFrame()
+		self.frameOverride.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		self.frameOverride.setFixedHeight(100)
+		self.frame_layout.addLayout(self.frameWidget, 0,0,1,1)
+		self.frame_layout.addWidget(self.frameOverride, 0,0,1,1)
+		
+		
+		self.frame_title_layout=QGridLayout()
+		self.frameWidget.addLayout(self.frame_title_layout, 0,0,1,1)
+		self.frame_radio_layout=QGridLayout()
+		self.frameWidget.addLayout(self.frame_radio_layout, 1,0,1,1)
+		self.frame_btn_layout=QGridLayout()
+		self.frameWidget.addLayout(self.frame_btn_layout, 2,0,1,1)
+	
+		self.btm_btn_layout=QtGui.QGridLayout()
+		self.btm_btn_layout.setAlignment(Qt.AlignTop)
+		self.btm_btn_layout.setContentsMargines(5,10,5,10)	
+		self.wbFrame=QtGui.QFrame()
+		self.wbFrame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		self.btm_over_layout=QtGui.QGridLayout()
+		self.btm_over_layout.setAlignment(Qt.AlignTop)
+		self.btm_over_layout.addLayout(self.btm_btn_layout, 0,0,1,1)
+		self.btm_over_layout.addWidget(self.wbFrame, 0,0,1,1)
+		self.lower_layout.addWidget(self.btm_btn_layout, 0,0,1,1)
+		
+		self.pkt_layout= QGridLayout()
+		self.pkt_layout.setAlignment(Qt.AlignTop)
+		self.pkt_widget=QGridLayout()
+		self.pkt_widget.setContentsMargines(5,5,5,5)	
+		self.pkt_frame=QFrame()
+		self.pkt_frame.setMinimumWidth(650)
+		self.pkt_layout.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
 		
 		
 		
