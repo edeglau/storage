@@ -5,7 +5,7 @@ from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
 	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
 	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
-from PyQt4.QtCore import *
+from PyQt4.QtCore import SIGNAL
 import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
 from subprocess import Popen, PIPE
 from os import stat, listdir, walk
@@ -25,7 +25,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.central_widget=QWidget(self)
 		self.setCentralWidget(self.central_widget)
 		self.masterLayout=QGridLayout(self.central_widget)
-		self.masterLayout.setAlignment(Qt.AlignTop)
+		self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
 		
 		#mainlayout
 		self.vertical_order_layout=QtGui.QBoxLayout(2)
@@ -44,10 +44,10 @@ class typicalWindow(QtGui.QMainWindow):
 		self.botDivideLayout.addLayout(self.lower_layout, 0,0,1,1)
 		
 		self.midLayout=QGridLayout()
-		self.midLayoutsetAlignment(Qt.AlignTop)
+		self.midLayoutsetAlignment(QtCore.Qt.AlignTop)
 		
 		self.base_layout=QGridLayout()
-		self.base_layout.setAlignment(Qt.AlignTop)
+		self.base_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.botDivideLayout.addLayout(self.base_layout, 4,0,1,1)
 		
 		sshFile=(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
@@ -92,7 +92,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.midLayout.addLayout(self.window_layer_06, 6,0,1,1)
 		
 		self.frame_layout=QGridLayout()
-		self.frame_layout.setAlignment(Qt.AlignTop)
+		self.frame_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.lower_layout.addLayout(self.frame_layout, 0,0,1,1)
 		
 		
@@ -113,18 +113,18 @@ class typicalWindow(QtGui.QMainWindow):
 		self.frameWidget.addLayout(self.frame_btn_layout, 2,0,1,1)
 	
 		self.btm_btn_layout=QtGui.QGridLayout()
-		self.btm_btn_layout.setAlignment(Qt.AlignTop)
+		self.btm_btn_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.btm_btn_layout.setContentsMargines(5,10,5,10)	
 		self.wbFrame=QtGui.QFrame()
 		self.wbFrame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
 		self.btm_over_layout=QtGui.QGridLayout()
-		self.btm_over_layout.setAlignment(Qt.AlignTop)
+		self.btm_over_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.btm_over_layout.addLayout(self.btm_btn_layout, 0,0,1,1)
 		self.btm_over_layout.addWidget(self.wbFrame, 0,0,1,1)
 		self.lower_layout.addWidget(self.btm_btn_layout, 0,0,1,1)
 		
 		self.pkt_layout= QGridLayout()
-		self.pkt_layout.setAlignment(Qt.AlignTop)
+		self.pkt_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.pkt_widget=QGridLayout()
 		self.pkt_widget.setContentsMargines(5,5,5,5)	
 		self.pkt_frame=QFrame()
@@ -133,11 +133,11 @@ class typicalWindow(QtGui.QMainWindow):
 		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
 		
 		self.wndw_layer_pkt=QtGui.QGridLayout()
-		self.wndw_layer_pkt..setAlignment(Qt.AlignTop)
+		self.wndw_layer_pkt..setAlignment(QtCore.Qt.AlignTop)
 		self.pkt_widget.addLayout(self.wndw_layer_pkt, 0,0,1,1)
 		
 		self.park_btn_pkt=QtGui.QBoxLayout(2)
-		self.park_btn_pkt.setAlignment(Qt.AlignTop)
+		self.park_btn_pkt.setAlignment(QtCore.Qt.AlignTop)
 		self.park_btn_pkt.setContentsMargines(5,2,5,8)
 		self.wndw_layer_pkt.addLayout(self.park_btn_pkt, 0,0,1,1)
 		self.park_frame=QtGui.QFrame()
@@ -145,6 +145,20 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		
 		#widgets
+		self.drop_lbl_01=QLabel()
+		self.drop_lbl_01.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		self.drop_lbl_01.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.window_layer_01.addWidget(self.drop_lbl_01, 0,0,1,1)
+		
+		self.drop_01=QComboBox()
+		self.window_layer_01.addWidget(self.drop_01, 0,1,1,1)
+		QtCore.QObject.connect(self.drop_01, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		
+		
+
 		
 		
 		
