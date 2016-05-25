@@ -317,5 +317,23 @@ class typicalWindow(QtGui.QMainWindow):
 		self.toe_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radiobox.addWidget(self.toe_field, 1, 7,1,1)
 		
+		self.fieldBox=QLineEdit()
+		self.fieldBox.setVisible(0)
+		self.fieldBox.setText(defaultText)
 		
+		self.go_btn=QPushButton("go")
+		self.connect(self.go_btn, SIGNAL('clicked()'), self.go)
+		self.frame_btn_layout(self.go_btn, 0,0,0,1)
 		
+		self.look_btn=QPushButton("look")
+		self.connect(self.look_btn, SIGNAL('clicked()'), self.go)
+		self.frame_btn_layout(self.look_btn, 0,1, 0,1)
+
+
+		self.link_btn=QPushButton("link")
+		self.connect(self.link_btn, SIGNAL('clicked()'), self.go)
+		self.frame_btn_layout(self.link_btn, 0,2,1,1)
+		
+		self.create_btn=QPushButton("create_btn")
+		self.connect(self.create_btn, SIGNAL('clicked()'), self.go)
+		self.frame_btn_layout(self.create_btn, 0,3, 1,1)
