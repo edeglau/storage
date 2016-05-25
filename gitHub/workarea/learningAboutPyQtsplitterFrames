@@ -18,12 +18,16 @@ winTitle="title"
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
 		QtGui.QMainWindow.__init__(self)
+		
+		#window
+		
 		self.setWindowTitle(winTitle)
 		self.central_widget=QWidget(self)
 		self.setCentralWidget(self.central_widget)
 		self.masterLayout=QGridLayout(self.central_widget)
 		self.masterLayout.setAlignment(Qt.AlignTop)
 		
+		#mainlayout
 		self.vertical_order_layout=QtGui.QBoxLayout(2)
 		self.vertical_order_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignVCenter)
 		self.masterLayout.addLayout(sel.vertical_order_layout, 0,0,1,1)
@@ -65,6 +69,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.splitPlane.setSizes([650, 650])
 		self.vertical_order_layout.addWidget(self.splitPlane)
 		
+		#layouts
 		self.window_layer_00=QGridLayout()
 		self.upper_layout.addLayout(self.window_layer_00, 0,0,1,1)
 		
@@ -126,6 +131,21 @@ class typicalWindow(QtGui.QMainWindow):
 		self.pkt_frame.setMinimumWidth(650)
 		self.pkt_layout.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
 		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
+		
+		self.wndw_layer_pkt=QtGui.QGridLayout()
+		self.wndw_layer_pkt..setAlignment(Qt.AlignTop)
+		self.pkt_widget.addLayout(self.wndw_layer_pkt, 0,0,1,1)
+		
+		self.park_btn_pkt=QtGui.QBoxLayout(2)
+		self.park_btn_pkt.setAlignment(Qt.AlignTop)
+		self.park_btn_pkt.setContentsMargines(5,2,5,8)
+		self.wndw_layer_pkt.addLayout(self.park_btn_pkt, 0,0,1,1)
+		self.park_frame=QtGui.QFrame()
+		self.park_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		
+		
+		#widgets
+		
 		
 		
 		
