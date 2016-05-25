@@ -157,6 +157,22 @@ class typicalWindow(QtGui.QMainWindow):
 		self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		
+		self.drop_lbl_02=QLabel()
+		self.drop_lbl_02.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		self.drop_lbl_02.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.window_layer_01.addWidget(self.drop_lbl_02, 0,2,1,1)
+		
+		self.drop_02=QComboBox()
+		self.window_layer_01.addWidget(self.drop_02, 0,3,1,1)
+		QtCore.QObject.connect(self.drop_02, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_02.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		
+		self.button_01=QPushButton("Set")
+		self.button_01.setToolTip("set")
+		self.connect(self.button_01, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_01.addWidget(self.drop_02, 0,4,1,1)
 		
 
 		
