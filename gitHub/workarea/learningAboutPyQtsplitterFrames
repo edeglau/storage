@@ -255,6 +255,23 @@ class typicalWindow(QtGui.QMainWindow):
 		self.listWidg.customContextMenuRequested.connect(self.RightClick)
 		sel.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
 		sel.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
-		self.window_layer_05.addWidget(self.listWidg, 0,2,0,1)
+		self.window_layer_05.addWidget(self.listWidg, 0,2,1,1)
+		
+		self.status_lbl=QLabel()
+		self.status_lbl.setStyleSheet('background-color:transparent')
+		self.status_lbl.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+		self.frame_title_layout.addWidget(self.status_lbl, 0,2,1,1)
+
+		self.spaceHold=QLabel()
+		self.spaceHold.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.spaceHold.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+		self.frame_title_layout.addWidget(self.spaceHold, 0,0,1,1)
+
+
+		self.checkbox=QCheckBox("add")
+		self.checkbox.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.checkbox.setContentsMargines(5,0,0,0)
+		self.checkbox.setChecked(1)
+		self.frame_title_layout.addWidget(self.checkbox, 0,1,1,1)
 		
 		
