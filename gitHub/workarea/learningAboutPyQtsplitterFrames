@@ -243,4 +243,18 @@ class typicalWindow(QtGui.QMainWindow):
 		self.type_list_drop.addItems(typesOfStuffInList)
 		QtCore.QObject.connect(self.type_list_drop, SIGNAL("currentIndexChanged(QString)"),
 								self.on_drop_01_changed)
-			
+		self.window_layer_04.addWidget(self.type_list_drop, 0,5,1,1)
+		
+		self.button_06=QPushButton("button_06")
+		self.button_06.setToolTip("button_06")
+		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_04.addWidget(self.button_06, 0,6,0,1)
+		
+		self.listWidg=QtGui.QTableWidget()
+		self.listWidg.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.listWidg.customContextMenuRequested.connect(self.RightClick)
+		sel.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
+		sel.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
+		self.window_layer_05.addWidget(self.listWidg, 0,2,0,1)
+		
+		
