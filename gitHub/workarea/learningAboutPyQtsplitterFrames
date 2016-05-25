@@ -337,3 +337,11 @@ class typicalWindow(QtGui.QMainWindow):
 		self.create_btn=QPushButton("create_btn")
 		self.connect(self.create_btn, SIGNAL('clicked()'), self.go)
 		self.frame_btn_layout(self.create_btn, 0,3, 1,1)
+		
+		self.pocketTitle=QPushButton("title")
+		self.pocketTitle.setObjectName('label')
+		self.pocketTitle.setStyleSheet("QPushButton#label{font-weight:500; color: rgb"str(buttonColorDict).get("yello"))+"; button-color: rgba(255,255,255,0); font-size: 10pt; border-width: 0px; font-style: bold;}")
+		self.connect(self.pocketTitle, SIGNAL('clicked()'), self.send)
+		self.connect(self.pocketTitle, SIGNAL('customContextMenuRequested(QPoint)'), lambda: self.send())
+		self.park_btn_pkt.addWidget(self.pocketTitle)
+		
