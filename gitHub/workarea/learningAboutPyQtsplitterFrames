@@ -172,11 +172,36 @@ class typicalWindow(QtGui.QMainWindow):
 		self.button_01=QPushButton("Set")
 		self.button_01.setToolTip("set")
 		self.connect(self.button_01, SIGNAL('clicked()'), self.connectButton01)
-		self.window_layer_01.addWidget(self.drop_02, 0,4,1,1)
+		self.window_layer_01.addWidget(self.button_01, 0,4,1,1)
 		
+		self.button_02=QPushButton("Set")
+		self.button_02.setToolTip("set")
+		self.connect(self.button_02, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_01.addWidget(self.button_02, 0,5,1,1)
 
+		self.drop_lbl_03=QLabel()
+		self.drop_lbl_03.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		self.drop_lbl_03.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.window_layer_02.addWidget(self.drop_lbl_03, 0,0,1,1)
 		
+		self.drop_03=QComboBox()
+		self.window_layer_02.addWidget(self.drop_03, 0,1,1,1)
+		QtCore.QObject.connect(self.drop_03, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_03.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_03, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+
+		self.button_03=QPushButton("button_03")
+		self.button_03.setToolTip("button_03")
+		self.connect(self.button_03, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_02.addWidget(self.button_03, 0,2,1,1)
 		
+		self.button_04=QPushButton("button_04")
+		self.button_04.setToolTip("button_04")
+		self.connect(self.button_04, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_02.addWidget(self.button_04, 0,3,1,1)
 		
-		
-		
+		self.button_05=QPushButton("button_05")
+		self.button_05.setToolTip("button_05")
+		self.connect(self.button_05, SIGNAL('clicked()'), self.connectButton01)
+		self.window_layer_02.addWidget(self.button_05, 0,4,1,1)
