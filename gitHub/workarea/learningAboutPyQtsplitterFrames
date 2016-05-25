@@ -205,3 +205,42 @@ class typicalWindow(QtGui.QMainWindow):
 		self.button_05.setToolTip("button_05")
 		self.connect(self.button_05, SIGNAL('clicked()'), self.connectButton01)
 		self.window_layer_02.addWidget(self.button_05, 0,4,1,1)
+
+		self.drop_04=QComboBox()
+		self.window_layer_04.addWidget(self.drop_04, 0,2,1,1)
+		QtCore.QObject.connect(self.drop_04, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_04.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_04, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+
+		self.list_frame=QFrame()
+		self.list_frame.setStyleSheet("color: rgb"+str(buttonColoursDict.get("ared")))
+		self.list_layout=QHBoxLayout()
+		self.list_frame.setLayout(self.list_layout)
+		
+		self.drop_05=QComboBox()
+		self.drop_05.addItems(alist)
+		QtCore.QObject.connect(self.drop_05, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_05.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_05, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.list_layout.addWidget(self.drop_05)
+		self.window_layer_04.addWidget(self.list_frame, 0,3,1,1)
+
+		self.drop_06=QComboBox()
+		QtCore.QObject.connect(self.drop_06, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+		self.drop_06.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_06, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		if len(pres)<1:
+			self.drop_06.setEnabled(0)
+		else:
+			self.drop_06.setEnabled(1)
+		self.drop_05.addItems(alist2)
+		self.list_layout.addWidget(self.drop_06)
+		
+		self.type_list_drop=QComboBox()
+		self.type_list_drop.addItems(typesOfStuffInList)
+		QtCore.QObject.connect(self.type_list_drop, SIGNAL("currentIndexChanged(QString)"),
+								self.on_drop_01_changed)
+			
