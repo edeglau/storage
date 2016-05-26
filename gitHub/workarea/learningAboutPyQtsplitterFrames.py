@@ -391,3 +391,8 @@ class typicalWindow(QtGui.QMainWindow):
 		for each in buttonGrp:
 			each.setVisible(1)
 		self.park_btn_pkt.setContentsMargine(5,8,5,8)
+		
+	def onRightClick(self):
+		path='//'
+		command="xdg-open '%s'"%path
+		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)		
