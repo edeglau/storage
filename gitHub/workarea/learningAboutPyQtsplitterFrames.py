@@ -253,7 +253,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.button_06=QPushButton("button_06")
 		self.button_06.setToolTip("button_06")
-		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)
+		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)			els
 		self.window_layer_04.addWidget(self.button_06, 0,6,0,1)
 		
 		self.listWidg=QtGui.QTableWidget()
@@ -549,7 +549,58 @@ class typicalWindow(QtGui.QMainWindow):
 		compareBucket=[]
 		getitems=[(suffixAppend+":"+each.split("/")[-1]) for each in selected_in_list]
 		name_to_save=' '.join(getitems)
-		if list_build_function=
+		if list_build_function==list_build[1]:
+			prompt="name of list:"
+			getcomment=self.makeBody(prompt)
+			if getComment==None:
+				print "needs name"
+				return
+			else:
+				pass
+			getComment=getComment.replace(' ', '_')
+			shotList=suffixAppend+"_"+getComment+"storedText.txt"
+			fileBuild=path+shotList
+			copyfilemessage="creating in "+fileBuild
+			replay = QtGui.QMessageBox.question(None, 'Message' copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+			if reply == QtGui.QMessageBox.Yes:
+				if os.path.isfile(fileBuild)==True:
+					cmessage="create over "+fileBuild
+					replay = QtGui.QMessageBox.question(None, 'Message' cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					if reply == QtGui.QMessageBox.Yes:
+						inp=open(fileBuild, "w+")
+						inp.write(name_to_save)
+						inp.close()
+						print "created "+fileBuild
+					else:
+						print "cancelled"
+						return
+				else:
+					inp=open(fileBuild, "w+")
+					inp.write(name_to_save)
+					inp.close()
+					print "created "+fileBuild
+			else:
+				print "cancelled"
+				return
+				
+					
+	
+	def makeBody(self, prompt):
+		text, ok=QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt)
+		if ok:
+			project=(str(text))
+		else:
+			return
+		return project
+		
+	def makeBodyFilled(self, prompt, message):
+		text, ok=QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt, QtGui.QLineEdit.Normal, message)
+		if ok and text:
+			project=(str(text))
+		else:
+			return
+		return project
+		
 		
 	def load(self):
 		drop_list_06
