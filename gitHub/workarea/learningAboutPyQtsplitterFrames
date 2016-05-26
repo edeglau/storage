@@ -13,7 +13,7 @@ from pwd import getpwuid
 import os.path
 from os.path import isfile, join
 from datetime import datetime
-
+buttonGrp=[]
 winTitle="title"
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
@@ -354,6 +354,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.card_menuBar=self.menuBar()
 		self.card_menuBar.addMenu(self.card_menu)
 		self.park_btn_pkt(self.card_menuBar)
+		buttonGrp.append(self.card_menuBar)
 		
 		self.card_btn=QToolButton()
 		self.card_btn.setPopupMode(QToolButton.MenuButtonPopup)
@@ -372,3 +373,21 @@ class typicalWindow(QtGui.QMainWindow):
 		action=QtGui.QWidgetAction(self.B_card_btn)
 		action.setDefaultWidget(self.B_card_special_btn)
 		self.B_card_btn.menu().addAction(action)
+
+	def buttonToggle(self):
+		get_a_layout=self.park_btn_pkt
+		get_size=get_a_layout.getContentsMargine()
+		if get_size==(0,0,0,0):
+			self.setvisible()
+		else:
+			self.setinvisible()
+			
+	def setinvisible(self):
+		for each in buttonGrp:
+			each.setVisible(0)
+		self.park_btn_pkt.setContentsMargine(0,0,0,0)
+		
+	def setvisible(self):
+		for each in buttonGrp:
+			each.setVisible(1)
+		self.park_btn_pkt.setContentsMargine(5,8,5,8)
