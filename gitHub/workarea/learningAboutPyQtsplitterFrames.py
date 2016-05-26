@@ -452,5 +452,39 @@ class typicalWindow(QtGui.QMainWindow):
 		count=len(fileDict)
 		fileDict=reversed(fileDict)
 		dictItems=fileDict
+		col1, col1, col1= 240, 160, 500
+		headerLabels=["Name", "Date", "Path"]
 		self.listWidg.setRowCount(count)
 		self.listWidg.clear()
+		self.listWidg.setSortingEnabled(True)
+		self.listWidg.setColumnWidth(3)
+		self.listWidg.setColumnWidth(0, col1)
+		self.listWidg.setColumnWidth(1, col2)
+		self.listWidg.setColumnWidth(2, col3)
+		self.listWidg.setHorizontalHeaderLabels(headerLabels)
+		getVerticalHeader=self.listWidg.verticalHeader()
+		getVerticalHeader.setDefaultSelectionSize(20)
+		self.listWidg.setSelectionBehavior(QAbstractItemView.SelectRows)
+		self.listWidg.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.listWidg.horizontalHeaderItem(0).setTextAlignment(QtCore.Qt.AlignLeft)
+		self.listWidg.horizontalHeaderItem(1).setTextAlignment(QtCore.Qt.AlignLeft)
+		self.listWidg.horizontalHeaderItem(2).setTextAlignment(QtCore.Qt.AlignLeft)
+		for row, item in enumerate(dictItems):
+			key=item[0].split('/')[-1]
+			path='/'.join(item[0].split('/')[-1])
+			path="/"+path
+			value=item[1]
+			getTable=self.listWidg
+			name=QtGui.QTableWidgetItem(key)
+			name.setFlage(QtCore.Qt.ItemIsEnabled|QtCore.Qt.ItemIsSelectable)
+			self.listWidg.setItem(row, 0, name)
+			timeStamp=QtGui.QTableWidgetItem(value)
+			self.listWidg.setItem(row, 1, timeStamp)
+			location=QtGui.QTableWidgetItem(path)
+			self.listWidg.setItem(row, 2, location)
+		statlab.setText(funtext)
+		statlab.setObjectName('non_plan_label')
+		statlab.setStyleSheet()
+		
+		
+		
