@@ -15,6 +15,12 @@ from os.path import isfile, join
 from datetime import datetime
 buttonGrp=[]
 winTitle="title"
+
+messagelist=("hi", "hello", "how's it going?", "bonjour", "g'day")
+grab=[(index) for index, each in enumerate(messagelist)]
+random.shuffle(grab)
+grabText=messagelist[grab[0]]
+
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
 		QtGui.QMainWindow.__init__(self)
@@ -482,9 +488,9 @@ class typicalWindow(QtGui.QMainWindow):
 			self.listWidg.setItem(row, 1, timeStamp)
 			location=QtGui.QTableWidgetItem(path)
 			self.listWidg.setItem(row, 2, location)
-		statlab.setText(funtext)
-		statlab.setObjectName('non_plan_label')
-		statlab.setStyleSheet()
+		self.status_lbl.setText(grabText)
+		self.status_lbl.setObjectName('non_plan_label')
+		self.status_lbl.setStyleSheet('QLabel#non_plan_label{font-weight: 500; color: orange; background-color: rgba(255,255,255,0);font-size: 9pt}')
 		
 		
 		
