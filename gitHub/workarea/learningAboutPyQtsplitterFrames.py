@@ -504,10 +504,52 @@ class typicalWindow(QtGui.QMainWindow):
 		self.status_lbl.setText(grabText)
 		self.status_lbl.setObjectName('non_plan_label')
 		self.status_lbl.setStyleSheet('QLabel#non_plan_label{font-weight: 500; color: orange; background-color: rgba(255,255,255,0);font-size: 9pt}')
-		
+	
+	def is_listWid_item_selected(self):
+		listW=self.listWidg
+		(dataInListWidget, countdata)=self.getListWidgetData()
+		get_string_id=[]
+		for index in xrange(countdata):
+			get=listW.item(index, 0).isSelected()
+			if get==True:
+				getObj=listW.item(index, 2).text()
+				getObj=str(getObj)
+				get_string_id.append(getObj)
+			else:
+				get=listW.item(index, 1).isSelected()
+				if get=True:
+					getObj=listW.item(index, 2).text()
+					getObj=str(getObj)
+					get_string_id.append(getObj)
+				else:
+					get=listW.item(index, 2).isSelected()
+					if get=True:
+						getObj=listW.item(index, 2).text()
+						getObj=str(getObj)
+						get_string_id.append(getObj)
+		return get_string_id
 		
 	def build(self):
-		drop_list_builder_05
+		list_build=self.drop_list_builder_05
+		list_build_function=list_build.currentText()
+		selected_in_list=self.is_listWid_item_selected()
+		allthePaths={"firstPath":'//', "secondPath":'//'}
+		#drop_list_builder_05
+		getlisttype=self.type_list_drop
+		listtype=getlisttype.currentText()
+		if selected_in_list>1:
+			getItems=[(each) for each in selected_in_list]
+			nameToSave=' '.join(getItems)
+			if listtype=="firstPath"
+				suffixAppend="first"
+				path=allthePaths.get("firstPath")
+			if listtype=="secondPath"
+				suffixAppend="second"
+				path=allthePaths.get("secondPath")
+		compareBucket=[]
+		getitems=[(suffixAppend+":"+each.split("/")[-1]) for each in selected_in_list]
+		name_to_save=' '.join(getitems)
+		if list_build_function=
 		
 	def load(self):
 		drop_list_06
