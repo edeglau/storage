@@ -404,12 +404,25 @@ class typicalWindow(QtGui.QMainWindow):
 		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 		
 	def on_drop_01_changed(self):
+		newcol1=self.listWidg.columnWidth(0)
+		newcol2=self.listWidg.columnWidth(1)
+		newcol3=self.listWidg.columnWidth(2)
+		if newcol1==0:
+			col1, col1, col1= 240, 160, 500
+		else:
+			col1, col1, col1= newcol1, newcol2, newcol3
 		getPath='//'
 		get_items=os.listdir(get_items)
 		self.listWidg.clear()
 		self.status_lbl.clear()
 		self.drop_03.addItems(get_items)
-		
+		if self.on_drop_01=="item1":
+			buildListPath=pathList.get("listpathtype").replace(getUser, newUser)
+			self.makeList(listpath, newUser, self.listWidg, model, stat_lab, listtype)
+		elif self.on_drop_01=="item2":
+			buildListPath=pathList.get("listpathtype2").replace(getUser, newUser)
+			self.makeList(listpath, newUser, self.listWidg, model, stat_lab, listtype)
+			
 	def clicked(self):
 		print "hi"
 		
