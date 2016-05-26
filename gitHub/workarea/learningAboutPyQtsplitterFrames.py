@@ -601,7 +601,14 @@ class typicalWindow(QtGui.QMainWindow):
 		format=".txt"
 		getpreset=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(morestuff) for name in files if name.lower().endswith(format)]
 		preset=[(each) for each in getpreset if "_stored" in each]
-		getlistnames=[]
+		getlistnames={}
+		for each in preset:
+			getName=each.split("/")[-1]
+			nam=getName.split("_")
+			getpletename='_'.join(nam[:-1])
+			diction={getpletename:nam[0]}
+			getlistnames.update(diction)
+		return preset, getlistnames
 		
 	def makeBody(self, prompt):
 		text, ok=QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt)
