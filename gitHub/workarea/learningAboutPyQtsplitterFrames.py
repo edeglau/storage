@@ -423,6 +423,34 @@ class typicalWindow(QtGui.QMainWindow):
 		return dataInListWidget, countdata
 		
 	def listCreate(self):
+		directory='//'
+		getUser='name'
 		(dataInListWidget, countdata)=self.getListWidgetData()
-		
+		self.listWidg.setRowCount(0)
+		self.listWidg.setColumnCount(0)
+		try:
+			getFiles=[os.path.join(directory, o) for o in os.listdir(directory) if os.path.isdir(os.path.join(directory, o))]
+			pass
+		except:
+			print "nothing found"
+			return
+		getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		for each in getFiles:
+			statbuf=os.stat(each)
+			timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+			getAccTime=time.ctime(os.path.getmtime(each))
+			if "  " in str(getAccTime):
+				getAccTime=getAccTime.split("  ")
+				getAccTime=getAccTime[1].split(" ")[1]
+			else:
+				getAccTime=getAccTime.split("  ")[3]
+			timeFormat=timeFormat+"  "+getAccTime
+			makeDict=(each, timeFormat)
+			fileDict.append(makeDict)
+		count=len(fileDict)
+		fileDict=reversed(fileDict)
+		dictItems=fileDict
 		self.listWidg.setRowCount(count)
+		self.listWidg.clear()
