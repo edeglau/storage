@@ -180,8 +180,8 @@ class typicalWindow(QtGui.QMainWindow):
 		self.connect(self.button_01, SIGNAL('clicked()'), self.connectButton01)
 		self.window_layer_01.addWidget(self.button_01, 0,4,1,1)
 		
-		self.button_02=QPushButton("Set")
-		self.button_02.setToolTip("set")
+		self.button_02=QPushButton("Set2")
+		self.button_02.setToolTip("set2")
 		self.connect(self.button_02, SIGNAL('clicked()'), self.connectButton01)
 		self.window_layer_01.addWidget(self.button_02, 0,5,1,1)
 
@@ -224,26 +224,26 @@ class typicalWindow(QtGui.QMainWindow):
 		self.list_layout=QHBoxLayout()
 		self.list_frame.setLayout(self.list_layout)
 		
-		self.drop_05=QComboBox()
-		self.drop_05.addItems(alist)
-		QtCore.QObject.connect(self.drop_05, SIGNAL("currentIndexChanged(QString)"),
-								self.on_drop_01_changed)
-		self.drop_05.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.connect(self.drop_05, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
-		self.list_layout.addWidget(self.drop_05)
+		self.drop_list_builder_05=QComboBox()
+		self.drop_list_builder_05.addItems(alist)
+		QtCore.QObject.connect(self.drop_list_builder_05, SIGNAL("currentIndexChanged(QString)"),
+								self.build)
+		self.drop_list_builder_05.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_list_builder_05, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.list_layout.addWidget(self.drop_list_builder_05)
 		self.window_layer_04.addWidget(self.list_frame, 0,3,1,1)
 
-		self.drop_06=QComboBox()
-		QtCore.QObject.connect(self.drop_06, SIGNAL("currentIndexChanged(QString)"),
-								self.on_drop_01_changed)
-		self.drop_06.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.connect(self.drop_06, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.drop_list_06=QComboBox()
+		QtCore.QObject.connect(self.drop_list_06, SIGNAL("currentIndexChanged(QString)"),
+								self.load)
+		self.drop_list_06.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.connect(self.drop_list_06, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		if len(pres)<1:
 			self.drop_06.setEnabled(0)
 		else:
-			self.drop_06.setEnabled(1)
-		self.drop_05.addItems(alist2)
-		self.list_layout.addWidget(self.drop_06)
+			self.drop_list_06.setEnabled(1)
+		self.drop_list_06.addItems(alist2)
+		self.list_layout.addWidget(self.drop_list_06)
 		
 		self.type_list_drop=QComboBox()
 		self.type_list_drop.addItems(typesOfStuffInList)
@@ -506,4 +506,8 @@ class typicalWindow(QtGui.QMainWindow):
 		self.status_lbl.setStyleSheet('QLabel#non_plan_label{font-weight: 500; color: orange; background-color: rgba(255,255,255,0);font-size: 9pt}')
 		
 		
+	def build(self):
+		drop_list_builder_05
 		
+	def load(self):
+		drop_list_06
