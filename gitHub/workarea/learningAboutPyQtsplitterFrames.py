@@ -395,4 +395,34 @@ class typicalWindow(QtGui.QMainWindow):
 	def onRightClick(self):
 		path='//'
 		command="xdg-open '%s'"%path
-		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)		
+		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+		
+	def on_drop_01_changed(self):
+		getPath='//'
+		get_items=os.listdir(get_items)
+		self.listWidg.clear()
+		self.status_lbl.clear()
+		self.drop_03.addItems(get_items)
+		
+	def clicked(self):
+		print "hi"
+		
+	def dclicked(self):
+		print "hello"
+		
+	def getListWidgetData(self):
+		listArray=self.listWidg
+		countdata=listArray.rowCount()
+		model=listArray.model()
+		dataInListWidget=[]
+		for row in range(model.rowCount()):
+			dataInListWidget.append([])
+			for column in range(model.columnCount()):
+				index = model.index(row, column)
+				dataInListWidet[row].append(str(model.data(index).toString()))
+		return dataInListWidget, countdata
+		
+	def listCreate(self):
+		(dataInListWidget, countdata)=self.getListWidgetData()
+		
+		self.listWidg.setRowCount(count)
