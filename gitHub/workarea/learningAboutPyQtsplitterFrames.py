@@ -15,7 +15,8 @@ from os.path import isfile, join
 from datetime import datetime
 buttonGrp=[]
 winTitle="title"
-
+presetlist=["load"]
+typesOfStuffInList=["firstPath", "secondPath"]
 messagelist=("hi", "hello", "how's it going?", "bonjour", "g'day")
 grab=[(index) for index, each in enumerate(messagelist)]
 random.shuffle(grab)
@@ -416,6 +417,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.listWidg.clear()
 		self.status_lbl.clear()
 		self.drop_03.addItems(get_items)
+		model, countdata, listArray	=self.get_listStuff()	
 		if self.on_drop_01=="item1":
 			buildListPath=pathList.get("listpathtype").replace(getUser, newUser)
 			self.makeList(listpath, newUser, self.listWidg, model, stat_lab, listtype)
@@ -429,10 +431,14 @@ class typicalWindow(QtGui.QMainWindow):
 	def dclicked(self):
 		print "hello"
 		
-	def getListWidgetData(self):
+	def get_listStuff(self):
 		listArray=self.listWidg
 		countdata=listArray.rowCount()
 		model=listArray.model()
+		return model, countdata, listArray
+		
+	def getListWidgetData(self):
+		model, countdata, listArray	=self.get_listStuff()	
 		dataInListWidget=[]
 		for row in range(model.rowCount()):
 			dataInListWidget.append([])
@@ -600,7 +606,7 @@ class typicalWindow(QtGui.QMainWindow):
 		preset=False
 		format=".txt"
 		getpreset=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(morestuff) for name in files if name.lower().endswith(format)]
-		preset=[(each) for each in getpreset if "_stored" in each]
+		preset=[(each) for each in getpreset if "storedText" in each]
 		getlistnames={}
 		for each in preset:
 			getName=each.split("/")[-1]
@@ -609,6 +615,17 @@ class typicalWindow(QtGui.QMainWindow):
 			diction={getpletename:nam[0]}
 			getlistnames.update(diction)
 		return preset, getlistnames
+		
+	# def obtain_files(self, stuff):
+	# 	preset_name=[]
+	# 	if presetis!=False:
+	# 		for each in presetis:
+	# 			pathsplit=each.split("/")[-1]
+	# 			namefind=pathsplit.split("_")[0]
+	# 			preset_name.append(namefind)
+	# 	else:
+	# 		preset_name=False
+	# 	return preset_name
 		
 	def makeBody(self, prompt):
 		text, ok=QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt)
@@ -625,7 +642,72 @@ class typicalWindow(QtGui.QMainWindow):
 		else:
 			return
 		return project
-		
-		
+
 	def load(self):
-		drop_list_06
+		list_load=self.drop_list_06
+		list_load_function=list_build.currentText()
+		allthePaths=('//', '//')
+		allthePathsDic={"firstPath":'//', "secondPath":'//'}
+		# getlisttype=self.type_list_drop
+		# listtype=getlisttype.currentText()
+		# if selected_in_list>1:
+		# 	getItems=[(each) for each in selected_in_list]
+		# 	nameToSave=' '.join(getItems)
+		# 	if listtype=="firstPath"
+		# 		suffixAppend="first"
+		# 		path=allthePathsDic.get("firstPath")
+		# 	if listtype=="secondPath"
+		# 		suffixAppend="second"
+		# 		path=allthePathsDic.get("secondPath")
+		# compareBucket=[]
+		# getitems=[(suffixAppend+":"+each.split("/")[-1]) for each in selected_in_list]
+		# name_to_save=' '.join(getitems)
+		if list_load_function==presetlist[0]:
+			prompt="name of list:"
+			getcomment=self.makeBody(prompt)
+			if getComment==None:
+				print "needs name"
+				return
+			else:
+				pass
+			getComment=getComment.replace(' ', '_')
+			shotList=suffixAppend+"_"+getComment+"storedText.txt"
+			fileBuild=path+shotList
+			copyfilemessage="creating in "+fileBuild
+			replay = QtGui.QMessageBox.question(None, 'Message' copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+			if reply == QtGui.QMessageBox.Yes:
+				if os.path.isfile(fileBuild)==True:
+					cmessage="create over "+fileBuild
+					replay = QtGui.QMessageBox.question(None, 'Message' cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					if reply == QtGui.QMessageBox.Yes:
+						inp=open(fileBuild, "w+")
+						inp.write(name_to_save)
+						inp.close()
+						print "created "+fileBuild
+					else:
+						print "cancelled"
+						return
+				else:
+					inp=open(fileBuild, "w+")
+					inp.write(name_to_save)
+					inp.close()
+					print "created "+fileBuild
+			else:
+				print "cancelled"
+				return
+		elif list_build_function==list_build[2]:
+			fileDict, list=self.getAllLists(allthePaths)
+			
+	def reset_callup(self):
+		allthePaths=('//', '//')
+		allthePathsDic={"firstPath":'//', "secondPath":'//'}
+		getlisttype=self.type_list_drop
+		listtype=getlisttype.currentText()
+		if listtype="firstPath":
+			directory=allthePathsDic.get("firstPath")
+		getUser=getUser
+		self.directory_for_taking(getUser, directory)
+		
+	def directory_for_taking(self, getUser, directory)
+		model, countdata, listArray	=self.get_listStuff()
+		# self.status_lbl
