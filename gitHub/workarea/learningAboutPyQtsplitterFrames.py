@@ -533,7 +533,8 @@ class typicalWindow(QtGui.QMainWindow):
 		list_build=self.drop_list_builder_05
 		list_build_function=list_build.currentText()
 		selected_in_list=self.is_listWid_item_selected()
-		allthePaths={"firstPath":'//', "secondPath":'//'}
+		allthePaths=('//', '//')
+		allthePathsDic={"firstPath":'//', "secondPath":'//'}
 		#drop_list_builder_05
 		getlisttype=self.type_list_drop
 		listtype=getlisttype.currentText()
@@ -542,10 +543,10 @@ class typicalWindow(QtGui.QMainWindow):
 			nameToSave=' '.join(getItems)
 			if listtype=="firstPath"
 				suffixAppend="first"
-				path=allthePaths.get("firstPath")
+				path=allthePathsDic.get("firstPath")
 			if listtype=="secondPath"
 				suffixAppend="second"
-				path=allthePaths.get("secondPath")
+				path=allthePathsDic.get("secondPath")
 		compareBucket=[]
 		getitems=[(suffixAppend+":"+each.split("/")[-1]) for each in selected_in_list]
 		name_to_save=' '.join(getitems)
@@ -582,9 +583,26 @@ class typicalWindow(QtGui.QMainWindow):
 			else:
 				print "cancelled"
 				return
-				
+		elif list_build_function==list_build[2]:
+			fileDict, list=self.getAllLists(allthePaths)
 					
-	
+	def getAllLists(self, stuff):
+		fileDict={}
+		for each in stuff:
+			getList, getnamesdic=self.obtain_presets(each)
+			getnames=getnamesdic.keys()
+			for eachp in eachn in map(None, getList, getnames):
+				dictlist={eachn:eachp}
+				fileDict.update(dictlist)
+		return fileDict, getList
+			
+	def obtain_presets(self, morestuff):
+		preset=False
+		format=".txt"
+		getpreset=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(morestuff) for name in files if name.lower().endswith(format)]
+		preset=[(each) for each in getpreset if "_stored" in each]
+		getlistnames=[]
+		
 	def makeBody(self, prompt):
 		text, ok=QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt)
 		if ok:
