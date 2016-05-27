@@ -22,6 +22,8 @@ grab=[(index) for index, each in enumerate(messagelist)]
 random.shuffle(grab)
 grabText=messagelist[grab[0]]
 
+__location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
+
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
 		QtGui.QMainWindow.__init__(self)
@@ -104,7 +106,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		
 		self.frameWidget=QtGui.QGridLayout()
-		self.frameWidget.setContentsMargines(5,10,5,10)
+		self.frameWidget.setContentsMargins(5,10,5,10)
 		self.frameOverride=QtGui.QFrame()
 		self.frameOverride.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
 		self.frameOverride.setFixedHeight(100)
@@ -121,7 +123,7 @@ class typicalWindow(QtGui.QMainWindow):
 	
 		self.btm_btn_layout=QtGui.QGridLayout()
 		self.btm_btn_layout.setAlignment(QtCore.Qt.AlignTop)
-		self.btm_btn_layout.setContentsMargines(5,10,5,10)	
+		self.btm_btn_layout.setContentsMargins(5,10,5,10)	
 		self.wbFrame=QtGui.QFrame()
 		self.wbFrame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
 		self.btm_over_layout=QtGui.QGridLayout()
@@ -133,7 +135,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.pkt_layout= QGridLayout()
 		self.pkt_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.pkt_widget=QGridLayout()
-		self.pkt_widget.setContentsMargines(5,5,5,5)	
+		self.pkt_widget.setContentsMargins(5,5,5,5)	
 		self.pkt_frame=QFrame()
 		self.pkt_frame.setMinimumWidth(650)
 		self.pkt_layout.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
@@ -145,7 +147,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.park_btn_pkt=QtGui.QBoxLayout(2)
 		self.park_btn_pkt.setAlignment(QtCore.Qt.AlignTop)
-		self.park_btn_pkt.setContentsMargines(5,2,5,8)
+		self.park_btn_pkt.setContentsMargins(5,2,5,8)
 		self.wndw_layer_pkt.addLayout(self.park_btn_pkt, 0,0,1,1)
 		self.park_frame=QtGui.QFrame()
 		self.park_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
@@ -277,7 +279,7 @@ class typicalWindow(QtGui.QMainWindow):
 
 		self.checkbox=QCheckBox("add")
 		self.checkbox.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		self.checkbox.setContentsMargines(5,0,0,0)
+		self.checkbox.setContentsMargins(5,0,0,0)
 		self.checkbox.setChecked(1)
 		self.frame_title_layout.addWidget(self.checkbox, 0,1,1,1)
 		
