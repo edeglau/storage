@@ -713,3 +713,8 @@ class typicalWindow(QtGui.QMainWindow):
 	def directory_for_taking(self, getUser, directory):
 		model, countdata, listArray	=self.get_listStuff()
 		# self.status_lbl
+		
+	def connectButton01(self):
+		print "no"
+	def RightClick(self):
+		print "no"
