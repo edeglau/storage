@@ -35,7 +35,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
 		
 		#mainlayout
-		self.vertical_order_layout=QtGui.QBoxLayout(2)
+		self.vertical_order_layout=QtGui.QVBoxLayout()
 		self.vertical_order_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignVCenter)
 		self.masterLayout.addLayout(sel.vertical_order_layout, 0,0,1,1)
 		
@@ -47,11 +47,11 @@ class typicalWindow(QtGui.QMainWindow):
 		self.topDivideLayout.addLayout(self.upper_layout, 0,0,1,1)
 		
 		self.lower_layout=QGridLayout()
-		self.lower_layout.setAlignment()
+		self.lower_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.botDivideLayout.addLayout(self.lower_layout, 0,0,1,1)
 		
 		self.midLayout=QGridLayout()
-		self.midLayoutsetAlignment(QtCore.Qt.AlignTop)
+		self.midLayout.setAlignment(QtCore.Qt.AlignTop)
 		
 		self.base_layout=QGridLayout()
 		self.base_layout.setAlignment(QtCore.Qt.AlignTop)
