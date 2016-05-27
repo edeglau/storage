@@ -1,7 +1,7 @@
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
-	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,BoxLayout, \
 	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
 	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
@@ -299,7 +299,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.frame_len_layout=QGridLayout()
 		self.frame_len_layout.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		self.frame_title_layout.addWidget(self.frame_len_layout, 1,3,1,1)
+		self.frame_title_layout.addLayout(self.frame_len_layout, 1,3,1,1)
 		
 		self.spaceHold=QLabel()
 		self.spaceHold.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
