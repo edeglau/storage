@@ -140,7 +140,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
 		
 		self.wndw_layer_pkt=QtGui.QGridLayout()
-		self.wndw_layer_pkt..setAlignment(QtCore.Qt.AlignTop)
+		self.wndw_layer_pkt.setAlignment(QtCore.Qt.AlignTop)
 		self.pkt_widget.addLayout(self.wndw_layer_pkt, 0,0,1,1)
 		
 		self.park_btn_pkt=QtGui.QBoxLayout(2)
@@ -254,7 +254,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.button_06=QPushButton("button_06")
 		self.button_06.setToolTip("button_06")
-		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)			els
+		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)	
 		self.window_layer_04.addWidget(self.button_06, 0,6,0,1)
 		
 		self.listWidg=QtGui.QTableWidget()
