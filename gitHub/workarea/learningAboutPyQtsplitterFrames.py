@@ -23,7 +23,7 @@ random.shuffle(grab)
 grabText=messagelist[grab[0]]
 
 __location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
-
+styleSheetfile="darkorange"
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
 		QtGui.QMainWindow.__init__(self)
@@ -59,7 +59,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.base_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.botDivideLayout.addLayout(self.base_layout, 4,0,1,1)
 		
-		sshFile=(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
+		sshFile=open(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
 		self.styleData=sshFile.read()
 		sshFile.close
 		
