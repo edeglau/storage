@@ -22,10 +22,7 @@ buttonGrp=[]
 winTitle="title"
 presetlist=["load"]
 typesOfStuffInList=["firstPath", "secondPath"]
-messagelist=("hi", "hello", "how's it going?", "bonjour", "g'day")
-grab=[(index) for index, each in enumerate(messagelist)]
-random.shuffle(grab)
-grabText=messagelist[grab[0]]
+
 
 import functions
 from functions import getItems, getIndex
