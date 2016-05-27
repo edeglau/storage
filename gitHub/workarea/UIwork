@@ -1,3 +1,6 @@
+__author__="me"
+
+
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
@@ -6,6 +9,8 @@ from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
 	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
 from PyQt4.QtCore import SIGNAL
+
+
 import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
 from subprocess import Popen, PIPE
 from os import stat, listdir, walk
@@ -21,6 +26,18 @@ messagelist=("hi", "hello", "how's it going?", "bonjour", "g'day")
 grab=[(index) for index, each in enumerate(messagelist)]
 random.shuffle(grab)
 grabText=messagelist[grab[0]]
+
+import functions
+from functions import getItems, getIndex
+oController=functions.classFunction()
+
+
+developer=[__author__]
+
+
+__location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
+
+getUser=getpass.getuser()
 
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self):
