@@ -262,8 +262,8 @@ class typicalWindow(QtGui.QMainWindow):
 		self.listWidg=QtGui.QTableWidget()
 		self.listWidg.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.listWidg.customContextMenuRequested.connect(self.RightClick)
-		sel.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
-		sel.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
+		self.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
+		self.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
 		self.window_layer_05.addWidget(self.listWidg, 0,2,1,1)
 		
 		self.status_lbl=QLabel()
