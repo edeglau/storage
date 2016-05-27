@@ -130,7 +130,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.btm_over_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.btm_over_layout.addLayout(self.btm_btn_layout, 0,0,1,1)
 		self.btm_over_layout.addWidget(self.wbFrame, 0,0,1,1)
-		self.lower_layout.addWidget(self.btm_btn_layout, 0,0,1,1)
+		self.lower_layout.addLayout(self.btm_btn_layout, 0,0,1,1)
 		
 		self.pkt_layout= QGridLayout()
 		self.pkt_layout.setAlignment(QtCore.Qt.AlignTop)
