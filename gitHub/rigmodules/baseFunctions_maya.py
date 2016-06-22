@@ -13,7 +13,8 @@ __version__ = 1.00
 # 'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 
-from pymel.core import *
+#from pymel.core import *
+import pymel.core as pm
 import maya.cmds as cmds
 import sys, os, glob
 import maya.mel
@@ -3480,17 +3481,16 @@ class BaseClass():
         selObj=cmds.ls(sl=1, fl=1)
         parentObj=selObj[0]
         childrenObj=selObj[1]
-        getparentObj=cmds.listRelatives(parentObj, c=1)
-        getchildObj=cmds.listRelatives(childrenObj, c=1)
+        getparentObj=cmds.listRelatives(parentObj, ad=1, type="mesh")
+        getchildObj=cmds.listRelatives(childrenObj, ad=1, type="mesh")
         for parentItem in getparentObj:
             for childItem in getchildObj:
-                if parentItem in childItem:
-                    parentItemls=cmds.ls(parentItem)
-                    childItemls=cmds.ls(childItem)
-                    cmds.select(parentItemls)
-                    cmds.select(childItemls, add=1)
-                    defName=str(parentItem)+"_BShape"
-                    cmds.blendShape(n=defName, w=(0, 1.0)) 
+            	if "Orig" not in str(pm.PyNode(parentItem).nodeName()):
+            		if str(pm.PyNode(childItem).nodeName()) in str(pm.PyNode(parentItem).nodeName())
+	                    parentItemls=pm.ls(parentItem)
+	                    childItemls=pm.ls(childItem)
+                    	defName=str(pm.PyNode(parentItem).nodeName())+"_BS"
+                    	BlendShapeName=cmds.blendShape(childItemls, parentItemls, n=defName, w=(0, 1.0))
 
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
