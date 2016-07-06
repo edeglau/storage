@@ -390,7 +390,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.B_card_btn=QToolButton()
 		self.B_card_btn.setPopupMode(QToolButton.MenuButtonPopup)
 		self.B_card_btn.setMenu(self.card_menu)
-		self.B_card_special_btn=QPushbutton("card special")
+		self.B_card_special_btn=QPushButton("card special")
 		self.connect(self.B_card_special_btn, SIGNAL('clicked()'),self.B_card_special_callup)
 		action=QtGui.QWidgetAction(self.B_card_btn)
 		action.setDefaultWidget(self.B_card_special_btn)
@@ -740,4 +740,4 @@ class typicalWindow(QtGui.QMainWindow):
 		print "card_special_callup"
 		
 	def Bcard_special_callup(self):
-		print "Bcard_special_callup"
+		print "B_card_special_callup"
