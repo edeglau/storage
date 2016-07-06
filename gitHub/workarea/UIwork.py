@@ -143,7 +143,6 @@ class typicalWindow(QtGui.QMainWindow):
 		self.btm_over_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.btm_over_layout.addLayout(self.btm_btn_layout, 0,0,1,1)
 		self.btm_over_layout.addWidget(self.wbFrame, 0,0,1,1)
-		self.lower_layout.addWidget(self.btm_btn_layout, 0,0,1,1)
 		
 		self.pkt_layout= QGridLayout()
 		self.pkt_layout.setAlignment(QtCore.Qt.AlignTop)
@@ -151,7 +150,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.pkt_widget.setContentsMargins(5,5,5,5)	
 		self.pkt_frame=QFrame()
 		self.pkt_frame.setMinimumWidth(650)
-		self.pkt_layout.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		self.pkt_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
 		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
 		
 		self.wndw_layer_pkt=QtGui.QGridLayout()
