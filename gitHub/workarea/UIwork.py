@@ -34,7 +34,7 @@ regular=[(150,70,70), (150,150,70), (100, 100, 170)]
 regularDict={"darkRed":(150,70,70), "yellow":(120,120,70), "green":(70, 150, 70), "blue":(50,100,200)}
 buttonColoursDict=regularDict
 developer=[__author__]
-
+defaultText="defaultText"
 
 __location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
@@ -312,7 +312,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.frame_len_layout=QGridLayout()
 		self.frame_len_layout.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		self.frame_title_layout.addWidget(self.frame_len_layout, 1,3,1,1)
+		#self.frame_title_layout.addWidget(self.frame_len_layout, 1,3,1,1)
 		
 		self.spaceHold=QLabel()
 		self.spaceHold.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
@@ -349,16 +349,16 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.look_btn=QPushButton("look")
 		self.connect(self.look_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout(self.look_btn, 0,1, 0,1)
+		self.frame_btn_layout.addWidget(self.look_btn, 0,1, 0,1)
 
 
 		self.link_btn=QPushButton("link")
 		self.connect(self.link_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout(self.link_btn, 0,2,1,1)
+		self.frame_btn_layout.addWidget(self.link_btn, 0,2,1,1)
 		
 		self.create_btn=QPushButton("create_btn")
 		self.connect(self.create_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout(self.create_btn, 0,3, 1,1)
+		self.frame_btn_layout.addWidget(self.create_btn, 0,3, 1,1)
 		
 		self.pocketTitle=QPushButton("title")
 		self.pocketTitle.setObjectName('label')
@@ -731,3 +731,5 @@ class typicalWindow(QtGui.QMainWindow):
 		print "hi"
 	def RightClick(self):
 		print "hello"
+	def go(self):
+		print "helo"
