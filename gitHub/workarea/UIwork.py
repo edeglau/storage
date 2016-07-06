@@ -3,7 +3,7 @@ __author__="me"
 
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
-from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
 	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
 	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
@@ -300,13 +300,13 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.radiobox=QGridLayout()
 
-		self.radio=QRadioBox("radio")
+		self.radio=QRadioButton("radio")
 		self.radio.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radio.setChecked(1)
 		self.radiobox.addWidget(self.radio, 0,0,1,1)
 		
 		
-		self.newradio=QRadioBox("newradio")
+		self.newradio=QRadioButton("newradio")
 		self.newradio.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radiobox.addWidget(self.newradio, 0,1,1,1)
 		
@@ -319,7 +319,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.spaceHold.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
 		self.frame_title_layout.addWidget(self.spaceHold, 0,0,1,1)
 		
-		self.over=QRadioBox("over")
+		self.over=QRadioButton("over")
 		self.over.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radiobox.addWidget(self.over, 1,1,1,1)
 		
