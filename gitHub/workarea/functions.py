@@ -168,13 +168,13 @@ class classFunctions():
 				get_string_id.append(getObj)
 			else:
 				get=listW.item(index, 1).isSelected()
-				if get=True:
+				if get==True:
 					getObj=listW.item(index, 2).text()
 					getObj=str(getObj)
 					get_string_id.append(getObj)
 				else:
 					get=listW.item(index, 2).isSelected()
-					if get=True:
+					if get==True:
 						getObj=listW.item(index, 2).text()
 						getObj=str(getObj)
 						get_string_id.append(getObj)
@@ -192,10 +192,10 @@ class classFunctions():
 		if selected_in_list>1:
 			getItems=[(each) for each in selected_in_list]
 			nameToSave=' '.join(getItems)
-			if listtype=="firstPath"
+			if listtype=="firstPath":
 				suffixAppend="first"
 				path=allthePathsDic.get("firstPath")
-			if listtype=="secondPath"
+			if listtype=="secondPath":
 				suffixAppend="second"
 				path=allthePathsDic.get("secondPath")
 		compareBucket=[]
@@ -213,11 +213,11 @@ class classFunctions():
 			shotList=suffixAppend+"_"+getComment+"storedText.txt"
 			fileBuild=path+shotList
 			copyfilemessage="creating in "+fileBuild
-			replay = QtGui.QMessageBox.question(None, 'Message' copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+			replay = QtGui.QMessageBox.question(None, 'Message' ,copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 			if reply == QtGui.QMessageBox.Yes:
 				if os.path.isfile(fileBuild)==True:
 					cmessage="create over "+fileBuild
-					replay = QtGui.QMessageBox.question(None, 'Message' cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					replay = QtGui.QMessageBox.question(None, 'Message' ,cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 					if reply == QtGui.QMessageBox.Yes:
 						inp=open(fileBuild, "w+")
 						inp.write(name_to_save)
