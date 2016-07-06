@@ -4,7 +4,7 @@ __author__="me"
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
-	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QComboBox, QKeySequence, QQToolButton, PlainTextEdit, QPushButton,QBoxLayout, \
 	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
 	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
@@ -370,12 +370,12 @@ class typicalWindow(QtGui.QMainWindow):
 		self.a_btn=QPushButton("a_btn")
 		self.a_btn.setStyleSheet("background-color: rgb"str(buttonColorDict).get("yello")))
 		self.connect(self.a_btn, SIGNAL('clicked()'), self.go)
-		self.park_btn_pkt(self.a_btn)
+		self.park_btn_pkt.addWidget(self.a_btn)
 		
 		self.card_menu=QMenu("card")
 		self.card_menuBar=self.menuBar()
 		self.card_menuBar.addMenu(self.card_menu)
-		self.park_btn_pkt(self.card_menuBar)
+		self.park_btn_pkt.addWidget(self.card_menuBar)
 		buttonGrp.append(self.card_menuBar)
 		
 		self.card_btn=QToolButton()
