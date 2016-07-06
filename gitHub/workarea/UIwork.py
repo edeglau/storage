@@ -22,7 +22,8 @@ buttonGrp=[]
 winTitle="title"
 presetlist=["load"]
 typesOfStuffInList=["firstPath", "secondPath"]
-
+availableStyles=['darkorangefix']
+styleSheetFile=availableStyles[0]
 
 import functions
 from functions import getItems, getIndex
@@ -51,7 +52,7 @@ class typicalWindow(QtGui.QMainWindow):
 		#mainlayout
 		self.vertical_order_layout=QtGui.QBoxLayout(2)
 		self.vertical_order_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignVCenter)
-		self.masterLayout.addLayout(sel.vertical_order_layout, 0,0,1,1)
+		self.masterLayout.addLayout(self.vertical_order_layout, 0,0,1,1)
 		
 		self.topDivideLayout=QGridLayout()
 		self.botDivideLayout=QGridLayout()
@@ -61,17 +62,17 @@ class typicalWindow(QtGui.QMainWindow):
 		self.topDivideLayout.addLayout(self.upper_layout, 0,0,1,1)
 		
 		self.lower_layout=QGridLayout()
-		self.lower_layout.setAlignment()
+		self.lower_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.botDivideLayout.addLayout(self.lower_layout, 0,0,1,1)
 		
 		self.midLayout=QGridLayout()
-		self.midLayoutsetAlignment(QtCore.Qt.AlignTop)
+		self.midLayout.setAlignment(QtCore.Qt.AlignTop)
 		
 		self.base_layout=QGridLayout()
 		self.base_layout.setAlignment(QtCore.Qt.AlignTop)
 		self.botDivideLayout.addLayout(self.base_layout, 4,0,1,1)
 		
-		sshFile=(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
+		sshFile=open(os.path.join(__location__, styleSheetFile+".stylesheet"), 'r')
 		self.styleData=sshFile.read()
 		sshFile.close
 		
