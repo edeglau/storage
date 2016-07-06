@@ -86,7 +86,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.bottom=QtGui.QFrame(self)
 		self.bottom.setFrameShape(QtGui.QFrame.StyledPanel)
-		self.top.setLayout(self.botDivideLayout)
+		self.bottom.setLayout(self.botDivideLayout)
 		
 		self.splitPlane=QtGui.QSplitter(QtCore.Qt.Vertical)
 		self.splitPlane.addWidget(self.top)
