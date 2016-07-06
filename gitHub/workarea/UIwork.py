@@ -21,14 +21,14 @@ from datetime import datetime
 buttonGrp=[]
 winTitle="title"
 presetlist=["load"]
-typesOfStuffInList=["firstPath", "secondPath"]
+typesOfStuffInList=["firstPath", "secondPath"]p
 availableStyles=['darkorangefix']
 styleSheetFile=availableStyles[0]
-
+alist=["monkey", "dog"]
 import functions
 from functions import getItems, getIndex
 oController=functions.classFunction()
-
+pre=[]
 regular=[(150,70,70), (150,150,70), (100, 100, 170)]
 regularDict={"darkRed":(150,70,70), "yellow":(120,120,70), "green":(70, 150, 70), "blue":(50,100,200)}
 buttonColoursDict=regularDict
@@ -256,7 +256,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.drop_list_06.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.connect(self.drop_list_06, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		if len(pres)<1:
-			self.drop_06.setEnabled(0)
+			self.drop_list_06.setEnabled(0)
 		else:
 			self.drop_list_06.setEnabled(1)
 		self.drop_list_06.addItems(alist2)
