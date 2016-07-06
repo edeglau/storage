@@ -32,7 +32,7 @@ oController=functions.classFunction()
 developer=[__author__]
 
 
-__location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__))
+__location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 getUser=getpass.getuser()
 
@@ -154,7 +154,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.base_layout.addLayout(self.pkt_layout, 0,0,1,1)
 		
 		self.wndw_layer_pkt=QtGui.QGridLayout()
-		self.wndw_layer_pkt..setAlignment(QtCore.Qt.AlignTop)
+		self.wndw_layer_pkt.setAlignment(QtCore.Qt.AlignTop)
 		self.pkt_widget.addLayout(self.wndw_layer_pkt, 0,0,1,1)
 		
 		self.park_btn_pkt=QtGui.QBoxLayout(2)
@@ -268,7 +268,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.button_06=QPushButton("button_06")
 		self.button_06.setToolTip("button_06")
-		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)			els
+		self.connect(self.button_06, SIGNAL('clicked()'), self.connectButton01)	
 		self.window_layer_04.addWidget(self.button_06, 0,6,0,1)
 		
 		self.listWidg=QtGui.QTableWidget()
@@ -537,13 +537,13 @@ class typicalWindow(QtGui.QMainWindow):
 				get_string_id.append(getObj)
 			else:
 				get=listW.item(index, 1).isSelected()
-				if get=True:
+				if get==True:
 					getObj=listW.item(index, 2).text()
 					getObj=str(getObj)
 					get_string_id.append(getObj)
 				else:
 					get=listW.item(index, 2).isSelected()
-					if get=True:
+					if get==True:
 						getObj=listW.item(index, 2).text()
 						getObj=str(getObj)
 						get_string_id.append(getObj)
