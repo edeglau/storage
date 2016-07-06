@@ -732,4 +732,6 @@ class typicalWindow(QtGui.QMainWindow):
 	def RightClick(self):
 		print "hello"
 	def go(self):
-		print "helo"
+		print "go"
+	def send(self):
+		print "end"
