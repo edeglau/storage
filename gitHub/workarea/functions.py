@@ -24,7 +24,7 @@ grab=[(index) for index, each in enumerate(messagelist)]
 random.shuffle(grab)
 grabText=messagelist[grab[0]]
 
-class classFunctions():
+class classFunction():
 
 	def buttonToggle(self):
 		get_a_layout=self.park_btn_pkt
