@@ -722,6 +722,6 @@ class typicalWindow(QtGui.QMainWindow):
 		getUser=getUser
 		self.directory_for_taking(getUser, directory)
 		
-	def directory_for_taking(self, getUser, directory)
+	def directory_for_taking(self, getUser, directory):
 		model, countdata, listArray	=self.get_listStuff()
 		# self.status_lbl
