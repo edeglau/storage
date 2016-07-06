@@ -319,11 +319,11 @@ class classFunctions():
 			shotList=suffixAppend+"_"+getComment+"storedText.txt"
 			fileBuild=path+shotList
 			copyfilemessage="creating in "+fileBuild
-			replay = QtGui.QMessageBox.question(None, 'Message' copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+			replay = QtGui.QMessageBox.question(None, 'Message' ,copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 			if reply == QtGui.QMessageBox.Yes:
 				if os.path.isfile(fileBuild)==True:
 					cmessage="create over "+fileBuild
-					replay = QtGui.QMessageBox.question(None, 'Message' cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					replay = QtGui.QMessageBox.question(None, 'Message' ,cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 					if reply == QtGui.QMessageBox.Yes:
 						inp=open(fileBuild, "w+")
 						inp.write(name_to_save)
@@ -348,11 +348,11 @@ class classFunctions():
 		allthePathsDic={"firstPath":'//', "secondPath":'//'}
 		getlisttype=self.type_list_drop
 		listtype=getlisttype.currentText()
-		if listtype="firstPath":
+		if listtype=="firstPath":
 			directory=allthePathsDic.get("firstPath")
 		getUser=getUser
 		self.directory_for_taking(getUser, directory)
 		
-	def directory_for_taking(self, getUser, directory)
+	def directory_for_taking(self, getUser, directory):
 		model, countdata, listArray	=self.get_listStuff()
 		# self.status_lbl
