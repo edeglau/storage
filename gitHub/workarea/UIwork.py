@@ -29,7 +29,9 @@ import functions
 from functions import getItems, getIndex
 oController=functions.classFunction()
 
-
+regular=[(150,70,70), (150,150,70), (100, 100, 170)]
+regularDict={"darkRed":(150,70,70), "yellow":(120,120,70), "green":(70, 150, 70), "blue":(50,100,200)}
+buttonColoursDict=regularDict
 developer=[__author__]
 
 
@@ -235,7 +237,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.connect(self.drop_04, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 
 		self.list_frame=QFrame()
-		self.list_frame.setStyleSheet("color: rgb"+str(buttonColoursDict.get("ared")))
+		self.list_frame.setStyleSheet("color: rgb"+str(buttonColoursDict.get("red")))
 		self.list_layout=QHBoxLayout()
 		self.list_frame.setLayout(self.list_layout)
 		
