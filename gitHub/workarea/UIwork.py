@@ -25,6 +25,7 @@ typesOfStuffInList=["firstPath", "secondPath"]p
 availableStyles=['darkorangefix']
 styleSheetFile=availableStyles[0]
 alist=["monkey", "dog"]
+alist2=["arm","leg"]
 import functions
 from functions import getItems, getIndex
 oController=functions.classFunction()
@@ -276,8 +277,8 @@ class typicalWindow(QtGui.QMainWindow):
 		self.listWidg=QtGui.QTableWidget()
 		self.listWidg.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.listWidg.customContextMenuRequested.connect(self.RightClick)
-		sel.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
-		sel.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
+		self.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
+		self.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
 		self.window_layer_05.addWidget(self.listWidg, 0,2,1,1)
 		
 		self.status_lbl=QLabel()
@@ -730,3 +731,5 @@ class typicalWindow(QtGui.QMainWindow):
 
 	def connectButton01(self):
 		print "hi"
+	def RightClick(self):
+		print "hello"
