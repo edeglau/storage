@@ -298,8 +298,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.checkbox.setChecked(1)
 		self.frame_title_layout.addWidget(self.checkbox, 0,1,1,1)
 		
-		self.radiobox=QGridLayout("add")
-		self.radiobox.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.radiobox=QGridLayout()
 		self.frame_title_layout.addWidget(self.radiobox, 1,0,1,1)
 
 		self.radio=QRadioBox("radio")
