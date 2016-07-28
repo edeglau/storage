@@ -268,11 +268,7 @@ class ToolKitUI(object):
         getBaseClass.build_a_curve()
 
     def _fix_playblast(self, arg=None):
-        # python("from mpc.maya.mpcPlayblast import mpcPlayblastMaya");
-        # python("from mpc.maya.mpcPlayblast import mpcPlayblastFromHubInterface");
-        # python("import maya.mel as mel");
         python("playblast = None");
-        # python("playblastMel = None");
 
     def _point_const(self, arg=None): 
         toolClass.point_const()
