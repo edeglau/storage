@@ -589,9 +589,9 @@ class ToolFunctions(object):
 
     def open_web(self, arg=None):
         '''--------------------------------------------------------------------------------------------------------------------------------------
-        This opens the hub
+        This opens webpage
         --------------------------------------------------------------------------------------------------------------------------------------'''          
-        getNodeType="http://hub.vanh.mpc.local/hubViewer.php?job=sm"
+        getNodeType="http://"
         subprocess.Popen('firefox "%s"' % getNodeType, stdout=subprocess.PIPE, shell=True)                     
 
     def _view_texture_file(self, arg=None):
