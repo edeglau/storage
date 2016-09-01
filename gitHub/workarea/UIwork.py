@@ -4,7 +4,7 @@ __author__="me"
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
-	QComboBox, QKeySequence, QQToolButton, PlainTextEdit, QPushButton,QBoxLayout, \
+	QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
 	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
 	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
 	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
@@ -21,7 +21,7 @@ from datetime import datetime
 buttonGrp=[]
 winTitle="title"
 presetlist=["load"]
-typesOfStuffInList=["firstPath", "secondPath"]p
+typesOfStuffInList=["firstPath", "secondPath"]
 availableStyles=['darkorangefix']
 styleSheetFile=availableStyles[0]
 alist=["monkey", "dog"]
@@ -587,7 +587,7 @@ class typicalWindow(QtGui.QMainWindow):
 			if reply == QtGui.QMessageBox.Yes:
 				if os.path.isfile(fileBuild)==True:
 					cmessage="create over "+fileBuild
-					replay = QtGui.QMessageBox.question(None, 'Message' cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+					replay = QtGui.QMessageBox.question(None, 'Message', cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
 					if reply == QtGui.QMessageBox.Yes:
 						inp=open(fileBuild, "w+")
 						inp.write(name_to_save)
