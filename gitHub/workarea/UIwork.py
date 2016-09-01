@@ -345,7 +345,7 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		self.go_btn=QPushButton("go")
 		self.connect(self.go_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout(self.go_btn, 0,0,0,1)
+		self.frame_btn_layout.addWidget(self.go_btn, 0,0,0,1)
 		
 		self.look_btn=QPushButton("look")
 		self.connect(self.look_btn, SIGNAL('clicked()'), self.go)
@@ -741,3 +741,11 @@ class typicalWindow(QtGui.QMainWindow):
 		
 	def Bcard_special_callup(self):
 		print "B_card_special_callup"
+
+		
+	def B_card_special_callup(self):
+		print "B_card_special_callup"
+		
+
+inst=typicalWindow()
+inst.show()
