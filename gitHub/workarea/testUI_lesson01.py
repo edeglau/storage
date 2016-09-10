@@ -57,7 +57,27 @@ projects='/jobs/'+PROJECT
 prjFileName = os.listdir(projects)
 prjFileName=sorted(prjFileName)
 getUser=getpass.getuser()
+
+
+audioVer="v0001"
+
+audioName="/pcm_s16le_aif/ns0161_cut_main_v0001-pcm_s16le"
+
+audioFormat=".aif"
+
+audioFile='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/REFERENCE/editorial/cut/main/'+audioVer+'/'+audioName+audioFormat
+
+comment="test"
+startFR=998
+endFR=1016
+
+typeplay="playblast-hhd_vdf8"
+foldertypeplay="playblast-hhd_vdf8_jpg"
+
+formatEXT=".jpg"
+
 print "making window..."
+
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self, parent=None):
 		super(typicalWindow, self).__init__(parent)
@@ -196,7 +216,10 @@ class typicalWindow(QtGui.QMainWindow):
 		self.window_layer_01.addWidget(self.drop_01, 0,1,1,1)
 		self.drop_01.addItems(prjFileName)
 		self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.drop_01.customContextMenuRequested.connect(self.onRightClick)
+
+		# self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		# self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		
 		self.drop_lbl_02=QLabel()
 		self.drop_lbl_02.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
@@ -298,21 +321,22 @@ class typicalWindow(QtGui.QMainWindow):
 		headers = ('Name', 'Date', 'Path')
 
 		self.listWidg = QTableWidget(1, 3)
-		self.listWidg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-		self.listWidg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+		# self.listWidg.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+		# self.listWidg.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 		# self.listWidg.cellPressed.connect(self.clicked)
 		
 		# self.listWidg=QTableWidget(0, 3)
 		self.listWidg.setHorizontalHeaderLabels(headers)
 		# tableWidget=self.listWidg
-		# tableWidget.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked)		
+		self.listWidg.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked)		
 		col1, col2, col3= 240, 160, 500
 		self.listWidg.setColumnWidth(0, col1)
 		self.listWidg.setColumnWidth(1, col2)
 		self.listWidg.setColumnWidth(2, col3)
-		# tableWidget.setSelectionBehavior(QAbstractItemView.SelectRows)
+		self.listWidg.setSelectionBehavior(QAbstractItemView.SelectRows)
 		self.listWidg.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.listWidg.customContextMenuRequested.connect(self.RightClick)
+		# self.listWidg.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)		
 		self.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
 		self.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
 		self.window_layer_05.addWidget(self.listWidg, 0,2,1,1)
@@ -380,21 +404,21 @@ class typicalWindow(QtGui.QMainWindow):
 		self.fieldBox.setVisible(0)
 		self.fieldBox.setText(defaultText)
 		
-		self.go_btn=QPushButton("go")
-		self.connect(self.go_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout.addWidget(self.go_btn, 0,0,0,1)
+		self.play_in_rv_button=QPushButton("play in RV")
+		self.connect(self.play_in_rv_button, SIGNAL('clicked()'), self.play_in_rv)
+		self.frame_btn_layout.addWidget(self.play_in_rv_button, 0,0,0,1)
 		
-		self.look_btn=QPushButton("look")
-		self.connect(self.look_btn, SIGNAL('clicked()'), self.go)
+		self.look_btn=QPushButton("compare")
+		self.connect(self.look_btn, SIGNAL('clicked()'), self.compare_in_rv)
 		self.frame_btn_layout.addWidget(self.look_btn, 0,1, 0,1)
 
 
-		self.link_btn=QPushButton("link")
-		self.connect(self.link_btn, SIGNAL('clicked()'), self.go)
-		self.frame_btn_layout.addWidget(self.link_btn, 0,2,1,1)
+		# self.link_btn=QPushButton("link")
+		# self.connect(self.link_btn, SIGNAL('clicked()'), self.play_in_rv)
+		# self.frame_btn_layout.addWidget(self.link_btn, 0,2,1,1)
 		
-		self.create_btn=QPushButton("create_btn")
-		self.connect(self.create_btn, SIGNAL('clicked()'), self.go)
+		self.create_btn=QPushButton("Publish")
+		self.connect(self.create_btn, SIGNAL('clicked()'), self.pub_to_shotgun)
 		self.frame_btn_layout.addWidget(self.create_btn, 0,3, 1,1)
 		
 		self.pocketTitle=QPushButton("title")
@@ -406,7 +430,7 @@ class typicalWindow(QtGui.QMainWindow):
 
 		self.a_btn=QPushButton("a_btn")
 		#self.a_btn.setStyleSheet("background-color: rgb"str(buttonColorDict).get("yello")))
-		self.connect(self.a_btn, SIGNAL('clicked()'), self.go)
+		self.connect(self.a_btn, SIGNAL('clicked()'), self.play_in_rv)
 		self.park_btn_pkt.addWidget(self.a_btn)
 		
 		self.card_menu=QMenu("card")
@@ -482,8 +506,15 @@ class typicalWindow(QtGui.QMainWindow):
 		getDropScene.addItems(get_items)		
 
 	def onRightClick(self):
-		path='//'
-		command="xdg-open '%s'"%path
+		scene=self.drop_01
+		scene=scene.currentText()		
+		path='/jobs/'+PROJECT+'/'+scene+"/"
+		self.launch_folder(path)
+
+
+	def launch_folder(self, path):
+		# command="xdg-open '%s'"%path
+		command="dolphin '%s'"%path
 		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 		
 	def on_drop_01_changed(self):
@@ -760,10 +791,47 @@ class typicalWindow(QtGui.QMainWindow):
 		print "hi"
 		self.listCreate()
 
+
 	def RightClick(self):
-		print "hello"
-	def go(self):
-		print "go"
+		selected_in_list=self.is_listWid_item_selected()
+		path=str(selected_in_list[0])+"/"
+		# command="xdg-open '%s'"%path
+		self.launch_folder(path)
+
+
+	def play_in_rv(self):
+		selected_in_list=self.is_listWid_item_selected()
+		command="rv "+str(selected_in_list[0])+"/*"
+		print "you are running command: "+command
+		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+
+
+	def compare_in_rv(self):
+		selected_in_list=self.is_listWid_item_selected()
+		if len(selected_in_list)<2:
+			print "must select more than one object in list"
+		else:
+			command="rv -wipe "+str(selected_in_list[0])+"/* "+str(selected_in_list[1])+"/*"
+			print "you are running command: "+command
+			subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+
+
+	def pub_to_shotgun(self):
+		selected_in_list=self.is_listWid_item_selected()
+		getPath=selected_in_list[0]+'/'+foldertypeplay+"/"
+		get_items=os.listdir(getPath)
+		getFileName=get_items[0].split(".")[0]
+		print getFileName
+		# getFileName=str(getFileName)+"-"+str(typeplay)
+		# print getFileName
+		format="_jpg"
+		# command='msubmitCmd -p "'+str(selected_in_list[0])+getFileName+'.%04d'+formatEXT+'"'+' -s '+str(startFR)+' -e '+str(endFR)+' -t review -n='+comment+' --task techanim -audio '+audioFile+' -audioOffset 0'
+		command='msubmitCmd -p "'+str(selected_in_list[0])+'/'+typeplay+format+'/'+getFileName+'.%04d'+formatEXT+'"'+' -s '+str(startFR)+' -e '+str(endFR)+' -t review -n="'+comment+'" --task '+DEPT
+		# command="rv "+str(selected_in_list[0])+"/*"
+		print "you are running command: "+command
+		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
+
+
 	def send(self):
 		print "end"
 
