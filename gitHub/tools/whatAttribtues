@@ -1,0 +1,28 @@
+
+'''This copies values and animcurve nodes of a first selection to all secondary selections'''
+notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
+collectItem=[]
+for each in cmds.ls(sl=1):
+    if cmds.nodeType(each)=="transform":
+        getRelatives=cmds.listRelatives(each , c=1)
+        for eachRelative in getRelatives:
+            collectItem.append(eachRelative)
+    else:
+        collectItem.append(each)
+collectItem=set(collectItem)        
+print "alibrary={"
+for each in collectItem:
+    print each
+    for item in notAttr:
+        if item not in attrib:
+            getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, l=0, s=1, iu=1, u=1, lf=1, m=0)]
+    #getListedAttr=cmds.listAttr (each, w=1, a=1, s=1, u=1, m=0)
+    for item in getListedAttr:
+        if "." not in item:
+            try:
+                getVal=cmds.getAttr(each+"."+item)
+                print '"'+each+'.'+str(item)+'":'+str(getVal)
+            except:
+                print "pass"
+                pass
+print "}"
