@@ -536,12 +536,12 @@ class attributeSwapper(object):
                                             for key, value in gethis.items():
                                                 for listeditem in getListedAttr:
                                                     if current_item==listeditem:
-                                                        cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
+                                                        cmds.setAttr(each+'.'+current_item, value)                                                 
                                         else:
                                              for key, value in gethis.items():
                                                 for listeditem in getListedAttr:
                                                     if current_item==listeditem:
-                                                        cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
+                                                        cmds.setKeyframe( each, t=key, at=current_item, v=value )  
                                     except:
                                         pass                                              
                         else:
