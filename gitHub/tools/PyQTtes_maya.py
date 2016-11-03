@@ -56,7 +56,7 @@ buttonColoursDict=regularDict
 developer=[__author__]
 defaultText="defaultText"
 
-USER = os.getenv("USER")
+USER = os.getenv("")
 PROJECT=os.getenv("")
 SCENE=os.getenv("")
 SHOT=os.getenv("")
@@ -72,60 +72,9 @@ getUser=getpass.getuser()
 formatEXT=".jpg"
 
 
-sgVarFilePath = '/jobs/%s/%s/%s/TECH/lib/shotgun/setshot.d/sgvars' % (PROJECT, SCENE, SHOT)
-if os.path.isfile(sgVarFilePath):
-    # get available in/out values
-    franges = {'WORK_IN': None, 'CUT_IN': None,
-               'WORK_OUT': None, 'CUT_OUT': None}
-    for line in open(sgVarFilePath, 'r'):
-    	if "CUT_DURATION" in line:
-    		shot_len_value = line.split('=')[-1].strip()
-	        try:
-	            shot_len_value = int(shot_len_value)
-	        except:
-	            shot_len_value = None
-        if 'CUT_IN' in line:
-    		cut_in_value = line.split('=')[-1].strip()
-	        try:
-	            cut_in_value = int(cut_in_value)
-	        except:
-	            cut_in_value = None
-        if 'CUT_OUT' in line:
-    		cut_out_value = line.split('=')[-1].strip()
-	        try:
-	            cut_out_value = int(cut_out_value)
-	        except:
-	            cut_out_value = None
-        if 'WORK_IN' in line:
-    		wk_strt_value = line.split('=')[-1].strip()
-	        try:
-	            wk_strt_value = int(wk_strt_value)
-	        except:
-	            wk_strt_value = None
-        if 'WORK_OUT' in line:
-    		wk_out_value = line.split('=')[-1].strip()
-	        try:
-	            wk_out_value = int(wk_out_value)
-	        except:
-	            wk_out_value = None
-        if 'CUT_IN' in line:
-    		cut_shouldbe_in_value = line.split('=')[-1].strip()
-	        try:
-	            cut_shouldbe_in_value = int(cut_shouldbe_in_value)-8
-	        except:
-	            cut_shouldbe_in_value = None
-        if 'CUT_OUT' in line:
-    		cut_shouldbe_out_value = line.split('=')[-1].strip()
-	        try:
-	            cut_shouldbe_out_value = int(cut_shouldbe_out_value)+8
-	        except:
-	            cut_shouldbe_out_value = None
 
 print "launching window..."
-try:
-	winTitle="mTools "+PROJECT+" : "+SHOT+" : (F"+str(shot_len_value)+") FRANGE:"+str(cut_in_value)+" - "+str(cut_out_value)
-except:
-	winTitle="mTools "+PROJECT+" : "+SHOT
+winTitle="mTools "
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self, parent=None):
 		super(typicalWindow, self).__init__(parent)
@@ -419,7 +368,7 @@ class typicalWindow(QtGui.QMainWindow):
 
 
 
-# app=QtGui.QApplication(sys.argv)
+
 inst=typicalWindow()
 inst.show()
-# sys.exit(app.exec_())
+
