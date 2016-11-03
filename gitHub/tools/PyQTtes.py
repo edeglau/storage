@@ -19,8 +19,8 @@ from os.path import isfile, join
 from datetime import datetime
 buttonGrp=[]
 
-import mockTools
-reload (mockTools) 
+import tools
+reload (tools) 
 failedComments=[
 				"defaultText", 
 				"", 
@@ -38,16 +38,16 @@ failedComments=[
 				]
 
 presetlist=["load"]
-typesOfReview=['review', 'review_anim', 'delivery']
+typesOfReview=['']
 __location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 availableStyles=['darkOrange']
 styleSheetFile=availableStyles[0]
 
-headers = ('Name', 'Date', 'Path', 'Sub')
+headers = ('Name', 'Date', 'Path', '')
 get_a_play_list=["load", "build"]
 alist2=['listone', 'listtwo']
-setDefaultType=['review']
+setDefaultType=['']
 col1, col2, col3, col4= 240, 160, 500, 50
 pre=[]
 regular=[(150,70,70), (150,150,70), (100, 100, 170)]
@@ -56,13 +56,11 @@ buttonColoursDict=regularDict
 developer=[__author__]
 defaultText="defaultText"
 
-M_USER = os.getenv("USER")
-
-
-PROJECT=os.getenv("M_JOB")
-SCENE=os.getenv("SEQUENCE_SHOT_")
-SHOT=os.getenv("M_LEVEL")
-DEPT=os.getenv("M_TASK")
+USER = os.getenv("USER")
+PROJECT=os.getenv("")
+SCENE=os.getenv("")
+SHOT=os.getenv("")
+DEPT=os.getenv("")
 
 
 projects='/jobs/'+PROJECT
@@ -70,13 +68,6 @@ prjFileName = os.listdir(projects)
 prjFileName=sorted(prjFileName)
 getUser=getpass.getuser()
 
-audioVer="v0001"
-
-audioName='/pcm_s16le_aif/'+SHOT+'_cut_main_v0001-pcm_s16le'
-
-audioFormat=".aif"
-
-audioFile='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/REFERENCE/editorial/cut/main/'+audioVer+'/'+audioName+audioFormat
 
 formatEXT=".jpg"
 
@@ -404,25 +395,25 @@ class typicalWindow(QtGui.QMainWindow):
 
 
 	def BlendGrps_butt(self):
-		get_baseTools=mockTools.mToolKit() 
+		get_baseTools=tools.mToolKit() 
 		get_baseTools.blendSearchGroups()
 
 
 
 	def init_from_range_butt(self):
-		get_baseTools=mockTools.mToolKit() 
+		get_baseTools=tools.mToolKit() 
 		get_baseTools.initialize_strt_based_on_wkrange()
 
 
 
 	def init_from_nuc_butt(self):
-		get_baseTools=mockTools.mToolKit() 
+		get_baseTools=tools.mToolKit() 
 		get_baseTools.initialize_strt_based_on_nucleus()
 
 
 
 	def _grab_nucleus(self):
-		get_baseTools=mockTools.mToolKit() 
+		get_baseTools=tools.mToolKit() 
 		get_baseTools.grab_nucleus()
 
 
