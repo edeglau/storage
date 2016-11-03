@@ -26,21 +26,21 @@ reload (baseMockFunctions_maya)
 import ast
 getBaseClass=baseMockFunctions_maya.BaseClass() 
 workSpace=cmds.workspace(q=1, lfw=1)[-1]
-M_USER = os.getenv("USER")
-PROJECT=os.getenv("M_JOB")
-SCENE=os.getenv("SEQUENCE_SHOT_")
-SHOT=os.getenv("M_LEVEL")
-DEPT=os.getenv("M_TASK")
-
-projectFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+'/maya/scenes/'
-sceneFolder='/jobs/'+PROJECT+'/'+SCENE
-animFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/instances/'
-abcFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+'/maya/cache/alembic/'
-pbFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+'/maya/movies/'
-rvFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/'+DEPT
+USER = os.getenv("")
+PROJECT=os.getenv("")
+SCENE=os.getenv("")
+SHOT=os.getenv("")
 
 
-proj_commonFolder='/jobs/'+PROJECT+'/COMMON/rig/dyn_att_presets/'
+projectFolder=
+sceneFolder=
+animFolder=
+abcFolder=
+pbFolder=
+rvFolder=
+
+
+proj_commonFolder=
 
 
 class attributeSwapper(object):
