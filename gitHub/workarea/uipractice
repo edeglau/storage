@@ -95,7 +95,33 @@ if os.path.isfile(sgVarFilePath):
         if 'WORK_IN' in line:
     		wk_strt_value = line.split('=')[-1].strip()
 	        try:
+	            wk_strt_value = int(wk_strt_value)
+	        except:
+	            wk_strt_value = None
+        if 'WORK_OUT' in line:
+    		wk_out_value = line.split('=')[-1].strip()
+	        try:
+	            wk_out_value = int(wk_out_value)
+	        except:
+	            wk_out_value = None
+        if 'CUT_IN' in line:
+    		cut_shouldbe_in_value = line.split('=')[-1].strip()
+	        try:
+	            cut_shouldbe_in_value = int(cut_shouldbe_in_value)-8
+	        except:
+	            cut_shouldbe_in_value = None
+        if 'CUT_OUT' in line:
+    		cut_shouldbe_out_value = line.split('=')[-1].strip()
+	        try:
+	            cut_shouldbe_out_value = int(cut_shouldbe_out_value)+8
+	        except:
+	            cut_shouldbe_out_value = None
 
+print "launching window..."
+try:
+	winTitle="mTools "+PROJECT+" : "+SHOT+" : (F"+str(shot_len_value)+") FRANGE:"+str(cut_in_value)+" - "+str(cut_out_value)
+except:
+	winTitle="mTools "+PROJECT+" : "+SHOT
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self, parent=None):
 		super(typicalWindow, self).__init__(parent)
@@ -414,15 +440,15 @@ class typicalWindow(QtGui.QMainWindow):
 
 	def _grab_mesh(self):
 		get_baseTools=mockTools.mToolKit() 
-		get_baseTools.grab_nucleus()
+		get_baseTools.selectNclothMesh()
 
 	def _grab_ncloth(self):
 		get_baseTools=mockTools.mToolKit() 
-		get_baseTools.grab_nucleus()
+		get_baseTools.selectNclothcloth()
 
 	def _grab_cache(self):
 		get_baseTools=mockTools.mToolKit() 
-		get_baseTools.grab_nucleus()
+		get_baseTools.selectNclothCache()
 
 
 
