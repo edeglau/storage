@@ -1,0 +1,141 @@
+'''
+Created on Apr 8, 2014
+
+@author: Elise
+'''
+print "base"
+'''MG rigging modules'''
+__author__ = "Elise Deglau"
+__version__ = 1.00
+'This work is licensed under a Creative Commons Attribution 4.0 International 4.0 (CC BY 4.0)'
+'http://creativecommons.org/licenses/by/4.0/'
+# 'This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Australia (CC BY-SA 3.0 AU)'
+# 'http://creativecommons.org/licenses/by-sa/3.0/au/'
+
+
+#from pymel.core import *
+import pymel.core as pm
+import maya.cmds as cmds
+import sys, os, glob, re
+import maya.mel
+import pymel.core as pm
+
+getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
+
+
+class BaseClass():
+
+    def massTransfer(self):
+        '''alternates a selection to sequentially mass transfer attributes from pairs of objects'''
+#        selObj=self.selection_grab()
+        selObj=cmds.ls(sl=1)
+        if len(selObj)<2:
+            print "select more than one object"
+        else:
+            pass
+        for eachController, eachChild in map(None, selObj[::2], selObj[1::2]):
+            getControllerListAttr=cmds.listAttr (eachController, w=1, a=1, s=1, u=1)
+            getChildListAttr=cmds.listAttr (eachChild, w=1, a=1, s=1, u=1)
+            for eachControllerAttr, eachChildAttr in map(None, getControllerListAttr, getChildListAttr):
+                # if "direction" not in eachControllerAttr:
+                if eachControllerAttr == eachChildAttr:
+                    try:
+                        getChildObj=cmds.ls(eachChild)[0]
+                        getChildAttrToChange=getattr(getChildObj, eachChildAttr)
+                        getParentObj=cmds.ls(eachController)[0]
+                        getChangeAttr=getattr(getParentObj,eachControllerAttr).get()
+                        print "setting"+ eachChild, eachChildAttr, getChangeAttr                    
+                        getChildAttrToChange.set(getChangeAttr)
+                    except:
+                        print eachChild, eachChildAttr+" skipped (locked or otherwise)"
+                        pass
+
+
+    def xformmove(self):
+        '''move to matrix'''
+        objSel=cmds.ls(sl=1)
+        matrix=cmds.xform(objSel[1], q=1, ws=1, m=1)
+        cmds.xform(objSel[0], ws=1, m=matrix)   
+        cmds.select(objSel[0])
+    
+
+    def _transfer_anim_attr(self, arg=None):
+        '''This copies values and animcurve nodes of a first selection to all secondary selections'''
+        getSel=cmds.ls(sl=1)
+        getChildren=getSel[1:]
+        getParent=getSel[:1]
+        for each in getChildren:
+            getFirstattr=cmds.listAttr (getParent[0], w=1, a=1, s=1, u=1, m=0)
+            for item in getFirstattr:
+                if "." not in item:
+                    if "direction" not in item:
+                        get=cmds.keyframe(getParent[0]+'.'+item, q=1, kc=1)
+                        if get!=0:
+                            try:
+                                getSource=cmds.connectionInfo(getParent[0]+'.'+item, sfd=1)
+                                newAnimSrce=cmds.duplicate(getSource)
+                                lognm=newAnimSrce[0].replace(str(getParent[0]), str(each))
+                                #===========================================================
+                                # remove numbers at end
+                                #===========================================================
+                                newname=re.sub("\d+$", "", lognm)
+                                cmds.rename(newAnimSrce, newname)
+                                getChangeAttr=each+'.'+item                        
+                                cmds.connectAttr(newname+'.output', getChangeAttr, f=1)                             
+    #                            connectAttr(getSource, each+"."+item, f=1)
+                            except:
+                                pass
+                        else:
+                            try:
+                                getValue=pm.getattr(pm.PyNode(getParent[0]),item).get()
+                                getChangeAttr=pm.getattr(pm.PyNode(each),item)
+                                getChangeAttr.set(getValue)
+                            except:
+                                pass
+
+
+    def cleanObjHist(self, winName):
+        result = cmds.confirmDialog ( 
+            title='Clean object', 
+            message="Warning! Any Orig shape and history will be deleted on all selected objects!", 
+            button=['Continue','Cancel'],
+            defaultButton='Continue', 
+            cancelButton='Cancel', 
+            dismissString='Cancel' )
+        if result == 'Continue':
+            pass
+        else:
+            print "nothing collected"         
+        self.cleaningFunctionCallup(winName)
+        self.clearHistoryCallup(winName) 
+    
+
+    def cleanObj(self, winName):
+        self.cleaningFunctionCallup(winName)
+
+    def clearHistoryCallup(self, winName):
+        objSel=cmds.ls(sl=1, fl=1)
+        if len(objSel)>1:
+            if "." in objSel[1]:
+                objSel=cmds.ls(objSel[1].split(".")[0])
+            else:
+                objSel=objSel        
+            print objSel
+        for each in objSel:        
+            cmds.delete(each, ch=1)
+            print "deleted history on "+each
+            try:
+                getShapes=cmds.listRelatives(each, c=1, typ="shape")
+                for item in getShapes:
+                    if "Orig" in item:
+                        item=cmds.ls(item)
+                        cmds.delete(item[0])
+                        print "deleted "+item[0]
+                    if "output" in item:
+                        item=cmds.ls(item)
+                        cmds.rename(item[0], each+"Shape")
+                        print "renamed "+item[0]+" to "+each+"Shape"
+            except:
+                print "Object has no shapes. Passing on cleaning shapes."
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName) 
