@@ -243,7 +243,7 @@ class attributeSwapper(object):
             winGrpName = "Pick from below"
             if cmds.window(winGrpName, exists=True):
                 cmds.deleteUI(winGrpName)
-            window = cmds.window(winGrpName, title=winGrpName, tbm=1, w=800, h=150)
+            choose_window = cmds.window(winGrpName, title=winGrpName, tbm=1, w=800, h=150)
             cmds.menuBarLayout(h=30)
             cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
             cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -260,21 +260,26 @@ class attributeSwapper(object):
             cmds.button (label='Selected', p='listBuildButtonLayout', w=150, command = lambda *args:self._applyallatt_selected(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
             cmds.button (label='SelectedDyn', p='listBuildButtonLayout', w=150, command = lambda *args:self._applyallatt_dynselected(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
             cmds.button (label='Load All', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_found_att(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.button (label='Force Selected', p='listBuildButtonLayout', w=150, command = lambda *args:self.open_genAttributefolderWindow(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
+            cmds.button (label='Force Selected', p='listBuildButtonLayout', w=150, command = lambda *args:self.open_genAttributefolderWindow(getFolderFiles=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
             cmds.button (label='open folder', p='listBuildButtonLayout', w=150, command = lambda *args:self._open_defined_path(cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.showWindow(window) 
+            cmds.showWindow(choose_window) 
               
 
 
         def _apply_found_att(self, folderType):
-            print folderType
             getallfiles=os.listdir(folderType)
-            print getallfiles   
             notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
             for filename in getallfiles:
-                isolateFilename=filename.split('.')[0] 
-                isolateitemName=isolateitemName.split(':')[1]
-                getItemInScene=cmds.ls(isolateitemName)[0]
+                isolateFileName=filename.split('.')[0]
+                if ":" in isolateFileName:
+                    isolateitemName=isolateFileName.split(':')[-1]        
+                else:
+                    isolateitemName=isolateFileName
+                print isolateitemName
+                try:
+                    getItemInScene=cmds.ls('*:'+isolateitemName)[0]
+                except:
+                    getItemInScene=isolateitemName
                 if cmds.objExists(getItemInScene):
                     attribute_container=[]
                     getListedAttr=[(attrib) for attrib in cmds.listAttr(getItemInScene, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
@@ -297,12 +302,15 @@ class attributeSwapper(object):
                                                 for key, value in gethis.items():
                                                     for listeditem in getListedAttr:
                                                         if current_item==listeditem:
+                                                            cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)   
                                                             cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
+                                                            # print "set "+ cmds.ls(getObj)[0]+'.'+current_item+" at "+str(value)
                                             else:
                                                  for key, value in gethis.items():
                                                     for listeditem in getListedAttr:
                                                         if current_item==listeditem:
                                                             cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
+                                                            # print "set "+ cmds.ls(getObj)[0]+'.'+current_item+' at '+str(value)+" frame "+str(key)                               
                                         except:
                                             pass                                              
                             else:
@@ -366,14 +374,20 @@ class attributeSwapper(object):
 
 
 
-        def forceAtt(self, folderType):
-            print folderType         
+        def forceAtt(self, getPath, getPathfile):
+            folderType=getPath+'/'+getPathfile
+            # folderType=getPathfile
+            print folderType    
             notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]
             List = open(folderType).readlines()
             for each in cmds.ls(sl=1):
+                print each
                 for aline in List:
                     attribute_container=[]
                     getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
+                    # printFolder=folderType+'/'+filename
+                    # List = open(printFolder).readlines()
+                    # for aline in List:
                     if ">>" in aline:
                         getObj=aline.split('>>')[0]
                         getExistantInfo=aline.split('>>')[1]
@@ -385,6 +399,7 @@ class attributeSwapper(object):
                                     current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
                                     # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
                                     gethis=ast.literal_eval(next_item)
+                                    print gethis
                                     try:
                                         if len(gethis)<2:
                                             for key, value in gethis.items():
@@ -400,6 +415,46 @@ class attributeSwapper(object):
                                         pass                                              
                         else:
                             pass
+
+        # def forceAtt(self, getPath, getPathfile):
+        #     folderType=getPath+'/'+getPathfile
+        #     # folderType=getPathfile
+        #     print folderType    
+        #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]
+        #     List = open(folderType).readlines()
+        #     for each in cmds.ls(sl=1):
+        #         print each
+        #         for aline in List:
+        #             attribute_container=[]
+        #             getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
+        #             if ">>" in aline:
+        #                 getObj=aline.split('>>')[0]
+        #                 getExistantInfo=aline.split('>>')[1]
+        #                 if getExistantInfo!="\n":
+        #                     findAtt=getExistantInfo.split("<")
+        #                     for eachInfo in findAtt:
+        #                         getAnimDicts=eachInfo.split(";")
+        #                         for eachctrl in xrange(len(getAnimDicts) - 1):
+        #                             current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
+        #                             # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
+        #                             gethis=ast.literal_eval(next_item)
+        #                             try:
+        #                                 if len(gethis)<2:
+        #                                     for key, value in gethis.items():
+        #                                         for listeditem in getListedAttr:
+        #                                             if current_item==listeditem:
+        #                                                 cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)        
+        #                                                 print "set attr"                                         
+        #                                 else:
+        #                                      for key, value in gethis.items():
+        #                                         for listeditem in getListedAttr:
+        #                                             if current_item==listeditem:
+        #                                                 cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
+        #                                                 print "set anim"
+        #                             except:
+        #                                 pass                                              
+        #                 else:
+        #                     pass
 
 
         def _applyallatt_dynselected(self, folderType):
@@ -463,20 +518,20 @@ class attributeSwapper(object):
 
 
 
-        def open_genAttributefolderWindow(self, getPathCustom, getPath):
-            if getPath=="custom":   
-                getPath=getPathCustom
-            else:
-                getPath=getPath             
-            getFiles=[os.path.join(getPath, o) for o in os.listdir(getPath) if os.path.isdir(os.path.join(getPath, o))]
-            getFiles.sort(key=lambda x: os.path.getmtime(x))
-            self._choser_gen_group_window(getFiles) 
+        def open_genAttributefolderWindow(self, getFolderFiles):
+            getPath=getFolderFiles 
+            print getPath      
+            getFiles=os.listdir(getPath)
+            # getFiles=[os.path.join(getPath, o) for o in os.listdir(getPath) if os.path.isdir(os.path.join(getPath, o))]
+            print getFiles
+            # getFiles.sort(key=lambda x: os.path.getmtime(x))
+            self._choser_gen_group_window(getFiles, getPath) 
 
-        def _choser_gen_group_window(self, getListAttr):
-            choose_gen_grp_win = "Pick from below"
+        def _choser_gen_group_window(self, getFiles, getPath):
+            choose_gen_grp_win = "Pick from text files"
             if cmds.window(choose_gen_grp_win, exists=True):
                 cmds.deleteUI(choose_gen_grp_win)
-            window = cmds.window(choose_gen_grp_win, title=choose_gen_grp_win, tbm=1, w=800, h=150)
+            chooser_gen_window = cmds.window(choose_gen_grp_win, title=choose_gen_grp_win, tbm=1, w=800, h=150)
             cmds.menuBarLayout(h=30)
             cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
             cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -487,12 +542,12 @@ class attributeSwapper(object):
             cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Select version', lv=1, nch=1, borderStyle='out', bv=1, w=800, fn="tinyBoldLabelFont", p='selectArrayColumn')
             cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=2, cellWidthHeight=(800, 20))  
             self.attributepath=cmds.optionMenu( label='Find')
-            for each in getListAttr:
+            for each in getFiles:
                 cmds.menuItem( label=each)
             cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-            cmds.button (label='Ok', p='listBuildButtonLayout', w=150, command = lambda *args:self.forceAtt(getPath=cmds.optionMenu(self.attributepath, q=1, v=1)))
+            cmds.button (label='Ok', p='listBuildButtonLayout', w=150, command = lambda *args:self.forceAtt(getPath, getPathfile=cmds.optionMenu(self.attributepath, q=1, v=1)))
             cmds.button (label='open folder', p='listBuildButtonLayout', w=150, command = lambda *args:self._open_defined_path(cmds.optionMenu(self.attributepath, q=1, v=1)))
-            cmds.showWindow(window) 
+            cmds.showWindow(chooser_gen_window) 
 
         # def open_genAttributesWindow(self, getPath):
         #     getPath=cmds.optionMenu(self.attributepath, q=1, v=1)
@@ -543,7 +598,7 @@ class attributeSwapper(object):
             if optionPath=="custom":   
                 FoundPath=getPathCustom
             else:
-                optionPath=optionPath
+                FoundPath=optionPath
             selObj=ls(sl=1, fl=1, sn=1)
             if len(selObj)<1:
                 print "select something"
@@ -551,7 +606,7 @@ class attributeSwapper(object):
             else:
                 pass            
             '''This copies values and animcurve nodes of shapes other than transforms'''
-            folderType=optionPath+'/'+fileName
+            folderType=FoundPath+'/'+fileName
             if os.path.exists(folderType):
                 pass
             else:
@@ -569,16 +624,19 @@ class attributeSwapper(object):
             self.save_att_function(collectItem, folderType)
 
 
-        def _save_gen_sel_nim_heirarchy(self, fileName, radioType, folderPath): 
+        def _save_gen_sel_nim_heirarchy(self, fileName, getPathCustom, optionPath): 
+            if optionPath=="custom":   
+                FoundPath=getPathCustom
+            else:
+                FoundPath=optionPath            
             selObj=ls(sl=1, fl=1, sn=1)
             if len(selObj)<1:
                 print "select something"
                 return
             else:
                 pass            
-            print radioType
             '''This copies values and animcurve nodes of selected'''
-            folderType=folderPath+'/'+fileName
+            folderType=FoundPath+'/'+fileName
             if os.path.exists(folderType):
                 pass
             else:
@@ -590,7 +648,7 @@ class attributeSwapper(object):
 
 
 
-        def _save_gen_anim_heirarchy(self, fileName, radioType): 
+        def _save_gen_anim_heirarchy(self, fileName, getPathCustom,optionPath): 
             selObj=ls(sl=1, fl=1, sn=1)
             if len(selObj)<1:
                 print "select something"
@@ -610,8 +668,7 @@ class attributeSwapper(object):
             self.save_att_function(collectItem, folderType)
 
 
-        def _save_allDyn_heirarchy(self, fileName, radioType): 
-            print radioType
+        def _save_allDyn_heirarchy(self, fileName, getPathCustom, optionPath): 
             '''This copies values and animcurve nodes of all dyn in scene'''
             getType=["nCloth", "nucleus"]
             collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
