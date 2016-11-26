@@ -1,0 +1,107 @@
+getAll=[(each) for each in cmds.ls("*:*") if cmds.nodeType(each) == "transform"]
+if "," in getName:
+    getName=getName.split(", ")
+else:
+    getName=[getName]
+collectAttr=[]
+for each in getAll:
+    Attrs=[(attrItem) for attrItem in cmds.listAttr (each) for attrName in getName if attrName in attrItem]
+    if len(Attrs)>0:        
+        for item in Attrs:
+            newItem=each+"."+item
+            findShot=cmds.getAttr(newItem)
+            collectAttr.append(findShot)
+collectAttr=set(collectAttr)            
+getListAttr=sorted(collectAttr)
+print getListAttr
+
+getUVFilePath='/jobs/'+PROJECT+'/assets/'+getListAttr[0]+'/PRODUCTS/models/'+getListAttr[0]+'/model/xhi/highest/abc/'+getListAttr[0]+'_model_xhi.abc'
+getUVPath='/jobs/'+PROJECT+'/assets/'+getListAttr[0]+'/PRODUCTS/models/'+getListAttr[0]+'/model/xhi/highest/abc/'
+print getUVPath
+
+UVAsset=getListAttr[0]+'_model_xhi.abc'
+print UVAsset
+cmds.file(getUVFilePath, i=1, ignoreVersion=1, ra=True, mergeNamespacesOnClash=False, namespace=UVAsset, options="v=0;", pr=1)
+
+
+
+
+
+
+import pymel.core as pm
+selection=cmds.ls(sl=1)
+# transforms = pm.listTransforms(pm.PyNode(selection))
+# print transforms
+# # transforms = cmds.listTransforms(selection.node())
+# transform = pm.PyNode(transforms[0])
+# print transform         
+for each in selection:
+    print pm.listTransforms(pm.PyNode(each).node())[0]
+    print pm.PyNode(each).getPosition()
+
+
+
+import pymel.core as pm
+getparentObj=[(each.getUVArea()) each in pm.PyNode(cmds.ls(sl=1)[0]).f]
+getchildObj=[(each.getUVArea()) each in pm.PyNode(cmds.ls(sl=1)[0]).f]
+#for item in cmds.ls(sl=1):
+
+
+
+import pymel.core as pm
+getparentObj=[(each.getUV()) for each in pm.PyNode(cmds.ls(sl=1)[0]).vtx]
+getchildObj=[(each) for each in pm.PyNode(cmds.ls(sl=1)[1]).vtx]
+print getparentObj
+
+
+#for item in cmds.ls(sl=1):
+for parentFaceArea, childFaceObj in map(None, getparentObj, getchildObj):
+    print childFaceObj
+    getOldPoint=childFaceObj.getUV()
+    pm.setUV(childFaceObj, getOldPoint, uvSet=None)
+
+
+
+
+import pymel.core as pm
+getparentObj=[(each.getUV()) for each in pm.PyNode(cmds.ls(sl=1)[0]).vtx]
+getchildObj=[(each) for each in pm.PyNode(cmds.ls(sl=1)[1]).vtx]
+print getparentObj
+
+for parentFaceArea, item in map(None, getparentObj, pm.PyNode(cmds.ls(sl=1)[1]).vtx):
+    print item.index()
+    print childFaceObj
+    getOldPoint=childFaceObj.getUV()
+    item.setUV(item.index(), parentFaceArea)
+
+
+
+import pymel.core as pm
+#getparentObj=[(each.getUV()) for each in pm.PyNode(cmds.ls(sl=1)[0]).vtx]
+#getchildObj=[(each) for each in pm.PyNode(cmds.ls(sl=1)[1]).vtx]
+#for item in cmds.ls(sl=1):
+for parentFaceArea, item in map(None, pm.PyNode(cmds.ls(sl=1)[0]).vtx, pm.PyNode(cmds.ls(sl=1)[1]).vtx):
+    #print item.index()
+    print 'moving '+str(item)+" to "+str(parentFaceArea)
+    #getOldPoint=item.getUV()
+    item.setUV(item.index(), parentFaceArea, uvSet='map1')
+
+
+#for each in pm.PyNode(cmds.ls(sl=1)[1]).f:
+    #print each.getUVSetNames()
+
+getparentObj=[(each.f) for each in pm.PyNode(cmds.ls(sl=1)[0])]
+getchildObj=[(each.f) for each in pm.PyNode(cmds.ls(sl=1)[1])]
+
+
+import pymel.core as pm
+for getparentObj, getchildObj in map(None, pm.PyNode(cmds.ls(sl=1)[0].f, pm.PyNode(cmds.ls(sl=1)[1].f):
+    cmds.select(getparentObj, r=1)
+    cmds.polyClipboard(uv=1, cp=1)
+    cmds.select(getchildObj, r=1)
+    cmds.polyClipboard(uv=1, ps=1)
+
+
+    print childFaceObj
+    getOldPoint=childFaceObj.getUV()
+    item.setUV(item.index(), parentFaceArea)
