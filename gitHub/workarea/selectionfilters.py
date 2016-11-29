@@ -1027,12 +1027,6 @@ class makeToolKit(object):
             showWindow(window)
 
 
-        def pointGlue_mass_to_one(self):
-            blenderShape=cmds.ls(sl=1)[0]
-            for each in cmds.ls(sl=1)[1:]:
-                command='pointGlue -s "%s" -t "%s" -max 1' % (str(blenderShape), each)
-                maya.mel.eval( command )
-
 
         def opening_folder(self, folderPath):
             # newfolderPath=re.sub(r'\\',r'/', folderPath)
