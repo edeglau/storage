@@ -1,4 +1,4 @@
-class mToolKit(object):
+class makeToolKit(object):
 
         def fix_cam(self):
             getSelectedStuff=cmds.ls(sl=1)
