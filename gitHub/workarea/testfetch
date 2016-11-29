@@ -113,7 +113,7 @@ class fetchAttrs(object):
         cmds.button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=cmds.textField(makeAttr, q=1, text=1)))
         #search object by attribute
         cmds.frameLayout('title2', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Objects by Attribute', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
-        cmds.gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(98, 20))          
+        cmds.gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(50, 20))          
         cmds.text(label="Att Value:", p='valuebuttonlayout2', align="left", w=50)
         self.attrValObj=cmds.text(label="Select from drop down", p='valuebuttonlayout2', w=100)
         cmds.text(label="Att Type:", p='valuebuttonlayout2', align="right", w=50)
@@ -122,22 +122,24 @@ class fetchAttrs(object):
         cmds.popupMenu(button=1)
         self.selectOn=cmds.menuItem  (label='select on', command = self._change_to_select_on)
         self.selectOff=cmds.menuItem  (label='select off', command = self._change_to_select_off)              
-        cmds.gridLayout('findbyattrButtonLayout', p='title2', numberOfColumns=3, cellWidthHeight=(148, 20))
-        cmds.text(label="Search:", align="left", w=50)
+        cmds.gridLayout('findbyattrButtonLayout', p='title2', numberOfColumns=2, cellWidthHeight=(148, 20))
+        cmds.text(label="Att name:", align="left", w=50)
         findAttrObj=cmds.textField(text="Enter name EG:'translate'")
-        cmds.button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=cmds.textField(findAttrObj, q=1, text=1)))
-        cmds.text(label="Search:", align="left", w=50)
+        cmds.text(label="Att value:", align="left", w=50)
         valueAttrObj=cmds.textField(text="Enter value EG:'1.0'")
-        cmds.button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=cmds.optionMenu(self.objAtt, q=1, ill=1), values=cmds.textField(valueAttrObj, q=1, text=1)))
+        cmds.button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=cmds.textField(findAttrObj, q=1, text=1)))
+        cmds.button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(values=cmds.textField(valueAttrObj, q=1, text=1)))
+        cmds.button (label='Filter Sel by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._filter_att_obj(getName=cmds.textField(findAttrObj, q=1, text=1)))
+        cmds.button (label='Filter by Att + Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._filter_att_value(getFirstattr=cmds.textField(findAttrObj, q=1, text=1), values=cmds.textField(valueAttrObj, q=1, text=1)))
         cmds.gridLayout('findObjByAttrGLayout', p='title2', numberOfColumns=1, cellWidthHeight=(445, 20))
         self.objAtt=cmds.optionMenu( label='Found', cc=lambda *args:self.change_attr_output_obj())
         for each in getFirstAttr:
             cmds.menuItem( label=getSel[0]+"."+each)
-        cmds.gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=4, cellWidthHeight=(115, 20))
+        cmds.gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=2, cellWidthHeight=(115, 20))
         cmds.text(label="Change Value:", align="left", w=50)        
         makeAttrObj=cmds.textField(w=150, text="enter value EG:'50'")      
-        cmds.button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=cmds.optionMenu(self.objAtt, q=1, v=1), makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
-        cmds.button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        # cmds.button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=cmds.optionMenu(self.objAtt, q=1, v=1), makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        # cmds.button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
         cmds.button (label='Apply Value Sel', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_sel(makeAttr=cmds.textField(makeAttrObj, q=1, text=1), attrName=cmds.textField(findAttrObj, q=1, text=1)))
         cmds.button (label='Key selected', p='listBuildButtonLayout2', w=100, command = lambda *args:self.key_att_callup_sel(makeAttr=cmds.textField(makeAttrObj, q=1, text=1), attrName=cmds.textField(findAttrObj, q=1, text=1)))
         cmds.showWindow(window)  
@@ -457,73 +459,15 @@ class fetchAttrs(object):
         print getChangeAttr
 
 
-    def _find_attV0(self, getFirstattr, attribute):         
-        print getFirstattr
-        if ", " in getFirstattr:
-            getFirstattr=getFirstattr.split(",")
-        else:
-            getFirstattr=[getFirstattr]
-        print getFirstattr
-        getSel=ls(sl=1, fl=1)        
-        collectAttr=[]
-        for each in getFirstattr:
-            find=menuItem(each, q=1, label=1)
-            if attribute in find:
-                collectAttr.append(find)
-        cmds.optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0])
-        newAttr=getattr(getSel[0],collectAttr[0])
-        select(newAttr, add=1)
-        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
-        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
-        if menuItems:
-            cmds.deleteUI(menuItems)        
-        getListAttr=sorted(collectAttr)
-        cmds.optionMenu(self.attributeFirstSel, e=1)
-        for each in getListAttr:
-            menuItem(label=each, parent=self.attributeFirstSel)  
-        self.count_attr_output(getChangeAttr)
-        print newAttr, getChangeAttr
-
-    def _find_attV1(self, getFirstattr, attribute):     
-        try:
-            getSel=ls(sl=1, fl=1)      
-            getFirst=getSel[0]
-        except:
-            print "must select something"
-            return
-        if ", " in getFirstattr:
-            getFirstattr=getFirstattr.split(",")
-        else:
-            getFirstattr=[getFirstattr]
-        getSel=ls(sl=1, fl=1)        
-        collectAttr=[]
-        for each in getFirstattr:
-            find=menuItem(each, q=1, label=1)
-            if each in find:
-                collectAttr.append(find)
-        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0])
-        newAttr=getattr(getSel[0],collectAttr[0])
-        select(newAttr, add=1)
-        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
-        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
-        if menuItems:
-            cmds.deleteUI(menuItems)        
-        getListAttr=sorted(collectAttr)
-        cmds.optionMenu(self.attributeFirstSel, e=1)
-        for each in getListAttr:
-            menuItem(label=each, parent=self.attributeFirstSel)  
-        self.count_attr_output(getChangeAttr)
-        print newAttr, getChangeAttr
 
     def _find_att_obj(self, getName):       
         if "," in getName:
             getName=getName.split(", ")
         else:
             getName=[getName]
-        print getName
-        collectAttr=[]
-        Attrs=[(attrItem) for attrName in getName for attrItem in cmds.ls ('*:*.'+attrName)]
-        # Attrs=[(attrItem) for attrName in getName for attrItem in cmds.ls ('*.'+attrName) and attrItem in cmds.ls ('*:*.'+attrName)]
+        Attrs=[(attrItem) for attrName in getName for attrItem in cmds.ls ('*.'+attrName)]
+        collectMoreAttrs=[(attrItem) for attrName in getName for attrItem in cmds.ls ('*:*.'+attrName)]
+        Attrs=Attrs+collectMoreAttrs
         menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
         if menuItems:
             cmds.deleteUI(menuItems)       
@@ -531,6 +475,24 @@ class fetchAttrs(object):
         cmds.optionMenu(self.objAtt, e=1)
         for each in getListAttr:
             cmds.menuItem(label=each, parent=self.objAtt)  
+
+    def _filter_att_obj(self, getName):       
+        if "," in getName:
+            getName=getName.split(", ")
+        else:
+            getName=[getName]
+        print getName
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        cmds.optionMenu(self.objAtt, e=1)
+        for item, each in map(None, cmds.ls(sl=1), getName):
+            # print item+'.'+each
+            # if cmds.objExists(item+'.'+each):
+            try:
+                cmds.menuItem(label=item+'.'+each, parent=self.objAtt)  
+            except:
+                pass
 
     def _find_att_objV0(self, getName):       
         getAll=cmds.ls("*")       
@@ -553,13 +515,22 @@ class fetchAttrs(object):
         for each in getListAttr:
             menuItem(label=each, parent=self.objAtt)  
 
-    def _find_value_obj(self, getFirstattr, values):
-        if "," in getName:
+    def _find_value_obj(self, values):
+        Attrs=[(objectItem+'.'+attrItem)  for objectItem in cmds.ls ('*') for attrItem in cmds.listAttr (objectItem, w=1, a=1, s=1,u=1) if cmds.getAttr(objectItem+'.'+attrItem)==float(values)]
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(Attrs)
+        cmds.optionMenu(self.objAtt, e=1)
+        for each in getListAttr:
+            cmds.menuItem(label=each, parent=self.objAtt)  
+
+    def _filter_att_value(self, getFirstattr, values):
+        if "," in getFirstattr:
             getName=getName.split(", ")
         else:
-            getName=[getName]
-        collectAttr=[]
-        Attrs=[(objectItem+'.'+thing)  for objectItem in cmds.ls ('*') for thing in cmds.listAttr (objectItem, w=1, a=1, s=1,u=1) if cmds.getAttr(objectItem+'.'+thing)==values]
+            getName=[getFirstattr]
+        Attrs=[(objectItem+'.'+attrItem) for objectItem in cmds.ls (sl=1) for attrItem in cmds.listAttr (objectItem, w=1, a=1, s=1,u=1) for attrName in getName if attrName in attrItem and cmds.getAttr(objectItem+'.'+attrItem)==float(values)]
         menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
         if menuItems:
             cmds.deleteUI(menuItems)       
