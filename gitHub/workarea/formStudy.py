@@ -38,7 +38,7 @@ failedComments=[
 				]
 
 presetlist=["load"]
-typesOfReview=['review', 'review_anim', 'delivery']
+typesOfReview=['review']
 __location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 availableStyles=['darkOrange']
@@ -81,7 +81,7 @@ audioFile='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/REFERENCE/editorial/cut/main/'+a
 formatEXT=".jpg"
 playlistpath='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+"/maya/"
 
-sgVarFilePath = '/jobs/%s/%s/%s/TECH/lib/shotgun/setshot.d/sgvars' % (PROJECT, SCENE, SHOT)
+
 
 class dropMenu(QtGui.QWidget):
 	def __init__(self, detailMessge, title, makeNewContent):
