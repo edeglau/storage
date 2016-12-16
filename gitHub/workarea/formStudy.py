@@ -38,7 +38,7 @@ failedComments=[
 				]
 
 presetlist=["load"]
-typesOfReview=['review']
+typesOfReview=['review', 'review_anim', 'delivery']
 __location__=os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
 availableStyles=['darkOrange']
@@ -78,9 +78,15 @@ audioFormat=".aif"
 
 audioFile='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/REFERENCE/editorial/cut/main/'+audioVer+'/'+audioName+audioFormat
 
+project_path_pbMovs='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+"/TASKS/"+DEPT+"/maya/movies"
+user_path_pbmovs='/home/'+getUser
+
 formatEXT=".jpg"
 playlistpath='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+"/maya/"
 
+sgVarFilePath = '/jobs/%s/%s/%s/TECH/lib/shotgun/setshot.d/sgvars' % (PROJECT, SCENE, SHOT)
+
+by_detail=["folder", "file"]
 
 
 class dropMenu(QtGui.QWidget):
@@ -240,11 +246,14 @@ class typicalWindow(QtGui.QMainWindow):
 		self.upper_layout.addLayout(self.window_layer_04, 4,0,1,1)
 		
 		self.window_layer_05=QGridLayout()
-		self.upper_layout.addLayout(self.window_layer_05,5,0,1,1)
+		self.midLayout.addLayout(self.window_layer_05,5,0,1,1)
 		
 		self.window_layer_06=QGridLayout()
-		self.midLayout.addLayout(self.window_layer_06, 6,0,1,1)
-		
+		self.upper_layout.addLayout(self.window_layer_06, 6,0,1,1)
+
+
+		self.window_layer_07=QGridLayout()
+		self.upper_layout.addLayout(self.window_layer_07, 7,0,1,1)
 
 	
 		self.btm_btn_layout=QtGui.QGridLayout()
@@ -346,7 +355,6 @@ class typicalWindow(QtGui.QMainWindow):
 		# self.window_layer_02.addWidget(self.button_05, 0,4,1,1)
 
 		self.drop_04=QComboBox()
-		self.window_layer_04.addWidget(self.drop_04, 0,2,1,1)
 		# QtCore.QObject.connect(self.drop_04, SIGNAL("currentIndexChanged(QString)"),
 		# 						self.on_drop_01_changed)
 		self.drop_04.addItems(getDepts)
@@ -354,26 +362,37 @@ class typicalWindow(QtGui.QMainWindow):
 		self.connect(self.drop_04, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		# QtCore.QObject.connect(self.drop_04, SIGNAL("currentIndexChanged(QString)"),
 		# 						self.drop_04_changed)
-
 		deptindex = self.drop_04.findText(DEPT, QtCore.Qt.MatchFixedString)
 		self.drop_04.setCurrentIndex(deptindex)
+		self.window_layer_04.addWidget(self.drop_04, 0,2,1,1)
 
 		self.list_frame=QFrame()
 		self.list_frame.setStyleSheet("color: rgb"+str(buttonColoursDict.get("red")))
 		self.list_layout=QHBoxLayout()
 		self.list_frame.setLayout(self.list_layout)
 		
+
+
+
+		self.type_list_drop=QComboBox()
+		self.type_list_drop.addItems(typesOfReview)
+		self.window_layer_04.addWidget(self.type_list_drop, 0,3,1,1)
+
+
+
 		self.drop_list_builder_05=QComboBox()
 		self.drop_list_builder_05.addItems(get_a_play_list)
+		self.drop_list_builder_05.setStyleSheet("color: #b1b1b1; background-color: rgba(175,70,70,50);")
 		QtCore.QObject.connect(self.drop_list_builder_05, SIGNAL("currentIndexChanged(QString)"),
 								self.build)
 		self.drop_list_builder_05.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.connect(self.drop_list_builder_05, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		self.list_layout.addWidget(self.drop_list_builder_05)
-		self.window_layer_04.addWidget(self.list_frame, 0,3,1,1)
+		self.window_layer_04.addWidget(self.drop_list_builder_05, 0,4,1,1)
+
 
 		self.drop_list_06=QComboBox()
-		self.drop_list_06.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		self.drop_list_06.setStyleSheet("color: #b1b1b1; background-color: rgba(175,70,70,50);")
 		preset=self.find_playlists(playlistpath)
 		preset=[(each.split("/")[-1]) for each in preset]
 		playListNames=[(each.split("_storedText.txt")[0]) for each in preset]
@@ -386,13 +405,9 @@ class typicalWindow(QtGui.QMainWindow):
 			#self.drop_list_06.setEnabled(1)
 		self.drop_list_06.addItems(alist2)
 		self.drop_list_06.addItems(playListNames)
-		self.list_layout.addWidget(self.drop_list_06)
+		self.window_layer_04.addWidget(self.drop_list_06, 0,5,1,1)
 		
-		self.type_list_drop=QComboBox()
-		self.type_list_drop.addItems(typesOfReview)
-		QtCore.QObject.connect(self.type_list_drop, SIGNAL("currentIndexChanged(QString)"),
-								self.on_drop_01_changed)
-		self.window_layer_04.addWidget(self.type_list_drop, 0,5,1,1)
+
 		
 		self.button_06=QPushButton("Refresh")
 		self.button_06.setToolTip("refresh")
@@ -420,10 +435,46 @@ class typicalWindow(QtGui.QMainWindow):
 		# self.listWidg.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)		
 		self.connect(self.listWidg, SIGNAL("itemClicked(QTableWidgetItem *)"), self.clicked)
 		self.connect(self.listWidg, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.dclicked)
-		self.window_layer_05.addWidget(self.listWidg, 0,5,1,1)
+		self.window_layer_05.addWidget(self.listWidg, 0,0,1,1)
 
 
 
+		self.custom_pathfile=QLabel("Custom path: ")
+		self.custom_pathfile.setStyleSheet('background-color:transparent')
+		self.custom_pathfile.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+		self.window_layer_06.addWidget(self.custom_pathfile, 0,0,1,1)
+
+
+		self.custompath=QLineEdit()
+		self.custompath.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,25);")
+		self.custompath.setVisible(1)
+		self.custompath.setText("//")
+		self.custompath.setFixedWidth(600)
+		self.window_layer_06.addWidget(self.custompath, 0,1,1,1)
+
+
+
+
+		self.drop_list_det=QComboBox()
+		self.drop_list_det.addItems(by_detail)
+		self.drop_list_det.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.list_layout.addWidget(self.drop_list_det)
+		self.window_layer_06.addWidget(self.list_frame, 0,2,1,1)
+
+		self.button_05=QPushButton("Set to project default")
+		self.button_05.setToolTip("set list to load from custom path")
+		self.connect(self.button_05, SIGNAL('clicked()'), self.set_to_project)
+		self.window_layer_07.addWidget(self.button_05, 2,0,1,1)
+
+		self.button_05=QPushButton("Load from user folder")
+		self.button_05.setToolTip("set list to load from custom path")
+		self.connect(self.button_05, SIGNAL('clicked()'), self.set_to_user)
+		self.window_layer_07.addWidget(self.button_05, 2,1,1,1)
+
+		self.button_05=QPushButton("Set")
+		self.button_05.setToolTip("set list to load from custom path")
+		self.connect(self.button_05, SIGNAL('clicked()'), self.set_toCustom)
+		self.window_layer_07.addWidget(self.button_05, 2,2,1,1)
 
 		self.frame_layout=QGridLayout()
 		self.frame_layout.setAlignment(QtCore.Qt.AlignTop)
@@ -1224,6 +1275,73 @@ class typicalWindow(QtGui.QMainWindow):
 	def connectButton01(self):
 		self.listCreate()
 
+	def set_to_project(self):
+		type_list=self.drop_list_det
+		list_type=type_list.currentText()		
+		get_the_path_slot=self.custompath
+		get_the_path_slot.setText(project_path_pbMovs)
+		self.cust_listCreate(project_path_pbMovs, list_type)
+
+	def set_to_user(self):
+		type_list=self.drop_list_det
+		list_type=type_list.currentText()	
+		get_the_path_slot=self.custompath
+		get_the_path_slot.setText(user_path_pbmovs)
+		self.cust_listCreate(user_path_pbmovs, list_type)
+
+	def set_toCustom(self):
+		type_list=self.drop_list_det
+		list_type=type_list.currentText()			
+		get_the_path_slot=self.custompath
+		user_path=get_the_path_slot.text()
+		self.cust_listCreate(user_path,list_type)
+
+	def cust_listCreate(self, pathFound, list_type):
+		self.listWidg.setColumnCount(4)
+		try:
+			if list_type=="file":
+				getFiles=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(playlistpath) for name in files]
+			elif list_type=="folder":
+				getFiles=[os.path.join(pathFound, o) for o in os.listdir(pathFound) if os.path.isdir(os.path.join(pathFound, o))]
+			pass
+		except:
+			print "nothing found"
+			return
+		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		sub="no"
+		for each in getFiles:
+			statbuf=os.stat(each)
+			import datetime
+			# timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+			getAccTime=time.ctime(os.path.getmtime(each))
+			timeFormat=datetime.datetime.fromtimestamp(statbuf.st_mtime).strftime('%c')
+			timeFormat=timeFormat.split(" ")[:4]
+			timeFormat=" ".join(timeFormat)
+			if "  " in str(getAccTime):
+				getAccTime=getAccTime.split("  ")
+				getAccTime=getAccTime[1].split(" ")[1]
+			else:
+				getAccTime=getAccTime.split(" ")[3]
+			# timeFormat=timeFormat+"  "+findSomeTime+'>'+sub
+			timeFormat=timeFormat+"  "+getAccTime+'>'+sub
+			makeDict=(each, timeFormat)
+			fileDict.append(makeDict)
+		count=len(fileDict)
+		fileDict=reversed(fileDict)
+		dictItems=fileDict
+		self.listWidg.setRowCount(count)
+		self.listWidg.setHorizontalHeaderLabels(headers)
+		for row, item in enumerate(fileDict):
+			key=item[0].split('/')[-1]
+			path=item[0]
+			value=item[1].split('>')[0]
+			sub=item[1].split('>')[1]
+			self.listWidg.setItem(row, 0, QTableWidgetItem(key))
+			self.listWidg.setItem(row, 1, QTableWidgetItem(value))
+			self.listWidg.setItem(row, 2, QTableWidgetItem(path))
+			self.listWidg.setItem(row, 3, QTableWidgetItem(sub))
 
 	def RightClick(self):
 		selected_in_list=self.is_listWid_item_selected()
