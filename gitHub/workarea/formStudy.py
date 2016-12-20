@@ -175,7 +175,7 @@ except:
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self, parent=None):
 		super(typicalWindow, self).__init__(parent)
-		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder=self.getSetup(PROJECT, SCENE, SHOT)
+		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date=self.getSetup(PROJECT, SCENE, SHOT)
 		getDepts = os.listdir(getDeptRVFolder)
 		# QtGui.QMainWindow.__init__(self)
 		
@@ -559,7 +559,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.head_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radiobox.addWidget(self.head_lbl, 1, 0,1,1)
 		
-		self.head_field=QTextEdit("")
+		self.head_field=QTextEdit("")			
 		self.head_field.setFixedHeight(35)
 		self.head_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.radiobox.addWidget(self.head_field, 1, 1,1,1)
@@ -603,7 +603,73 @@ class typicalWindow(QtGui.QMainWindow):
 		#self.a_btn.setStyleSheet("background-color: rgb"str(buttonColorDict).get("yello")))
 		self.connect(self.a_btn, SIGNAL('clicked()'), self.play_in_rv)
 		self.park_btn_pkt.addWidget(self.a_btn)
+
+		self.lowerButtSetupLayout=QtGui.QGridLayout()
+		self.lowerButtSetupLayout.setContentsMargins(5,10,5,10)
+		self.lower_but_frame=QtGui.QFrame()
+		# self.lower_but_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+		self.lower_but_frame.setFixedHeight(50)
+		self.lower_but_frame.setLayout(self.lowerButtSetupLayout)
+		# self.frame_layout.addLayout(self.frameSetupLayout, 0,0,1,1)
+		self.lower_layout.addWidget(self.lower_but_frame, 1,0,1,1)
+
+		# self.lower_layout.addWidget(self.lower_but_frame,1,0,1,1)
+
+		self.play_anim_btn=QPushButton("anim "+get_an_ver)
+		self.play_anim_btn.setToolTip(get_an_date)		
+		self.play_anim_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_anim_btn.customContextMenuRequested.connect(self.onRightClick_anim)
+		self.connect(self.play_anim_btn, SIGNAL('clicked()'), self.play_latest_anim)
+		self.lowerButtSetupLayout.addWidget(self.play_anim_btn,1,3,1,1)
 		
+		self.play_light_btn=QPushButton("light "+get_light_ver)
+		self.play_light_btn.setToolTip(get_light_date)		
+		self.play_light_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_light_btn.customContextMenuRequested.connect(self.onRightClick_light)
+		self.connect(self.play_light_btn, SIGNAL('clicked()'), self.play_latest_light)
+		self.lowerButtSetupLayout.addWidget(self.play_light_btn,1,6,1,1)
+		
+		self.play_comp_btn=QPushButton("comp "+get_comp_ver)
+		self.play_comp_btn.setToolTip(get_comp_date)			
+		self.play_comp_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_comp_btn.customContextMenuRequested.connect(self.onRightClick_comp)
+		self.connect(self.play_comp_btn, SIGNAL('clicked()'), self.play_latest_comp)
+		self.lowerButtSetupLayout.addWidget(self.play_comp_btn,1,7,1,1)
+		
+		self.play_track_btn=QPushButton("track "+get_track_ver)
+		self.play_track_btn.setToolTip(get_track_date)			
+		self.play_track_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_track_btn.customContextMenuRequested.connect(self.onRightClick_tracking)
+		self.connect(self.play_track_btn, SIGNAL('clicked()'), self.play_latest_tracking)
+		self.lowerButtSetupLayout.addWidget(self.play_track_btn,1,0,1,1)
+		
+		self.play_fx_btn=QPushButton("fx "+get_fx_ver)
+		self.play_fx_btn.setToolTip(get_fx_date)			
+		self.play_fx_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_fx_btn.customContextMenuRequested.connect(self.onRightClick_fx)
+		self.connect(self.play_fx_btn, SIGNAL('clicked()'), self.play_latest_fx)
+		self.lowerButtSetupLayout.addWidget(self.play_fx_btn,1,5,1,1)
+
+		self.play_mm_btn=QPushButton("match "+get_mm_ver)
+		self.play_mm_btn.setToolTip(get_mm_date)		
+		self.play_mm_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_mm_btn.customContextMenuRequested.connect(self.onRightClick_matchmove)
+		self.connect(self.play_mm_btn, SIGNAL('clicked()'), self.play_latest_matchmove)
+		self.lowerButtSetupLayout.addWidget(self.play_mm_btn,1,1,1,1)
+
+		self.play_roto_btn=QPushButton("roto "+get_roto_ver)
+		self.play_roto_btn.setToolTip(get_roto_date)		
+		self.play_roto_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_roto_btn.customContextMenuRequested.connect(self.onRightClick_roto)
+		self.connect(self.play_roto_btn, SIGNAL('clicked()'), self.play_latest_roto)
+		self.lowerButtSetupLayout.addWidget(self.play_roto_btn,1,2,1,1)
+		
+		self.play_ta_btn=QPushButton("techanim "+get_ta_ver)
+		self.play_ta_btn.setToolTip(get_ta_date)				
+		self.play_ta_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_ta_btn.customContextMenuRequested.connect(self.onRightClick_techanim)
+		self.connect(self.play_ta_btn, SIGNAL('clicked()'), self.play_latest_techanim)
+		self.lowerButtSetupLayout.addWidget(self.play_ta_btn,1,4,1,1)
 		# self.card_menu=QMenu("card")
 		# self.card_menuBar=self.menuBar()
 		# self.card_menuBar.addMenu(self.card_menu)
@@ -714,6 +780,8 @@ class typicalWindow(QtGui.QMainWindow):
 			each.setVisible(1)
 		self.park_btn_pkt.setContentsMargine(5,8,5,8)
 
+	def deselected(self):
+		print "hi"
 
 	def get_scene(self):
 		scene=self.drop_01
@@ -828,10 +896,67 @@ class typicalWindow(QtGui.QMainWindow):
 		abcFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+'/maya/cache/alembic/'
 		pbFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/TASKS/'+DEPT+'/maya/movies/'
 		rvFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/'+DEPT
-		getDeptRVFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/'		
-		return new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder
-	
-
+		getDeptRVFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/'	
+		getfoldertypes=["matchmove", "roto", "trackcomp", "anim", "techanim", "lightcomp", "comp", "fxflip"]
+		#getmatchmovefolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/matchmove'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_mm_ver=getitem.split('_')[-1]
+		get_mm_date=fileDict[-1][1]	
+		#gettrackfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/trackcomp'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_track_ver=getitem.split('_')[-1]
+		get_track_date=fileDict[-1][1]	
+		#getrotofolder	
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/roto'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_roto_ver=getitem.split('_')[-1]
+		get_roto_date=fileDict[-1][1]
+		#getanimfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_an_ver=getitem.split('_')[-1]
+		get_an_date=fileDict[-1][1]
+		#gettechanimfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_ta_ver=getitem.split('_')[-1]
+		get_ta_date=fileDict[-1][1]
+		#getfxfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/fxflip'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_fx_ver=getitem.split('_')[-1]			
+		get_fx_date=fileDict[-1][1]
+		#getlightcompfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/lightcomp'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_light_ver=getitem.split('_')[-1]		
+		get_light_date=fileDict[-1][1]
+		#getcompfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/comp'
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		getitem=get_play.split('/')[-2]
+		get_comp_ver=getitem.split('_')[-1]		
+		get_comp_date=fileDict[-1][1]
+		return new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder\
+		 ,get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+		 ,get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date
 
 
 
@@ -898,7 +1023,7 @@ class typicalWindow(QtGui.QMainWindow):
 		SCENE=str(getscene)
 		getshot=self.drop_02.currentText()
 		SHOT=str(getshot)
-		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder=self.getSetup(PROJECT, SCENE, SHOT)
+		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date=self.getSetup(PROJECT, SCENE, SHOT)
 		getDepts = os.listdir(getDeptRVFolder)		
 		if os.path.isfile(new_sgVarFilePath):
 		    franges = {'WORK_IN': None, 'CUT_IN': None,
@@ -1178,6 +1303,7 @@ class typicalWindow(QtGui.QMainWindow):
 			getpreset=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(playlistpath) for name in files if playlist_name+"_storedText.txt"==name]
 			fileDict=[]
 			makeContent=self.obtain_presets(getpreset)
+			print makeContent
 			for each in makeContent:
 				import datetime
 				getFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem]
@@ -1356,6 +1482,184 @@ class typicalWindow(QtGui.QMainWindow):
 		print "you are running command: "+command
 		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)
 
+
+
+	def play_latest_anim(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+	def onRightClick_anim(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'
+		self.launch_folder(path)
+
+
+	def play_latest_light(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/lightcomp'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+	def onRightClick_light(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/lightcomp'
+		self.launch_folder(path)
+
+	def play_latest_comp(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/comp'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+	def onRightClick_comp(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/comp'
+		self.launch_folder(path)
+
+
+	def play_latest_fx(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/fxflip'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+	def onRightClick_fx(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/fxflip'
+		self.launch_folder(path)
+
+
+	def play_latest_tracking(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/trackcomp'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+
+	def onRightClick_tracking(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/trackcomp'
+		self.launch_folder(path)
+
+
+
+	def play_latest_matchmove(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/matchmove'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+
+	def onRightClick_matchmove(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/matchmove'
+		self.launch_folder(path)
+
+
+
+
+	def play_latest_roto(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/roto'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+
+	def onRightClick_roto(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/roto'
+		self.launch_folder(path)
+
+
+
+	def play_latest_techanim(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'		
+		fileDict=self.rv_latest_mov(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+
+
+	def onRightClick_techanim(self):		
+		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'
+		self.launch_folder(path)
+
+
+
+	def rv_latest_raw(self, playFolder):
+		try:
+			getFiles=[os.path.join(playFolder, o) for o in os.listdir(playFolder) if os.path.isdir(os.path.join(playFolder, o))]
+			pass
+		except:
+			print "nothing found"
+			return
+		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		for each in getFiles:
+			statbuf=os.stat(each)
+			import datetime
+			# timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+			getAccTime=time.ctime(os.path.getmtime(each))
+			timeFormat=datetime.datetime.fromtimestamp(statbuf.st_mtime).strftime('%c')
+			timeFormat=timeFormat.split(" ")[:4]
+			timeFormat=" ".join(timeFormat)
+			if "  " in str(getAccTime):
+				getAccTime=getAccTime.split("  ")
+				getAccTime=getAccTime[1].split(" ")[1]
+			else:
+				getAccTime=getAccTime.split(" ")[3]
+			# timeFormat=timeFormat+"  "+findSomeTime+'>'+sub
+			timeFormat=timeFormat+"  "+getAccTime
+			makeDict=(each, timeFormat)
+			fileDict.append(makeDict)
+		command="rv "+str(fileDict[-1][0])+"/*"
+		print "you are running command: "+command
+		subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)	
+
+	def rv_latest_mov(self, playFolder):
+		try:
+			getFiles=[os.path.join(playFolder, o) for o in os.listdir(playFolder) if os.path.isdir(os.path.join(playFolder, o))]
+			pass
+		except:
+			print "nothing found"
+			return
+		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		for each in getFiles:
+			getTheMovFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem]
+			if getTheMovFolders:
+				statbuf=os.stat(each)
+				import datetime
+				# timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+				getAccTime=time.ctime(os.path.getmtime(each))
+				getMovie=each+'/'+getTheMovFolders[0]
+				timeFormat=datetime.datetime.fromtimestamp(statbuf.st_mtime).strftime('%c')
+				timeFormat=timeFormat.split(" ")[:4]
+				timeFormat=" ".join(timeFormat)
+				if "  " in str(getAccTime):
+					getAccTime=getAccTime.split("  ")
+					getAccTime=getAccTime[1].split(" ")[1]
+				else:
+					getAccTime=getAccTime.split(" ")[3]
+				# timeFormat=timeFormat+"  "+findSomeTime+'>'+sub
+				timeFormat=timeFormat+"  "+getAccTime
+				makeDict=(getMovie, timeFormat)
+				fileDict.append(makeDict)
+		return fileDict
+
+	def direct_play_rv(self, item):
+		selected_in_list=self.is_listWid_item_selected()
+		if selected_in_list:
+			command="rv -wipe "+str(item)+"/* "+' '.join(selected_in_list)
+			print "you are running command: "+command
+			subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)		
+		else:
+			command="rv "+str(item)+"/*"
+			print "you are running command: "+command
+			subprocess.Popen(command, stdout=subprocess.PIPE, shell=True)		
 
 	def compare_in_rv(self):
 		selected_in_list=self.is_listWid_item_selected()
