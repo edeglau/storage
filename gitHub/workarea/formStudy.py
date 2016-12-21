@@ -175,7 +175,7 @@ except:
 class typicalWindow(QtGui.QMainWindow):
 	def __init__(self, parent=None):
 		super(typicalWindow, self).__init__(parent)
-		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date=self.getSetup(PROJECT, SCENE, SHOT)
+		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver=self.getSetup(PROJECT, SCENE, SHOT)
 		getDepts = os.listdir(getDeptRVFolder)
 		# QtGui.QMainWindow.__init__(self)
 		
@@ -317,42 +317,13 @@ class typicalWindow(QtGui.QMainWindow):
 		QtCore.QObject.connect(self.drop_01, SIGNAL("currentIndexChanged(QString)"),
 								self.on_drop_01_changed)
 
-		# self.button_01=QPushButton("Set")
-		# self.button_01.setToolTip("set")
-		# self.connect(self.button_01, SIGNAL('clicked()'), self.listCreate)
-		# self.window_layer_01.addWidget(self.button_01, 0,4,1,1)
-		
+
 		self.button_02=QPushButton("Reset")
 		self.button_02.setToolTip("reset to current shot")
 		self.connect(self.button_02, SIGNAL('clicked()'), self.reset_window)
 		self.window_layer_01.addWidget(self.button_02, 0,5,1,1)
 
-		# self.drop_lbl_03=QLabel()
-		# self.drop_lbl_03.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-		# self.drop_lbl_03.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.window_layer_02.addWidget(self.drop_lbl_03, 0,0,1,1)
-		
-		# self.drop_03=QComboBox()
-		# self.window_layer_02.addWidget(self.drop_03, 0,1,1,1)
-		# # QtCore.QObject.connect(self.drop_03, SIGNAL("currentIndexChanged(QString)"),
-		# # 						self.on_drop_01_changed)
-		# self.drop_03.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		# self.connect(self.drop_03, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 
-		# self.button_03=QPushButton("button_03")
-		# self.button_03.setToolTip("button_03")
-		# self.connect(self.button_03, SIGNAL('clicked()'), self.connectButton01)
-		# self.window_layer_02.addWidget(self.button_03, 0,2,1,1)
-		
-		# self.button_04=QPushButton("button_04")
-		# self.button_04.setToolTip("button_04")
-		# self.connect(self.button_04, SIGNAL('clicked()'), self.connectButton01)
-		# self.window_layer_02.addWidget(self.button_04, 0,3,1,1)
-		
-		# self.button_05=QPushButton("button_05")
-		# self.button_05.setToolTip("button_05")
-		# self.connect(self.button_05, SIGNAL('clicked()'), self.connectButton01)
-		# self.window_layer_02.addWidget(self.button_05, 0,4,1,1)
 
 		self.drop_04=QComboBox()
 		# QtCore.QObject.connect(self.drop_04, SIGNAL("currentIndexChanged(QString)"),
@@ -438,11 +409,21 @@ class typicalWindow(QtGui.QMainWindow):
 		self.window_layer_05.addWidget(self.listWidg, 0,0,1,1)
 
 
+		self.customLayout=QtGui.QGridLayout()
+		self.customLayout.setContentsMargins(5,10,5,10)
+		self.customFrame=QtGui.QFrame()
+		self.customFrame.setStyleSheet("background-color: #454545; border-style: solid; border-width: 2px; border-color:#565656;border-radius:8px;")
+		self.customFrame.setFixedHeight(80)
+		self.customFrame.setLayout(self.customLayout)
+		# self.frame_layout.addLayout(self.frameSetupLayout, 0,0,1,1)
+		self.window_layer_06.addWidget(self.customFrame, 0,0,1,1)
+
+
 
 		self.custom_pathfile=QLabel("Custom path: ")
 		self.custom_pathfile.setStyleSheet('background-color:transparent')
 		self.custom_pathfile.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		self.window_layer_06.addWidget(self.custom_pathfile, 0,0,1,1)
+		self.customLayout.addWidget(self.custom_pathfile, 0,0,1,1)
 
 
 		self.custompath=QLineEdit()
@@ -450,7 +431,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.custompath.setVisible(1)
 		self.custompath.setText("//")
 		self.custompath.setFixedWidth(600)
-		self.window_layer_06.addWidget(self.custompath, 0,1,1,1)
+		self.customLayout.addWidget(self.custompath, 0,1,1,1)
 
 
 
@@ -459,22 +440,22 @@ class typicalWindow(QtGui.QMainWindow):
 		self.drop_list_det.addItems(by_detail)
 		self.drop_list_det.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.list_layout.addWidget(self.drop_list_det)
-		self.window_layer_06.addWidget(self.list_frame, 0,2,1,1)
+		self.customLayout.addWidget(self.list_frame, 0,2,1,1)
 
 		self.button_05=QPushButton("Set to project default")
 		self.button_05.setToolTip("set list to load from custom path")
 		self.connect(self.button_05, SIGNAL('clicked()'), self.set_to_project)
-		self.window_layer_07.addWidget(self.button_05, 2,0,1,1)
+		self.customLayout.addWidget(self.button_05, 2,0,1,1)
 
 		self.button_05=QPushButton("Load from user folder")
 		self.button_05.setToolTip("set list to load from custom path")
 		self.connect(self.button_05, SIGNAL('clicked()'), self.set_to_user)
-		self.window_layer_07.addWidget(self.button_05, 2,1,1,1)
+		self.customLayout.addWidget(self.button_05, 2,1,1,1)
 
 		self.button_05=QPushButton("Set")
 		self.button_05.setToolTip("set list to load from custom path")
 		self.connect(self.button_05, SIGNAL('clicked()'), self.set_toCustom)
-		self.window_layer_07.addWidget(self.button_05, 2,2,1,1)
+		self.customLayout.addWidget(self.button_05, 2,2,1,1)
 
 		self.frame_layout=QGridLayout()
 		self.frame_layout.setAlignment(QtCore.Qt.AlignTop)
@@ -500,14 +481,6 @@ class typicalWindow(QtGui.QMainWindow):
 
 
 
-
-
-
-		# self.spaceHold=QLabel()
-		# self.spaceHold.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.spaceHold.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		# self.frame_title_layout.addWidget(self.spaceHold, 2,0,1,1)
-
 		self.msgBox=QGridLayout()
 		self.frame_title_layout.addLayout(self.msgBox, 0,0,1,1)
 
@@ -523,37 +496,10 @@ class typicalWindow(QtGui.QMainWindow):
 		self.fieldBox.setFixedWidth(600)
 		self.msgBox.addWidget(self.fieldBox, 0,1,1,1)
 
-		# self.checkbox=QCheckBox("add")
-		# self.checkbox.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# # self.checkbox.setContentsMargins(5,0,0,0)
-		# self.checkbox.setChecked(1)
-		# self.frame_title_layout.addWidget(self.checkbox, 3,1,1,1)
-		
+
 		self.radiobox=QGridLayout()
 		self.frame_title_layout.addLayout(self.radiobox, 1,0,1,1)
 
-		# self.radio=QRadioButton("radio")
-		# self.radio.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.radio.setChecked(1)
-		# self.radiobox.addWidget(self.radio, 3,3,1,1)
-		
-		
-		# self.newradio=QRadioButton("newradio")
-		# self.newradio.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.radiobox.addWidget(self.newradio, 3,4,1,1)
-		
-		# self.frame_len_layout=QGridLayout()
-		# self.frame_len_layout.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		# self.frame_title_layout.addLayout(self.frame_len_layout, 1,3,1,1)
-		
-		# self.spaceHold=QLabel()
-		# self.spaceHold.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.spaceHold.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
-		# self.frame_title_layout.addWidget(self.spaceHold, 1,3,1,1)
-		
-		# self.over=QRadioButton("safe frame")
-		# self.over.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		# self.radiobox.addWidget(self.over, 1,1,1,1)
 		
 		self.head_lbl=QLabel("start")
 		self.head_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
@@ -583,10 +529,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.frame_btn_layout.addWidget(self.look_btn, 0,1, 0,1)
 
 
-		# self.link_btn=QPushButton("link")
-		# self.connect(self.link_btn, SIGNAL('clicked()'), self.play_in_rv)
-		# self.frame_btn_layout.addWidget(self.link_btn, 0,2,1,1)
-		
+
 		self.create_btn=QPushButton("Submit To Shotgun")
 		# self.connect(self.create_btn, SIGNAL('clicked()'), self.pub_to_shotgun)
 		self.connect(self.create_btn, SIGNAL('clicked()'), self.pub_to_shotgun)
@@ -608,7 +551,7 @@ class typicalWindow(QtGui.QMainWindow):
 		self.lowerButtSetupLayout.setContentsMargins(5,10,5,10)
 		self.lower_but_frame=QtGui.QFrame()
 		# self.lower_but_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
-		self.lower_but_frame.setFixedHeight(50)
+		self.lower_but_frame.setFixedHeight(80)
 		self.lower_but_frame.setLayout(self.lowerButtSetupLayout)
 		# self.frame_layout.addLayout(self.frameSetupLayout, 0,0,1,1)
 		self.lower_layout.addWidget(self.lower_but_frame, 1,0,1,1)
@@ -621,6 +564,13 @@ class typicalWindow(QtGui.QMainWindow):
 		self.play_anim_btn.customContextMenuRequested.connect(self.onRightClick_anim)
 		self.connect(self.play_anim_btn, SIGNAL('clicked()'), self.play_latest_anim)
 		self.lowerButtSetupLayout.addWidget(self.play_anim_btn,1,3,1,1)
+
+		self.play_anim_pub_btn=QPushButton("pubanim "+get_an_pub_ver)
+		self.play_anim_pub_btn.setToolTip(get_an_pub_date)		
+		self.play_anim_pub_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_anim_pub_btn.customContextMenuRequested.connect(self.onRightClick_anim)
+		self.connect(self.play_anim_pub_btn, SIGNAL('clicked()'), self.play_latest_anim_pub)
+		self.lowerButtSetupLayout.addWidget(self.play_anim_pub_btn,2,3,1,1)
 		
 		self.play_light_btn=QPushButton("light "+get_light_ver)
 		self.play_light_btn.setToolTip(get_light_date)		
@@ -670,57 +620,19 @@ class typicalWindow(QtGui.QMainWindow):
 		self.play_ta_btn.customContextMenuRequested.connect(self.onRightClick_techanim)
 		self.connect(self.play_ta_btn, SIGNAL('clicked()'), self.play_latest_techanim)
 		self.lowerButtSetupLayout.addWidget(self.play_ta_btn,1,4,1,1)
-		# self.card_menu=QMenu("card")
-		# self.card_menuBar=self.menuBar()
-		# self.card_menuBar.addMenu(self.card_menu)
-		# self.park_btn_pkt.addWidget(self.card_menuBar)
-		# buttonGrp.append(self.card_menuBar)
-		
-		# self.card_btn=QToolButton()
-		# self.card_btn.setPopupMode(QToolButton.MenuButtonPopup)
-		# self.card_btn.setMenu(self.card_menu)
-		# self.card_special_btn=QPushButton("card special")
-		# self.connect(self.card_special_btn, SIGNAL('clicked()'), self.card_special_callup)
-		# action=QtGui.QWidgetAction(self.card_btn)
-		# action.setDefaultWidget(self.card_special_btn)
-		# self.card_btn.menu().addAction(action)
 
-		# self.B_card_btn=QToolButton()
-		# self.B_card_btn.setPopupMode(QToolButton.MenuButtonPopup)
-		# self.B_card_btn.setMenu(self.card_menu)
-		# self.B_card_special_btn=QPushButton("card special")
-		# self.connect(self.B_card_special_btn, SIGNAL('clicked()'),self.B_card_special_callup)
-		# action=QtGui.QWidgetAction(self.B_card_btn)
-		# action.setDefaultWidget(self.B_card_special_btn)
-		# self.B_card_btn.menu().addAction(action)
+		self.play_ta_pub_btn=QPushButton("pubtechanim "+get_ta_pub_ver)
+		self.play_ta_pub_btn.setToolTip(get_ta_pub_date)				
+		self.play_ta_pub_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		self.play_ta_pub_btn.customContextMenuRequested.connect(self.onRightClick_techanim)
+		self.connect(self.play_ta_pub_btn, SIGNAL('clicked()'), self.play_latest_techanim_pub)
+		self.lowerButtSetupLayout.addWidget(self.play_ta_pub_btn,2,4,1,1)
+
+
 
 		self.start_window()
 
 
-	# def comboWidget(QtGui.QWidget):
-
-	#     def __init__(self):
-	#         super(comboWidget, self).__init__()
-
-	#         self.initUI()
-
-	#     def initUI(self):      
-
-	#         cb = QtGui.QCheckBox('Show title', self)
-	#         cb.move(20, 20)
-	#         cb.toggle()
-	#         cb.stateChanged.connect(self.changeTitle)
-
-	#         self.setGeometry(300, 300, 250, 150)
-	#         self.setWindowTitle('QtGui.QCheckBox')
-	#         self.show()
-
-	#     def changeTitle(self, state):
-
-	#         if state == QtCore.Qt.Checked:
-	#             self.setWindowTitle('QtGui.QCheckBox')
-	#         else:
-	#             self.setWindowTitle('')
 
 
 
@@ -744,7 +656,6 @@ class typicalWindow(QtGui.QMainWindow):
 	def refresh_window(self):
 		self.listCreate()
 		self.refresh_playlist()
-
 
 
 
@@ -901,62 +812,117 @@ class typicalWindow(QtGui.QMainWindow):
 		#getmatchmovefolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/matchmove'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_mm_ver=getitem.split('_')[-1]
-		get_mm_date=fileDict[-1][1]	
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_mm_ver=getitem.split('_')[-1]
+			get_mm_date=fileDict[-1][1]	
+		else:
+			get_mm_ver='no ver'
+			get_mm_date='no date'
 		#gettrackfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/trackcomp'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_track_ver=getitem.split('_')[-1]
-		get_track_date=fileDict[-1][1]	
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_track_ver=getitem.split('_')[-1]
+			get_track_date=fileDict[-1][1]	
+		else:
+			get_track_ver='no ver'
+			get_track_date='no date'
 		#getrotofolder	
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/roto'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_roto_ver=getitem.split('_')[-1]
-		get_roto_date=fileDict[-1][1]
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_roto_ver=getitem.split('_')[-1]
+			get_roto_date=fileDict[-1][1]
+		else:
+			get_roto_ver='no ver'
+			get_roto_date='no date'	
 		#getanimfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'
-		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_an_ver=getitem.split('_')[-1]
-		get_an_date=fileDict[-1][1]
+		fileDict=self.rv_latest_mov_nopub(playFolder)
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_an_ver=getitem.split('_')[-1]
+			get_an_date=fileDict[-1][1]
+		else:
+			get_an_ver='no ver'
+			get_an_date='no date'
+		#getanimpubfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'
+		fileDict=self.rv_latest_mov_pubonly(playFolder)
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_an_pub_ver=getitem.split('_')[-1]
+			get_an_pub_date=fileDict[-1][1]
+		else:
+			get_an_pub_ver='no ver'
+			get_an_pub_date='no date'	
 		#gettechanimfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'
-		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_ta_ver=getitem.split('_')[-1]
-		get_ta_date=fileDict[-1][1]
+		fileDict=self.rv_latest_mov_nopub(playFolder)
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_ta_ver=getitem.split('_')[-1]
+			get_ta_date=fileDict[-1][1]
+		else:
+			get_ta_ver='no ver'
+			get_ta_date='no date'	
+		#gettechanimpubfolder
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'
+		fileDict=self.rv_latest_mov_pubonly(playFolder)
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_ta_pub_ver=getitem.split('_')[-1]
+			get_ta_pub_date=fileDict[-1][1]
+		else:
+			get_ta_pub_ver='no ver'
+			get_ta_pub_date='no date'	
 		#getfxfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/fxflip'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_fx_ver=getitem.split('_')[-1]			
-		get_fx_date=fileDict[-1][1]
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_fx_ver=getitem.split('_')[-1]			
+			get_fx_date=fileDict[-1][1]
+		else:
+			get_fx_ver='no ver'
+			get_fx_date='no date'		
 		#getlightcompfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/lightcomp'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_light_ver=getitem.split('_')[-1]		
-		get_light_date=fileDict[-1][1]
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_light_ver=getitem.split('_')[-1]		
+			get_light_date=fileDict[-1][1]
+		else:
+			get_light_ver='no ver'
+			get_light_date='no date'	
 		#getcompfolder
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/comp'
 		fileDict=self.rv_latest_mov(playFolder)
-		get_play=fileDict[-1][0]
-		getitem=get_play.split('/')[-2]
-		get_comp_ver=getitem.split('_')[-1]		
-		get_comp_date=fileDict[-1][1]
+		if fileDict:
+			get_play=fileDict[-1][0]
+			getitem=get_play.split('/')[-2]
+			get_comp_ver=getitem.split('_')[-1]		
+			get_comp_date=fileDict[-1][1]
+		else:
+			get_comp_ver='no ver'
+			get_comp_date='no date'	
 		return new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder\
 		 ,get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
-		 ,get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date
+		 ,get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+		 ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver
 
 
 
@@ -992,7 +958,7 @@ class typicalWindow(QtGui.QMainWindow):
 			getFiles=[os.path.join(directory, o) for o in os.listdir(directory) if os.path.isdir(os.path.join(directory, o))]
 			pass
 		except:
-			print "nothing found"
+			# print "nothing found"
 			return	
 		getFiles.sort(key=lambda x: os.path.getmtime(x))
 		# print getFiles[0].split(".")[-2:-1]
@@ -1023,7 +989,7 @@ class typicalWindow(QtGui.QMainWindow):
 		SCENE=str(getscene)
 		getshot=self.drop_02.currentText()
 		SHOT=str(getshot)
-		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date=self.getSetup(PROJECT, SCENE, SHOT)
+		new_sgVarFilePath, projectFolder, animFolder, abcFolder, pbFolder, rvFolder, getDeptRVFolder, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver=self.getSetup(PROJECT, SCENE, SHOT)
 		getDepts = os.listdir(getDeptRVFolder)		
 		if os.path.isfile(new_sgVarFilePath):
 		    franges = {'WORK_IN': None, 'CUT_IN': None,
@@ -1086,7 +1052,7 @@ class typicalWindow(QtGui.QMainWindow):
 			getFiles=[os.path.join(directory, o) for o in os.listdir(directory) if os.path.isdir(os.path.join(directory, o))]
 			pass
 		except:
-			print "nothing found"
+			# print "nothing found"
 			return
 		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
 		getFiles.sort(key=lambda x: os.path.getmtime(x))
@@ -1303,7 +1269,10 @@ class typicalWindow(QtGui.QMainWindow):
 			getpreset=[os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(playlistpath) for name in files if playlist_name+"_storedText.txt"==name]
 			fileDict=[]
 			makeContent=self.obtain_presets(getpreset)
-			print makeContent
+			if makeContent:
+				pass
+			else:
+				return
 			for each in makeContent:
 				import datetime
 				getFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem]
@@ -1343,57 +1312,6 @@ class typicalWindow(QtGui.QMainWindow):
 
 
 
-	# def loadV1(self):
-	# 	list_load=self.drop_list_06
-	# 	list_load_function=list_load.currentText()
-	# 	allthePaths=('//', '//')
-	# 	allthePathsDic={"firstPath":'//', "secondPath":'//'}
-	# 	if list_load_function==presetlist[0]:
-	# 		prompt="name of list:"
-	# 		getcomment=self.makeBody(prompt)
-	# 		if getComment==None:
-	# 			print "needs name"
-	# 			return
-	# 		else:
-	# 			pass
-	# 		getComment=getComment.replace(' ', '_')
-	# 		shotList=suffixAppend+"_"+getComment+"storedText.txt"
-	# 		fileBuild=path+shotList
-	# 		copyfilemessage="creating in "+fileBuild
-	# 		replay = QtGui.QMessageBox.question(None, 'Message', copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-	# 		if reply == QtGui.QMessageBox.Yes:
-	# 			if os.path.isfile(fileBuild)==True:
-	# 				cmessage="create over "+fileBuild
-	# 				replay = QtGui.QMessageBox.question(None, 'Message' ,cmessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-	# 				if reply == QtGui.QMessageBox.Yes:
-	# 					inp=open(fileBuild, "w+")
-	# 					inp.write(name_to_save)
-	# 					inp.close()
-	# 					print "created "+fileBuild
-	# 				else:
-	# 					print "cancelled"
-	# 					return
-	# 			else:
-	# 				inp=open(fileBuild, "w+")
-	# 				inp.write(name_to_save)
-	# 				inp.close()
-	# 				print "created "+fileBuild
-	# 		else:
-	# 			print "cancelled"
-	# 			return
-	# 	elif list_build_function==list_build[2]:
-	# 		fileDict, list=self.getAllLists(allthePaths)
-			
-	# def reset_callup(self):
-		# allthePaths=('//', '//')
-		# allthePathsDic={"firstPath":'//', "secondPath":'//'}
-		# getlisttype=self.type_list_drop
-		# listtype=getlisttype.currentText()
-		# if listtype=="firstPath":
-		# 	directory=allthePathsDic.get("firstPath")
-		# getUser=getUser
-		# self.directory_for_taking(getUser, directory)
-		
 	def directory_for_taking(self, getUser, directory):
 		model, countdata, listArray	=self.get_listset_directory()
 		# self.status_lbl
@@ -1486,7 +1404,13 @@ class typicalWindow(QtGui.QMainWindow):
 
 	def play_latest_anim(self):
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'		
-		fileDict=self.rv_latest_mov(playFolder)
+		fileDict=self.rv_latest_mov_nopub(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
+
+	def play_latest_anim_pub(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/anim'		
+		fileDict=self.rv_latest_mov_pubonly(playFolder)
 		get_play=fileDict[-1][0]
 		self.direct_play_rv(get_play)
 
@@ -1575,7 +1499,7 @@ class typicalWindow(QtGui.QMainWindow):
 
 	def play_latest_techanim(self):
 		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'		
-		fileDict=self.rv_latest_mov(playFolder)
+		fileDict=self.rv_latest_mov_nopub(playFolder)
 		get_play=fileDict[-1][0]
 		self.direct_play_rv(get_play)
 
@@ -1585,6 +1509,12 @@ class typicalWindow(QtGui.QMainWindow):
 		path='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'
 		self.launch_folder(path)
 
+
+	def play_latest_techanim_pub(self):
+		playFolder='/jobs/'+PROJECT+'/'+SCENE+'/'+SHOT+'/PRODUCTS/images/techanim'		
+		fileDict=self.rv_latest_mov_pubonly(playFolder)
+		get_play=fileDict[-1][0]
+		self.direct_play_rv(get_play)
 
 
 	def rv_latest_raw(self, playFolder):
@@ -1623,13 +1553,78 @@ class typicalWindow(QtGui.QMainWindow):
 			getFiles=[os.path.join(playFolder, o) for o in os.listdir(playFolder) if os.path.isdir(os.path.join(playFolder, o))]
 			pass
 		except:
-			print "nothing found"
+			# print "nothing found"
 			return
 		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
 		getFiles.sort(key=lambda x: os.path.getmtime(x))
 		fileDict=[]
 		for each in getFiles:
 			getTheMovFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem]
+			if getTheMovFolders:
+				statbuf=os.stat(each)
+				import datetime
+				# timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+				getAccTime=time.ctime(os.path.getmtime(each))
+				getMovie=each+'/'+getTheMovFolders[0]
+				timeFormat=datetime.datetime.fromtimestamp(statbuf.st_mtime).strftime('%c')
+				timeFormat=timeFormat.split(" ")[:4]
+				timeFormat=" ".join(timeFormat)
+				if "  " in str(getAccTime):
+					getAccTime=getAccTime.split("  ")
+					getAccTime=getAccTime[1].split(" ")[1]
+				else:
+					getAccTime=getAccTime.split(" ")[3]
+				# timeFormat=timeFormat+"  "+findSomeTime+'>'+sub
+				timeFormat=timeFormat+"  "+getAccTime
+				makeDict=(getMovie, timeFormat)
+				fileDict.append(makeDict)
+		return fileDict
+
+	def rv_latest_mov_nopub(self, playFolder):
+		try:
+			getFiles=[os.path.join(playFolder, o) for o in os.listdir(playFolder) if os.path.isdir(os.path.join(playFolder, o))]
+			pass
+		except:
+			# print "nothing found"
+			return
+		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		for each in getFiles:
+			getTheMovFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem and "pubRender" not in folderItem]
+			if getTheMovFolders:
+				statbuf=os.stat(each)
+				import datetime
+				# timeFormat=time.strftime('%m/%d/%Y', time.gmtime(os.path.getctime(each)))
+				getAccTime=time.ctime(os.path.getmtime(each))
+				getMovie=each+'/'+getTheMovFolders[0]
+				timeFormat=datetime.datetime.fromtimestamp(statbuf.st_mtime).strftime('%c')
+				timeFormat=timeFormat.split(" ")[:4]
+				timeFormat=" ".join(timeFormat)
+				if "  " in str(getAccTime):
+					getAccTime=getAccTime.split("  ")
+					getAccTime=getAccTime[1].split(" ")[1]
+				else:
+					getAccTime=getAccTime.split(" ")[3]
+				# timeFormat=timeFormat+"  "+findSomeTime+'>'+sub
+				timeFormat=timeFormat+"  "+getAccTime
+				makeDict=(getMovie, timeFormat)
+				fileDict.append(makeDict)
+		return fileDict
+
+
+	def rv_latest_mov_pubonly(self, playFolder):
+		try:
+			getFiles=[os.path.join(playFolder, o) for o in os.listdir(playFolder) if os.path.isdir(os.path.join(playFolder, o))]
+			pass
+		except:
+			# print "nothing found"
+			return
+		# getFile=[(each) for each in getFiles if getpwuid(stat(each).st_uid).pw_name==getUser]
+		getFiles.sort(key=lambda x: os.path.getmtime(x))
+		fileDict=[]
+		for each in getFiles:
+			getTheMovFolders=[(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem and "pubRender" in folderItem]
 			if getTheMovFolders:
 				statbuf=os.stat(each)
 				import datetime
