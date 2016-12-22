@@ -288,13 +288,30 @@ class typicalWindow(QtGui.QMainWindow):
 		
 		
 		#widgets
-		self.drop_lbl_01=QLabel()
-		self.drop_lbl_01.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-		self.drop_lbl_01.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		self.window_layer_01.addWidget(self.drop_lbl_01, 0,0,1,1)
+		self.launch_shotgun_btn=QPushButton("launch shotgun")
+		# self.launch_shotgun_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+		# self.launch_shotgun_btn.customContextMenuRequested.connect(self.onRightClick_techanim)
+		self.launch_shotgun_btn.setStyleSheet("color: #b1b1b1; background-color: rgba(200,200,200,100);")
+		# self.launch_shotgun_btn.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,25);")		
+		self.connect(self.launch_shotgun_btn, SIGNAL('clicked()'), self.launch_shotgun)
+		# self.lowerButtSetupLayout.addWidget(self.launch_shotgun_btn,2,7,1,1)
+		self.window_layer_01.addWidget(self.launch_shotgun_btn, 0,0,1,1)
+
+
+
+		self.launch_shotgun_btn=QPushButton("open workfolder")
+		self.connect(self.launch_shotgun_btn, SIGNAL('clicked()'), self._workFolder)
+		self.window_layer_01.addWidget(self.launch_shotgun_btn, 0,1,1,1)
+		
+
+
+		# self.drop_lbl_01=QLabel()
+		# self.drop_lbl_01.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		# self.drop_lbl_01.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		# self.window_layer_01.addWidget(self.drop_lbl_01, 0,1,1,1)
 		
 		self.drop_01=QComboBox()
-		self.window_layer_01.addWidget(self.drop_01, 0,1,1,1)
+		self.window_layer_01.addWidget(self.drop_01, 0,2,1,1)
 		self.drop_01.addItems(prjFileName)
 		self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.drop_01.customContextMenuRequested.connect(self.onRightClick)
@@ -302,17 +319,17 @@ class typicalWindow(QtGui.QMainWindow):
 		# self.drop_01.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		# self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
 		
-		self.drop_lbl_02=QLabel()
-		self.drop_lbl_02.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-		self.drop_lbl_02.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
-		self.window_layer_01.addWidget(self.drop_lbl_02, 0,2,1,1)
+		# self.drop_lbl_02=QLabel()
+		# self.drop_lbl_02.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+		# self.drop_lbl_02.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+		# self.window_layer_01.addWidget(self.drop_lbl_02, 0,2,1,1)
 		
 		self.drop_02=QComboBox()
 		self.window_layer_01.addWidget(self.drop_02, 0,3,1,1)
 		# QtCore.QObject.connect(self.drop_02, SIGNAL("currentIndexChanged(QString)"),
 		# 						self.on_drop_01_changed)
 		self.drop_02.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.connect(self.drop_lbl_01, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.connect(self.drop_02, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick_shot)
 		
 		QtCore.QObject.connect(self.drop_01, SIGNAL("currentIndexChanged(QString)"),
 								self.on_drop_01_changed)
@@ -330,7 +347,7 @@ class typicalWindow(QtGui.QMainWindow):
 		# 						self.on_drop_01_changed)
 		self.drop_04.addItems(getDepts)
 		self.drop_04.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-		self.connect(self.drop_04, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick)
+		self.connect(self.drop_04, SIGNAL("customContextMenuRequested(QPoint)"), self.onRightClick_dept)
 		# QtCore.QObject.connect(self.drop_04, SIGNAL("currentIndexChanged(QString)"),
 		# 						self.drop_04_changed)
 		deptindex = self.drop_04.findText(DEPT, QtCore.Qt.MatchFixedString)
@@ -559,7 +576,8 @@ class typicalWindow(QtGui.QMainWindow):
 		# self.lower_layout.addWidget(self.lower_but_frame,1,0,1,1)
 
 		self.play_anim_btn=QPushButton("anim "+get_an_ver)
-		self.play_anim_btn.setToolTip(get_an_date)		
+		self.play_anim_btn.setToolTip(get_an_date)	
+		# self.play_anim_btn.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
 		self.play_anim_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
 		self.play_anim_btn.customContextMenuRequested.connect(self.onRightClick_anim)
 		self.connect(self.play_anim_btn, SIGNAL('clicked()'), self.play_latest_anim)
@@ -630,11 +648,17 @@ class typicalWindow(QtGui.QMainWindow):
 
 
 
+
+
 		self.start_window()
 
 
 
 
+	def launch_shotgun(self):
+		url="http://sg.methodstudios.com"
+		subprocess.Popen('firefox "%s"' % url, stdout=subprocess.PIPE, shell=True) 
+            
 
 	def start_window(self):
 		# self.connectButton01
@@ -713,6 +737,26 @@ class typicalWindow(QtGui.QMainWindow):
 		scene=self.drop_01
 		scene=scene.currentText()		
 		path='/jobs/'+PROJECT+'/'+scene+"/"
+		self.launch_folder(path)
+
+
+	def onRightClick_shot(self):
+		scene=self.drop_01
+		scene=scene.currentText()		
+		path='/jobs/'+PROJECT+'/'+scene+"/"+SHOT
+		self.launch_folder(path)
+
+	def onRightClick_dept(self):
+		scene=self.drop_01
+		scene=scene.currentText()		
+		path='/jobs/'+PROJECT+'/'+scene+"/"+SHOT+'/PRODUCTS/images/'+DEPT
+		self.launch_folder(path)
+
+
+	def _workFolder(self):
+		scene=self.drop_01
+		scene=scene.currentText()		
+		path='/jobs/'+PROJECT+'/'+scene+"/"+SHOT+'/TASKS/'+DEPT+"/maya/scenes/"
 		self.launch_folder(path)
 
 
