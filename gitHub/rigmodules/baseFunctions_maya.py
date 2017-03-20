@@ -1646,7 +1646,13 @@ class BaseClass():
 
 
     def build_a_curve(self):
-        getTopOpenGuides=cmds.ls(sl=1, fl=1)
+        #getTopOpenGuides=cmds.ls(sl=1, fl=1)
+        getSelectPref = cmds.selectPref(q=1, tso=1)
+        if getSelectPref == False:
+            cmds.selectPref(tso=1)
+            getTopOpenGuides = cmds.ls(os=1, fl=1)
+        else:
+            getTopOpenGuides = cmds.ls(os=1, fl=1)   	
         self.build_a_curve_callup(getTopOpenGuides)
 
     def build_a_curve_callup(self, selectedObjects):
