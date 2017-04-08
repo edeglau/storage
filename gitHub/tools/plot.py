@@ -16,7 +16,7 @@ class plotter_UI(object):
         winTitle = winName
         if cmds.window(winName, exists=True):
                 cmds.deleteUI(winName)
-        window = cmds.window(winName, title=winTitle, tbm=1, w=300, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=600, h=220 )
         cmds.menuBarLayout(h=30)
         stringField='''"Plot vertex" - (launches window)if you're familiar with rivets, it's similar except that
     there is no dependency set up. it bakes a locator in space for the animation duration
@@ -66,7 +66,7 @@ class plotter_UI(object):
                 to.
             * Step 3: Set direction of normal to offset: X, Y, Z              
             * Step 4: press "aligne" - this will align the second selection to the first'''
-        getDir=["X", "Y", "Z"]
+        getDir=["X", "Y", "Z", "XY", "XZ", "YZ"]
         self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
         cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
         cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
@@ -85,20 +85,21 @@ class plotter_UI(object):
         cmds.button (label='Match Matrix', p='txvaluemeter', command = lambda *args:self.xformmove())
         cmds.button (label='Reshape to Edge', p='txvaluemeter', command = lambda *args:self.matchCurveShapes())
         cmds.button (label='Reshape to Shape', p='txvaluemeter', command = lambda *args:self.matchFullShape())
-        # cmds.formLayout('BRow', p='LrRow')
         cmds.frameLayout('BRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow') 
-        cmds.rowColumnLayout( 'vertex_align', p = 'BRow', numberOfColumns=1 )
-        # cmds.columnLayout('vertex_align', p = 'BRow', columnAttach=('both', 5), rowSpacing=10, columnWidth=180 )
-        # cmds.rowLayout( 'vertex_align', numberOfColumns=3, p='BRow', columnWidth3=(80, 75, 150), adjustableColumn=2, columnAlign=(1, 'right'), columnAttach=[(1, 'both', 0), (2, 'both', 0), (3, 'both', 0)] )
-        # cmds.gridLayout('vertex_align', p='BRow', numberOfColumns=3, cellWidthHeight=(150, 180))  
-        cmds.text ('Vertice Align', p='vertex_align')
-        cmds.radioCollection()
-        self.zip = cmds.radioButton("Meet")
-        self.amount = cmds.textField( w=40, h=25, p='vertex_align', text="0.0")        
-        self.direction = cmds.optionMenu( label='Axis', p='vertex_align')
+        cmds.rowColumnLayout( 'vertex_align', p = 'BRow', numberOfColumns=1 ) 
+        cmds.text ('Vertice Align', p='vertex_align', bgc=[0.55, 0.6, 0.6])
+        # self.zip = cmds.checkBox("Meet")
+        cmds.text ('Strength', p='vertex_align')
+        self.strength = cmds.textField( w=40, h=25, p='vertex_align', text="1.0")        
+        cmds.text ('Bias', p='vertex_align')
+        self.bias = cmds.textField( w=40, h=25, p='vertex_align', text="0.5")  
+        cmds.gridLayout('txvaluemeter', p='vertex_align', numberOfColumns=2, cellWidthHeight=(150, 18))          
+        cmds.text ('Drift', p='txvaluemeter')
+        self.direction = cmds.optionMenu( label='Axis', p='txvaluemeter')
         for each in getDir:
             cmds.menuItem( label=each)
-        cmds.button (label='Align', p='vertex_align', command = lambda *args:self._offset_verts(amount=cmds.textField(self.amount, q=1, text=1), direction=cmds.optionMenu(self.direction, q=1, v=1), match = cmds.radioButton(self.zip, q=1)))        
+        self.amount = cmds.textField( w=40, h=25, p='vertex_align', text="0.0")        
+        cmds.button (label='Align', p='vertex_align', command = lambda *args:self._offset_verts(strength=cmds.textField(self.strength, q=1, text=1), amount=cmds.textField(self.amount, q=1, text=1), direction=cmds.optionMenu(self.direction, q=1, v=1), biases=cmds.textField(self.bias, q=1, text=1)))
         cmds.showWindow(window)
 
     def selection_grab(self):
@@ -122,9 +123,8 @@ class plotter_UI(object):
     def _plotmattrix(self):
         self.plot_matrix()
 
-
-    def _offset_verts(self, amount, direction, match):
-        self.space_vert(amount, direction, match)
+    def _offset_verts(self, strength, amount, direction, biases):
+        self.space_vert(strength, amount, direction, biases)
         
     def _plot_each_vert(self):
         self.plot_each_vert()
@@ -280,13 +280,11 @@ class plotter_UI(object):
         mysum=numpy.median(numpy.array(lst))
         return mysum            
 
-    def space_vert(self, amount, direction, match):
+    def space_vert(self, strength, amount, direction, bias):
         '''offsets a vert from another'''
+        strength=float(strength)
         amount=float(amount)
-        if match == False:
-            amount = amount
-        else:
-            amount = amount/2
+        bias=float(bias)
         selObj=cmds.ls(sl=1, fl=1)   
         firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
         if len(firstpart)==len(secondpart):
@@ -296,33 +294,41 @@ class plotter_UI(object):
             return
         for leadingVert, followVert in map(None, firstpart, secondpart):
             transform=cmds.xform(leadingVert, q=True, ws=1, t=True)
+            transform_follvert=cmds.xform(followVert, q=True, ws=1, t=True)
+            #calc x
+            xsum = transform[0]-transform_follvert[0]
+            startxsum = xsum*bias
+            differencesum = 1.0 - bias
+            addedsum=xsum*differencesum
+            move_xfollow = transform_follvert[0] + startxsum * strength
+            move_xlead = transform[0] - addedsum * strength
+            ysum = transform[1]-transform_follvert[1]
+            startysum = ysum*bias
+            differenceysum = 1.0 - bias
+            addedysum=ysum*differenceysum 
+            move_yfollow = transform_follvert[1] + startysum * strength
+            move_ylead = transform[1] - addedysum * strength            
+            zsum = transform[2]-transform_follvert[2]
+            startzsum = zsum*bias
+            differencezsum = 1.0 - bias
+            addedzsum=zsum*differencezsum
+            move_zfollow = transform_follvert[2] + startzsum * strength
+            move_zlead = transform[2] - addedzsum * strength    
+            cmds.move(move_xfollow, move_yfollow, move_zfollow, followVert, ws=1)
+            cmds.move(move_xlead, move_ylead, move_zlead, leadingVert, ws=1)
             if direction=="X":
-                if match == False:
-                    cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)
-                else:
-                    cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)                    
-                    cmds.move(transform[0], transform[1], transform[2], leadingVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, leadingVert, r=1, ls=1)
+                cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)
             if direction=="Y":
-                if match == False:                
-                    cmds.move(transform[0], transform[1]+amount, transform[2], followVert, os=1, ls=1)
-                    cmds.move(0.0, amount, 0.0, followVert, r=1, ls=1)
-                else:
-                    cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)                    
-                    cmds.move(transform[0], transform[1], transform[2], leadingVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, leadingVert, r=1, ls=1)                
-            if direction=="Z":       
-                if match == False:
-                    cmds.xform(followVert, ws=1, t=transform)        
-                    cmds.move(0.0, 0.0, amount, followVert, r=1, ls=1)   
-                else:
-                    cmds.move(transform[0], transform[1], transform[2], followVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, followVert, r=1, ls=1)                    
-                    cmds.move(transform[0], transform[1], transform[2], leadingVert, ws=1)
-                    cmds.move(amount, 0.0, 0.0, leadingVert, r=1, ls=1)                
+                cmds.move(0.0, amount, 0.0, followVert, r=1, ls=1)
+            if direction=="Z":
+                cmds.move(0.0, amount, 0.0, followVert, r=1, ls=1)
+            if direction=="XY":
+                cmds.move(amount,amount, 0.0, followVert, r=1, ls=1)
+            if direction=="XZ":
+                cmds.move(amount, 0.0, amount, followVert, r=1, ls=1)
+            if direction=="YZ":
+                cmds.move(0.0, amount, amount, followVert, r=1, ls=1)
+         
 
     def plot_matrix(self):
         selObj=cmds.ls(sl=1, fl=1)      
