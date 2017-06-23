@@ -174,6 +174,8 @@ class ToolKitUI(object):
         cmds.button (label='Duplicate Move', p='ToolButtonLayout', command = self._dup_move)
         cmds.button (label='ShadeNetworkSel', p='ToolButtonLayout', command = self._shade_network)
         cmds.button (label='PolyCheck', p='ToolButtonLayout', command = self._poly_check)
+        cmds.button (label='<<', p='ToolButtonLayout', command = self.getinput)
+        cmds.button (label='>>', p='ToolButtonLayout', command = self.getoutput)  
         # cmds.button (label='*Cleanup asset', bgc=[0.00, 0.22, 0.00], ann="Hides finalling rig locators in skinned asset file, switches wardrobe joint interpolation('Dressvtx' and 'Skirtvtx') to noflip. if char light present, reconstrains it to master", p='listBuildButtonLayout', command = self._clean_up)
         # cmds.button (label='*Cleanup rig', bgc=[0.00, 0.22, 0.00], ann="Hides stretch locators, hides and unkeyable shoulder, resets some attributes to no longer go in negative value(fingers)", p='listBuildButtonLayout', command = self._clean_up_rig)
         # cmds.button (label='*Wipe Anim From Asset', bgc=[0.00, 0.22, 0.00], ann="Resets all Ctrl to zero. Wipes animation", p='listBuildButtonLayout', command = self._reset_asset)
@@ -254,6 +256,12 @@ class ToolKitUI(object):
                 cmds.deleteUI(each, window=1)
             except:
                 pass
+        
+    def getinput(self, arg=None):
+        getBaseClass.getinput()
+        
+    def getoutput(self, arg=None):
+        getBaseClass.getoutput()
 
     def _calamari(self, arg=None):
         getBaseClass.buildRoughCalamari(3)
