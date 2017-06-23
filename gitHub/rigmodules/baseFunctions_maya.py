@@ -30,7 +30,9 @@ guideFolderPath=folderPath+"Guides\\"
 infFolderPath=folderPath+"Influences\\"
 xmlFolderPath=folderPath+"XMLskinWeights\\"
 objFolderPath=folderPath+"Obj\\"
-
+inputTypes=["worldMesh", "outputGeometry", "outMesh", "outputMesh", "_outMesh", "output"]
+outputTypes=["inputGeometry", "inMesh", "inputMesh", "input"]
+excluded=["BaseShape"]
 # filepath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
 # print filepath
 # sys.path.append(str(filepath))
@@ -455,7 +457,17 @@ class BaseClass():
             skinID, getInf=self.skinnedBones(eachChild)
             cmds.select(eachChild)
             cmds.skinPercent(skinID, normalize=1) 
- 
+	
+     def getinput(self):
+        excluded=["BaseShape"]
+        foundinput= [(each) for each in cmds.listConnections(cmds.ls(sl=1)[0], s=1, c=1, p=1, scn=1, sh = 1, d=0) for item in inputTypes for nono in excluded if item in each if nono not in each]        
+        cmds.select(foundinput[0], r=1)
+
+    def getoutput(self):
+        excluded=["BaseShape"]
+        foundinput= [(each) for each in cmds.listConnections(cmds.ls(sl=1)[0], s=0, c=1, p=1, scn=1, sh = 1, d=1) for item in outputTypes for nono in excluded if item in each if nono not in each]        
+        cmds.select(foundinput[0], r=1)
+        
             
 #     def weightInf_transfer_to_copy_singleV1(self):
 #         getMesh=cmds.ls(sl=1)
