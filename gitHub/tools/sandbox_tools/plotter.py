@@ -10,18 +10,46 @@ class PlotterWindow(self):
         stringField='''"Plot vertex" - (launches window)if you're familiar with rivets, it's similar except that 
     there is no dependency set up. it bakes a locator in space for the animation duration 
     to the face or vertex of your choice
-        "PLOT"
+         "PLOT VERT"
             * Step 1: Select a vertex
             * Step 2: press "plot" - locator will follow vertex anim
-        "PLOT EACH"
+        "PLOT AVERAGES"
             * Step 1: Select multiple vertex
-            * Step 2: press "plot each" - locator will follow each vertex anim
+            * Step 2: press "plot each" - locator will follow the center of the selected verts          
+        "PLOT OBJECT"
+            * Step 1: Select Object
+            * Step 2: press "plot each" - locator will follow the object
+        "PLOT EACH"
+            * Step 1: Select Objects
+            * Step 2: press "plot each" - locator will follow multiple objects          
         "ONION"
             * Step 1: Select a vertex
             * Step 2: press "onion" - locators will be created at each frame
         "LOCATE"
             * Step 1: Select a vertex or a group of vertices
-            * Step 2: press "locate" - a locator will place in center of selection
+            * Step 2: press "locate" - a locator will place in center of selection         
+        "OFFSET CACHE"
+            * Step 1: Select the follower mesh 
+            * Step 2: Select the lead mesh
+            * Step 3: press "offset cache" - the cache will follow the new cache position
+        "TRANSFORM CACHE"
+            * Step 1: Select the mesh meant to move 
+            * Step 2: Select the mesh in the preferred location
+            * Step 3: press "transform cache" - the cache will move to the new cache position
+        "MATCH MATRIX"
+            * Step 1: Select the object to move 
+            * Step 2: Select the object in the preferred location
+            * Step 3: press "match matrix" - the object will move to the new position               
+        "RESHAPE TO EDGE"
+            * Step 1: Select an uninterrupted edge line of one object
+            * Step 2: Select an uninterrupted edge line of another object
+            * Step 3: press "reshape to edge" - the second object will be shaped and follow 
+                the edge of the first object     
+         "RESHAPE TO SHAPE"
+            * Step 1: Select an uninterrupted edge line of one object
+            * Step 2: Select an uninterrupted edge line of another object
+            * Step 3: press "reshape to shape" - the object edges of second object will be 
+                aligned and follow the edge of the first object 
         "ALIGN"
             * Step 1: Select a line of verts on one object and exact same number of
                 verts on second object
