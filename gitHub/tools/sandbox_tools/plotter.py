@@ -28,7 +28,12 @@ class PlotterWindow(self):
             * Step 2: Set amount that you will want to offset. Leave at "0.0" to snap
                 to.
             * Step 3: Set direction of normal to offset: X, Y, Z              
-            * Step 4: press "aligne" - this will align the second selection to the first'''
+            * Step 4: press "aligne" - this will align the second selection to the first
+        "INTERSECTION FIX"
+            * Step 1: Select two objects as you would performing any shrinkwrap             
+            * Step 2: press "Intersection fix" - this will set a shrink wrap that will
+                only affect the area
+            '''
         getDir=["X", "Y", "Z"]
         self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))         
         rowColumnLayout  (' selectArrayRow ', nr=1, w=300)
@@ -37,18 +42,196 @@ class PlotterWindow(self):
         columnLayout ('selectArrayColumn', parent = 'rMainRow')
         setParent ('selectArrayColumn')
         cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(150, 18))            
-        button (label='plot', p='txvaluemeter', command = lambda *args:self._plotter())
-        button (label='plot each', p='txvaluemeter', command = lambda *args:self._plot_each_vert())
-        button (label='onion', p='txvaluemeter', command = lambda *args:self._onion_skin())
-        button (label='locate', p='txvaluemeter', command = lambda *args:self.locator_select_verts())
+        cmds.button (label='Plot averages', p='txvaluemeter', command = lambda *args:self.plotter_avrg())
+        cmds.button (label='Plot object', p='txvaluemeter', command = lambda *args:self.plot_matrix())
+        cmds.button (label='Plot each', p='txvaluemeter', command = lambda *args:self.plot_each_vert())
+        cmds.button (label='Onion', p='txvaluemeter', command = lambda *args:self._onion_skin())
+        cmds.button (label='Locate', p='txvaluemeter', command = lambda *args:self.locator_select_verts())
+        cmds.button (label='Offset Cache', p='txvaluemeter', command = lambda *args:self.offset_cache())
+        cmds.button (label='Transform Cache', p='txvaluemeter', command = lambda *args:self.offset_cache_static())
+        cmds.button (label='Match Matrix', p='txvaluemeter', command = lambda *args:self.xformmove())
+        cmds.button (label='Reshape to Edge', p='txvaluemeter', command = lambda *args:self.matchCurveShapes())
+        cmds.button (label='Reshape to Shape', p='txvaluemeter', command = lambda *args:self.matchFullShape())
+        cmds.button (label='Intersection Fix', p='txvaluemeter', command = lambda *args:self.shrink_intersections())
         self.amount=cmds.textField( w=40, h=25, p='txvaluemeter', text="0.0")        
         self.direction=cmds.optionMenu( label='Attributes')
         for each in getDir:
             cmds.menuItem( label=each)       
         button (label='offset', p='txvaluemeter', command = lambda *args:self._offset_verts(amount=cmds.textField(self.amount, q=1, text=1), direction=cmds.optionMenu(self.direction, q=1, v=1)))        
         showWindow(window)
+    def plot_each_vert(self):
+        '''plots a locator to a vertice or face per keyframe in a timeline'''
+        selObj=cmds.ls(sl=1, fl=1)
+        for item in selObj:
+            cmds.select(item, r=1)
+            self.plot_vert()
+    def plotter_avrg(self):
+        '''plots a locator to a vertice or face per keyframe in a timeline'''
+        selObj=cmds.ls(sl=1, fl=1)      
+        if len(selObj)>0:
+            pass
+        else:
+            print "Select 1 object" 
+            return     
+        getTopRange=cmds.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
+        getLowRange=cmds.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
+        edgeBucket=[]
+        getRange=arange(getLowRange,getTopRange, 1 )
+        getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
+        cmds.normalConstraint(selObj[0], getloc[0])
+        placeloc=cmds.spaceLocator(n=selObj[0]+"lctr")
+        for each in getRange:
+            cmds.currentTime(each)            
+            transform=cmds.xform(selObj, q=1, ws=1, t=1)
+            posBucketx=self.array_median_find(transform[0::3])
+            posBuckety=self.array_median_find(transform[1::3])
+            posBucketz=self.array_median_find(transform[2::3])
+            cmds.xform(getloc[0], ws=1, t=(posBucketx, posBuckety, posBucketz))  
+            cmds.SetKeyTranslate(getloc[0])
+            cmds.xform(placeloc[0], ws=1, t=(posBucketx, posBuckety, posBucketz))
+            cmds.SetKeyTranslate(placeloc[0])               
+            rotate=cmds.xform(getloc[0], q=True, ws=1, ro=True)
+            cmds.xform(placeloc[0], ws=1, ro=rotate)  
+            cmds.SetKeyRotate(placeloc[0])
+            cmds.currentTime(each)
+        cmds.delete(getloc[0])
+        return placeloc[0]
 
+    
+    def matchCurveShapes(self):
+        self.CurveShapes()
 
+    def matchFullShape(self):
+        getFirstGrp, getSecondGrp=self.CurveShapes()
+        self.matchCurveShapes_andShrinkWrap(getFirstGrp, getSecondGrp)
+        
+    def CurveShapes(self):
+        getSel=self.selection_grab()
+        if getSel:
+            pass
+        else:
+            return
+        getNames=cmds.ls(sl=1, fl=1)
+        if ".e[" not in str(getNames[0]):
+            print "selection needs to be continuous edges of two seperate polygon objects: first select one, then continuous edge and then the continuous edge on a seperate poly object that you want to deform it along"
+            return
+        else:
+            pass
+        getFirstGrp = getNames[0].split(".")[0]
+        getSecondGrp = getNames[-1:][0].split(".")[0]
+        if getFirstGrp == getSecondGrp:
+            print "Only one poly object has been detected. Select one object and it's continuous edge and then select another object and select it's continuous edge for the first object to align to."
+            return
+        else:
+            pass
+        firstList=[(each) for each in getNames if each.split(".")[0]==getFirstGrp]
+        secondList=[(each) for each in getNames if each.split(".")[0]==getSecondGrp]
+        '''create childfirst curve'''
+        cmds.select(firstList)
+        cmds.CreateCurveFromPoly()
+        getFirstCurve=cmds.ls(sl=1, fl=1)
+        '''get cv total of curve'''
+        getFirstCurveInfo=cmds.ls(sl=1, fl=1)
+        numberCV=str(pm.PyNode(getFirstCurveInfo[0]).numCVs())
+        cmds.delete(getFirstCurve[0], ch=1)
+        '''wrap child mesh to curve'''
+        cmds.select(cmds.ls(getFirstGrp)[0], r=1)
+        cmds.wire(w=getFirstCurve[0], gw=0, en=1.000000, ce=0.000000, li=0.000000, dds=[(0, 500)] )
+        '''create parent curve'''
+        cmds.select(secondList)
+        cmds.CreateCurveFromPoly()
+        getSecondCurve=cmds.ls(sl=1, fl=1)
+        getSecondCurveInfo=cmds.ls(sl=1, fl=1)
+        '''rebuilt curve to match first curve built'''
+        cmds.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
+        getSecondCurve=cmds.ls(sl=1, fl=1)
+        getSecondCurveInfo=cmds.ls(sl=1, fl=1)
+        cmds.delete(getSecondCurve[0], ch=1)
+        '''wrap parent curve to parent mesh'''
+        cmds.select(getSecondCurve[0], r=1)
+        cmds.select(cmds.ls(getSecondGrp)[0], add=1)
+        cmds.CreateWrap()
+        '''blend child curve to parent curve'''
+        cmds.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0))
+        return getFirstGrp, getSecondGrp
+    
+    def offset_cache(self):
+        checkSel = cmds.ls(sl=1)
+        if len(checkSel)<2:
+            print "you need to select two objects"
+        leader = checkSel[1]
+        cmds.select(leader, r=1)
+        cmds.ConvertSelectionToVertices(leader)
+        ld_lctr = self.plotter_avrg()
+        follower = checkSel[0]
+        cmds.select(follower, r=1)
+        cmds.ConvertSelectionToVertices(follower)
+        flw_lctr = self.plotter_avrg()
+        # set the offset node for translate
+        plsMns = cmds.shadingNode("plusMinusAverage", asUtility = 1)
+        cmds.setAttr(plsMns+".operation", 2)
+        cmds.connectAttr(ld_lctr+".translate", plsMns+".input3D[0]", f=1)
+        cmds.connectAttr(flw_lctr+".translate", plsMns+".input3D[1]", f=1)
+        # set cluster
+        cmds.select(checkSel[0])
+        getpar=cmds.listRelatives(checkSel[0], p=1)
+        getchildren=[(nodes) for nodes in cmds.listRelatives(getpar[0], ad=1, type="mesh") if "Orig" not in str(nodes) ]
+        cmds.select(getchildren, add =1 )
+        create_cstr = cmds.cluster()
+        # connect result to cluster
+        cmds.connectAttr( plsMns+".output3D", create_cstr[0]+"Handle.translate", f = 1)
+        
+    def xformmove(self):
+        '''move to matrix'''
+        objSel=cmds.ls(sl=1)
+        matrix=cmds.xform(objSel[1], q=1, ws=1, m=1)
+        cmds.xform(objSel[0], ws=1, m=matrix)   
+        cmds.select(objSel[0])
+        
+    def offset_cache_static(self):
+        checkSel = cmds.ls(sl=1)
+        if len(checkSel)<2:
+            print "you need to select two objects"
+        leader = checkSel[1]
+        cmds.select(leader, r=1)
+        cmds.ConvertSelectionToVertices(leader)
+        ld_lctr = self.locator_select_verts()
+        follower = checkSel[0]
+        cmds.select(follower, r=1)
+        cmds.ConvertSelectionToVertices(follower)
+        flw_lctr = self.locator_select_verts()
+        # set the offset node for translate
+        plsMns = cmds.shadingNode("plusMinusAverage", asUtility = 1)
+        cmds.setAttr(plsMns+".operation", 2)
+        cmds.connectAttr(ld_lctr+".translate", plsMns+".input3D[0]", f=1)
+        cmds.connectAttr(flw_lctr+".translate", plsMns+".input3D[1]", f=1)
+        # set cluster
+        cmds.select(checkSel[0])
+        getpar=cmds.listRelatives(checkSel[0], p=1)
+        getchildren=[(nodes) for nodes in cmds.listRelatives(getpar[0], ad=1, type="mesh") if "Orig" not in str(nodes) ]
+        cmds.select(getchildren, add =1 )
+        create_cstr = cmds.cluster()
+        # connect result to cluster
+        cmds.connectAttr( plsMns+".output3D", create_cstr[0]+"Handle.translate", f = 1)
+        
+    def plot_matrix(self):
+        selObj=cmds.ls(sl=1, fl=1)      
+        if len(selObj)>0:
+            pass
+        else:
+            print "Select 1 object" 
+        getTopRange=cmds.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
+        getLowRange=cmds.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
+        edgeBucket=[]
+        getRange=arange(getLowRange,getTopRange, 1 )
+        getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
+        for each in getRange:
+            cmds.currentTime(each)            
+            matrix=cmds.xform(selObj[0], q=1, ws=1, m=1)
+            cmds.xform(getloc[0], ws=1, m=matrix)       
+            cmds.SetKeyTranslate(getloc[0])          
+            cmds.SetKeyRotate(getloc[0])
+            cmds.currentTime(each)
     def _plotter(self, arg=None):
         getBaseClass.plot_vert()
 
@@ -61,8 +244,17 @@ class PlotterWindow(self):
 
     def _onion_skin(self, arg=None):
         getBaseClass.onionSkin()
-
-
+    
+    def locator_select_verts(self, arg=None):
+        selObj=cmds.ls(sl=1, fl=1)
+        transform=cmds.xform(selObj, q=1, ws=1, t=1)
+        posBucketx=self.median_find(transform[0::3])
+        posBuckety=self.median_find(transform[1::3])
+        posBucketz=self.median_find(transform[2::3])
+        getLoc=cmds.spaceLocator()
+        cmds.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
+        return getLoc[0]
+    
     def store_obj_matrix_pt(self, objectSel, fileName):
         '''plots transforms off of an object with constraint to a text file'''
         objectSel=cmds.ls(sl=1)
@@ -191,6 +383,59 @@ class PlotterWindow(self):
             # maya.mel.eval( "playButtonStepForward;" )
         cmds.delete(getloc[0])
 
+    def shrink_intersections(self):
+        myDict={
+        ".alongX":0,
+        ".alongY":0,
+        ".alongZ":0,
+        ".axisReference":0,
+        ".bidirectional":0,
+        ".boundaryRule":1,
+        ".boundingBoxCenter":1,
+        ".caching":0,
+        ".closestIfNoIntersection":0,
+        ".continuity":1.0,
+        ".envelope":1.0,
+        ".falloff":0.4185185189,
+        ".falloffIterations":54,
+        ".fchild1":0,
+        ".fchild2":0,
+        ".fchild3":0,
+        ".frozen":0,
+        ".innerGeom":0,
+        ".innerGroupId":0,
+        ".inputEnvelope":[()],
+        ".isHistoricallyInteresting":2,
+        ".keepBorder":0,
+        ".keepHardEdge":0,
+        ".keepMapBorders":1,
+        ".nodeState":0,
+        ".offset":0.03237410082,
+        ".projection":1,
+        ".propagateEdgeHardness":0,
+        ".reverse":1,
+        ".shapePreservationEnable":0,
+        ".shapePreservationIterations":1,
+        ".shapePreservationMethod":0,
+        ".shapePreservationReprojection":0,
+        ".shapePreservationSteps":1,
+        ".smoothUVs":1,
+        ".targetGeom":0,
+        ".targetInflation":0.06115107902,
+        ".targetSmoothLevel":1,
+        }
+        getSel=self.selection_grab()
+        if getSel:
+            pass
+        else:
+            return
+        getShrink=cmds.deformer(getSel[0], type="shrinkWrap")
+        cmds.connectAttr(getSel[1]+".worldMesh[0]", getShrink[0]+".targetGeom", f=1)
+        for key, value in myDict.items():
+            try:
+                cmds.setAttr(getShrink[0]+key, value)        
+            except:
+                pass
     def plot_each_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
         selObj=cmds.ls(sl=1, fl=1)
@@ -285,6 +530,7 @@ class PlotterWindow(self):
                 cmds.SetKeyRotate(placeloc[0])
                 maya.mel.eval( "playButtonStepForward;" )
                 cmds.delete(getloc[0])
+
 
 
     def Percentages(self, getSel, minValue, maxValue):
