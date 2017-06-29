@@ -2009,15 +2009,18 @@ class ToolFunctions(object):
         rebuildCurve(each, getCurveForNumber, rt=2)
 
     def removeCV(self, remove):
-        getSel=ls(sl=1, fl=1)
+        getSel=cmds.ls(sl=1, fl=1)
         remove=int(remove)
-        if nodeType(getSel[0])=="transform":         
+        if cmds.nodeType(getSel[0])=="transform":
             for each in getSel:
-                for item in each.cv[remove]:
-                    delete(item)
-        elif nodeType(getSel[0])=="nurbsCurve":                
+                for item in pm.PyNode(each).cv[remove]:
+                    pm.delete(item)
+                    print "removed "+item
+        elif cmds.nodeType(getSel[0])=="nurbsCurve":
             for each in getSel:
-                delete(each.cv[remove])
+                getObj=pm.PyNode(each).cv[remove]
+                pm.delete(getObj)
+                print "removed"+str(getObj)
 
     def _connSDK_alias_window(self, arg=None):
         getSel=ls(sl=1)  
