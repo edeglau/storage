@@ -278,9 +278,22 @@ class BaseClass():
         cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
         self.getName=cmds.textField(h=25, p='listBuildButtonLayout', text=newfolderPath)
         cmds.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self.expObj_callup(objFolderPath=cmds.textField(self.getName, q=1, text=1)))            
-        cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
-        cmds.showWindow(window)        
-
+        cmds.button (label='Import', w=90, p='listBuildButtonLayout', command = lambda *args:self.impObj_callup(objFolderPath=cmds.textField(self.getName, q=1, text=1)))
+	cmds.button (label='Open folder', w=60, p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
+        cmds.showWindow(window)  
+	
+    def impObj_callup(self, objFolderPath):
+        if objFolderPath == "/":
+            print "needs a valid path"
+            return
+        else:
+            pass
+        get_preset = [os.path.join(objFolderPath, name) for dirpath, dirnames, files in os.walk(objFolderPath) for name in files if ".obj" in name]
+        filenames = [(name) for dirpath, dirnames, files in os.walk(objFolderPath) for name in files if ".obj" in name]
+        if len(get_preset)>0:
+            for each, build_name in map(None, get_preset, filenames):
+                setup_name = build_name.split(".")[0]
+                cmds.file(str(each), i=1, namespace = setup_name)
 
     def expObj_callup(self, objFolderPath):
         '''this loads the obj plugin and exports a group of selected obj'''
