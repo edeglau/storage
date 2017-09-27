@@ -1,1121 +1,615 @@
-import maya.cmds as cmds
-from functools import partial
-from string import *
-import re
-import maya.mel
-import os, subprocess, sys, platform, logging, signal, webbrowser, urllib, re, getpass, datetime
-from os  import popen
-from sys import stdin
-import subprocess
-import os
-import random
-import glob
-from random import randint
-from pymel.core import *
+#from pymel.core import *
 import pymel.core as pm
-#import win32clipboard
-import operator
-from sys import argv
-from datetime import datetime
-from operator import itemgetter
-from inspect import getsourcefile
-from os.path import abspath
+import maya.mel
+from string import *
+from functools import partial
+import re, plateform, sys
+import maya.cmds as cmds
+
 OSplatform=platform.platform()
-import baseMockFunctions_maya
-reload (baseMockFunctions_maya)
-import ast
-getBaseClass=baseMockFunctions_maya.BaseClass() 
-workSpace=cmds.workspace(q=1, lfw=1)[-1]
-M_USER = os.getenv("USER")
-PROJECT=os.getenv("M_JOB")
-SCENE=os.getenv("SEQUENCE_SHOT_")
-SHOT=os.getenv("M_LEVEL")
-DEPT=os.getenv("M_TASK")
+
+import Tools
+toolClass=Tools.ToolFunctions()
+
+class fetchAttrs(object):
+    
+    def _findAttr_window(self, arg=None):
+        winName = "Fetch Attributes"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        try:
+            getSel=pm.ls(sl=1, fl=1)      
+            getFirst=getSel[0]
+            getFirstAttr=pm.listAttr (getFirst, w=1, a=1, s=1, u=1)      
+            getFirstAttr=sorted(getFirstAttr)               
+        except:
+            getFirst=[""]  
+            getSel= [""]          
+            getFirstAttr= [""]
+            # return            
+#        global attributeFirstSel
+#        global makeAttr   
+        window = cmds.window(winName, title=winTitle, tbm=1, w=500, h=550)
+        cmds.menuBarLayout(h=30)
+        stringField='''"Fetch Attribute" (launches window)an interface to query items attributes that
+    you can hunt by name portion or values. You can also change attribute value through this
+    window if number values apply. Can also query scene for all objects with a particular attribute
+    or value.
+
+        Query object for attributes:
+
+        * Step 1: select object
+        * Step 2: launch window
+        * Step 3: enter a partial name in the "search" window beside the
+            "Fetch Attribute Name" button
+        * Step 3(alternative: enter a value in the "search" window beside the
+            "Fetch Attribute Value" button            
+        * Step 4: pressing the button beside either feild will repopulate the
+            drop down menu with the attributes that have these names or values
+        * Step 5(optional): fill in the "Change Value" field with a new value
+        * Step 6: press the "Apply Value" button to change the attribute that
+            is currently visible in the drop down menu
+        * Step 7(optional): select a new object or keep current object selected
+        * Step 8: press "Refresh Selection" will repopulate the drop down menu
+            with current selection's full attributes
+
+        Query scene for objects with attributes:
+
+        * Step 1: launch window
+        * Step 2: enter a partial name in the "search" window beside the
+            "Fetch Attribute Name" button
+        * Step 4(alternative: enter a value in the "search" window beside the
+            "Fetch Attribute Value" button            
+        * Step 5: pressing the button beside either feild will repopulate the
+            drop down menu with the attributes that have these names or values
+        * Step 6(optional): fill in the "Change Value" field with a new value
+        * Step 7: press the "Apply Value" button to change the attribute that
+            is currently visible in the drop down menu
+        * Step 8(optional): press "Apply All" will change all attributes in
+            dropdown to new value(EG: resetting all wind attributes to 0.0
+            to reset wind in scene to none)
+
+        "REFRESH SELECTION" - button
+            Repopulates the drop down menu with attributes from new/current
+                selection
+        "APPLY VALUE" - button
+            Will change the value on the attribute that is currently
+                visible in the drop down menu
+        "FETCH ATTRIBUTE NAME" - button
+            Repopulates the drop down menu with all attributes on selected
+                object that matches this name
+        "FETCH ATTRIBUTE VALUE" - button
+            Repopulates the drop down menu with all attributes on selected
+                object that matches this value'''
+        self.fileMenu = cmds.menu( label='Help', hm=1, pmc=lambda *args:self.helpWin(stringField))         
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=480)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=450, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Attributes on Object', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
+        cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=5, cellWidthHeight=(98, 20))
+        cmds.text(label="Att Value:", p='valuebuttonlayout', align="left", w=50)
+        self.attrVal=cmds.text(label="Select from drop down", p='valuebuttonlayout', w=100)
+        cmds.text(label="Att Type:", p='valuebuttonlayout', align="right", w=50)
+        self.attrType=cmds.text(label="", p='valuebuttonlayout', w=100)       
+        cmds.button (label='Refresh Selection', p='valuebuttonlayout',  w=100, command = lambda *args:self._refresh())
+        cmds.gridLayout('srch4attButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Search:", align="left", w=50)
+        findAttr=cmds.textField(AttributeName, text="Enter name EG:'translate'")
+        cmds.button (label='Fetch Attribute Name',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_att(getName=xmsa.textField(findAttr, q=1, text=1)))
+        cmds.text(label="Search:", align="left", w=50)
+        valueAttr=cmds.textField(text="Enter value EG:'1.0'")
+        cmds.button (label='Fetch Attribute Value',  bgc=[0.55, 0.6, 0.6], command = lambda *args:self._find_value(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, ill=1), values=cmds.textField(valueAttr, q=1, text=1)))
+        cmds.gridLayout('listBuildLayout', p='title1', numberOfColumns=1, cellWidthHeight=(445, 20))   
+        self.attributeFirstSel=cmds.optionMenu( label='Find', cc=lambda *args:self.change_attr_output())
+        for each in getFirstAttr:
+            cmds.menuItem( label=each)
+        cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Change Value:", align="left", w=50)        
+        makeAttr=cmdstextField(w=150, text="enter value EG:'50'")
+        cmds.button (label='Apply Value', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_att(getFirstattr=cmds.optionMenu(self.attributeFirstSel, q=1, v=1), makeAttr=cmds.textField(makeAttr, q=1, text=1)))
+        #search object by attribute
+        cmds.frameLayout('title2', bgc=[0.15, 0.15, 0.15], cll=1, label='Find Objects by Attribute', lv=1, nch=1, borderStyle='out', bv=1, w=450, fn="tinyBoldLabelFont", p='selectArrayColumn')
+        cmds.gridLayout('valuebuttonlayout2', p='title2', numberOfColumns=5, cellWidthHeight=(98, 20))          
+        cmds.text(label="Att Value:", p='valuebuttonlayout2', align="left", w=50)
+        self.attrValObj=cmds.text(label="Select from drop down", p='valuebuttonlayout2', w=100)
+        text(label="Att Type:", p='valuebuttonlayout2', align="right", w=50)
+        self.attrTypeObj=text(label="", p='valuebuttonlayout2', w=100)
+        self.select=text(label="select on", p='valuebuttonlayout2', al="right", w=100)  
+        cmds.popupMenu(button=1)
+        self.selectOn=cmds.menuItem  (label='select on', command = self._change_to_select_on)
+        self.selectOff=cmds.menuItem  (label='select off', command = self._change_to_select_off)              
+        cmds.gridLayout('findbyattrButtonLayout', p='title2', numberOfColumns=3, cellWidthHeight=(148, 20))
+        cmds.text(label="Search:", align="left", w=50)
+        findAttrObj=cmds.textField(AttributeName, text="Enter name EG:'translate'")
+        cmds.button (label='Fetch Object by Att Name',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_att_obj(getName=cmds.textField(findAttrObj, q=1, text=1)))
+        cmds.text(label="Search:", align="left", w=50)
+        valueAttrObj=cmds.textField(text="Enter value EG:'1.0'")
+        cmds.button (label='Fetch Objects by Att Value',  bgc=[0.55, 0.6, 0.6], p='findbyattrButtonLayout', command = lambda *args:self._find_value_obj(getFirstattr=cmds.optionMenu(self.objAtt, q=1, ill=1), values=cmds.textField(valueAttrObj, q=1, text=1)))
+        cmds.gridLayout('findObjByAttrGLayout', p='title2', numberOfColumns=1, cellWidthHeight=(445, 20))
+        self.objAtt=cmds.optionMenu( label='Found', cc=lambda *args:self.change_attr_output_obj())
+        for each in getFirstAttr:
+            cmds.menuItem( label=getSel[0]+"."+each)
+        cmds.gridLayout('listBuildButtonLayout2', p='title2', numberOfColumns=4, cellWidthHeight=(115, 20))
+        cmds.text(label="Change Value:", align="left", w=50)        
+        makeAttrObj=cmds.textField(w=150, text="enter value EG:'50'")      
+        cmds.button (label='Apply Value', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup(getFirstattr=cmds.optionMenu(self.objAtt, q=1, v=1), makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        cmds.button (label='Apply Value All', p='listBuildButtonLayout2', w=100, command = lambda *args:self.apply_att_callup_all(makeAttr=cmds.textField(makeAttrObj, q=1, text=1)))
+        cmds.showWindow(window)  
+        
+    def helpWin(self, stringField):
+        '''--------------------------------------------------------------------------------------------------------------------------------------
+        Interface Layout
+        --------------------------------------------------------------------------------------------------------------------------------------'''
+        # def helpPage(self, arg=None):
+        winName = "Description"
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                deleteUI(winName)
+        window = cmds.window(winName, title=winTitle, tbm=1, w=700, h=400 )
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=700)
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        cmds.rowLayout  (' rMainRow ', w=700, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.gridLayout('txvaluemeter', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(700, 400))
+        self.list=cmds.scrollField( editable=False, wordWrap=True, ebg=1,bgc=[0.11, 0.15, 0.15], w=700, text=str(stringField))
+        cmds.showWindow(window)
 
 
 
-getType=["nCloth", "nucleus", "dynamicConstraint", "nRigid", "nHair"]
-
-proj_commonFolder='/jobs/'+PROJECT+'/COMMON/rig/dyn_att_presets/'
-
-
-class attributeSwapper(object):
-
-
-        def saveAttributesWindow(self, arg=None):
-            folderBucket=[]
-            winName = "Save attribute"
-            winTitle = winName
-            if cmds.window(winName, exists=True):
-                    deleteUI(winName)
-            window = cmds.window(winName, title=winTitle, tbm=1, w=620, h=100 )
-            cmds.menuBarLayout(h=30)
-            stringField='''"Save Anim/Attr" (launches window)a home made scripted save anim keys and attribute values
-        into external file(s)(works on a heirarchy). Put full file path with preferred name of
-        object in text field("/usr/people/<user>/joint4"). save button saves out file. Can add
-        more to save from add selected at top. Will save out a file
-        EG:"/usr/people/<user>/joint4.txt"
-
-            * Step 1: select object
-            * Step 2: pressing save will create .txt files that will contain the animation
-                and attriute values for heirarchy(if applicable) within the path indicated
-                and name of file indicated in field
-
-             "ADD SELECTION" - button
-                Adds a slot for new object (each parent is added seperately)
-            "SAVE" - button
-                Will change the value on the attribute that is currently
-                    visible in the drop down menu
-            "OPEN FOLDER" - button
-                opens the folder window for path indicated
-            "ATTR DICT" - button
-                prints out an attriubute dictionary for personal use(see script editor)
-                useful for writing a "setAttr" script on custom setups'''
-            self.fileMenu = cmds.menu( label='Help', pmc=lambda *args:self.helpWin(stringField))        
-            cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
-            cmds.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')     
-            cmds.gridLayout('topGrid', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(620, 20))   
-            cmds.text("Objects to save/load attributes:")
-            # cmds.button (label='Add selected(one at a time)', p='topGrid', command = lambda *args:self._add_function())
-            cmds.gridLayout('topBuild', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20))
-            cmds.text(label="")        
-            fieldBucket=[]
-            # objNameFile=proj_commonFolder
-            # workSpace=cmds.workspace(q=1, lfw=1)[-1]
-            # cmds.rowLayout  (' radButtonLayout ', w=600, numberOfColumns=6, cw6=[150, 140, 140, 140, 140, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            # self.saveSpace=cmds.radioCollection()
-            # self.mainSpace=cmds.radioButton( label='Save/load in Main' )
-            # cmds.radioButton( label='Save/load in Project' )
-            # cmds.radioButton( label='Save/load in Sequence' )            
-            # cmds.radioButton( label='Save/load in Shot' )
-            # cmds.radioButton( label='Save/load manual' )
-            getpaths=[proj_commonFolder]
-            # getpaths.append(sceneFolder)
-            getpaths.append(projectFolder)
-            getpaths.append("custom")
-            self.foundPath=cmds.optionMenu( label='Path')            
-            for each in getpaths:
-                cmds.menuItem( label=each)
-            # self.getpath=cmds.textField(h=25, p='textLayout', text=proj_commonFolder)
-            # cmds.button (label='Save Att', w=50, p='listBuildButtonLayout', command = lambda *args:self.saved_attributes(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            # cmds.rowLayout  ('midBuild', w=600, numberOfColumns=4, cw2=[80, 600], ct2=[ 'both', 'both'], p='bottomFrame')
-            # cmds.gridLayout('midBuild', p='bottomFrame', numberOfColumns=3, cellWidthHeight=(150, 30))
-            # cmds.gridLayout('midBuild', p='bottomFrame', numberOfColumns=2, cellWidthHeight=(600, 60))
-            cmds.rowColumnLayout( 'midBuild',  p='bottomFrame', numberOfColumns=2, columnWidth=[(1, 100), (2, 500)])
-            # cmds.rowLayout  (' midBuild ', w=600, numberOfColumns=6, cw6=[150, 140, 140, 140, 140, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            cmds.text("sim type:" , p='midBuild')
-            self.getName=cmds.textField(h=25, p='midBuild', text="runningThenStop")
-            # cmds.rowColumnLayout( 'lowerBuild',  p='bottomFrame', numberOfColumns=2, columnWidth=[(1, 150), (2, 500)])
-            cmds.text("custom path:")
-            self.getPath=cmds.textField(h=25, text=projectFolder)
-            # cmds.button (label='Save Anim', w=60, p='listBuildButtonLayout', command = lambda *args:self._save_anim(each, fileName=cmds.textField(self.getName, q=1, text=1)))
-            cmds.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=3, cellWidthHeight=(150, 30))
-            # cmds.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[40, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
-            cmds.button (label='Save Dyn', p='listBuildButtonLayout', command = lambda *args:self._save_anim_heirarchy(fileName=cmds.textField(self.getName, q=1, text=1), getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))            
-            cmds.button (label='Save General', p='listBuildButtonLayout', command = lambda *args:self._save_gen_anim_heirarchy(fileName=cmds.textField(self.getName, q=1, text=1), getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))            
-            cmds.button (label='Save AllDyn', p='listBuildButtonLayout', command = lambda *args:self._save_allDyn_heirarchy(fileName=cmds.textField(self.getName, q=1, text=1), getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))            
-            cmds.button (label='Save Selected', p='listBuildButtonLayout', command = lambda *args:self._save_gen_sel_nim_heirarchy(fileName=cmds.textField(self.getName, q=1, text=1), getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))            
-            # cmds.button (label='load', p='listBuildButtonLayout', w=150, command = lambda *args:self.open_genAttributefolderWindow(getPath=cmds.optionMenu(self.attributepath, q=1, v=1)))
-            cmds.button (label='Load atts', p='listBuildButtonLayout', w=150, command = lambda *args:self.openAttributesWindow(getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))
-            # cmds.button (label='load only selected', p='listBuildButtonLayout', w=150, command = lambda *args:self.openSelectedAttributesWindow())
-            # cmds.button (label='force apply on selected', p='listBuildButtonLayout', w=150, command = lambda *args:self.openForceAttributesWindow())
-            # cmds.button (label='Open main folder', p='listBuildButtonLayout', command = lambda *args:self._open_defined_path(destImagePath=cmds.textField(self.getName, q=1, text=1)))
-            cmds.button (label='Open folder', p='listBuildButtonLayout', command = lambda *args:self.opening_folder_callup(getPathCustom=cmds.textField(self.getPath, q=1, text=1), optionPath=cmds.optionMenu(self.foundPath, q=1, v=1)))
-            cmds.button (label='Attr dict', w=60, ann=" prints a dictionary with attributes(for dev)", p='listBuildButtonLayout', command = lambda *args:self._printAttributes())
-            cmds.showWindow(window)  
-
-        def opening_folder_callup(self, getPathCustom, optionPath):
-            if optionPath=="custom":   
-                FoundPath=getPathCustom
+    
+    '''==========================================================================================================================================
+    BOTTOM BUTTON FUNCTIONS
+    =========================================================================================================================================='''          
+    
+    def _clear_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        this clears the list
+        ----------------------------------------------------------------------------------'''          
+        cmds.textScrollList(self.nodeList, e=1, ra=1)
+        self.count_objects_in_list()
+        
+    def _add_selected_to_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        Adds selected objects to the list
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
+        if selectedObject:
+            self.adding_to_list_function_main(selectedObject, listArray)  
+            
+    def _remove_from_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This removes the selected item in the list from the list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        if selectedListItems<1:
+            print 'Select item to subtract from list.'
+        else:
+            cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+            self.count_objects_in_list()
+    
+    def _swap_with_selected(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This swaps the selected list item with the selected object
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        selectedObject=cmds.ls(sl=1, fl=1, sn=1)
+        if selectedObject:
+            if selectedObject[0] in listArray:
+                cmds.textScrollList(self.nodeList, e=1, si=selectedObject)
+                self.already_in_list_error(selectedObject)
             else:
-                optionPath=optionPath      
-            self.opening_folder(optionPath)
-
-        def opening_folder(self, folderPath):      
-            if "Windows" in OSplatform:
-                folderPath=re.sub(r'/',r'\\', folderPath)
-                os.startfile(folderPath)
-            if "Linux" in OSplatform:
-                newfolderPath=re.sub(r'\\',r'/', folderPath)
-                os.system('xdg-open "%s"' % newfolderPath)
-
-
-
-        # def _printAttributes(self):
-        #     collectItem=cmds.ls(sl=1)
-        #     notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
-        #     print "alibrary={"
-        #     for each in collectItem:
-        #         for item in notAttr:
-        #             if item not in notAttr:
-        #                 getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, l=0, s=1, iu=1, u=1, lf=1, m=0)]
-        #                 #getListedAttr=cmds.listAttr (each, w=1, a=1, s=1, u=1, m=0)
-        #                 for item in getListedAttr:
-        #                     if "." not in item:
-        #                         try:
-        #                             getVal=cmds.getAttr(each+"."+item)
-        #                             print '"'+each+'.'+str(item)+'":'+str(getVal)+","
-        #                         except:
-        #                             pass
-        #     print "}" 
-
-        def _printAttributes(self):
-            notAttr=[
-            "isHierarchical", 
-            "die", 
-            "fieldDistance", 
-            "event", 
-            "ghost", 
-            "PerVertex", 
-            "localWind", 
-            "localField", 
-            "position", 
-            "maxVisibilitySamples*", 
-            "next*", 
-            "parentMatrixDirty", 
-            "particleId0", 
-            "override", 
-            "Override", 
-            "Color", 
-            "dieOnEmissionVolumeExit", 
-            "useObjectColor", 
-            "solverDisplay", 
-            "isHierarchicalNode", 
-            "useOutlinerColor", 
-            "currentTime", 
-            "publishedNodeInfo", 
-            "fieldScale_Position",
-            "viewMode",
-            "visibility",
-            "uiTreatment",
-            "startEmittedIndex",
-            "velocity"] 
-            selObj=cmds.ls(sl=1, fl=1)
-            newDict={}
-            print "{"
-            for each in selObj:            
-                getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-                for eachAttribute in getListedAttr:
-                    if eachAttribute not in notAttr:
-                        for item in getListedAttr:
-                            if "." not in item:
-                                try:
-                                    getVal=cmds.getAttr(each+"."+item)
-                                    if len(getVal)>0:
-                                        print '"'+each+'.'+str(item)+'":'+str(getVal)+","
-                                    else:
-                                        pass
-                                except:
-                                    pass
-            # for key, value in newDict.items():
-                # print "'"+str(key)+"':"+str(value)+","
-            print "}"
-
-        def _printAttributesV2(self):
-            notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
-            selObj=cmds.ls(sl=1, fl=1)
-            newDict={}
-            for each in selObj:            
-                getListedAttr=[(attrib) for attrib in listAttr (each, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-                for eachAttribute in getListedAttr:
-                    if eachAttribute not in notAttr:
-                        try:
-                            attrVal=cmds.getAttr(each+"."+eachAttribute)
-                            makeDict={eachAttribute:attrVal}
-                            newDict.update(makeDict)
-
-                        except:
-                            pass
-            print "{"
-            for key, value in newDict.items():
-                print "'"+str(key)+"':"+str(value)+","
-            print "}"
-
-
-        def _open_defined_path(self, destImagePath):
-            print destImagePath
-            folderPath='\\'.join(destImagePath.split("/")[:-1])+"\\"        
-            self.opening_folder(folderPath)
-
-        def getWorkPath(self, getScenePath):
-            filebucket=[]
-            getPathSplit=getScenePath.split("/")
-            folderPath='\\'.join(getPathSplit[:-1])+"\\"        
-            if "Windows" in OSplatform:
-                newfolderPath=re.sub(r'/',r'\\', folderPath)
-            if "Linux" in OSplatform:
-                newfolderPath=re.sub(r'\\',r'/', folderPath)
-            getPath=newfolderPath+"*.txt"
-            files=glob.glob(getPath)
-            for each in files:
-                if "Windows" in OSplatform:
-                    getfileName=each.split("\\")
-                if "Linux" in OSplatform:
-                    getfileName=each.split("/")         
-                getFile=getfileName[-1:][0]
-                filebucket.append(getFile)         
-            return files, getPath, newfolderPath, filebucket
-
-        def openAttributesWindow(self, getPathCustom, optionPath):
-            # getPath=proj_commonFolder
-            # print optionPath
-            if optionPath=="custom":   
-                getPath=getPathCustom
+                cmds.textScrollList(self.nodeList, e=1, ri=selectedListItems)
+                cmds.textScrollList(self.nodeList, e=1, a=selectedObject[0::1])
+                self.count_objects_in_list()         
+        else:
+            print 'Select list item first and then object to swap with.'
+    
+    def _select_all_in_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This selects all items in list
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        if listArray:
+            self.select_list_item_function(listArray)
+            cmds.select(listArray)           
+        else:
+            print "List is empty."
+            
+    def _clear_selection(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This clears the selection of the items in the list
+        ----------------------------------------------------------------------------------'''          
+        self.deselect_in_list_function()
+    
+    def _sort_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This sorts the list by alphabetical and numerical
+        ----------------------------------------------------------------------------------'''          
+        listArray=cmds.textScrollList(self.nodeList, q=1, ai=1)
+        if listArray:
+            sortedObjList=sorted(listArray, key=lower)
+            self.repopulate_list(sortedObjList)                              
+        else:
+            print "Check that list is present."
+            
+    def _make_set_from_selection_list(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This create a set from selected items in list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        if selectedListItems:
+            result = cmds.promptDialog(
+                title='Confirm',
+                message='Name of set:',
+                button=['Continue','Cancel'],
+                defaultButton='Continue',
+                cancelButton='Cancel',
+                dismissString='Cancel' )
+            if result == 'Continue':
+                text = cmds.promptDialog(query=True, text=True)
+                cmds.sets(n=text)
             else:
-                getPath=optionPath             
-            getFiles=[os.path.join(getPath, o) for o in os.listdir(getPath) if os.path.isdir(os.path.join(getPath, o))]
-            getFiles.sort(key=lambda x: os.path.getmtime(x))
-            self._choser_group_window(getFiles) 
-
-        def _choser_group_window(self, getListAttr):
-            winGrpName = "Pick from below"
-            if cmds.window(winGrpName, exists=True):
-                cmds.deleteUI(winGrpName)
-            choose_window = cmds.window(winGrpName, title=winGrpName, tbm=1, w=800, h=150)
-            cmds.menuBarLayout(h=30)
-            cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
-            cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-            cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=1, p='selectArrayRow')
-            cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-            cmds.setParent ('selectArrayColumn')
-            cmds.separator(h=10, p='selectArrayColumn')
-            cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Select version', lv=1, nch=1, borderStyle='out', bv=1, w=800, fn="tinyBoldLabelFont", p='selectArrayColumn')
-            cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=2, cellWidthHeight=(800, 20))  
-            self.attributeFirstSel=cmds.optionMenu( label='Find')
-            for each in getListAttr:
-                cmds.menuItem( label=each)
-            cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-            cmds.button (label='Selected', p='listBuildButtonLayout', w=150, command = lambda *args:self._applyallatt_selected(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.button (label='SelectedDyn', p='listBuildButtonLayout', w=150, command = lambda *args:self._applyallatt_dynselected(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.button (label='Load All', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_found_att(folderType=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.button (label='Force Selected', p='listBuildButtonLayout', w=150, command = lambda *args:self.open_genAttributefolderWindow(getFolderFiles=cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.button (label='open folder', p='listBuildButtonLayout', w=150, command = lambda *args:self._open_defined_path(cmds.optionMenu(self.attributeFirstSel, q=1, v=1)))
-            cmds.showWindow(choose_window) 
-              
-
-
-        def _apply_found_att(self, folderType):
-            getallfiles=os.listdir(folderType)
-            notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-            for filename in getallfiles:
-                isolateFileName=filename.split('.')[0]
-                if ":" in isolateFileName:
-                    isolateitemName=isolateFileName.split(':')[-1]        
-                else:
-                    isolateitemName=isolateFileName
-                print isolateitemName
-                try:
-                    getItemInScene=cmds.ls('*:'+isolateitemName)[0]
-                except:
-                    getItemInScene=isolateitemName
-                if cmds.objExists(getItemInScene):
-                    attribute_container=[]
-                    getListedAttr=[(attrib) for attrib in cmds.listAttr(getItemInScene, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-                    printFolder=folderType+'/'+filename
-                    List = open(printFolder).readlines()
-                    for aline in List:
-                        if ">>" in aline:
-                            # getObj=aline.split('>>')[0]
-                            getExistantInfo=aline.split('>>')[1]
-                            if getExistantInfo!="\n":
-                                findAtt=getExistantInfo.split("<")
-                                for eachInfo in findAtt:
-                                    getAnimDicts=eachInfo.split(";")
-                                    for eachctrl in xrange(len(getAnimDicts) - 1):
-                                        current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-                                        # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-                                        gethis=ast.literal_eval(next_item)
-                                        print "setting: "+str(cmds.ls(getItemInScene)[0])+"."+str(eachInfo)+" at "+str(gethis)
-                                        try:
-                                            if len(gethis)<2:
-                                                for key, value in gethis.items():
-                                                    for listeditem in getListedAttr:
-                                                        if current_item==listeditem:
-                                                            cmds.setAttr(cmds.ls(getItemInScene)[0]+'.'+current_item, value)   
-                                                            # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-                                                            # print "set "+ cmds.ls(getObj)[0]+'.'+current_item+" at "+str(value)
-                                            else:
-                                                 for key, value in gethis.items():
-                                                    for listeditem in getListedAttr:
-                                                        if current_item==listeditem:
-                                                            cmds.setKeyframe( cmds.ls(getItemInScene)[0], t=key, at=current_item, v=value )  
-                                                            # print "set "+ cmds.ls(getObj)[0]+'.'+current_item+' at '+str(value)+" frame "+str(key)                               
-                                        except:
-                                            pass                                              
-                            else:
-                                pass
-
- 
-
-
-
-        def _applyallatt_selected(self, folderType):
-            print folderType
-            getallfiles=os.listdir(folderType)
-            getallfiles=[(each) for each in getallfiles if each.endswith('.txt')]
-            print getallfiles             
-            notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-            # selObj=cmds.ls(sl=1, fl=1)
-            for each in cmds.ls(sl=1):
-                if ":" in each:
-                    shortname=each.split(':')[-1]
-                    print shortname
-                for filename in getallfiles:
-                    if "." in filename:
-                        isolateFilename=filename.split('.')[0] 
-                        if ":" in isolateFilename:
-                            isolateFilename=shortname
-                        else:
-                            isolateFilename=isolateFilename
-                        if isolateFilename == shortname:
-                            print isolateFilename+" proceeding to apply to "+each
-                            attribute_container=[]
-                            getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-                            printFolder=folderType+'/'+filename
-                            List = open(printFolder).readlines()
-                            for aline in List:
-                                if ">>" in aline:
-                                    getObj=aline.split('>>')[0]
-                                    getExistantInfo=aline.split('>>')[1]
-                                    if getExistantInfo!="\n":
-                                        findAtt=getExistantInfo.split("<")
-                                        for eachInfo in findAtt:
-                                            getAnimDicts=eachInfo.split(";")
-                                            for eachctrl in xrange(len(getAnimDicts) - 1):
-                                                current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-                                                # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-                                                gethis=ast.literal_eval(next_item)
-                                                print "setting: "+str(each)+"."+str(eachInfo)+" at "+str(gethis)
-                                                try:
-                                                    if len(gethis)<2:
-                                                        for key, value in gethis.items():
-                                                            for listeditem in getListedAttr:
-                                                                if current_item==listeditem:
-                                                                    cmds.setAttr(each+'.'+current_item, value)                                                 
-                                                    else:
-                                                         for key, value in gethis.items():
-                                                            for listeditem in getListedAttr:
-                                                                if current_item==listeditem:
-                                                                    cmds.setKeyframe( each, t=key, at=current_item, v=value )  
-                                                except:
-                                                    pass                                              
-                                    else:
-                                        pass
-
-
-
-        def forceAtt(self, getPath, getPathfile):
-            folderType=getPath+'/'+getPathfile
-            # folderType=getPathfile
-            print folderType    
-            notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]
-            List = open(folderType).readlines()
-            for each in cmds.ls(sl=1):
-                for aline in List:
-                    attribute_container=[]
-                    getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-                    # printFolder=folderType+'/'+filename
-                    # List = open(printFolder).readlines()
-                    # for aline in List:
-                    if ">>" in aline:
-                        getObj=aline.split('>>')[0]
-                        getExistantInfo=aline.split('>>')[1]
-                        if getExistantInfo!="\n":
-                            findAtt=getExistantInfo.split("<")
-                            for eachInfo in findAtt:
-                                getAnimDicts=eachInfo.split(";")
-                                for eachctrl in xrange(len(getAnimDicts) - 1):
-                                    current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-                                    # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-                                    gethis=ast.literal_eval(next_item)
-                                    # print "setting: "+str(each)+"."+str(eachInfo)+" at "+str(gethis)
-                                    try:
-                                        if len(gethis)<2:
-                                            for key, value in gethis.items():
-                                                if oldAttr != value:
-                                                    print "setting: "+str(each)+"."+str(eachInfo)+" at "+str(gethis)                                                   
-                                                for listeditem in getListedAttr:
-                                                    if current_item==listeditem:
-                                                        cmds.setAttr(each+'.'+current_item, value)                                                 
-                                        else:
-                                             for key, value in gethis.items():
-                                                if oldAttr != value:
-                                                    print "setting: "+str(each)+"."+str(eachInfo)+" at "+str(gethis)                                                   
-                                                for listeditem in getListedAttr:
-                                                    if current_item==listeditem:
-                                                        cmds.setKeyframe( each, t=key, at=current_item, v=value )  
-                                    except:
-                                        pass                                              
-                        else:
-                            pass
-
-        # def forceAtt(self, getPath, getPathfile):
-        #     folderType=getPath+'/'+getPathfile
-        #     # folderType=getPathfile
-        #     print folderType    
-        #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]
-        #     List = open(folderType).readlines()
-        #     for each in cmds.ls(sl=1):
-        #         print each
-        #         for aline in List:
-        #             attribute_container=[]
-        #             getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-        #             if ">>" in aline:
-        #                 getObj=aline.split('>>')[0]
-        #                 getExistantInfo=aline.split('>>')[1]
-        #                 if getExistantInfo!="\n":
-        #                     findAtt=getExistantInfo.split("<")
-        #                     for eachInfo in findAtt:
-        #                         getAnimDicts=eachInfo.split(";")
-        #                         for eachctrl in xrange(len(getAnimDicts) - 1):
-        #                             current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-        #                             # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-        #                             gethis=ast.literal_eval(next_item)
-        #                             try:
-        #                                 if len(gethis)<2:
-        #                                     for key, value in gethis.items():
-        #                                         for listeditem in getListedAttr:
-        #                                             if current_item==listeditem:
-        #                                                 cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)        
-        #                                                 print "set attr"                                         
-        #                                 else:
-        #                                      for key, value in gethis.items():
-        #                                         for listeditem in getListedAttr:
-        #                                             if current_item==listeditem:
-        #                                                 cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
-        #                                                 print "set anim"
-        #                             except:
-        #                                 pass                                              
-        #                 else:
-        #                     pass
-
-
-        def _applyallatt_dynselected(self, folderType):
-            print folderType
-            '''This copies values and animcurve nodes of all dyn in scene'''
-            # getType=["nCloth", "nucleus"]
-            collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
-            getallfiles=os.listdir(folderType)
-            print getallfiles
-            collectItem=[]
-            for each in cmds.ls(sl=1):
-                if cmds.nodeType(each)=="transform":
-                    getRelatives=cmds.listRelatives(each , c=1)
-                    for eachRelative in getRelatives:
-                        collectItem.append(eachRelative)
-                else:
-                    collectItem.append(each)
-            collectItem=set(collectItem)               
-            notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-            # selObj=cmds.ls(sl=1, fl=1)
-            for each in collectItem:
-                for filename in getallfiles:
-                    isolateFilename=filename.split('.')[0] 
-                    isolateitemName=each.split(':')[1]
-                    if isolateFilename == isolateitemName:
-                        attribute_container=[]
-                        getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-                        printFolder=folderType+'/'+filename
-                        List = open(printFolder).readlines()
-                        for aline in List:
-                            if ">>" in aline:
-                                getObj=aline.split('>>')[0]
-                                getExistantInfo=aline.split('>>')[1]
-                                if getExistantInfo!="\n":
-                                    findAtt=getExistantInfo.split("<")
-                                    for eachInfo in findAtt:
-                                        getAnimDicts=eachInfo.split(";")
-                                        for eachctrl in xrange(len(getAnimDicts) - 1):
-                                            current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-                                            # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-                                            gethis=ast.literal_eval(next_item)
-                                            print "setting: "+str(each)+"."+str(eachInfo)+" at "+str(gethis)
-                                            try:
-                                                if len(gethis)<2:
-                                                    for key, value in gethis.items():
-                                                        for listeditem in getListedAttr:
-                                                            if current_item==listeditem:
-                                                                cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-                                                else:
-                                                     for key, value in gethis.items():
-                                                        for listeditem in getListedAttr:
-                                                            if current_item==listeditem:
-                                                                cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
-                                            except:
-                                                pass                                              
-                                else:
-                                    pass
-
-
-
-
-
-
-
-        def open_genAttributefolderWindow(self, getFolderFiles):
-            getPath=getFolderFiles 
-            print getPath      
-            getFiles=os.listdir(getPath)
-            # getFiles=[os.path.join(getPath, o) for o in os.listdir(getPath) if os.path.isdir(os.path.join(getPath, o))]
-            print getFiles
-            # getFiles.sort(key=lambda x: os.path.getmtime(x))
-            self._choser_gen_group_window(getFiles, getPath) 
-
-        def _choser_gen_group_window(self, getFiles, getPath):
-            choose_gen_grp_win = "Pick from text files"
-            if cmds.window(choose_gen_grp_win, exists=True):
-                cmds.deleteUI(choose_gen_grp_win)
-            chooser_gen_window = cmds.window(choose_gen_grp_win, title=choose_gen_grp_win, tbm=1, w=800, h=150)
-            cmds.menuBarLayout(h=30)
-            cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
-            cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-            cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=1, p='selectArrayRow')
-            cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-            cmds.setParent ('selectArrayColumn')
-            cmds.separator(h=10, p='selectArrayColumn')
-            cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Select version', lv=1, nch=1, borderStyle='out', bv=1, w=800, fn="tinyBoldLabelFont", p='selectArrayColumn')
-            cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=2, cellWidthHeight=(800, 20))  
-            self.attributepath=cmds.optionMenu( label='Find')
-            for each in getFiles:
-                cmds.menuItem( label=each)
-            cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-            cmds.button (label='Ok', p='listBuildButtonLayout', w=150, command = lambda *args:self.forceAtt(getPath, getPathfile=cmds.optionMenu(self.attributepath, q=1, v=1)))
-            cmds.button (label='open folder', p='listBuildButtonLayout', w=150, command = lambda *args:self._open_defined_path(cmds.optionMenu(self.attributepath, q=1, v=1)))
-            cmds.showWindow(chooser_gen_window) 
-
-        # def open_genAttributesWindow(self, getPath):
-        #     getPath=cmds.optionMenu(self.attributepath, q=1, v=1)
-        #     getPath= getPath+'/'
-        #     getloadedFiles=[os.path.join(getPath, o) for o in os.listdir(getPath)]
-        #     getloadedFiles.sort(key=lambda x: os.path.getmtime(x))
-        #     self._choser_gen_file_group_window(getloadedFiles) 
-
-
-        # def _choser_gen_file_group_window(self, getloadedFiles):
-        #     print getloadedFiles
-        #     chs_gen_file_win = "Pick from below"
-        #     if cmds.window(chs_gen_file_win, exists=True):
-        #         cmds.deleteUI(chs_gen_file_win)
-        #     window = cmds.window(chs_gen_file_win, title=chs_gen_file_win, tbm=1, w=800, h=150)
-        #     cmds.menuBarLayout(h=30)
-        #     cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=800)
-        #     cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
-        #     cmds.rowLayout  (' rMainRow ', w=800, numberOfColumns=1, p='selectArrayRow')
-        #     cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
-        #     cmds.setParent ('selectArrayColumn')
-        #     cmds.separator(h=10, p='selectArrayColumn')
-        #     cmds.frameLayout('title1', bgc=[0.15, 0.15, 0.15], cll=1, label='Select version', lv=1, nch=1, borderStyle='out', bv=1, w=800, fn="tinyBoldLabelFont", p='selectArrayColumn')
-        #     cmds.gridLayout('valuebuttonlayout', p='title1', numberOfColumns=2, cellWidthHeight=(800, 20))  
-        #     self.attributeFile=cmds.optionMenu( label='Find')
-        #     for each in getloadedFiles:
-        #         cmds.menuItem( label=each)
-        #     cmds.gridLayout('listBuildButtonLayout', p='title1', numberOfColumns=3, cellWidthHeight=(148, 20))
-        #     cmds.button (label='Ok', p='listBuildButtonLayout', w=150, command = lambda *args:self._apply_sel_dyn_att(folderType=cmds.optionMenu(self.attributeFile, q=1, v=1)))
-        #     cmds.button (label='open folder', p='listBuildButtonLayout', w=150, command = lambda *args:self._open_defined_path(cmds.optionMenu(self.attributeFile, q=1, v=1)))
-        #     cmds.showWindow(window) 
-
-
-
-
-
-
-
-        def makeFolder(self, folderType):
-            if os.path.exists(folderType):
-                pass
-            else:
-                os.makedirs(folderType)
-
-
-        def _save_anim_heirarchy(self, fileName, getPathCustom, optionPath):   
-            # print optionPath
-            if optionPath=="custom":   
-                FoundPath=getPathCustom
-            else:
-                FoundPath=optionPath
-            selObj=ls(sl=1, fl=1, sn=1)
-            if len(selObj)<1:
-                print "select something"
+                print "create set cancelled"
                 return
-            else:
-                pass            
-            '''This copies values and animcurve nodes of shapes other than transforms'''
-            folderType=FoundPath+'/'+fileName
-            if os.path.exists(folderType):
+        else:
+            print "Select something from selection list."
+            
+    def _apply_att(self, getFirstattr, makeAttr):
+        try:
+            makeAttr=float(makeAttr)
+        except:
+            print "Field must have number"
+        try:
+            cmds.setAttr(getFirstattr, makeAttr)
+            pass
+        except:
+            print "Unable to change "+getFirstattr+" in this way"
+            return
+        getChangeAttr=cmds.getAttr(getFirstattr)
+        self.count_attr_output(getChangeAttr)
+
+
+
+    '''======================================================================================================================================
+    TOP BUTTON FUNCTIONS
+    ======================================================================================================================================'''  
+    
+    def list_item_selectability(self, arg=None):
+        '''----------------------------------------------------------------------------------
+        This selects items in scene from list
+        ----------------------------------------------------------------------------------'''          
+        selectedListItems=cmds.textScrollList(self.nodeList, q=1, selectItem=1)
+        cmds.select(selectedListItems, r=1)
+        self.count_objects_in_list()
+        print selectedListItems
+        
+        
+    def apply_att(self, getFirstattr, makeAttr):
+        self.att_change_callup(getFirstattr, makeAttr)
+        getChangeAttr=cmds.getAttr(getFirstattr)
+        self.count_attr_output(getChangeAttr)
+        
+    def apply_att_callupV1(self, getFirstattr, makeAttr):
+        getFirstattr=[getFirstattr]
+        for each in getFirstattr:
+            print each
+            getChangeAttr=getAttr(each)
+            try:
+                makeAttr=float(makeAttr)
+            except:
+                print "Field must have number"
+            try:
+                cmds.setAttr(each, makeAttr)
                 pass
-            else:
-                self.makeFolder(folderType)
-            collectItem=[]
-            for each in cmds.ls(sl=1):
-                if cmds.nodeType(each)=="transform":
-                    getRelatives=cmds.listRelatives(each , c=1)
-                    for eachRelative in getRelatives:
-                        collectItem.append(eachRelative)
-                else:
-                    collectItem.append(each)
-            collectItem=set(collectItem)        
-            print "alibrary={"
-            self.save_att_function(collectItem, folderType)
-
-
-        def _save_gen_sel_nim_heirarchy(self, fileName, getPathCustom, optionPath): 
-            if optionPath=="custom":   
-                FoundPath=getPathCustom
-            else:
-                FoundPath=optionPath            
-            selObj=ls(sl=1, fl=1, sn=1)
-            if len(selObj)<1:
-                print "select something"
+            except:
+                print "Unable to change "+each+" in this way"
                 return
-            else:
-                pass            
-            '''This copies values and animcurve nodes of selected'''
-            folderType=FoundPath+'/'+fileName
-            if os.path.exists(folderType):
+            getChangeAttr=getAttr(each)
+            self.count_attr_output_obj(getChangeAttr)
+
+    def apply_att_callup_allV1(self, makeAttr):
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            for each in menuItems:
+                getThing=menuItem(each, q=1, label=1)   
+                getChangeAttr=getAttr(getThing)
+                try:
+                    makeAttr=float(makeAttr)
+                except:
+                    print "Field must have number"
+                try:
+                    cmds.setAttr(getThing, makeAttr)
+                    pass
+                except:
+                    print "Unable to change "+each+" in this way"
+                    return
+            self.count_attr_output_obj(getChangeAttr)
+
+
+    def apply_att_callup(self, getFirstattr, makeAttr):
+        getFirstattr=[getFirstattr]
+        for each in getFirstattr:
+            getChangeAttr=getAttr(each)
+            self.att_change_callup(each, makeAttr)
+            getChangeAttr=getAttr(each)
+            self.count_attr_output_obj(getChangeAttr)
+            
+    def apply_att_change_callup_all(self, makeAttr):
+        menuItems=cmds.optionMenu(self.objAtt, q=1, ill=1)
+        if menuItems:
+            for each in menuItems:
+                getThing=menuItem(each, q=1, label=1)
+                getChangeAttr=getAttr(getThing)
+                self.att_change_callup(getThing, makeAttr)
+            self.count_attr_output_obj(getChangeAttr)
+            
+    def att_change_callup(self, eachObj, makeAttr):
+        try:
+            makeAttr=float(makeAttr)
+        except:
+            print "Field must have number"
+        try:
+            cmds.setAttr(eachObj, makeAttr)
+        except:
+            print "Unable to change "+eachObj+" in this way"
+            return
+        
+        
+        
+    def att_change_callupV1(self, getFirstattr, makeAttr):
+        getFirstattr=[getFirstattr]
+        for each in getFirstattr:
+            getChangeAttr=getAttr(each)
+            self.att_change_callup(each, makeAttr)
+            getChangeAttr=getAttr(each)
+            self.count_attr_output_obj(getChangeAttr)
+
+    def _change_to_select_on(self, arg=None):
+        print "tool error: button function not built yet"
+
+    def _change_to_select_off(self, arg=None):
+        print "tool error: button function not built yet"
+
+    def _refresh(self, arg=None):
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        newSel=ls(sl=1, fl=1)
+        getListAttr=listAttr (newSel[0], w=1, a=1, s=1,u=1)
+        getListAttr=sorted(getListAttr)
+        cmds.optionMenu(self.attributeFirstSel, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)     
+                
+    def _get_attr(self, getFirstattr):
+        getSel=ls(sl=1, fl=1)        
+        newAttr=getattr(getSel[0],getFirstattr)
+        getChangeAttr=getattr(getSel[0],getFirstattr).get()
+        select(newAttr, add=1)
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+
+    def _find_att(self, getName):       
+        getSel=cmds.ls(sl=1, fl=1)
+        if "," in getName:
+            getName=getName.split(", ")
+        else:
+            getName=[getName]
+        collectAttr=[]
+        for each in getSel:
+            print each
+            Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) for attrName in getName if attrName in attrItem]
+            if len(Attrs)>0:        
+                for item in Attrs:
+                    print item
+                    newItem=each+"."+item
+                    print newItem
+                    collectAttr.append(newItem)
+        getChangeAttr=getAttr(collectAttr[0])
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.attributeFirstSel, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)    
+        self.count_attr_output(getChangeAttr)
+        print getChangeAttr
+
+
+    def _find_attV0(self, getFirstattr, attribute):         
+        print getFirstattr
+        if ", " in getFirstattr:
+            getFirstattr=getFirstattr.split(",")
+        else:
+            getFirstattr=[getFirstattr]
+        print getFirstattr
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
+        for each in getFirstattr:
+            find=menuItem(each, q=1, label=1)
+            if attribute in find:
+                collectAttr.append(find)
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0])
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.attributeFirstSel, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+    def _find_attV1(self, getFirstattr, attribute):     
+        try:
+            getSel=ls(sl=1, fl=1)      
+            getFirst=getSel[0]
+        except:
+            print "must select something"
+            return
+        if ", " in getFirstattr:
+            getFirstattr=getFirstattr.split(",")
+        else:
+            getFirstattr=[getFirstattr]
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
+        for each in getFirstattr:
+            find=menuItem(each, q=1, label=1)
+            if each in find:
+                collectAttr.append(find)
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0])
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.attributeFirstSel, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+    def _find_att_obj(self, getName):       
+        getAll=cmds.ls("*")       
+        if "," in getName:
+            getName=getName.split(", ")
+        else:
+            getName=[getName]
+        collectAttr=[]
+        for each in getAll:
+            Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) for attrName in getName if attrName in attrItem]
+            if len(Attrs)>0:        
+                for item in Attrs:
+                    newItem=each+"."+item
+                    collectAttr.append(newItem)
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.objAtt, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.objAtt)  
+
+    def _find_value_obj(self, getFirstattr, values):
+        # try:
+        #     values=float(values)
+        # except:
+        #     values=int(values)        
+        # get_variable_type = type(values)
+        # if type == str:
+        #     values = string(values)
+        # elif type == int:
+        #     values = int(values)
+        # elif type == float:
+        #     values = float(values)
+        print type(values)
+        getAll=cmds.ls("*")
+        collectAttr=[]
+        for each in getAll:
+            try:
+                Attrs=[(attrItem) for attrItem in cmds.listAttr (each, w=1, a=1, s=1,u=1) if cmds.getAttr(each+"."+attrItem)==values]
+            except:
                 pass
-            else:
-                self.makeFolder(folderType)
-            filterNode=["animCurve"]
-            dirDict={}
-            collectItem=cmds.ls(sl=1)        
-            self.save_literal_att_function(collectItem, folderType)
+            if len(Attrs)>0:        
+                for item in Attrs:
+                    newItem=each+"."+item
+                    collectAttr.append(newItem)
+        menuItems = cmds.optionMenu(self.objAtt, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)       
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.objAtt, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.objAtt)  
 
-
-
-        def _save_gen_anim_heirarchy(self, fileName, getPathCustom,optionPath): 
-            selObj=ls(sl=1, fl=1, sn=1)
-            if len(selObj)<1:
-                print "select something"
-                return
-            else:
-                pass            
-            print radioType
-            '''This copies values and animcurve nodes of selected'''
-            folderType=proj_commonFolder+'/'+fileName
-            if os.path.exists(folderType):
+    def _find_value(self, getFirstattr, values):
+        try:
+            values=float(values)
+        except:
+            values=int(values)
+        getSel=ls(sl=1, fl=1)        
+        collectAttr=[]
+        for each in getFirstattr:
+            getSel=ls(getSel[0])
+            find=menuItem(each, q=1, label=1)
+            try:
+                foundAttr=getattr(getSel[0],find).get()
+            except:
                 pass
-            else:
-                self.makeFolder(folderType)
-            filterNode=["animCurve"]
-            dirDict={}
-            collectItem=cmds.ls(sl=1)        
-            self.save_att_function(collectItem, folderType)
+            if foundAttr == values:
+                print foundAttr
+                collectAttr.append(find)                 
+        optionMenu(self.attributeFirstSel, e=1, v=collectAttr[0])
+        newAttr=getattr(getSel[0],collectAttr[0])
+        select(newAttr, add=1)
+        getChangeAttr=getattr(getSel[0],collectAttr[0]).get()
+        menuItems = cmds.optionMenu(self.attributeFirstSel, q=True, ill=True)
+        if menuItems:
+            cmds.deleteUI(menuItems)        
+        getListAttr=sorted(collectAttr)
+        cmds.optionMenu(self.attributeFirstSel, e=1)
+        for each in getListAttr:
+            menuItem(label=each, parent=self.attributeFirstSel)  
+        self.count_attr_output(getChangeAttr)
+        print newAttr, getChangeAttr
+
+    def count_attr_output(self, getChangeAttr):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------'''
+        cmds.text(self.attrVal, e=1, label=getChangeAttr )
+
+    def change_attr_output(self):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------'''
+        getFirstattr=optionMenu(self.attributeFirstSel, q=1, v=1)  
+        cmds.getAttr(getFirstattr)
+        try:
+            getChangeAttr=cmds.getAttr(getFirstattr)
+            getTypeAttr=getAttr(getFirstattr, type=1)
+            pass
+        except:
+            print "Can't obtain value for "+getFirstattr
+            return               
+        cmds.text(self.attrVal, e=1, label=getChangeAttr )
+        cmds.text(self.attrType, e=1, label=getTypeAttr )
+
+    def count_attr_output_obj(self, getChangeAttr):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------'''
+        cmds.text(self.attrValObj, e=1, label=getChangeAttr )
+
+    def change_attr_output_obj(self):
+        '''----------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------'''
+        getFirstattr=optionMenu(self.objAtt, q=1, v=1)
+        cmds.select(str(getFirstattr.split(".")[0]), r=1)
+        try:
+            getAttr=cmds.getAttr(getFirstattr)
+            getTypeAttr=cmds.getAttr(getFirstattr, type=1)
+            pass
+        except:
+            print "Can't obtain value for "+getFirstattr
+            return               
+        cmds.text(self.attrValObj, e=1, label=getAttr )
+        cmds.text(self.attrTypeObj, e=1, label=getTypeAttr )
 
 
-        def _save_allDyn_heirarchy(self, fileName, getPathCustom, optionPath): 
-            '''This copies values and animcurve nodes of all dyn in scene'''
-            # getType=["nCloth", "nucleus", "dynamicConstraint", "nRigid", "nHair"]
-            collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
-            folderType=proj_commonFolder+'/'+fileName
-            if os.path.exists(folderType):
-                pass
-            else:
-                self.makeFolder(folderType)
-            filterNode=["animCurve"]
-            dirDict={}
-            self.save_att_function(collectItem, folderType)
+inst=fetchAttrs()
+inst._findAttr_window()
 
 
-        def save_literal_att_function(self, collectItem, folderType):
-            filterNode=["animCurve"]
-            dirDict={}            
-            notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
-            getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration
-            getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration            
-            for each in collectItem:
-                print "proceeding"
-                try:
-                    namer=each.split(":")[1]
-                except:
-                    namer=each
-                fileName=folderType+'/'+namer+'.txt'
-                print fileName
-                inp=open(fileName, 'w+')                
-                getChildren=[each]
-                for eachChildTree in getChildren:
-                    inp.write('\n'+str(eachChildTree)+">>")
-                    getListedAttr=[(attrib) for attrib in listAttr (eachChildTree, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-                    for eachAttribute in getListedAttr:
-                        try:
-                            findFact=cmds.listConnections( eachChildTree+'.'+eachAttribute, d=False, s=True )
-                            # findFact=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
-                            if findFact==None:
-                                try:
-                                    attrVal=cmds.getAttr(eachChildTree+"."+eachAttribute)
-                                    inp.write("<"+str(eachAttribute+";"))
-                                    makeDict={0.0:attrVal}
-                                    inp.write(str(makeDict))
-                                except:
-                                    pass
-                            else:
-                                try:
-                                    dirDict={}
-                                    frames=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, timeChange=True)
-                                    values=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, valueChange=True)
-                                    for eachFrame, valueitem in map(None, frames, values):
-                                        makeDict={eachFrame:valueitem}
-                                        dirDict.update(makeDict)
-                                    inp.write("<"+str(eachAttribute+";"))                                    
-                                    inp.write(str(dirDict))
-                                except:
-                                    pass
-                        except:
-                            pass
-                inp.close()   
-                print "saved as "+fileName
-
-
-        def save_att_function(self, collectItem, folderType):
-            filterNode=["animCurve"]
-            dirDict={}            
-            notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
-            getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration
-            getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration            
-            for each in collectItem:
-                print "proceeding"
-                try:
-                    namer=each.split(":")[1]
-                except:
-                    namer=each
-                fileName=folderType+'/'+namer+'.txt'
-                print fileName
-                inp=open(fileName, 'w+')                
-                allChildren=cmds.listRelatives(each, ad=1)
-                getChildren=allChildren
-                try:
-                    getChildren=[each]+getChildren
-                except:
-                    getChildren=[each]
-                for eachChildTree in getChildren:
-                    inp.write('\n'+str(eachChildTree)+">>")
-                    getListedAttr=[(attrib) for attrib in listAttr (eachChildTree, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-                    for eachAttribute in getListedAttr:
-                        try:
-                            findFact=cmds.listConnections( eachChildTree+'.'+eachAttribute, d=False, s=True )
-                            # findFact=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
-                            if findFact==None:
-                                try:
-                                    attrVal=cmds.getAttr(eachChildTree+"."+eachAttribute)
-                                    inp.write("<"+str(eachAttribute+";"))
-                                    makeDict={0.0:attrVal}
-                                    inp.write(str(makeDict))
-                                except:
-                                    pass
-                            else:
-                                try:
-                                    dirDict={}
-                                    frames=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, timeChange=True)
-                                    values=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, valueChange=True)
-                                    for eachFrame, valueitem in map(None, frames, values):
-                                        makeDict={eachFrame:valueitem}
-                                        dirDict.update(makeDict)
-                                    inp.write("<"+str(eachAttribute+";"))                                    
-                                    inp.write(str(dirDict))
-                                except:
-                                    pass
-                        except:
-                            pass
-                inp.close()   
-                print "saved as "+fileName
-
-
-        def save_setting_function(self, collectItem, folderType):
-            filterNode=["animCurve"]
-            dirDict={}            
-            notAttr=["isHierarchicalConnection", "fieldDistance", "dieOnEmissionVolumeExit", "solverDisplay", "isHierarchicalNode", "currentTime", "publishedNodeInfo", "fieldScale_Position"] 
-            getStrtRange=cmds.playbackOptions(q=1, ast=1)#get framerange of scene to set keys in iteration
-            getEndRange=cmds.playbackOptions(q=1, aet=1)#get framerange of scene to set keys in iteration            
-            for each in collectItem:
-                print "proceeding"
-                try:
-                    namer=each.split(":")[1]+"_att"
-                except:
-                    namer=each+"_att"
-                fileName=folderType+'/'+namer+'.txt'
-                print fileName
-                inp=open(fileName, 'w+')                
-                allChildren=cmds.listRelatives(each, ad=1)
-                getChildren=allChildren
-                try:
-                    getChildren=[each]+getChildren
-                except:
-                    getChildren=[each]
-                for eachChildTree in getChildren:
-                    inp.write('\n'+str(eachChildTree)+">>")
-                    getListedAttr=[(attrib) for attrib in listAttr (eachChildTree, w=1, a=1, s=1,u=1) if "solverDisplay" not in attrib]
-                    for eachAttribute in getListedAttr:
-                        try:
-                            findFact=cmds.listConnections( eachChildTree+'.'+eachAttribute, d=False, s=True )
-                            # findFact=[(eachConnected) for eachConnected in cmds.nodeType(ls_str[0].split(".")[0], i=1) for eachFilter in filterNode if eachConnected==eachFilter]
-                            if findFact==None:
-                                try:
-                                    attrVal=cmds.getAttr(eachChildTree+"."+eachAttribute)
-                                    inp.write("<"+str(eachAttribute+";"))
-                                    makeDict={0.0:attrVal}
-                                    inp.write(str(makeDict))
-                                except:
-                                    pass
-                            else:
-                                try:
-                                    dirDict={}
-                                    frames=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, timeChange=True)
-                                    values=cmds.keyframe(eachChildTree, attribute=eachAttribute, time=(getStrtRange,getEndRange), query=True, valueChange=True)
-                                    for eachFrame, valueitem in map(None, frames, values):
-                                        makeDict={eachFrame:valueitem}
-                                        dirDict.update(makeDict)
-                                    inp.write("<"+str(eachAttribute+";"))                                    
-                                    inp.write(str(dirDict))
-                                except:
-                                    pass
-                        except:
-                            pass
-                inp.close()   
-                print "saved as "+fileName
-
-# old:
-#             print folderType
-#             '''This copies values and animcurve nodes of all dyn in scene'''
-#             getType=["nCloth", "nucleus"]
-#             collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
-#             getallfiles=os.listdir(folderType)
-#             print getallfiles
-#             collectItem=[]
-#             for each in cmds.ls(sl=1):
-#                 if cmds.nodeType(each)=="transform":
-#                     getRelatives=cmds.listRelatives(each , c=1)
-#                     for eachRelative in getRelatives:
-#                         collectItem.append(eachRelative)
-#                 else:
-#                     collectItem.append(each)
-#             collectItem=set(collectItem)    
-
-
-
-
-        # def _applyallattV2(self, folderType):
-        #     print folderType
-        #     '''This copies values and animcurve nodes of all dyn in scene'''
-        #     getType=["nCloth", "nucleus"]
-        #     collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
-        #     getallfiles=os.listdir(folderType)
-        #     print getallfiles
-        #     collectItem=[]
-        #     for each in cmds.ls(sl=1):
-        #         if cmds.nodeType(each)=="transform":
-        #             getRelatives=cmds.listRelatives(each , c=1)
-        #             for eachRelative in getRelatives:
-        #                 collectItem.append(eachRelative)
-        #         else:
-        #             collectItem.append(each)
-        #     collectItem=set(collectItem)              
-        #     print collectItem 
-        #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-        #     # selObj=cmds.ls(sl=1, fl=1)
-        #     for each in collectItem:
-        #         for filename in getallfiles:
-        #             isolateFilename=filename.split('.')[0] 
-        #             print isolateFilename
-        #             try:
-        #                 isolateitemName=each.split(':')[1]
-        #             except:
-        #                 isolateitemName=each
-        #             if isolateFilename == each:
-        #                 print "yes!!"
-        #                 attribute_container=[]
-        #                 getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]            
-        #                 printFolder=folderType+'/'+filename
-        #                 List = open(printFolder).readlines()
-        #                 for aline in List:
-        #                     if ">>" in aline:
-        #                         getObj=aline.split('>>')[0]
-        #                         getExistantInfo=aline.split('>>')[1]
-        #                         if getExistantInfo!="\n":
-        #                             findAtt=getExistantInfo.split("<")
-        #                             print findAtt
-        #                             for eachInfo in findAtt:
-        #                                 getAnimDicts=eachInfo.split(";")
-        #                                 for eachctrl in xrange(len(getAnimDicts) - 1):
-        #                                     current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-        #                                     # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-        #                                     gethis=ast.literal_eval(next_item)
-        #                                     print "attempting..."
-        #                                     try:
-        #                                         if len(gethis)<2:
-        #                                             for key, value in gethis.items():
-        #                                                 for listeditem in getListedAttr:
-        #                                                     print getListedAttr 
-        #                                                     if current_item==listeditem:
-        #                                                         cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-        #                                                         print "setting"+cmds.ls(getObj)[0]+'.'+current_item+ " at "+str(value)
-        #                                         else:
-        #                                              for key, value in gethis.items():
-        #                                                 for listeditem in getListedAttr:
-        #                                                     if current_item==listeditem:
-        #                                                         cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value ) 
-        #                                                         print "setting"+cmds.ls(getObj)[0]+" attr: "+current_item+" at "+str(value) 
-        #                                     except:
-        #                                         print "...failed..."
-        #                                         pass                                              
-        #                         else:
-        #                             pass
-
-
-
-
-
-        # def _apply_att(self, folderType):
-        #     print folderType
-        #     getallfiles=os.listdir(folderType)
-        #     print getallfiles
-        #     collectItem=[]
-        #     for each in cmds.ls(sl=1):
-        #         if cmds.nodeType(each)=="transform":
-        #             getRelatives=cmds.listRelatives(each , c=1)
-        #             for eachRelative in getRelatives:
-        #                 collectItem.append(eachRelative)
-        #         else:
-        #             collectItem.append(each)
-        #     collectItem=set(collectItem)               
-        #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-        #     # selObj=cmds.ls(sl=1, fl=1)
-        #     for each in collectItem:
-        #         for filename in getallfiles:
-        #             isolateFilename=filename.split('.')[0] 
-        #             isolateitemName=each.split(':')[1]
-        #             if isolateFilename == isolateitemName:
-        #                 attribute_container=[]
-        #                 getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-        #                 printFolder=folderType+'/'+filename
-        #                 List = open(printFolder).readlines()
-        #                 for aline in List:
-        #                     if ">>" in aline:
-        #                         getObj=aline.split('>>')[0]
-        #                         getExistantInfo=aline.split('>>')[1]
-        #                         if getExistantInfo!="\n":
-        #                             findAtt=getExistantInfo.split("<")
-        #                             for eachInfo in findAtt:
-        #                                 getAnimDicts=eachInfo.split(";")
-        #                                 for eachctrl in xrange(len(getAnimDicts) - 1):
-        #                                     current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-        #                                     # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-        #                                     gethis=ast.literal_eval(next_item)
-        #                                     try:
-        #                                         if len(gethis)<2:
-        #                                             for key, value in gethis.items():
-        #                                                 for listeditem in getListedAttr:
-        #                                                     if current_item==listeditem:
-        #                                                         cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-        #                                         else:
-        #                                              for key, value in gethis.items():
-        #                                                 for listeditem in getListedAttr:
-        #                                                     if current_item==listeditem:
-        #                                                         cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
-        #                                     except:
-        #                                         pass                                              
-        #                         else:
-        #                             pass
-
-
-
-
-       # def _applyallatt(self, folderType):
-       #      print folderType
-       #      '''This copies values and animcurve nodes of all dyn in scene'''
-       #      getType=["nCloth", "nucleus"]
-       #      collectItem=[(item) for each in getType for item in cmds.ls(type=each) ]
-       #      getallfiles=os.listdir(folderType)
-       #      print getallfiles
-       #      collectItem=[]
-       #      for each in cmds.ls(sl=1):
-       #          if cmds.nodeType(each)=="transform":
-       #              getRelatives=cmds.listRelatives(each , c=1)
-       #              for eachRelative in getRelatives:
-       #                  collectItem.append(eachRelative)
-       #          else:
-       #              collectItem.append(each)
-       #      collectItem=set(collectItem)               
-       #      notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-       #      # selObj=cmds.ls(sl=1, fl=1)
-       #      for each in collectItem:
-       #          for filename in getallfiles:
-       #              isolateFilename=filename.split('.')[0] 
-       #              isolateitemName=each.split(':')[1]
-       #              if isolateFilename == isolateitemName:
-       #                  attribute_container=[]
-       #                  getListedAttr=[(attrib) for attrib in cmds.listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-       #                  printFolder=folderType+'/'+filename
-       #                  List = open(printFolder).readlines()
-       #                  for aline in List:
-       #                      if ">>" in aline:
-       #                          getObj=aline.split('>>')[0]
-       #                          getExistantInfo=aline.split('>>')[1]
-       #                          if getExistantInfo!="\n":
-       #                              findAtt=getExistantInfo.split("<")
-       #                              for eachInfo in findAtt:
-       #                                  getAnimDicts=eachInfo.split(";")
-       #                                  for eachctrl in xrange(len(getAnimDicts) - 1):
-       #                                      current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-       #                                      # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-       #                                      gethis=ast.literal_eval(next_item)
-       #                                      try:
-       #                                          if len(gethis)<2:
-       #                                              for key, value in gethis.items():
-       #                                                  for listeditem in getListedAttr:
-       #                                                      if current_item==listeditem:
-       #                                                          cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)                                                 
-       #                                          else:
-       #                                               for key, value in gethis.items():
-       #                                                  for listeditem in getListedAttr:
-       #                                                      if current_item==listeditem:
-       #                                                          cmds.setKeyframe( cmds.ls(getObj)[0], t=key, at=current_item, v=value )  
-       #                                      except:
-       #                                          pass                                              
-       #                          else:
-       #                              pass
-
-
-
-        # def _apply_sel_dyn_att(self, folderType):
-        #     print folderType
-        #     collectItem=[]
-        #     for each in cmds.ls(sl=1):
-        #         if cmds.nodeType(each)=="transform":
-        #             getRelatives=cmds.listRelatives(each , c=1)
-        #             for eachRelative in getRelatives:
-        #                 collectItem.append(eachRelative)
-        #         else:
-        #             collectItem.append(each)
-        #     collectItem=set(collectItem)      
-        #     notAttr=["isHierarchicalConnection", "solverDisplay", "isHierarchicalNode", "publishedNodeInfo", "fieldScale_Position", "fieldScale", "fieldScale.fieldScale_Position"]         
-        #     for each in collectItem:
-        #         print "applying to "+each
-        #         attribute_container=[]
-        #         getListedAttr=[(attrib) for attrib in listAttr(each, k=1, s=1, iu=1, u=1, lf=1, m=0) for item in notAttr if item not in attrib]             
-        #         List = open(folderType).readlines()
-        #         for aline in List:
-        #             if ">>" in aline:
-        #                 getObj=aline.split('>>')[0]
-        #                 getExistantInfo=aline.split('>>')[1]
-        #                 if getExistantInfo!="\n":
-        #                     findAtt=getExistantInfo.split("<")
-        #                     for eachInfo in findAtt:
-        #                         getAnimDicts=eachInfo.split(";")
-        #                         for eachctrl in xrange(len(getAnimDicts) - 1):
-        #                             current_item, next_item = getAnimDicts[eachctrl], getAnimDicts[eachctrl + 1]
-        #                             # cmds.setAttr(cmds.ls(getObj)[0]+'.'+current_item, value)
-        #                             gethis=ast.literal_eval(next_item)
-        #                             try:
-        #                                 if len(gethis)<2:
-        #                                     for key, value in gethis.items():
-        #                                         for listeditem in getListedAttr:
-        #                                             if current_item==listeditem:
-        #                                                 cmds.setAttr(each+'.'+current_item, value)                                                 
-        #                                 else:
-        #                                      for key, value in gethis.items():
-        #                                         for listeditem in getListedAttr:
-        #                                             if current_item==listeditem:
-        #                                                 cmds.setKeyframe( each, t=key, at=current_item, v=value )  
-        #                             except:
-        #                                 pass                                              
-        #                 else:
-        #                     pass
