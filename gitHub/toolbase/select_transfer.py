@@ -1,4 +1,3 @@
-
 '''Transfers selection to nearby verts of other objects'''
 __author__="Elise Deglau"
 import maya.cmds as mc
@@ -8,104 +7,397 @@ import numpy
 from apiWrappers import getPoints
 import mMesh
 reload(mMesh)
-
-
+import maya.api.OpenMaya as OpenMaya
+ 
+checkHoudini = os.getenv("HOUDINI_VERSION")
+ 
+checkMaya = os.getenv("REZ_MAYA_VERSION")
+if checkMaya != None:
+    import mrig_pyqt
+    from mrig_pyqt import QtCore, QtGui, QtWidgets
+    from mrig_pyqt.QtCore import SIGNAL
+ 
+ 
+if checkHoudini != None:
+    import hutil
+    from hutil.Qt import QtCore, QtWidgets, QtWidgets
+    from hutil.Qt.QtCore import SIGNAL
 #Author: Elise Deglau
 #https://atlas.bydeluxe.com/confluence/display/~lime/2018-8-23+Elise+D
-
+ 
 #to add to shelf:
-
-# import sys 
-# filepath=( '//sw/dev/deglaue/tools//' ) 
-# if not filepath in sys.path: 
-#     sys.path.append(str(filepath)) 
+ 
+# import sys
+# filepath=( '//sw/dev/deglaue/tools//' )
+# if not filepath in sys.path:
+#     sys.path.append(str(filepath))
 # import select_transfer
 # reload (select_transfer)
 # evokeTool = select_transfer.map_select_transfer()
 # evokeTool()
-
+ 
 #icon
-
+ 
 # /sw/dev/deglaue/icons/deglaue_toolset_seltransfr.png
-
-def map_select_transfer():
-    print "start"
-    # Transfers selection to nearby verts of other objects.
-    NDIM = 3
-    selObj=mc.ls(sl=1, fl=1)
-    #query if selected
-    if selObj:
-        if len(selObj)<2:
+ 
+ 
+class set_select_win(QtWidgets.QWidget):
+    # def __init__(self):
+    def __init__(self):
+        super(set_select_win, self).__init__()
+        self.initUI()
+ 
+    def initUI(self):   
+ 
+        self.setWindowTitle("Transfer Selection across objects")
+ 
+        self.myform = QtWidgets.QFormLayout()
+        self.layout = QtWidgets.QGridLayout()
+ 
+        self.selectSetupLayout = QtWidgets.QGridLayout()
+        self.selectOverride = QtWidgets.QFrame()
+        self.selectOverride.setLayout(self.selectSetupLayout)
+        self.selectSetupLayout.addLayout(self.myform, 0,0,1,1)
+        self.layout.addLayout(self.selectSetupLayout, 0,0,1,1)
+ 
+        self.add_widgets()
+ 
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.selectOverride)
+        scroll.setWidgetResizable(False)
+        self.layout.addWidget(scroll, 1,0,1,1)
+        self.setLayout(self.layout)
+ 
+    def add_widgets(self):
+        self.vertical_order_layout_ta = QtWidgets.QHBoxLayout()
+        self.myform.addRow(self.vertical_order_layout_ta)
+        self.sel_label_button = QtWidgets.QLabel("Use Space:")
+        self.vertical_order_layout_ta.addWidget(self.sel_label_button)         
+        self.sel_world_button = QtWidgets.QPushButton("World")
+        self.connect(self.sel_world_button, SIGNAL("clicked()"),
+                    lambda: self.map_select_transfer())
+        self.vertical_order_layout_ta.addWidget(self.sel_world_button)
+        self.sel_uv_button = QtWidgets.QPushButton("UV")
+        self.connect(self.sel_uv_button, SIGNAL("clicked()"),
+                    lambda: self.UV_select_transfer())
+        self.vertical_order_layout_ta.addWidget(self.sel_uv_button)    
+        self.sel_pnt_button = QtWidgets.QPushButton("Current Paint")
+        self.connect(self.sel_pnt_button, SIGNAL("clicked()"),
+                    lambda: self.pnt_select_transfer())
+        self.vertical_order_layout_ta.addWidget(self.sel_pnt_button)    
+ 
+    def pnt_select_transfer(self):
+        # Transfers selection to nearby verts of other objects.
+        #query if selected
+        getobj = mc.ls(sl=1, fl=1)[0]       
+        if getobj:
+            if len(getobj)<0:
+                print "select an object and go into paint mode."
+                return
+            else:
+                pass        
+            #get falloff amount
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Value:",
+                text=".1",
+                button=["Swap","Add", "Swap ReverseValue", "Add ReverseValue", "Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Add":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=True       
+                reverse = False
+            elif result == "Swap":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding = False
+                reverse = False
+            elif result == "Add ReverseValue":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius  
+                adding = True
+                reverse = True        
+            elif result == "Swap ReverseValue":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius  
+                adding = False
+                reverse = True                          
+            else:
+                print "selection transfer cancelled" 
+                return
+        else:
             print "select a group of verts and an object or two objects near eachother."
             return
-        else:
-            pass         
-        #get falloff amount 
-        result = mc.promptDialog(
-            title="Confirm",
-            message="Radius:",
-            text=".001",
-            button=["Swap","Add","Cancel"],
-            cancelButton="Cancel",
-            dismissString="Cancel" )
-        if result == "Add":
-            radius = mc.promptDialog(query=True, text=True)
-            radius = float(radius)
-            radius = radius * radius
-            adding=True        
-        elif result == "Swap":
-            radius = mc.promptDialog(query=True, text=True)
-            radius = float(radius)
-            radius = radius * radius
-            adding=False
-        else:
-            print "selection transfer cancelled"  
+        collect = []
+        if ".v" in getobj:
+            getobj = getobj.split('.v')[0]
+        verts = mc.ls(getobj+'.vtx[*]', fl=True)
+        try:
+            blendShapeNode = mc.artAttrCtx(mc.currentCtx(), q=1, asl=1)
+        except:
+            print "select a paint type map to apply(right click: paint)"
             return
-    else:
-        print "select a group of verts and an object or two objects near eachother."
-        return
-    # mc.select(selObj[0])
-    #determine if the mapper is a vertex selection or object
-    result = []
-    if ".v" in selObj[0]:
-        #collect the mapper verts
-        getFirstGrp = selObj[0].split(".")[0]
-        sourceName=[(each) for each in selObj if each.split(".")[0]==getFirstGrp]
-        #determine the mapping selections
-        targetName=[(each) for each in selObj if each.split(".")[0]!=getFirstGrp]
-        # print sourceName, targetName
+        blendShapeNode = blendShapeNode.split('.')[1]
+        for index, each_vert in enumerate(verts):
+            find = mc.getAttr('{0}.inputTarget[0].baseWeights[{1}]'.format(blendShapeNode, index))
+            if "e" in str(find):
+                find = str(find).split('e')[0]
+                find = float(find)
+            if reverse == True:
+                if find < radius:
+                    collect.append(each_vert)
+            else:
+                if find > radius:
+                    collect.append(each_vert) 
         if adding == False:
-            mc.select(cl=1)
-        for eachtarget in targetName:
-            mc.select(eachtarget, d=1)
-            mc.select(mMesh.get_closest_points(eachtarget, transform=0, mesh=0, mesh_vtx=sourceName, distance=radius), add=1)
-    else:
-        #transfer the mapper into verts
-        sourceName = selObj[0]
-        #determine the mapping selections
-        targetName=[(each) for each in selObj if each != sourceName]
-        #targetpoints into array
+            mc.select(cl=1)                                         
+        mc.select(collect, add=1)
+ 
+ 
+    def map_select_transfer(self):
+        # print "start"
+        # Transfers selection to nearby verts of other objects.
+        NDIM = 3
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts and an object or two objects near eachother."
+                return
+            else:
+                pass        
+            #get falloff amount
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".001",
+                button=["Swap","Add","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Add":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=True       
+            elif result == "Swap":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=False
+            else:
+                print "selection transfer cancelled" 
+                return
+        else:
+            print "select a group of verts and an object or two objects near eachother."
+            return
+        # mc.select(selObj[0])
+        #determine if the mapper is a vertex selection or object
+        result = []
+        if ".v" in selObj[0]:
+            #collect the mapper verts
+            getFirstGrp = selObj[0].split(".")[0]
+            sourceName=[(each) for each in selObj if each.split(".")[0]==getFirstGrp]
+            #determine the mapping selections
+            targetName=[(each) for each in selObj if each.split(".")[0]!=getFirstGrp]
+            # print sourceName, targetName
+            if adding == False:
+                mc.select(cl=1)
+            for eachtarget in targetName:
+                mc.select(eachtarget, d=1)
+                mc.select(mMesh.get_closest_points(eachtarget, transform=0, mesh=0, mesh_vtx=sourceName, distance=radius), add=1)
+        else:
+            #transfer the mapper into verts
+            sourceName = selObj[0]
+            #determine the mapping selections
+            targetName=[(each) for each in selObj if each != sourceName]
+            #targetpoints into array
+            if adding == False:
+                mc.select(cl=1)   
+            for eachtarget in targetName:
+                mc.select(eachtarget, d=1)
+                a = getPoints(mc.ls(eachtarget)[0], space='world')
+                a.shape = a.size / NDIM, NDIM
+                #sourcepoints into array
+                srcPoints = getPoints(mc.ls(sourceName)[0], space = "world")
+                #create empty set
+                result = set()
+                for point in srcPoints:
+                    d = ((a-point)**2).sum(axis = 1) #compute distance
+                    ndx = d.argsort()
+                    max_idx = next((i for i, v in enumerate(ndx) if d[v] >radius), None)
+                    if max_idx:
+                        result.update(ndx[:max_idx])
+            result = list(result)
+            mc.select(['{}.vtx[{}]'.format(eachtarget, x) for x in result], add =1)
+ 
+ 
+ 
+ 
+    def UV_select_transfer(self):
+        selObj=mc.ls(sl=1, fl=1)
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts and another object which have similar UV maps(currently only works on 'map1')."
+                return
+            else:
+                pass        
+            #get falloff amount
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".5",
+                button=["Swap","Add","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Add":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=True       
+            elif result == "Swap":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=False
+            else:
+                print "selection transfer cancelled" 
+                return
+        else:
+            print "select a group of verts and another object which have similar UV maps(currently only works on 'map1')."
+            return
+        result = []
+        bookit = []
+        sourceSelection = selObj[:-1]
+        targetSelection = selObj[-1]       
+        for each_src in sourceSelection:   
+            selection_source = OpenMaya.MSelectionList()
+            selection_source.add(each_src)
+            nodeDagPath = selection_source.getDagPath(0)
+            mfnMesh_src = OpenMaya.MFnMesh(nodeDagPath)       
+            a = mc.xform(each_src,q=True,ws=True, t=True)
+            getmpoint = OpenMaya.MPoint(a[0], a[1], a[2])
+            uvSet = 'map1'
+            placement = mfnMesh_src.getUVAtPoint(getmpoint, OpenMaya.MSpace.kWorld, uvSet)
+            u = placement[0]
+            v = placement[1]
+            getlocators = self.newset(u, v, targetSelection)      
+            try:
+                returnselect = mMesh.get_closest_points(targetSelection, transform=getlocators, mesh=0, mesh_vtx=0, distance=radius)
+                try:
+                    mc.delete(getlocators)
+                except:
+                    pass
+                try:
+                    if type(returnselect[0]) != "NoneType":
+                        bookit.append(returnselect)
+                except:
+                    pass
+            except:
+                pass
         if adding == False:
-            mc.select(cl=1)    
-        for eachtarget in targetName:
-            mc.select(eachtarget, d=1)
-            a = getPoints(mc.ls(eachtarget)[0], space='world')
-            a.shape = a.size / NDIM, NDIM
-            #sourcepoints into array
-            srcPoints = getPoints(mc.ls(sourceName)[0], space = "world") 
-            #create empty set
-            result = set()
-            for point in srcPoints:
-                d = ((a-point)**2).sum(axis = 1) #compute distance
-                ndx = d.argsort()
-                max_idx = next((i for i, v in enumerate(ndx) if d[v] >radius), None)
-                if max_idx:
-                    result.update(ndx[:max_idx])
-        result = list(result)
-        mc.select(['{}.vtx[{}]'.format(eachtarget, x) for x in result], add =1)
-
-
-
-
-
-
+            mc.select(cl=1)  
+        else:
+            mc.select(sourceSelection, r=1)                
+        if bookit != None:
+            for each_vert in bookit:
+                try:
+                    mc.select(each_vert, add=1)
+                except:
+                    print "skipped"+ each_vert
+                    pass
+ 
+ 
+ 
+    def newset(self, u, v, targetSelection):
+        mc.select(targetSelection, r=1)
+        selection_last = OpenMaya.MSelectionList()
+        selection_last.add(targetSelection)   
+        nodeDagPath = selection_last.getDagPath(0)
+        mfnMesh_tgt = OpenMaya.MFnMesh(nodeDagPath)   
+        uvSet = 'map1'
+        try:
+            targetPoints = mfnMesh_tgt.getPointsAtUV(u, v, OpenMaya.MSpace.kWorld, uvSet, tolerance=1e-5)
+            # print targetPoints
+            objplace = (targetPoints[1][0][0], targetPoints[1][0][1] , targetPoints[1][0][2])
+            transforms = []
+            for each in objplace:
+                if "e" in str(each):
+                    newnum = str(each).split('e')[0]
+                    transforms.append(float(newnum))
+                else:
+                    newnum = each
+                    transforms.append(float(newnum))
+            createtargetspace = mc.spaceLocator(n="newplace")
+            mc.xform(createtargetspace[0], ws=1, t=transforms)
+            return createtargetspace[0]
+        except:
+            pass
+ 
+inst_mkwin=set_select_win()
+inst_mkwin.show()
+ 
+# def get_dag_path(node):
+#     """Get the MDagPath of the given node.
+ 
+#     :param node: Node name
+#     :return: Node MDagPath
+#     """
+#     selection_list = OpenMaya.MSelectionList()
+#     print selection_list
+#     selection_list.add(node)
+#     path = OpenMaya.MDagPath()
+#     selection_list.getDagPath(0)
+#     return path
+ 
+ 
+# def getPosition(point):
+#     print point
+#     '''
+#     Return the position of any point or transform
+#     @param point: Point to return position for
+#     @type point: str or list or tuple
+#     '''
+#     # Initialize point value
+#     pos = []
+#     if (type(point) == list) or (type(point) == tuple):
+#         if len(point) < 3:
+#             raise Exception('Invalid point value supplied! Not enough list/tuple elements!')
+#         pos = point[0:3]
+#     elif (type(point) == str) or (type(point) == unicode):
+#         # Check Transform
+#         mObject = getMObject(point)
+#         if mObject.hasFn(OpenMaya.MFn.kTransform):
+#             try:
+#                 pos = mc.xform(point,q=True,ws=True,rp=True)
+#                 print pos
+#             except:
+#                 pass
+          
+#         # pointPosition query
+#         if not pos:
+#             try:
+#                 pos = mc.pointPosition(point)
+#                 print pos
+#             except:
+#                 pass
+#         # xform - rotate pivot query
+#         if not pos:
+#             try:
+#                 pos = mc.xform(point,q=True,ws=True,rp=True)
+#                 print pos
+#             except:
+#                 pass
+#     #     # Unknown type
+#     #     if not pos:
+#     #         raise Exception('Invalid point value supplied! Unable to determine type of point "'+str(point)+'"!')
+#     # else:
+#     #     raise Exception('Invalid point value supplied! Invalid argument type!')
+          
+#     # # Return result
+#     return pos
