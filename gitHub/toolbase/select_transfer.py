@@ -39,7 +39,124 @@ if checkHoudini != None:
 #icon
  
 # /sw/dev/deglaue/icons/deglaue_toolset_seltransfr.png
+class wgtmap_select_gui(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(wgtmap_select_gui, self).__init__()
+        self.initUI()
  
+    def initUI(self):    
+        self.setWindowTitle("Select based on weightmap")
+        self.central_widget=QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.masterLayout=QtWidgets.QGridLayout(self.central_widget)
+        self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
+ 
+ 
+        self.myform = QtWidgets.QFormLayout()
+        self.wgt_layout = QtWidgets.QGridLayout()
+        self.masterLayout.addLayout(self.wgt_layout, 0,0,1,1)
+ 
+        self.SelectionSetupLayout = QtWidgets.QGridLayout()
+        self.selection_widgetframe = QtWidgets.QFrame()
+        self.selection_widgetframe.setLayout(self.SelectionSetupLayout)
+        self.SelectionSetupLayout.addLayout(self.myform, 0,0,1,1)
+        self.wgt_layout.addLayout(self.SelectionSetupLayout, 0,0,1,1)
+ 
+        self.add_widgets()
+ 
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.selection_widgetframe)
+        scroll.setWidgetResizable(False)
+        self.wgt_layout.addWidget(scroll, 1,0,1,1)
+        self.setLayout(self.wgt_layout)
+ 
+    def add_widgets(self):
+        self.sel_order_layout = QtWidgets.QHBoxLayout()
+        self.myform.addRow(self.sel_order_layout)
+        self.sel_button_layout = QtWidgets.QHBoxLayout()
+        self.myform.addRow(self.sel_button_layout)        
+        self.value_label = QtWidgets.QLabel("value")
+        self.sel_order_layout.addWidget(self.value_label)    
+        self.textNum = QtWidgets.QLabel("10%")
+        self.sel_order_layout.addWidget(self.textNum)
+        self.selection_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.selection_slider.Orientation = (0)
+        self.selection_slider.setMinimum(1)
+        self.selection_slider.setMaximum(100)
+        self.selection_slider.setValue(10)       
+        self.selection_slider.valueChanged.connect(self.print_slider)
+        self.sel_order_layout.addWidget(self.selection_slider)
+        self.swap_button = QtWidgets.QPushButton("Swap")
+        self.connect(self.swap_button, SIGNAL("clicked()"),
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.swap_button)    
+        self.add_button = QtWidgets.QPushButton("Add")
+        self.connect(self.add_button, SIGNAL("clicked()"),
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = False))
+        self.sel_button_layout.addWidget(self.add_button)    
+        self.swap_rev_button = QtWidgets.QPushButton("SwapReverseValue")
+        self.connect(self.swap_rev_button, SIGNAL("clicked()"),
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = True))
+        self.sel_button_layout.addWidget(self.swap_rev_button)    
+        self.add_rev_button = QtWidgets.QPushButton("AddReverseValue")
+        self.connect(self.add_rev_button, SIGNAL("clicked()"),
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = True))
+        self.sel_button_layout.addWidget(self.add_rev_button)                                    
+        self.sel_errant_button = QtWidgets.QPushButton("Grab Errant")
+        self.connect(self.sel_errant_button, SIGNAL("clicked()"),
+                    lambda: self.sel_errant_weight(adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.sel_errant_button)                                    
+ 
+    def print_slider(self):
+        size = self.selection_slider.value()
+        self.textNum.setText(str(size)+"%")
+ 
+    def sel_errant_weight(self, adding, reverse):
+        getobj = mc.ls(sl=1, fl=1)[0]       
+        collect = []
+        if ".v" in getobj:
+            getobj = getobj.split('.v')[0]
+        verts = mc.ls(getobj+'.vtx[*]', fl=True)
+        try:
+            blendShapeNode = mc.artAttrCtx(mc.currentCtx(), q=1, asl=1)
+        except:
+            print "select a paint type map to apply(right click: paint)"
+            return
+        blendShapeNode = blendShapeNode.split('.')[1]
+        for index, each_vert in enumerate(verts):
+            find = mc.getAttr('{0}.inputTarget[0].baseWeights[{1}]'.format(blendShapeNode, index))
+            if "e" in str(find):
+                collect.append(each_vert) 
+        mc.select(cl=1)                                         
+        mc.select(collect, add=1)
+ 
+    def sel_wgt_function(self, radius, adding, reverse):
+        getobj = mc.ls(sl=1, fl=1)[0]       
+        radius = float(radius) *.01
+        collect = []
+        if ".v" in getobj:
+            getobj = getobj.split('.v')[0]
+        verts = mc.ls(getobj+'.vtx[*]', fl=True)
+        try:
+            blendShapeNode = mc.artAttrCtx(mc.currentCtx(), q=1, asl=1)
+        except:
+            print "select a paint type map to apply(right click: paint)"
+            return
+        blendShapeNode = blendShapeNode.split('.')[1]
+        for index, each_vert in enumerate(verts):
+            find = mc.getAttr('{0}.inputTarget[0].baseWeights[{1}]'.format(blendShapeNode, index))
+            if "e" not in str(find):
+                # find = str(find).split('e')[0]
+                # find = float(find)
+                if reverse == True:
+                    if find < radius:
+                        collect.append(each_vert)
+                else:
+                    if find > radius:
+                        collect.append(each_vert) 
+        if adding == False:
+            mc.select(cl=1)                                         
+        mc.select(collect, add=1)       
  
 class set_select_win(QtWidgets.QWidget):
     # def __init__(self):
@@ -83,10 +200,10 @@ class set_select_win(QtWidgets.QWidget):
         self.vertical_order_layout_ta.addWidget(self.sel_uv_button)    
         self.sel_pnt_button = QtWidgets.QPushButton("Current Paint")
         self.connect(self.sel_pnt_button, SIGNAL("clicked()"),
-                    lambda: self.pnt_select_transfer())
+                    lambda: self.sel_window_paint())
         self.vertical_order_layout_ta.addWidget(self.sel_pnt_button)    
  
-    def pnt_select_transfer(self):
+    def sel_window_paint(self):
         # Transfers selection to nearby verts of other objects.
         #query if selected
         getobj = mc.ls(sl=1, fl=1)[0]       
@@ -95,69 +212,9 @@ class set_select_win(QtWidgets.QWidget):
                 print "select an object and go into paint mode."
                 return
             else:
-                pass        
-            #get falloff amount
-            result = mc.promptDialog(
-                title="Confirm",
-                message="Value:",
-                text=".1",
-                button=["Swap","Add", "Swap ReverseValue", "Add ReverseValue", "Cancel"],
-                cancelButton="Cancel",
-                dismissString="Cancel" )
-            if result == "Add":
-                radius = mc.promptDialog(query=True, text=True)
-                radius = float(radius)
-                radius = radius * radius
-                adding=True       
-                reverse = False
-            elif result == "Swap":
-                radius = mc.promptDialog(query=True, text=True)
-                radius = float(radius)
-                radius = radius * radius
-                adding = False
-                reverse = False
-            elif result == "Add ReverseValue":
-                radius = mc.promptDialog(query=True, text=True)
-                radius = float(radius)
-                radius = radius * radius  
-                adding = True
-                reverse = True        
-            elif result == "Swap ReverseValue":
-                radius = mc.promptDialog(query=True, text=True)
-                radius = float(radius)
-                radius = radius * radius  
-                adding = False
-                reverse = True                          
-            else:
-                print "selection transfer cancelled" 
-                return
-        else:
-            print "select a group of verts and an object or two objects near eachother."
-            return
-        collect = []
-        if ".v" in getobj:
-            getobj = getobj.split('.v')[0]
-        verts = mc.ls(getobj+'.vtx[*]', fl=True)
-        try:
-            blendShapeNode = mc.artAttrCtx(mc.currentCtx(), q=1, asl=1)
-        except:
-            print "select a paint type map to apply(right click: paint)"
-            return
-        blendShapeNode = blendShapeNode.split('.')[1]
-        for index, each_vert in enumerate(verts):
-            find = mc.getAttr('{0}.inputTarget[0].baseWeights[{1}]'.format(blendShapeNode, index))
-            if "e" in str(find):
-                find = str(find).split('e')[0]
-                find = float(find)
-            if reverse == True:
-                if find < radius:
-                    collect.append(each_vert)
-            else:
-                if find > radius:
-                    collect.append(each_vert) 
-        if adding == False:
-            mc.select(cl=1)                                         
-        mc.select(collect, add=1)
+                pass              
+        inst_win = wgtmap_select_gui()
+        inst_win.show()
  
  
     def map_select_transfer(self):
@@ -274,7 +331,10 @@ class set_select_win(QtWidgets.QWidget):
         result = []
         bookit = []
         sourceSelection = selObj[:-1]
-        targetSelection = selObj[-1]       
+        targetSelection = selObj[-1]  
+        if '.' in targetSelection :
+            print "select object as last selection"
+            return
         for each_src in sourceSelection:   
             selection_source = OpenMaya.MSelectionList()
             selection_source.add(each_src)
@@ -309,7 +369,7 @@ class set_select_win(QtWidgets.QWidget):
                 try:
                     mc.select(each_vert, add=1)
                 except:
-                    print "skipped"+ each_vert
+                    # print "skipped"+ each_vert
                     pass
  
  
