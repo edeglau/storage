@@ -4,9 +4,6 @@
 import maya.cmds as mc
 import os, sys
 
-import mrig_pyqt
-from mrig_pyqt import QtCore, QtGui, QtWidgets
-from mrig_pyqt.QtCore import SIGNAL
 
 
 class createSDK_alias_window(QtWidgets.QMainWindow):
