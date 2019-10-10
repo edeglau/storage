@@ -3,28 +3,14 @@ import os, sys, subprocess
 import re, random
 from datetime import datetime
 from time import gmtime, strftime
-
+import pymel.core as pm
 import maya.cmds as mc
 
 
-checkHoudini = os.getenv("HOUDINI_VERSION")
-
-checkMaya = os.getenv("REZ_MAYA_VERSION")
 
 
-if checkMaya != None:
-    import mrig_pyqt
-    from mrig_pyqt import QtCore, QtGui, QtWidgets
-    from mrig_pyqt.QtCore import SIGNAL
-
-
-if checkHoudini != None:
-    import hutil
-    from hutil.Qt import QtCore, QtWidgets, QtWidgets
-    from hutil.Qt.QtCore import SIGNAL
-
-
-blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
+# blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
+blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias"]
 
 class set_blendgrp_win(QtWidgets.QWidget):
     # def __init__(self): 
@@ -34,7 +20,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
 
     def initUI(self):    
 
-        self.setWindowTitle("set colors")
+        self.setWindowTitle("Blend Groups")
 
         self.myform = QtWidgets.QFormLayout()
         self.layout = QtWidgets.QGridLayout()
@@ -54,15 +40,19 @@ class set_blendgrp_win(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def add_widgets(self):
-        self.color_dial = QtWidgets.QComboBox()
-        self.color_dial.addItems(blendoptions)
+        self.blend_types = QtWidgets.QComboBox()
+        self.blend_types.addItems(blendoptions)
         self.vertical_order_layout_ta = QtWidgets.QHBoxLayout()
         self.myform.addRow(self.vertical_order_layout_ta) 
-        self.vertical_order_layout_ta.addWidget(self.color_dial)
+        self.vertical_order_layout_ta.addWidget(self.blend_types)
         self.prnt_verbose_button = QtWidgets.QPushButton("Go")
         self.connect(self.prnt_verbose_button, SIGNAL("clicked()"),
-                    lambda: self.create_rgb())
+                    lambda: self._blend_options())
         self.vertical_order_layout_ta.addWidget(self.prnt_verbose_button)     
+        self.prnt_help_button = QtWidgets.QPushButton("Help")
+        self.connect(self.prnt_help_button, SIGNAL("clicked()"),
+                    lambda: self.help())
+        self.vertical_order_layout_ta.addWidget(self.prnt_help_button)     
 
 
 
@@ -86,6 +76,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
         if blend_name==blendoptions[7]:
             self.WireSearchGroups_alias()  
 
+
     def blendGroupToGroup(self):
         selObj=mc.ls(sl=1, fl=1)
         if len(selObj) == 2:
@@ -104,6 +95,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
         else:
             print "need to select two groups"
 
+
     def blendMass(self):
         selObj=mc.ls(sl=1, fl=1)
         if len(selObj) >1:
@@ -115,6 +107,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
                 mc.blendShape(n=str(parentItem[0])+"_BShape", w=(0, 1.0), o="world", af=1) 
         else:
             print "need to select more than one thing"
+
 
     def blendSearchGroups(self):
         #only prefix
@@ -165,8 +158,6 @@ class set_blendgrp_win(QtWidgets.QWidget):
                             BlendShapeName=mc.blendShape(parentItem, childItem, n=str(grabNameParent)+"_bs", o="world", w=(0, 1.0))
                         except:
                             pass
-
-
 
 
     def blendSearchGroups_alias(self):
@@ -305,7 +296,6 @@ class set_blendgrp_win(QtWidgets.QWidget):
         mc.setAttr(parentObj+"."+name_blend, 1.0)
 
 
-
     def blendSearchGroups_alias_morph(self):
         #only prefix
         # mc.select("rocket1Tech:c_bodySuit_simCage_hi_restShape_geo")
@@ -362,6 +352,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
                         except:
                             pass            
 
+ 
     def blendSearch(self):
         selObj=mc.ls(sl=1, fl=1)
         if len(selObj) == 2: 
@@ -411,6 +402,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
                                 BlendShapeName=mc.blendShape(parentItem, childItem, n=str(grabNameParent)+"_bs", w=(0, 1.0),  o = "world")
                             except:
                                 pass
+
 
     def reconnSearch(self):
         selObj=mc.ls(sl=1, fl=1)
@@ -464,6 +456,7 @@ class set_blendgrp_win(QtWidgets.QWidget):
                                 pass
         else:
             print "need to select two groups"
+
 
     def connSearch(self):
         selObj=mc.ls(sl=1, fl=1)
@@ -597,7 +590,12 @@ class set_blendgrp_win(QtWidgets.QWidget):
                             pass
         mc.setAttr(parentObj+"."+name_blend, 1.0)
 
+    def help ( self):
+        url="https://atlas.bydeluxe.com/confluence/display/~deglaue/Blend+Groups"
+        subprocess.Popen('xdg-open "%s"' % url, stdout=subprocess.PIPE, shell=True)
 
 
 inst_mkwin=set_blendgrp_win()
 inst_mkwin.show()
+
+
