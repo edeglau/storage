@@ -1,5 +1,30 @@
 import maya.cmds as mc
 
+
+
+
+getpoint = []
+curvename = 'a_crv'
+grp = 'shotgrp'
+
+#duplicate curve and wrap to mesh
+
+#convert curve to hairsystem
+
+
+
+#duplicate mesh 
+
+#skin mesh to joints
+
+#blendshape
+
+#create blendcurves
+
+#set nhair settings
+
+
+
 class curveDrivenRigBuild(object):
     def __init__(self):
         self.build_curve_rig()     
@@ -8,16 +33,17 @@ class curveDrivenRigBuild(object):
         '''function for building a curve rig'''
         getTopOpenGuides = mc.ls(sl=1)
         getKnotValue = len(getTopOpenGuides)
-        curvename =  "A_crv"
+        curvename = curvename
         values = []
         for each in getTopOpenGuides:#get point values to build curve
             translate, rotate = self.locationXForm(each)
             values.append(translate)
         self.buildCurves(values, curvename, getKnotValue)  #build top curve    
+        
         self.buildJointClusters(getTopOpenGuides, curvename)#build controllers and the bound joints for the top lid curve(this pulls into shapes)
-        getRigGrp=mc.group( em=True, name='_Rig' )
+        getRigGrp=mc.group( em=True, name=grp)
         #mc.parent("01_Clst_jnt", getRigGrp)
-        mc.parent("A_crv", getRigGrp)
+        mc.parent(curvename, getRigGrp)
        
     def buildCurves(self, values, name, getKnotValue):
         getKnotValueList = list(range(getKnotValue))
