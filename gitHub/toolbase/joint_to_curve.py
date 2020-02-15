@@ -103,6 +103,8 @@ class curveDrivenRigBuild(object):
             mc.select(each) 
             createdCluster=mc.cluster()
             mc.select(each, add=1)    
+            mc.parent(createdCluster, getlastjoint)  
+        return jointnames  
       def locationXForm(self, each):
         getObj=mc.ls(each)[0]
         transform=mc.xform(each , q=True, ws=1, t=True)
