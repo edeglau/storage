@@ -12,10 +12,7 @@ import maya.api.OpenMaya as OpenMaya
 checkHoudini = os.getenv("HOUDINI_VERSION")
 
 checkMaya = os.getenv("REZ_MAYA_VERSION")
-if checkMaya != None:
-    import mrig_pyqt
-    from mrig_pyqt import QtCore, QtGui, QtWidgets
-    from mrig_pyqt.QtCore import SIGNAL
+import PyQt4
 
 
 if checkHoudini != None:
@@ -604,6 +601,108 @@ class set_select_win(QtWidgets.QWidget):
         except:
             pass
 
+            def curve_select_nearest_crv(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select two groups of curves."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(mc.listRelatives(each, p=1, type="transform")[0]) for each in mc.listRelatives(selObj[1], ad=1, type="nurbsCurve")]
+        driverSelection_crvs = [("{}.cv[0]".format(each)) for each in mc.listRelatives(selObj[0], ad=1, type="nurbsCurve")]
+        if len(driverSelection_crvs)>0:
+            pass
+        else:
+            pass
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)   
+        collectmycurve = []
+        for each_src in driverSelection_crvs:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for tgt_cfv  in targetSelection_crvs:
+                tgt_sourcePoint = "{}Shape.cv[0]".format(tgt_cfv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    collectmycurve.append(tgt_cfv)
+        mc.select(collectmycurve, r=1) 
+    def curve_rename_nearest_crv(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select two groups of curves."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(mc.listRelatives(each, p=1, type="transform")[0]) for each in mc.listRelatives(selObj[1], ad=1, type="nurbsCurve")]
+        driverSelection_crvs = [("{}.cv[0]".format(each)) for each in mc.listRelatives(selObj[0], ad=1, type="nurbsCurve")]
+        if len(driverSelection_crvs)>0:
+            pass
+        else:
+            pass
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        make_dict = {}
+        for each_src in driverSelection_crvs:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for tgt_cfv  in targetSelection_crvs:
+                tgt_sourcePoint = "{}Shape.cv[0]".format(tgt_cfv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    dict_new ={tgt_cfv:each_src+"_02_crv"}
+                    make_dict.update(dict_new)
+        for key, value in make_dict.items():
+            try:
+                mc.rename(key, value)
+            except:
+                pass         
 inst_mkwin=set_select_win()
 inst_mkwin.show()
 
