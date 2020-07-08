@@ -19,4 +19,3 @@ for index, each in enumerate(collect_dups):
         except:
             pass
 
-import look_variator;look_variator.start()
