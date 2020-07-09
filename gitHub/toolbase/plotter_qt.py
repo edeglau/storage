@@ -8,8 +8,15 @@ from os  import popen
 from sys import stdin
 from random import randint
 from sys import argv
-from mrig_pyqt import QtCore, QtGui, QtWidgets
-from mrig_pyqt.QtCore import SIGNAL
+
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
+    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
+    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+    QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import SIGNAL
  
  
 detailMessge = ['X', 'Y', 'Z', 'XY', 'XZ', 'YZ']

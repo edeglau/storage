@@ -3,15 +3,14 @@ import maya.cmds as cmds
 # from mshotgun import mShotgun
  
  
-import mrig_pyqt
-from mrig_pyqt import QtCore, QtGui
-from mrig_pyqt.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
     QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
     QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
     QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
     QFont, QAbstractItemView, QMenu, QMessageBox
-from mrig_pyqt.QtCore import SIGNAL
- 
+from PyQt4.QtCore import SIGNAL
 #QI:12407 is the smallest uninteresting integer
  
  
