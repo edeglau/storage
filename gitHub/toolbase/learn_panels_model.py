@@ -1,6 +1,26 @@
 from toolbase.cache_stuff import wk_strt_value
 
-
+    def lights_cam(self):
+        if mc.objExists("*:camlight_loc"):
+            print "cam lights already exist - won't import"
+            pass
+        else:
+            try:
+                getCameraGrp=mc.ls("*:*.cameraPreset")
+                getNode=str(pm.PyNode(getCameraGrp[0]).node())
+                getCam=[each for each in mc.listRelatives(getNode, ad=1) if mc.nodeType(each) =="camera"]
+                gettransformCam=[each for each in mc.listRelatives(getCam[0], p=1) if mc.nodeType(each) =="transform"][0]
+                getLocCam=mc.ls('cam_light_loc*:camlight_loc')[0]
+                mc.select(gettransformCam, r=1)
+                mc.select(getLocCam, add=1)
+                print mc.ls(sl=1)
+                self._transfer_anim_attr()
+            except:
+                pass
+            getcamlightPath='/sw/dev/deglaue/cam_light_loc.mb'
+            namer='cam_light_loc'
+            mc.file(getcamlightPath, i=1, type="mayaBinary", ignoreVersion=1, ra=True, mergeNamespacesOnClash=False, namespace=n
+                    
     def blast_def(self):
         fps_set = float(str(self.fps_fieldText.text()))
         mc.playbackOptions(fps = fps_set, e=1)
