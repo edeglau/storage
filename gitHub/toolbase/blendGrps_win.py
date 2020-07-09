@@ -9,8 +9,8 @@ import maya.cmds as mc
 
 
 
-blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
-# blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "wire_connect"]
+# blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
+blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "wire_connect"]
 
 class set_blendgrp_win(QtWidgets.QWidget):
     # def __init__(self): 
@@ -71,11 +71,11 @@ class set_blendgrp_win(QtWidgets.QWidget):
             self.connSearch()  
         if blend_name==blendoptions[5]:
             self.blendSearchGroups_alias() 
+#         if blend_name==blendoptions[6]:
+#             self.blendSearchGroups_alias_morph()   
+#         if blend_name==blendoptions[7]:
+#             self.WireSearchGroups_alias()  
         if blend_name==blendoptions[6]:
-            self.blendSearchGroups_alias_morph()   
-        if blend_name==blendoptions[7]:
-            self.WireSearchGroups_alias()  
-        if blend_name==blendoptions[8]:
             self.connWireSearch()  
 
     def blendGroupToGroup(self):
