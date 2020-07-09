@@ -9,8 +9,8 @@ import maya.cmds as mc
 
 
 
-# blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
-blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias"]
+blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
+# blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "wire_connect"]
 
 class set_blendgrp_win(QtWidgets.QWidget):
     # def __init__(self): 
@@ -75,7 +75,8 @@ class set_blendgrp_win(QtWidgets.QWidget):
             self.blendSearchGroups_alias_morph()   
         if blend_name==blendoptions[7]:
             self.WireSearchGroups_alias()  
-
+        if blend_name==blendoptions[8]:
+            self.connWireSearch()  
 
     def blendGroupToGroup(self):
         selObj=mc.ls(sl=1, fl=1)
@@ -511,7 +512,60 @@ class set_blendgrp_win(QtWidgets.QWidget):
         else:
             print "need to select two groups"                                                                                        
 
-
+#     @commonUtil.undochunk
+    def connWireSearch(self):
+        selObj=mc.ls(sl=1, fl=1)
+        if len(selObj) == 2:        
+            if selObj:
+                pass
+            else:
+                print "must select a driver group and a driven group(same shortnames)"
+                return
+            # selObj=mc.ls(sl=1, fl=1)
+            parentObj=selObj[0]
+            childrenObj=selObj[1]
+            getparentObj=mc.listRelatives(parentObj, ad=1, type="mesh")
+            if getparentObj:
+                pass
+            else:
+                getparentObj=mc.listRelatives(parentObj, ad=1, type="nurbsCurve")
+            getchildObj=mc.listRelatives(childrenObj, ad=1, type="mesh")
+            if getchildObj:
+                pass
+            else:
+                getchildObj=mc.listRelatives(childrenObj, ad=1, type="nurbsCurve")
+            for childItem  in getchildObj:
+                for parentItem in getparentObj:
+                    if "Orig" not in str(childItem) and "Orig" not in str(parentItem):    
+                        grabNameChild=str(pm.PyNode(childItem).nodeName())
+                        grabNameParent=str(pm.PyNode(parentItem).nodeName())     
+                        if ":" in grabNameChild:
+                            grabNameChild=grabNameChild.split(":")[-1]
+                        if ":" in grabNameParent:
+                            grabNameParent=grabNameParent.split(":")[-1]
+                        grabNameChild=grabNameChild.split("Shape")[0]    
+                        grabNameParent=grabNameParent.split("Shape")[0]
+                        if grabNameParent in grabNameChild:
+                            print "connecting: "+childItem+' to '+parentItem
+                            try:
+                                mc.connectAttr(parentItem+".worldSpace[0]", childItem+".create", f=1)
+                            except:
+                                pass
+                        elif grabNameChild in grabNameParent:
+                            print "connecting: "+childItem+' to '+parentItem
+                            try:
+                                mc.connectAttr(parentItem+".worldSpace[0]", childItem+".create", f=1)
+                            except:
+                                pass
+                        elif grabNameChild==grabNameParent:
+                            print "connecting: "+childItem+' to '+parentItem
+                            try:
+                                mc.connectAttr(parentItem+".worldSpace[0]", childItem+".create", f=1)
+                            except:
+                                pass
+        else:
+            print "need to select two groups"   
+            
     def WireSearchGroups_alias(self):
         #only prefix
         selObj=mc.ls(sl=1, fl=1)
