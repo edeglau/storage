@@ -19,10 +19,14 @@ getUser=getpass.getuser()
 # from mrig_pyqt.QtGui import QWidget, QGridLayout, QLabel, QKeySequence, QGroupBox, QRadioButton, QPushButton, QClipboard, QCheckBox, QHBoxLayout, \
 # QPixmap, QLineEdit, QListWidget, QTextEdit, QComboBox
 
-
-import mrig_pyqt
-from mrig_pyqt import QtCore, QtGui, QtWidgets
-from mrig_pyqt.QtCore import SIGNAL
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
+    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
+    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+    QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import SIGNAL
 
 try:
     currentShot=mc.workspace(q=1, openWorkspace = 1)

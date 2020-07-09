@@ -20,18 +20,15 @@ step 4: Click "Go" will connect first two into the third group of curves.
 '''
 
 
-# import mrig_pyqt
-# from mrig_pyqt import QtCore, QtGui
-# from mrig_pyqt.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
-#     QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
-#     QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
-#     QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
-#     QFont, QAbstractItemView, QMenu, QMessageBox
-# from mrig_pyqt.QtCore import SIGNAL
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
+    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
+    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+    QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import SIGNAL
 
-import mrig_pyqt
-from mrig_pyqt import QtCore, QtGui, QtWidgets
-from mrig_pyqt.QtCore import SIGNAL
 
 import pymel.core as pm
 import maya.app.general.nodeEditor as __mod  

@@ -6,7 +6,14 @@ from time import gmtime, strftime
 import pymel.core as pm
 import maya.cmds as mc
 
-
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
+    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
+    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+    QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import SIGNAL
 
 
 # blendoptions=['blendType', 'Grp_to_Grp', "Mass_blnd", "Grp_search_blend", "Grp_search_conn", "Grp_search_blend_alias", "Grp_morph_alias", "wire_alias"]
