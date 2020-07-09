@@ -98,3 +98,28 @@ from toolbase.cache_stuff import wk_strt_value
             maya.mel.eval( command )
             cmds.setAttr(locatorObj+".visibility", 0)
  
+    def prim_mode(self):
+        focPane = [(each) for each in mc.getPanel(vis=1) if "model" in each]
+        for each in focPane:
+            if mc.modelEditor(each, q=1, av=1) == True:
+                mm.eval('setRendererInModelPanel "vp2Renderer" {0}'.format(each))
+                mc.setAttr("hardwareRenderingGlobals.multiSampleEnable", 1)
+                mc.setAttr("hardwareRenderingGlobals.lineAAEnable", 1)
+                mc.setAttr("hardwareRenderingGlobals.multiSampleCount" ,16)
+                mc.setAttr("hardwareRenderingGlobals.ssaoEnable", 1)
+                mc.setAttr("hardwareRenderingGlobals.ssaoAmount", 1)
+                mc.setAttr("hardwareRenderingGlobals.ssaoRadius", 7)
+                mc.setAttr("hardwareRenderingGlobals.ssaoFilterRadius", 16)
+                
+    def blast_mode(self):
+        focPane = [(each) for each in mc.getPanel(vis=1) if "model" in each]
+        for each in focPane:
+            if mc.modelEditor(each, q=1, av=1) == True:
+                mc.modelEditor(each, e=1, rnm="base_OpenGL_Renderer")
+                mc.setAttr("hardwareRenderingGlobals.multiSampleEnable", 0)
+                mc.setAttr("hardwareRenderingGlobals.lineAAEnable", 0)
+                mc.setAttr("hardwareRenderingGlobals.multiSampleCount" ,16)
+                mc.setAttr("hardwareRenderingGlobals.ssaoEnable", 0)
+                mc.setAttr("hardwareRenderingGlobals.ssaoAmount", 0)
+                mc.setAttr("hardwareRenderingGlobals.ssaoRadius", 7)
+                mc.setAttr("hardwareRenderingGlobals.ssaoFilterRadius", 16)
