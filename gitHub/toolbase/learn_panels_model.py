@@ -13,6 +13,7 @@ from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
     QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
     QFont, QAbstractItemView, QMenu, QMessageBox
 from PyQt4.QtCore import SIGNAL
+
 from Cython.Utility.MemoryView import item
 
 class prvw_UI(QtWidgets.QMainWindow):
