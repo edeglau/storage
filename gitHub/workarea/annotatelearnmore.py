@@ -2,19 +2,16 @@ import maya.cmds as cmds
 from functools import partial
 from string import *
 import maya.cmds as mc
-import re
 import maya.mel
-import os, subprocess, sys, platform, logging, signal, webbrowser, urllib, re, getpass, time, datetime
+import os, subprocess, sys, platform, logging, signal, webbrowser, urllib, re, getpass, time, datetime, glob, random
+
 from os  import popen
 from sys import stdin
-import os
-import random
-import glob
 from random import randint
 # from pymel.core import *
 import pymel.core as pm
 #import win32clipboard
-import pymel.core as pm
+
 import operator
 from sys import argv
 from datetime import datetime
@@ -22,12 +19,9 @@ from operator import itemgetter
 from inspect import getsourcefile
 from os.path import abspath
 
-import time
-import cape
 import baseMockFunctions_maya
 reload (baseMockFunctions_maya)
 # getBaseClass=baseMockFunctions_maya.BaseClass() 
-import mWeights
 # from mshotgun import mShotgun
 import PyQt4
 from PyQt4 import QtCore, QtGui, Qt
