@@ -819,3 +819,123 @@ class set_colors_win(QtWidgets.QMainWindow):
                 pass           
         mc.select(getgrp, r=1)
 
+    def _rev_contrast(self):
+        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()
+        getgrp = mc.ls(sl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        for each in mc.ls(sl=1):
+            try:
+                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color1")
+                getvallow = random.uniform(0.0,0.25)
+                newval = getval[0][0]+getvallow, getval[0][1]+getvallow, getval[0][2]+getvallow             
+                mc.setAttr(each.split("_shd")[0]+"_ckr.color1",newval[0], newval[1], newval[2],type="double3")
+                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color2")
+                getvallow = random.uniform(0.0,0.25)
+                newval = getval[0][0]-getvallow, getval[0][1]-getvallow, getval[0][2]-getvallow           
+                mc.setAttr(each.split("_shd")[0]+"_ckr.color2",newval[0], newval[1], newval[2],type="double3")  
+                mc.setAttr(each.split("_shd")[0]+"_p2dt.repeatU", Unsize)
+                mc.setAttr(each.split("_shd")[0]+"_p2dt.repeatV", Vnsize)
+                mc.setAttr(each.split("_shd")[0]+"_p2dt.offsetU", U_trnnum)
+                mc.setAttr(each.split("_shd")[0]+"_p2dt.offsetV", V_trnnum)
+                mc.setAttr(each.split("_shd")[0]+"_p2dt.rotateUV", UV_rotnum)                
+            except:
+                print "only affects checkered textures"               
+                pass           
+        mc.select(getgrp, r=1) 
+
+
+    def _change_ambient(self):
+        getgrp = mc.ls(sl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        mc.hyperShade (getgrp[0], smn=1)
+        for each in mc.ls(sl = 1):
+            get_float = random.uniform(0.0,1.0)
+            mc.setAttr(each+".incandescence", get_float, get_float, get_float, type="double3")
+        mc.select(getgrp, r=1)  
+
+
+
+    def save_gamut(self, arg=None):
+        self.saveSelection()
+
+    def saveSelection(self, arg=None):
+        getScenePath=mc.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        folderPath='\\'.join(getPathSplit[:-1])+"\\"
+        selObj=mc.ls(sl=1, sn=1)
+        getScenePath=mc.file(q=1, location=1)
+        getPathSplit=getScenePath.split("/")
+        newfolderPath=re.sub(r'\\',r'/', folderPath)
+        folderBucket=[]
+        winName = "Save selected externally"
+        winTitle = winName
+        if mc.window(winName, exists=True):
+                deleteUI(winName)
+        window = mc.window(winName, title=winTitle, tbm=1, w=620, h=100 )
+        mc.rowColumnLayout  (' selectArrayRow ', nr=1, w=620)
+        mc.frameLayout('bottomFrame', label='', lv=0, nch=1, borderStyle='in', bv=1, p='selectArrayRow')      
+        mc.gridLayout('listBuildButtonLayout', p='bottomFrame', numberOfColumns=1, cellWidthHeight=(600, 20))         
+        fieldBucket=[]
+        objNameFile=str(newfolderPath)
+        filebucket = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(objNameFile) for name in files if name.lower().endswith(".txt")]
+        self.fileDropName=mc.optionMenu( label='files')
+        for each in filebucket:
+            mc.menuItem( label=each)        
+        mc.rowLayout  (' listBuildButtonLayout ', w=600, numberOfColumns=6, cw6=[350, 40, 40, 40, 40, 1], ct6=[ 'both', 'both', 'both',  'both', 'both', 'both'], p='bottomFrame')
+        self.getName=mc.textField(h=25, p='listBuildButtonLayout', text=objNameFile)
+        mc.button (label='Save', w=90, p='listBuildButtonLayout', command = lambda *args:self._save_select(fileName=mc.textField(self.getName, q=1, text=1)))            
+        mc.button (label='Load', p='listBuildButtonLayout', command = lambda *args:self._load_selection(printFolder=mc.textField(self.getName, q=1, text=1), grabFileName=mc.optionMenu(self.fileDropName, q=1, v=1)))
+        mc.showWindow(window)
+                                                                                                           
+    def _save_select(self, fileName):   
+        getgrp=mc.ls(sl=1, fl=1)   
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        fileName=fileName+'_color.txt'
+        print fileName
+        inp=open(fileName, 'w+')
+        # inp.write(str("colorDictionary = {"))
+        mc.hyperShade (getgrp[0], smn=1)
+        for each in mc.ls(sl = 1):
+            getItemName = each.split("_shd")[0]
+            if mc.objExists(getItemName+"_ckr") == True:
+                chkcl1 = mc.getAttr(getItemName+"_ckr.color1")
+                chkcl2 = mc.getAttr(getItemName+"_ckr.color2")
+                Unsize = mc.getAttr(getItemName+"_p2dt.repeatU")
+                Vnsize = mc.getAttr(getItemName+"_p2dt.repeatV")
+                U_trnnum = mc.getAttr(getItemName+"_p2dt.offsetU")
+                V_trnnum = mc.getAttr(getItemName+"_p2dt.offsetV")
+                UV_rotnum = mc.getAttr(getItemName+"_p2dt.rotateUV")                                                                                                  
+                chkname = getItemName+"_ckr"
+                inp.write(str(chkname)+"|"+str(chkcl1)+"<"+str(chkcl2)+"<"+str(Unsize)+">"+str(Vnsize)+">"+str(U_trnnum)+">"+str(V_trnnum)+">"+str(UV_rotnum)+" , ")
+            elif mc.objExists(getItemName+"_file") == True: 
+                print "file"
+                namefile = getItemName+"_file"
+                getItemName = each.split("_shd")[0]
+                getUVimage = mc.getAttr(namefile+".fileTextureName")
+                Unsize = mc.getAttr(getItemName+"_p2dt.repeatU")
+                Vnsize = mc.getAttr(getItemName+"_p2dt.repeatV")
+                U_trnnum = mc.getAttr(getItemName+"_p2dt.offsetU")
+                V_trnnum = mc.getAttr(getItemName+"_p2dt.offsetV")
+                UV_rotnum = mc.getAttr(getItemName+"_p2dt.rotateUV")      
+                inp.write(str(namefile)+"|"+str(getUVimage)+"<"+str(Unsize)+">"+str(Vnsize)+">"+str(U_trnnum)+">"+str(V_trnnum)+">"+str(UV_rotnum)+" , ")
+            else:
+                try:
+                    getval = mc.getAttr(each+".color")
+                    inp.write(str(each)+"|"+str(getval)+" , ")  
+                except:
+                    print "{} does not have a shader group assigned in scene. Skipping".format(each)          
+        inp.close()   
+        print "saved as "+fileName
+            
