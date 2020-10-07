@@ -270,7 +270,7 @@ class set_colors_win(QtWidgets.QMainWindow):
         opens the helppage for tool
         '''
         url="https://"
-        subprocess.Popen('gio open "%s"' % url, stdout=subprocess.PIPE, shell=True) 
+        subprocess.Popen('firefox open "%s"' % url, stdout=subprocess.PIPE, shell=True) 
 
     def vtil_set(self):
         '''
