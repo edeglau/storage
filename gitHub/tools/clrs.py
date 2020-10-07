@@ -243,5 +243,321 @@ class set_colors_win(QtWidgets.QMainWindow):
         self.ss_order_layout_ta.addWidget(self.SSOverride)
         #UVMAP
         
-        
-        
+
+        self.UVSetupLayout = QtWidgets.QGridLayout()
+        self.UVOverride = QtWidgets.QFrame()
+        self.UVOverride.setStyleSheet("color: #ffffff; background-color: rgba(255,255,255,30); border-style: solid; border-color:#434343;")
+        self.UVOverride.setLayout(self.UVSetupLayout)
+
+        self.text_order_layout_ta = QtWidgets.QVBoxLayout()
+        self.layout.addLayout(self.text_order_layout_ta, 2,0,1,1)
+        self.text_order_layout_ta.addWidget(self.UVOverride)
+
+        self.uv_dial = QtWidgets.QComboBox()
+        self.uv_dial.addItems(uv_select)
+        self.UVSetupLayout.addWidget(self.uv_dial)
+            
+        self.uvmap_button = QtWidgets.QPushButton("Apply UVmap")
+        self.connect(self.uvmap_button, SIGNAL("clicked()"),
+                    lambda: self.type_uv(uv_load=self.uv_dial))
+        self.UVSetupLayout.addWidget(self.uvmap_button)   
+
+        self.setLayout(self.layout)
+            
+
+    def extractAction(self):
+        '''
+        opens the helppage for tool in confluence
+        '''
+        url="https://atlas.bydeluxe.com/confluence/display/~deglaue/Set+Color+Tool"
+        subprocess.Popen('gio open "%s"' % url, stdout=subprocess.PIPE, shell=True) 
+
+    def vtil_set(self):
+        '''
+        forces the U tile slider to match the value on V tile slider
+        '''
+        getText = self.VtextNum.text()
+        getText = float(getText)*10
+        self.Utl_slider.setValue(getText)
+
+    def util_set(self):
+        '''
+        forces the V tile slider to match the value on U tile slider
+        '''        
+        getText = self.UtextNum.text()
+        getText = float(getText)*10
+        self.Vtl_slider.setValue(getText)
+
+
+    def vtrn_set(self):
+        '''
+        forces the V offset slider to match the value on U offset slider
+        '''              
+        getText = self.VtrnstextNum.text()
+        getText = float(getText)*10
+        self.Utrns_slider.setValue(getText)
+
+    def utrn_set(self):
+        '''
+        forces the U offset slider to match the value on V offset slider
+        '''          
+        getText = self.UtrnstextNum.text()
+        getText = float(getText)*10
+        self.Vtrns_slider.setValue(getText)
+
+    def print_Uslider(self):
+        '''
+        This connects the U tile slider to the field
+        '''          
+        size = self.Utl_slider.value()
+        size_mult = size*0.10
+        self.UtextNum.setText(str(size_mult))
+
+    def print_UvRotslider(self):
+        '''
+        This connects the rotation slider value to the field of the rotation
+        '''         
+        size = self.UVrot_slider.value()
+        self.UrottextNum.setText(str(size))
+
+    def set_UV_rotslider(self):
+        '''
+        This updates the rotation slider value to the value in the field(in case of user input)
+        '''
+        getText = self.UrottextNum.text()
+        getText = int(getText)
+        self.UVrot_slider.setValue(getText)
+
+    def print_Utrnsslider(self):
+        '''
+        This updates the rotation slider value to the value in the field(in case of user input)
+        '''        
+        size = self.Utrns_slider.value()
+        size_mult = size*0.10
+        self.UtrnstextNum.setText(str(size_mult))
+            
+            
+    def set_U_trnsslider(self):
+        getText = self.UtrnstextNum.text()
+        getText = float(getText)*10
+        self.Utrns_slider.setValue(getText)
+
+    def print_Vtrnsslider(self):
+        size = self.Vtrns_slider.value()
+        size_mult = size*0.10
+        self.VtrnstextNum.setText(str(size_mult))
+
+    def set_V_trnsslider(self):
+        getText = self.VtrnstextNum.text()
+        getText = float(getText)*10
+        self.Vtrns_slider.setValue(getText)
+
+
+    def print_Vslider(self):
+        size = self.Vtl_slider.value()
+        size_mult = size*0.10
+        self.VtextNum.setText(str(size_mult))
+
+    def set_Uslider(self):
+        getText = self.UtextNum.text()
+        getText = float(getText)*10
+        self.Utl_slider.setValue(getText)
+
+    def set_Vslider(self):
+        getText = self.VtextNum.text()
+        getText = float(getvtText)*10
+        self.Vtl_slider.setValue(getText)
+
+    def getUV(self):
+        Unsize = float(self.UtextNum.text())
+        Vnsize = float(self.VtextNum.text())
+        UV_rot = self.UVrot_slider.value()
+        UV_rotnum = int(UV_rot)
+        U_trnnum = float(self.VtrnstextNum.text())
+        V_trnnum = float(self.VtrnstextNum.text())
+        return Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum
+
+
+
+
+    def vtil_get(self): 
+        try:
+            getsel = mc.ls(sl=1, fl=1)[0]
+            if len(getsel)>0:
+                plcname = getsel+"_p2dt"
+                if mc.objExists(plcname) == True:
+                    Unsize = mc.getAttr(plcname+".repeatU")
+                    self.Utl_slider.setValue(Unsize*10)
+                    Vnsize = mc.getAttr(plcname+".repeatV")
+                    self.Vtl_slider.setValue(Vnsize*10)
+                    U_trnnum = mc.getAttr(plcname+".offsetU")
+                    self.Utrns_slider.setValue(U_trnnum*10)
+                    V_trnnum = mc.getAttr(plcname+".offsetV")
+                    self.Vtrns_slider.setValue(V_trnnum*10)
+                    UV_rotnum = mc.getAttr(plcname+".rotateUV")
+                    self.UVrot_slider.setValue(UV_rotnum)
+                else:
+                    print " no object in scene called {}".format(plcname)
+        except:
+            print "nothing selected"
+            return
+
+
+    def vtil_reset(self):  
+        getgrp = mc.ls(sl=1, fl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        self.Utl_slider.setValue(10)
+        self.Vtl_slider.setValue(10)
+        self.Utrns_slider.setValue(0)
+        self.Vtrns_slider.setValue(0.0)
+        self.UVrot_slider.setValue(0.0)
+
+    def vtil_set_only(self):
+        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()  
+        getgrp = mc.ls(sl=1, fl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        for each in getgrp:
+            print each
+            # if ":" in each:
+            #     plcname = each.split(":")[-1]+"_p2dt"
+            # else:
+            plcname = each+"_p2dt"
+            mc.setAttr(plcname+".repeatU", Unsize)
+            mc.setAttr(plcname+".repeatV", Vnsize)
+            mc.setAttr(plcname+".offsetU", U_trnnum)
+            mc.setAttr(plcname+".offsetV", V_trnnum)
+            
+            
+    def type_uv(self, uv_load):
+        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()   
+        imgfile_name=uv_load.currentText() 
+        imgfile = maphome+imgfile_name
+        getgrp = mc.ls(sl=1, fl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        for each in getgrp:
+            plcname = each+"_p2dt"
+            namefile = each+"_file"
+            chkname = each+"_ckr"
+            name = each+"_shd"
+            nameSG = each+"_shdSG"
+            if len(mc.ls(name))>0:
+                    mc.delete(name)
+                    mc.delete(nameSG)
+                    try:
+                        mc.delete(plcname)
+                    except:
+                        pass
+                    try:
+                        mc.delete(namefile)
+                    except:
+                        pass
+                    try:
+                        mc.delete(chkname)
+                    except:
+                        pass
+            FVfirst = mc.shadingNode('lambert', asShader=True, n=name)
+            pdfirst = mc.shadingNode('place2dTexture', asUtility=True, n=plcname)
+            filefirst = mc.shadingNode('file', asTexture = 1, isColorManaged = 1, n=namefile)
+            getFVfirst=[FVfirst]
+            setName="techanim_textures" 
+            if mc.objExists(setName):
+                pass
+            else:
+                mc.sets(n=setName, co=3)
+            mc.sets(getFVfirst, add=setName)
+            mc.select(each)
+            mc.hyperShade(assign=str(FVfirst))           
+            mc.connectAttr( plcname+'.outUV',namefile+'.uv', force=1)            
+            mc.connectAttr( plcname+'.outUvFilterSize', namefile+'.uvFilterSize', force=1)    
+            mc.connectAttr(namefile+".outColor",  each+"_shd.color", f=1)
+            mc.setAttr(namefile+".fileTextureName",  imgfile, type = "string")
+            mc.setAttr(plcname+".repeatU", Unsize)
+            mc.setAttr(plcname+".repeatV", Vnsize)
+            mc.setAttr(plcname+".offsetU", U_trnnum)
+            mc.setAttr(plcname+".offsetV", V_trnnum)
+            mc.setAttr(plcname+".rotateUV", UV_rotnum)    
+        mc.select(getgrp, r=1)           
+            
+    def create_rgb(self):
+        color_load=self.color_dial
+        color_name=color_load.currentText()
+        if color_name=='Apply':
+            self._apply_colors()
+        if color_name=='Grey':
+            self._change_primary_gry()
+        if color_name=='Red':
+            self._change_primary_red()
+        if color_name=='Green':
+            self._change_primary_grn()
+        if color_name=='Blue':
+            self._change_primary_blue()
+        if color_name=='Teal':
+            self._change_primary_teal()
+        if color_name=='Yellow':
+            self._change_primary_orange()
+        if color_name=='Purple':
+            self._change_primary_prpl()
+        if color_name=='Random':
+            self._change_colors()
+        if color_name=='Dark':
+            self._change_darker()
+        if color_name=='Light':
+            self._change_lighter()
+        if color_name=='Slight grey':
+            self._slight_to_gry()            
+        # if color_name=='Save gamut':
+        #     self.save_gamut() 
+        if color_name=='tech_geo':
+            self.get_geo_techanim()     
+        if color_name=='Contrast':
+            self._strong_contrast()     
+        if color_name=='Reverse contrast':
+            self._rev_contrast() 
+            
+            
+    def shd_changer(self, typecolor):
+        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV() 
+        getgrp = mc.ls(sl=1, fl=1)
+        if len(getgrp)>0:
+            pass
+        else:
+            print "nothing selected"
+            return
+        checkerChecked = self.checker_checked
+        if checkerChecked.isChecked():
+            for each in getgrp:
+                plcname = each+"_p2dt"
+                namefile = each+"_file"
+                chkname = each+"_ckr"
+                name = each+"_shd"
+                nameSG = each+"_shdSG"
+                if len(mc.ls(name))>0:
+                    mc.delete(name)
+                    mc.delete(nameSG)
+                    try:
+                        mc.delete(plcname)
+                    except:
+                        pass
+                    try:
+                        mc.delete(namefile)
+                    except:
+                        pass
+                    try:
+                        mc.delete(chkname)
+                    except:
+                        pass
+ 
+            
+            
