@@ -16,7 +16,7 @@ color_select = ['Random', 'Grey' , 'Red' , 'Green' , 'Blue' ,'Teal' ,'Yellow' ,'
 for each in UVmaplist:
     uv_select.append(each)
 
-maphome ='/jobs/rnd_rigging11/COMMON/images/UVmaps/'
+maphome ='images/UVmaps/'
 
 class set_colors_win(QtWidgets.QMainWindow):
     # def __init__(self)
@@ -267,9 +267,9 @@ class set_colors_win(QtWidgets.QMainWindow):
 
     def extractAction(self):
         '''
-        opens the helppage for tool in confluence
+        opens the helppage for tool
         '''
-        url="https://atlas.bydeluxe.com/confluence/display/~deglaue/Set+Color+Tool"
+        url="https://"
         subprocess.Popen('gio open "%s"' % url, stdout=subprocess.PIPE, shell=True) 
 
     def vtil_set(self):
