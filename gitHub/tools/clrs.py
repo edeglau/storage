@@ -939,3 +939,115 @@ class set_colors_win(QtWidgets.QMainWindow):
         inp.close()   
         print "saved as "+fileName
             
+    def _load_selection(self, printFolder, grabFileName): 
+        printFolder=grabFileName  
+        if os.path.exists(printFolder):
+            pass
+        else:
+            print printFolder+"does not exist"
+            return
+        getBucket=[]
+        attribute_container=[]
+        List = open(printFolder).readlines()
+        create_dict = {}
+        for aline in List:
+            a_list = list(aline)
+            a_list = aline.split(" , ")
+        if len(a_list)>0:
+            for each in a_list:
+                listp1=each.split("|")
+                print listp1[0]
+                if len(listp1)>1:
+                    if "_ckr" in listp1[0]:
+                        chkname = listp1[0]                 
+                        shdr_name=listp1[0].split("_ckr")[0]+"_shd"
+                        scnobject = listp1[0].split("_ckr")[0]
+                        plcname=listp1[0].split("_ckr")[0]+"_p2dt"
+                        namefile=listp1[0].split("_ckr")[0]+"_file"
+                        if mc.objExists(namefile) == True:
+                            mc.delete(namefile) 
+                        if mc.objExists(shdr_name) == False: 
+                            FVfirst = mc.shadingNode('lambert', asShader=True, n=shdr_name)
+                            mc.hyperShade(assign=str(FVfirst))
+                            getFVfirst=[FVfirst]
+                            setName="techanim_textures" 
+                            if mc.objExists(setName):
+                                pass
+                            else:
+                                mc.sets(n=setName, co=3)       
+                            mc.sets(getFVfirst, add=setName)
+                            mc.select(scnobject)
+                            mc.hyperShade(assign=str(FVfirst))
+                        if mc.objExists(plcname) == False:    
+                            mc.shadingNode('place2dTexture', asUtility=True, n=plcname)
+                        if mc.objExists(chkname) == False: 
+                            mc.createNode( 'checker', n=chkname )
+                        mc.connectAttr( chkname+'.outColor', shdr_name+'.color', force=1)            
+                        mc.connectAttr( plcname+'.outUV',chkname+'.uv', force=1)            
+                        mc.connectAttr( plcname+'.outUvFilterSize',chkname+'.uvFilterSize', force=1)
+                        colget=listp1[-1].split("<")
+                        clrs1 = ast.literal_eval(colget[0])
+                        clrs2 = ast.literal_eval(colget[1])
+                        mc.setAttr(chkname+".color1", clrs1[0][0],clrs1[0][1], clrs1[0][2], type="double3")
+                        mc.setAttr(chkname+".color2", clrs2[0][0],clrs2[0][1], clrs2[0][2], type="double3")
+                        plc_get=colget[-1].split(">")
+                        mc.setAttr(plcname+".repeatU", float(plc_get[0]))
+                        mc.setAttr(plcname+".repeatV", float(plc_get[1]))
+                        mc.setAttr(plcname+".offsetU", float(plc_get[2]))
+                        mc.setAttr(plcname+".offsetV", float(plc_get[3]))
+                        mc.setAttr(plcname+".rotateUV", float(plc_get[4]))    
+                    elif "_file" in listp1[0]:
+                        namefile = listp1[0]
+                        shdr_name=listp1[0].split("_file")[0]+"_shd"
+                        scnobject = listp1[0].split("_file")[0]
+                        plcname=listp1[0].split("_file")[0]+"_p2dt"
+                        chkname=listp1[0].split("_file")[0]+"_ckr"
+                        if mc.objExists(chkname) == True:
+                            mc.delete(chkname) 
+                        if mc.objExists(shdr_name) == False: 
+                            FVfirst = mc.shadingNode('lambert', asShader=True, n=shdr_name)
+                            mc.hyperShade(assign=str(FVfirst))
+                            getFVfirst=[FVfirst]
+                            setName="techanim_textures" 
+                            if mc.objExists(setName):
+                                pass
+                            else:
+                                mc.sets(n=setName, co=3)          
+                            mc.sets(getFVfirst, add=setName)
+                            mc.select(scnobject)
+                            mc.hyperShade(assign=str(FVfirst))          
+                        if mc.objExists(plcname) == False:    
+                            mc.shadingNode('place2dTexture', asUtility=True, n=plcname)
+                        if mc.objExists( listp1[0]) == False: 
+                            filefirst = mc.shadingNode('file', asTexture = 1, isColorManaged = 1, n=namefile)        
+                        mc.connectAttr( plcname+'.outUV',namefile+'.uv', force=1)            
+                        mc.connectAttr( plcname+'.outUvFilterSize', namefile+'.uvFilterSize', force=1)    
+                        mc.connectAttr(namefile+".outColor",  shdr_name+".color", f=1)
+                        filegrb=listp1[-1].split("<")
+                        mc.setAttr(namefile+".fileTextureName",  filegrb[0], type = "string")
+                        plc_get=filegrb[-1].split(">")
+                        mc.setAttr(plcname+".repeatU", float(plc_get[0]))
+                        mc.setAttr(plcname+".repeatV", float(plc_get[1]))
+                        mc.setAttr(plcname+".offsetU", float(plc_get[2]))
+                        mc.setAttr(plcname+".offsetV", float(plc_get[3]))
+                        mc.setAttr(plcname+".rotateUV", float(plc_get[4]))
+                    else:
+                        scnobject = listp1[0].split("_shd")[0]
+                        if mc.objExists(scnobject) == True:
+                            chkname=listp1[0].split("_shd")[0]+"_ckr"
+                            plcname=listp1[0].split("_shd")[0]+"_p2dt"
+                            namefile=listp1[0].split("_shd")[0]+"_file"
+                            if mc.objExists(chkname) == True:
+                                mc.delete(chkname) 
+                            if mc.objExists(namefile) == True:
+                                mc.delete(namefile)     
+                            if mc.objExists(plcname) == True:
+                                mc.delete(plcname)                                       
+                            s = eval(str(listp1[1]))
+                            mc.setAttr(listp1[0]+".color", s[0][0],s[0][1], s[0][2], type="double3")
+                        else:
+                            print "{} does not exist in scene. Skipping".format(scnobject) 
+inst_mkwin=set_colors_win()
+inst_mkwin.show()                        
+                        
+                                          
