@@ -28,54 +28,115 @@ class set_colors_win(QtWidgets.QMainWindow):
         '''
         Main window setup
         '''
-        self.setWindowTitle("set colors")
+        self.setWindowTitle('set colors')
         self.central_widget=QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
-        self.masterLayout=QtWidgets.QGridLayout(self.central_widget)
-        self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
-        fileMenu = QtWidgets.QMenu("&Help", self)
-        fileFile = QtWidgets.QMenu("&File", self)
-        self.menuBar().addMenu(fileMenu)
-        self.menuBar().addMenu(fileFile)
+        self.master_layout=QtWidgets.QGridLayout(self.central_widget)
+        self.master_layout.setAlignment(QtCore.Qt.AlignTop)
+        file_menu = QtWidgets.QMenu('&Help', self)
+        file_save_load_menu = QtWidgets.QMenu('&File', self)
+        self.menuBar().addMenu(file_menu)
+        self.menuBar().addMenu(file_save_load_menu)
 
-        fileMenu.addAction("&Open help page...", self.extractAction, "Ctrl+L")
-        fileFile.addAction("&Save/Load Gamut...", self.save_gamut, "Ctrl+S")
+        file_menu.addAction('&Open help page...', self.help_page_launch, 'Ctrl+L')
+        file_save_load_menu.addAction('&Save/Load Gamut...', self.saveGamut, 'Ctrl+S')
 
         self.myform = QtWidgets.QFormLayout()
         self.layout = QtWidgets.QGridLayout()
-        self.masterLayout.addLayout(self.layout, 0,0,1,1)
+        self.master_layout.addLayout(self.layout, 0,0,1,1)
 
+        self.myform = QtWidgets.QFormLayout()
+        self.layout = QtWidgets.QGridLayout()
+        self.master_layout.addLayout(self.layout, 0,0,1,1)
 
-
-        self.colorSetupLayout = QtWidgets.QGridLayout()
-        self.colorOverride = QtWidgets.QFrame()
-        self.colorOverride.setStyleSheet("color: #efefef; background-color: rgba(100,100,100,70); ")
-        self.colorOverride.setLayout(self.colorSetupLayout)
+        self.color_setup_layout = QtWidgets.QGridLayout()
+        self.color_override = QtWidgets.QFrame()
+        self.color_override.setStyleSheet('color: #efefef; background-color: rgba(100,100,100,70); ')
+        self.color_override.setLayout(self.color_setup_layout)
 
         self.vertical_order_layout_ta = QtWidgets.QHBoxLayout()
         self.layout.addLayout(self.vertical_order_layout_ta, 0,0,1,1)
-        self.vertical_order_layout_ta.addWidget(self.colorOverride)
+        self.vertical_order_layout_ta.addWidget(self.color_override)
+
 
         self.color_dial = QtWidgets.QComboBox()
         self.color_dial.addItems(color_select)
-        self.colorSetupLayout.addWidget(self.color_dial)
+        self.color_setup_layout.addWidget(self.color_dial)
 
-        self.colorchkLayout = QtWidgets.QHBoxLayout()
-        self.colorchkOverride = QtWidgets.QFrame()
-        self.colorchkOverride.setLayout(self.colorchkLayout)
-        self.colorSetupLayout.addWidget(self.colorchkOverride)
+        self.color_chk_layout = QtWidgets.QHBoxLayout()
+        self.color_chk_frame = QtWidgets.QFrame()
+        self.color_chk_frame.setLayout(self.color_chk_layout)
+        self.color_setup_layout.addWidget(self.color_chk_frame)
 
-        self.checkerLabel = QtWidgets.QLabel("Checker")
-        self.colorchkLayout.addWidget(self.checkerLabel)        
+        self.checker_label = QtWidgets.QLabel('Checker')
+        self.color_chk_layout.addWidget(self.checker_label)        
         self.checker_checked = QtWidgets.QCheckBox()
-        self.colorchkLayout.addWidget(self.checker_checked)
+        self.color_chk_layout.addWidget(self.checker_checked)
  
-        self.prnt_verbose_button = QtWidgets.QPushButton("Apply Color")
-        self.connect(self.prnt_verbose_button, SIGNAL("clicked()"),
-                    lambda: self.create_rgb())
-        self.colorSetupLayout.addWidget(self.prnt_verbose_button)  
-        
+        self.prnt_verbose_button = QtWidgets.QPushButton('Apply Color')
+        self.connect(self.prnt_verbose_button, SIGNAL('clicked()'),
+                    lambda: self.apply_rgb())
+        self.color_setup_layout.addWidget(self.prnt_verbose_button) 
 
+        self.ss_order_layout_ta = QtWidgets.QHBoxLayout()
+        self.layout.addLayout(self.ss_order_layout_ta, 1,0,1,1)
+
+        #UV tiles
+        self.tile_setup_layout = QtWidgets.QGridLayout()
+        self.uv_tile_frame = QtWidgets.QFrame()
+        self.uv_tile_frame.setStyleSheet('color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;')
+        self.uv_tile_frame.setLayout(self.tile_setup_layout)
+
+        self.u_sliderinside_stack_layout = QtWidgets.QVBoxLayout()
+        self.u_sliderinside_stack_layout.addWidget(self.uv_tile_frame)
+
+        self.uv_label_row_layout = QtWidgets.QVBoxLayout()
+        self.ss_order_layout_ta.addLayout(self.uv_label_row_layout)
+
+
+        self.uv_label_row_layout.addLayout(self.u_sliderinside_stack_layout)
+
+        self.u_tile_button = QtWidgets.QPushButton('U tile')
+        self.connect(self.u_tile_button, SIGNAL('clicked()'),
+                    lambda: self.u_tile_force())
+        self.tile_setup_layout.addWidget(self.u_tile_button,0,0,1,1)
+        self.vtile_button = QtWidgets.QPushButton('V tile')
+        self.connect(self.vtile_button, SIGNAL('clicked()'),
+                    lambda: self.v_tile_force())
+        self.tile_setup_layout.addWidget(self.vtile_button,1,0,1,1)
+
+        self.u_tile_line_edit = QtWidgets.QLineEdit('1.0')
+        self.u_tile_line_edit.setFixedWidth(50)
+        self.u_tile_line_edit.connect(self.u_tile_line_edit,QtCore.SIGNAL('returnPressed()'),self.text_set_u_tile_slider)
+        self.tile_setup_layout.addWidget(self.u_tile_line_edit, 0,1,1,1)
+        self.u_tile_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.u_tile_slider.setFixedWidth(200)
+        self.u_tile_slider.setSingleStep(0.1)
+        self.u_tile_slider.setMinimum(0)
+        self.u_tile_slider.setMaximum(200)
+        self.u_tile_slider.setValue(1)        
+        self.u_tile_slider.setTickInterval(2)
+        self.u_tile_slider.setTickPosition(self.u_tile_slider.TicksBelow)
+        self.u_tile_slider.valueChanged.connect(self.slider_set_u_tile_text)
+        self.tile_setup_layout.addWidget(self.u_tile_slider, 0,2,1,1)
+            
+        self.v_tile_line_edit = QtWidgets.QLineEdit('1.0')
+        self.v_tile_line_edit.setFixedWidth(50)
+        self.v_tile_line_edit.connect(self.v_tile_line_edit,QtCore.SIGNAL('returnPressed()'),self.text_set_v_tile_slider)
+        self.tile_setup_layout.addWidget(self.v_tile_line_edit,1,1,1,1)
+        self.v_tile_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.v_tile_slider.setFixedWidth(200)
+        self.v_tile_slider.setSingleStep(0.1)
+        self.v_tile_slider.setMinimum(0)
+        self.v_tile_slider.setMaximum(200)
+        self.v_tile_slider.setValue(1)        
+        self.v_tile_slider.setTickInterval(2)
+        self.v_tile_slider.setTickPosition(self.v_tile_slider.TicksBelow)
+        self.v_tile_slider.valueChanged.connect(self.slider_set_v_tile_text)
+        self.tile_setup_layout.addWidget(self.v_tile_slider,1,2,1,1)
+                    
+                    
+                    
         #sliders
         self.SSSetupLayout = QtWidgets.QGridLayout()
         self.SSOverride = QtWidgets.QFrame()
@@ -90,7 +151,39 @@ class set_colors_win(QtWidgets.QMainWindow):
 
         self.u_sliderinside_stack_layout = QtWidgets.QVBoxLayout()
 
+        #uv rot
 
+        self.uv_rot_setup_layout = QtWidgets.QGridLayout()
+        self.uv_rot_frame = QtWidgets.QFrame()
+        self.uv_rot_frame.setStyleSheet('color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;')
+        self.uv_rot_frame.setLayout(self.uv_rot_setup_layout)
+
+        self.u_sliderinside_stack_layout.addWidget(self.uv_rot_frame)
+
+        self.uv_rot_button = QtWidgets.QLabel('UV rotate')
+        self.uv_rot_setup_layout.addWidget(self.uv_rot_button, 0,0,1,1)
+        self.uv_rot_line_edit = QtWidgets.QLineEdit('0')
+        self.uv_rot_line_edit.setFixedWidth(50)
+        self.uv_rot_line_edit.connect(self.uv_rot_line_edit,QtCore.SIGNAL('returnPressed()'),self.text_set_rot_slider)
+        self.uv_rot_setup_layout.addWidget(self.uv_rot_line_edit, 0,1,1,1)
+        self.uv_rot_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.uv_rot_slider.setFixedWidth(200)
+        self.uv_rot_slider.setMinimum(0)
+        self.uv_rot_slider.setMaximum(360)
+        self.uv_rot_slider.setValue(0)        
+        self.uv_rot_slider.setTickInterval(5)
+        self.uv_rot_slider.setTickPosition(self.uv_rot_slider.TicksBelow)
+        self.uv_rot_slider.valueChanged.connect(self.slider_set_rot_text)
+        self.uv_rot_setup_layout.addWidget(self.uv_rot_slider, 0,2,1,1)
+                    
+                    
+                        
+                        
+                        
+                        
+                        
+                        
+                        
 
         #tiles
 
