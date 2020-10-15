@@ -507,246 +507,8 @@ class set_colors_win(QtWidgets.QMainWindow):
         mc.select(get_sel_obj, r=1) 
 
 
-
-
-
-
-                                           
-
-
-            
-            
-            
-            
-            
-            
-
-    def extractAction(self):
-        '''
-        opens the helppage for tool
-        '''
-        url="https://"
-        subprocess.Popen('firefox open "%s"' % url, stdout=subprocess.PIPE, shell=True) 
-
-    def vtil_set(self):
-        '''
-        forces the U tile slider to match the value on V tile slider
-        '''
-        getText = self.VtextNum.text()
-        getText = float(getText)*10
-        self.Utl_slider.setValue(getText)
-
-    def util_set(self):
-        '''
-        forces the V tile slider to match the value on U tile slider
-        '''        
-        getText = self.UtextNum.text()
-        getText = float(getText)*10
-        self.Vtl_slider.setValue(getText)
-
-
-    def vtrn_set(self):
-        '''
-        forces the V offset slider to match the value on U offset slider
-        '''              
-        getText = self.VtrnstextNum.text()
-        getText = float(getText)*10
-        self.Utrns_slider.setValue(getText)
-
-    def utrn_set(self):
-        '''
-        forces the U offset slider to match the value on V offset slider
-        '''          
-        getText = self.UtrnstextNum.text()
-        getText = float(getText)*10
-        self.Vtrns_slider.setValue(getText)
-
-    def print_Uslider(self):
-        '''
-        This connects the U tile slider to the field
-        '''          
-        size = self.Utl_slider.value()
-        size_mult = size*0.10
-        self.UtextNum.setText(str(size_mult))
-
-    def print_UvRotslider(self):
-        '''
-        This connects the rotation slider value to the field of the rotation
-        '''         
-        size = self.UVrot_slider.value()
-        self.UrottextNum.setText(str(size))
-
-    def set_UV_rotslider(self):
-        '''
-        This updates the rotation slider value to the value in the field(in case of user input)
-        '''
-        getText = self.UrottextNum.text()
-        getText = int(getText)
-        self.UVrot_slider.setValue(getText)
-
-    def print_Utrnsslider(self):
-        '''
-        This updates the rotation slider value to the value in the field(in case of user input)
-        '''        
-        size = self.Utrns_slider.value()
-        size_mult = size*0.10
-        self.UtrnstextNum.setText(str(size_mult))
-            
-            
-    def set_U_trnsslider(self):
-        getText = self.UtrnstextNum.text()
-        getText = float(getText)*10
-        self.Utrns_slider.setValue(getText)
-
-    def print_Vtrnsslider(self):
-        size = self.Vtrns_slider.value()
-        size_mult = size*0.10
-        self.VtrnstextNum.setText(str(size_mult))
-
-    def set_V_trnsslider(self):
-        getText = self.VtrnstextNum.text()
-        getText = float(getText)*10
-        self.Vtrns_slider.setValue(getText)
-
-
-    def print_Vslider(self):
-        size = self.Vtl_slider.value()
-        size_mult = size*0.10
-        self.VtextNum.setText(str(size_mult))
-
-    def set_Uslider(self):
-        getText = self.UtextNum.text()
-        getText = float(getText)*10
-        self.Utl_slider.setValue(getText)
-
-    def set_Vslider(self):
-        getText = self.VtextNum.text()
-        getText = float(getvtText)*10
-        self.Vtl_slider.setValue(getText)
-
-    def getUV(self):
-        Unsize = float(self.UtextNum.text())
-        Vnsize = float(self.VtextNum.text())
-        UV_rot = self.UVrot_slider.value()
-        UV_rotnum = int(UV_rot)
-        U_trnnum = float(self.VtrnstextNum.text())
-        V_trnnum = float(self.VtrnstextNum.text())
-        return Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum
-
-
-
-
-    def vtil_get(self): 
-        try:
-            getsel = mc.ls(sl=1, fl=1)[0]
-            if len(getsel)>0:
-                plcname = getsel+"_p2dt"
-                if mc.objExists(plcname) == True:
-                    Unsize = mc.getAttr(plcname+".repeatU")
-                    self.Utl_slider.setValue(Unsize*10)
-                    Vnsize = mc.getAttr(plcname+".repeatV")
-                    self.Vtl_slider.setValue(Vnsize*10)
-                    U_trnnum = mc.getAttr(plcname+".offsetU")
-                    self.Utrns_slider.setValue(U_trnnum*10)
-                    V_trnnum = mc.getAttr(plcname+".offsetV")
-                    self.Vtrns_slider.setValue(V_trnnum*10)
-                    UV_rotnum = mc.getAttr(plcname+".rotateUV")
-                    self.UVrot_slider.setValue(UV_rotnum)
-                else:
-                    print " no object in scene called {}".format(plcname)
-        except:
-            print "nothing selected"
-            return
-
-
-    def vtil_reset(self):  
-        getgrp = mc.ls(sl=1, fl=1)
-        if len(getgrp)>0:
-            pass
-        else:
-            print "nothing selected"
-            return
-        self.Utl_slider.setValue(10)
-        self.Vtl_slider.setValue(10)
-        self.Utrns_slider.setValue(0)
-        self.Vtrns_slider.setValue(0.0)
-        self.UVrot_slider.setValue(0.0)
-
-    def vtil_set_only(self):
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()  
-        getgrp = mc.ls(sl=1, fl=1)
-        if len(getgrp)>0:
-            pass
-        else:
-            print "nothing selected"
-            return
-        for each in getgrp:
-            print each
-            # if ":" in each:
-            #     plcname = each.split(":")[-1]+"_p2dt"
-            # else:
-            plcname = each+"_p2dt"
-            mc.setAttr(plcname+".repeatU", Unsize)
-            mc.setAttr(plcname+".repeatV", Vnsize)
-            mc.setAttr(plcname+".offsetU", U_trnnum)
-            mc.setAttr(plcname+".offsetV", V_trnnum)
-            
-            
-    def type_uv(self, uv_load):
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()   
-        imgfile_name=uv_load.currentText() 
-        imgfile = maphome+imgfile_name
-        getgrp = mc.ls(sl=1, fl=1)
-        if len(getgrp)>0:
-            pass
-        else:
-            print "nothing selected"
-            return
-        for each in getgrp:
-            plcname = each+"_p2dt"
-            namefile = each+"_file"
-            chkname = each+"_ckr"
-            name = each+"_shd"
-            nameSG = each+"_shdSG"
-            if len(mc.ls(name))>0:
-                    mc.delete(name)
-                    mc.delete(nameSG)
-                    try:
-                        mc.delete(plcname)
-                    except:
-                        pass
-                    try:
-                        mc.delete(namefile)
-                    except:
-                        pass
-                    try:
-                        mc.delete(chkname)
-                    except:
-                        pass
-            FVfirst = mc.shadingNode('lambert', asShader=True, n=name)
-            pdfirst = mc.shadingNode('place2dTexture', asUtility=True, n=plcname)
-            filefirst = mc.shadingNode('file', asTexture = 1, isColorManaged = 1, n=namefile)
-            getFVfirst=[FVfirst]
-            setName="techanim_textures" 
-            if mc.objExists(setName):
-                pass
-            else:
-                mc.sets(n=setName, co=3)
-            mc.sets(getFVfirst, add=setName)
-            mc.select(each)
-            mc.hyperShade(assign=str(FVfirst))           
-            mc.connectAttr( plcname+'.outUV',namefile+'.uv', force=1)            
-            mc.connectAttr( plcname+'.outUvFilterSize', namefile+'.uvFilterSize', force=1)    
-            mc.connectAttr(namefile+".outColor",  each+"_shd.color", f=1)
-            mc.setAttr(namefile+".fileTextureName",  imgfile, type = "string")
-            mc.setAttr(plcname+".repeatU", Unsize)
-            mc.setAttr(plcname+".repeatV", Vnsize)
-            mc.setAttr(plcname+".offsetU", U_trnnum)
-            mc.setAttr(plcname+".offsetV", V_trnnum)
-            mc.setAttr(plcname+".rotateUV", UV_rotnum)    
-        mc.select(getgrp, r=1)           
-            
-    def create_rgb(self):
+    def apply_rgb(self):
+        """This color sets for calling up the random shader function"""
         color_load=self.color_dial
         color_name=color_load.currentText()
         if color_name=='Apply':
@@ -772,354 +534,342 @@ class set_colors_win(QtWidgets.QMainWindow):
         if color_name=='Light':
             self._change_lighter()
         if color_name=='Slight grey':
-            self._slight_to_gry()            
-        # if color_name=='Save gamut':
-        #     self.save_gamut() 
+            self._slight_to_gry()
         if color_name=='tech_geo':
             self.get_geo_techanim()     
         if color_name=='Contrast':
-            self._strong_contrast()     
+            self.enhanceContrastChecker()     
         if color_name=='Reverse contrast':
-            self._rev_contrast() 
-            
-            
-    def shd_changer(self, typecolor):
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV() 
-        getgrp = mc.ls(sl=1, fl=1)
-        if len(getgrp)>0:
+            self.reverseContrastChecker() 
+
+
+    def shd_changer(self, type_color):
+        """This is the function for applying random shaders for RGB values that applies to solids and checkered material"""
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection() 
+        get_sel_obj = mc.ls(sl=1, fl=1)
+        if len(get_sel_obj)>0:
             pass
         else:
-            print "nothing selected"
+            print 'nothing selected'
             return
         checkerChecked = self.checker_checked
+        """This removes any pre-existing nodes from other materials and applies a clean checker material"""
         if checkerChecked.isChecked():
-            for each in getgrp:
-                plcname = each+"_p2dt"
-                namefile = each+"_file"
-                chkname = each+"_ckr"
-                name = each+"_shd"
-                nameSG = each+"_shdSG"
-                if len(mc.ls(name))>0:
-                    mc.delete(name)
-                    mc.delete(nameSG)
+            for each_sel_obj in get_sel_obj:
+                placement_node_p2dt = '{}_p2dt'.format(each_sel_obj)
+                name_file_node = '{}_file'.format(each_sel_obj)
+                name_chkr_node = '{}_ckr'.format(each_sel_obj)
+                name_shdr_nde = '{}_shd'.format(each_sel_obj)
+                name_SG_node = '{}_shdSG'.format(each_sel_obj)
+                if len(mc.ls(name_shdr_nde))>0:
+                    mc.delete(name_shdr_nde)
+                    mc.delete(name_SG_node)
                     try:
-                        mc.delete(plcname)
+                        mc.delete(placement_node_p2dt)
                     except:
                         pass
                     try:
-                        mc.delete(namefile)
+                        mc.delete(name_file_node)
                     except:
                         pass
                     try:
-                        mc.delete(chkname)
+                        mc.delete(name_chkr_node)
                     except:
                         pass
-                FVfirst = mc.shadingNode('lambert', asShader=True, n=name)
-                pdfirst = mc.shadingNode('place2dTexture', asUtility=True, n=plcname)
-                mc.createNode( 'checker', n=chkname )
-                getFVfirst=[FVfirst]
-                setName="techanim_textures" 
-                if mc.objExists(setName):
+                create_shade_node = mc.shadingNode('lambert', asShader=True, n=name_shdr_nde)
+                pdfirst = mc.shadingNode('place2dTexture', asUtility=True, n=placement_node_p2dt)
+                mc.createNode( 'checker', n=name_chkr_node )
+                lst_sg_node = [create_shade_node]
+                set_name = 'techanim_textures' 
+                if mc.objExists(set_name):
                     pass
                 else:
-                    mc.sets(n=setName, co=3)
-                mc.sets(getFVfirst, add=setName)
-                mc.select(each)
-                mc.hyperShade(assign=str(FVfirst))
-                mc.connectAttr( chkname+'.outColor', name+'.color', force=1)            
-                mc.connectAttr( plcname+'.outUV',chkname+'.uv', force=1)            
-                mc.connectAttr( plcname+'.outUvFilterSize',chkname+'.uvFilterSize', force=1)
-                self.appSingleOrDouble(each, typecolor, plcname)   
+                    mc.sets(n=set_name, co=3)
+                mc.sets(lst_sg_node, add=set_name)
+                mc.select(each_sel_obj)
+                mc.hyperShade(assign=str(create_shade_node))
+                mc.connectAttr( '{}.outColor'.format(name_chkr_node), '{}.color'.format(name_shdr_nde), force=1)            
+                mc.connectAttr( '{}.outUV'.format(placement_node_p2dt),'{}.uv'.format(name_chkr_node), force=1)            
+                mc.connectAttr( '{}.outUvFilterSize'.format(placement_node_p2dt),'{}.uvFilterSize'.format(name_chkr_node), force=1)
+                self.randomize_double(each_sel_obj, type_color, placement_node_p2dt)
         else:            
-            for each in getgrp:
-                plcname = each+"_p2dt"
-                namefile = each+"_file"
-                chkname = each+"_ckr"
-                name = each+"_shd"
-                nameSG = each+"_shdSG"              
-                if len(mc.ls(name))>0:
-                    mc.delete(name)
-                    mc.delete(nameSG)
-                    try:
-                        mc.delete(plcname)
+            """This removes any pre-existing nodes from other materials and applies a clean solid material"""
+            for each_sel_obj in get_sel_obj:
+                placement_node_p2dt = '{}_p2dt'.format(each_sel_obj)
+                name_file_node = '{}_file'.format(each_sel_obj)
+                name_chkr_node = '{}_ckr'.format(each_sel_obj)
+                name_shdr_nde = '{}_shd'.format(each_sel_obj)
+                name_SG_node = '{}_shdSG'.format(each_sel_obj)                       
+                if len(mc.ls(name_shdr_nde))>0:
+                    mc.delete(name_shdr_nde)
+                    mc.delete(name_SG_node)
+                    try: 
+                        mc.delete(placement_node_p2dt)
                     except:
                         pass
                     try:
-                        mc.delete(namefile)
+                        mc.delete(name_file_node)
                     except:
                         pass
                     try:
-                        mc.delete(chkname)
+                        mc.delete(name_chkr_node)
                     except:
                         pass
                 # else:                
-                FVfirst = mc.shadingNode('lambert', asShader=True, n=name)
-                getFVfirst=[FVfirst]
-                setName="techanim_textures" 
-                if mc.objExists(setName):
+                create_shade_node = mc.shadingNode('lambert', asShader=True, n=name_shdr_nde)
+                lst_sg_node = [create_shade_node]
+                set_name = 'techanim_textures' 
+                if mc.objExists(set_name):
                     pass
                 else:
-                    mc.sets(n=setName, co=3)
-                mc.sets(getFVfirst, add=setName)
-                mc.select(each)
-                mc.hyperShade(assign=str(FVfirst))
+                    mc.sets(n=set_name, co=3)
+                mc.sets(lst_sg_node, add=set_name)
+                mc.select(each_sel_obj)
+                mc.hyperShade(assign=str(create_shade_node))
                 try:
-                    set1, set2, set3  = self.gamble(typecolor) 
-                    mc.setAttr(name+".color", set1, set2, set3, type="double3")
+                    set1, set2, set3  = self.gamble_dice(type_color) 
+                    mc.setAttr('{}.color'.format(name_shdr_nde), set1, set2, set3, type='double3')
                 except:
-                    self.appSingleOrDouble(each, typecolor, plcname)                 
-        mc.select(getgrp, r=1)   
+                    self.randomize_double(each_sel_obj, type_color, placement_node_p2dt)                 
+        mc.select(get_sel_obj, r=1)   
 
+    def randomize_double(self, shader_obj, type_color, placement_node_p2dt):
+        """This is the function for applying a checker and the current uv settings for the placement node"""
+        shd_name = shader_obj
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection()
+        set1, set2, set3  = self.gamble_dice(type_color) 
+        mc.setAttr('{}_ckr.color1'.format(shader_obj), set1, set2, set3, type='double3')
+        set1, set2, set3  = self.gamble_dice(type_color) 
+        mc.setAttr('{}_ckr.color2'.format(shader_obj), set1, set2, set3, type='double3') 
+        mc.setAttr('{}_p2dt.repeatU'.format(shader_obj), u_tile_value)
+        mc.setAttr('{}_p2dt.repeatV'.format(shader_obj), v_tile_value)   
+        mc.setAttr('{}_p2dt.offsetU'.format(shader_obj), u_trns_value)
+        mc.setAttr('{}_p2dt.offsetV'.format(shader_obj), v_trns_value)
+        mc.setAttr('{}_p2dt.rotateUV'.format(shader_obj), UV_rotnum) 
 
-    def appSingleOrDouble(self, shader_obj, typecolor, plcname):
-        shdname = shader_obj
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()
-        set1, set2, set3  = self.gamble(typecolor) 
-        mc.setAttr(shdname+"_ckr.color1", set1, set2, set3, type="double3")
-        set1, set2, set3  = self.gamble(typecolor) 
-        mc.setAttr(shdname+"_ckr.color2", set1, set2, set3, type="double3") 
-        mc.setAttr(shdname+"_p2dt.repeatU", Unsize)
-        mc.setAttr(shdname+"_p2dt.repeatV", Vnsize)   
-        mc.setAttr(shdname+"_p2dt.offsetU", U_trnnum)
-        mc.setAttr(shdname+"_p2dt.offsetV", V_trnnum)
-        mc.setAttr(shdname+"_p2dt.rotateUV", UV_rotnum) 
 
     def _change_primary_grn(self):
-        self.shd_changer("green")
+        self.shd_changer('green')
 
     def _change_primary_red(self):
-        self.shd_changer("red")
+        self.shd_changer('red')
 
     def _change_primary_blue(self):
-        self.shd_changer("blue")
+        self.shd_changer('blue')
 
     def _apply_colors(self):
-        self.shd_changer("random")
+        self.shd_changer('random')
 
     def _change_primary_teal(self):
-        self.shd_changer("teal")
+        self.shd_changer('teal')
 
     def _change_primary_orange(self):
-        self.shd_changer("orange")
+        self.shd_changer('orange')
 
     def _change_primary_prpl(self):
-        self.shd_changer("purple")
+        self.shd_changer('purple')
 
     def _apply_grey_colors(self):
-        self.shd_changer("grey")
+        self.shd_changer('grey')
 
     def _change_primary_gry(self):
-        self.shd_changer("grey")
+        self.shd_changer('grey')
 
     def _change_colors(self):
-        self.shd_changer("random")
+        self.shd_changer('random')
 
-    def gamble(self, typecolor):
-        getval = random.uniform(0.0,1.0)
-        getvallow = random.uniform(0.0,0.25)   
-        if typecolor == "green":
-            set1= getvallow  
-            set2=getval                        
-            set3= getvallow  
-        if typecolor == "red":
-            set1= getval  
-            set2=getvallow                        
-            set3= getvallow     
-        if typecolor == "blue":
-            set1= getvallow  
-            set2= getvallow                        
-            set3= getval   
-        if typecolor == "teal":
-            set1= getvallow  
-            set2= getval
-            set3= getval         
-        if typecolor == "orange":
-            set1= getval  
-            set2= getval                        
-            set3= getvallow  
-        if typecolor == "purple":
-            set1= getval  
-            set2= getvallow                        
-            set3= getval    
-        if typecolor == "grey":
-            set1= getval  
-            set2= getval                        
-            set3= getval   
-        if typecolor == "random":
-            set1= random.uniform(0.0,1.0)  
-            set2= random.uniform(0.0,1.0)                        
-            set3= random.uniform(0.0,1.0)           
-        return set1, set2, set3
+
+    def gamble_dice(self, type_color):
+        get_clr_value = random.uniform(0.0,1.0)
+        get_dice_value = random.uniform(0.0,0.25)   
+        if type_color == 'green':
+            set1 = get_dice_value  
+            set2 = get_clr_value                        
+            set3 = get_dice_value  
+        if type_color == 'red':
+            set1 = get_clr_value  
+            set2 = get_dice_value                        
+            set3 = get_dice_value     
+        if type_color == 'blue':
+            set1 = get_dice_value  
+            set2 = get_dice_value                        
+            set3 = get_clr_value   
+        if type_color == 'teal':
+            set1 = get_dice_value  
+            set2 = get_clr_value
+            set3 = get_clr_value         
+        if type_color == 'orange':
+            set1 = get_clr_value  
+            set2 = get_clr_value                        
+            set3 = get_dice_value  
+        if type_color == 'purple':
+            set1 = get_clr_value  
+            set2 = get_dice_value                        
+            set3 = get_clr_value    
+        if type_color == 'grey':
+            set1 = get_clr_value  
+            set2 = get_clr_value                        
+            set3 = get_clr_value   
+        if type_color == 'random':
+            set1 = random.uniform(0.0,1.0)  
+            set2 = random.uniform(0.0,1.0)                        
+            set3 = random.uniform(0.0,1.0)           
+        return set1, set2, set3    
 
     def get_geo_techanim(self):
-        get_tech=mc.ls("*:*_tech_geo")
-        get_tech_two=mc.ls("*_tech_geo")
-        get_posttech=mc.ls("*:*_postTech_geo")
-        get_posttech_two=mc.ls("*_postTech_geo")
-        get_geo=get_tech+get_tech_two+get_posttech+get_posttech_two
+        """This will apply the color swatches to a pre existing tech rig"""
+        get_tech = mc.ls('*:*_tech_geo')
+        get_tech_two = mc.ls('*_tech_geo')
+        get_posttech = mc.ls('*:*_postTech_geo')
+        get_posttech_two = mc.ls('*_postTech_geo')
+        get_geo = get_tech + get_tech_two + get_posttech + get_posttech_two
         mc.select(get_geo, r=1)
         self._apply_colors()
 
     def _slight_to_gry(self):
-        self.shader_slight("sl_grey")
+        self.shader_slighter('sl_grey')
 
     def _change_darker(self):
-        self.shader_slight("dark")
+        self.shader_slighter('dark')
 
     def _change_lighter(self):
-        self.shader_slight("light")
+        self.shader_slighter('light')
 
 
-    def gamble_slight(self, getval, typecolor):
-        if typecolor == "sl_grey":
-            getvallow = random.uniform(getval[0][0],getval[0][2])  
-            set1= getvallow  
-            set2= getvallow                        
-            set3= getvallow 
-        if typecolor == "dark":
-            getvallow = random.uniform(0.0,0.25)
-            newval = getval[0][0]-getvallow, getval[0][1]-getvallow, getval[0][2]-getvallow 
-            set1= newval[0] 
-            set2= newval[1]               
-            set3= newval[2]
-        if typecolor =="light":
-            getvallow = random.uniform(0.0,0.25)
-            newval = getval[0][0]+getvallow, getval[0][1]+getvallow, getval[0][2]+getvallow
-            set1= newval[0] 
-            set2= newval[1]               
-            set3= newval[2] 
-        return set1, set2, set3
-
-
-    def shader_slight(self, typecolor):
-        getgrp = mc.ls(sl=1)
-        if len(getgrp)>0:
+    def shader_slighter(self, type_color):
+        get_sel_obj = mc.ls(sl=1)
+        if len(get_sel_obj)>0:
             pass
         else:
-            print "nothing selected"
+            print 'nothing selected'
             return
-        mc.hyperShade (getgrp[0], smn=1)
+        mc.hyperShade (get_sel_obj[0], smn=1)
         checkerChecked = self.checker_checked
         if checkerChecked.isChecked():
-            for each in mc.ls(sl=1):
-                self.appSingleOrDoubleSlight(each, typecolor)                                    
+            for each_sel_shdr in mc.ls(sl=1):
+                self.slight_single_or_double(each_sel_shdr, type_color)                                    
         else:                        
-            for each in mc.ls(sl=1):
+            for each_sel_shdr in mc.ls(sl=1):
                 try:
-                    set1, set2, set3  = self.gamble_slight( each, typecolor) 
-                    mc.setAttr(each+".color", set1, set2, set3, type="double3")
+                    set1, set2, set3  = self.gamble_slight( type_color, each_sel_shdr) 
+                    mc.setAttr('{}.color'.format(each_sel_shdr), set1, set2, set3, type='double3')
                 except:
-                    self.appSingleOrDoubleSlight(each, typecolor)                
-        mc.select(getgrp, r=1)
+                    self.slight_single_or_double(each_sel_shdr, type_color)                
+        mc.select(get_sel_obj, r=1)
 
-
-    def appSingleOrDoubleSlight(self, shader_obj,  typecolor):
-        shdname = shader_obj.split("_shd")[0]
-        single = shader_obj+".color"
-        double = shdname+"_ckr.color1"
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()
+    def slight_single_or_double(self, shader_obj,  type_color):
+         shd_name = shader_obj.split('_shd')[0]
+        single = '{}.color'.format(shader_obj)
+        double = '{}_ckr.color1'.format(shd_name)
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection()
         if mc.objExists(single) == True:
-            getval = mc.getAttr(shader_obj+".color")
-            set1, set2, set3  = self.gamble_slight(getval, typecolor)
+            get_clr_value = mc.getAttr('{}.color'.format(shader_obj))
+            set1, set2, set3  = self.gamble_slight( type_color, get_clr_value)
             try:
-                mc.setAttr(shader_obj+".color", set1, set2, set3, type="double3")
+                mc.setAttr('{}.color'.format(shader_obj), set1, set2, set3, type='double3')
             except:
-                getval = mc.getAttr(shdname+"_ckr.color1")
-                set1, set2, set3  = self.gamble_slight(getval, typecolor)                   
-                mc.setAttr(shdname+"_ckr.color1", set1, set2, set3, type="double3")
-                getval = mc.getAttr(shdname+"_ckr.color2")
-                set1, set2, set3  = self.gamble_slight(getval, typecolor)                   
-                mc.setAttr(shdname+"_ckr.color2", set1, set2, set3, type="double3")
+                get_clr_value = mc.getAttr('{}_ckr.color1'.format(shd_name))
+                set1, set2, set3  = self.gamble_slight( type_color, get_clr_value)                  
+                mc.setAttr('{}_ckr.color1'.format(shd_name), set1, set2, set3, type='double3')
+                get_clr_value = mc.getAttr('{}_ckr.color2'.format(shd_name))
+                set1, set2, set3  = self.gamble_slight( type_color, get_clr_value)                  
+                mc.setAttr('{}_ckr.color2'.format(shd_name), set1, set2, set3, type='double3')
         elif mcobjExists(double) == True:
-            getval = mc.getAttr(shdname+"_ckr.color1")
-            set1, set2, set3  = self.gamble_slight(getval, typecolor)                   
-            mc.setAttr(shdname+"_ckr.color1", set1, set2, set3, type="double3")
-            getval = mc.getAttr(shdname+"_ckr.color2")
-            set1, set2, set3  = self.gamble_slight(getval, typecolor)                   
-            mc.setAttr(shdname+"_ckr.color2", set1, set2, set3, type="double3")  
-            # plcname = shdname+"_p2dt"
-            mc.setAttr(shdname+"_p2dt.repeatU", Unsize)
-            mc.setAttr(shdname+"_p2dt.repeatV", Vnsize)   
-            mc.setAttr(shdname+"_p2dt.offsetU", U_trnnum)
-            mc.setAttr(shdname+"_p2dt.offsetV", V_trnnum)
-            mc.setAttr(shdname+"_p2dt.rotateUV", UV_rotnum)
+            get_clr_value = mc.getAttr('{}_ckr.color1'.format(shd_name))
+            set1, set2, set3  = self.gamble_slight( type_color, get_clr_value)                  
+            mc.setAttr('{}_ckr.color1'.format(shd_name), set1, set2, set3, type='double3')
+            get_clr_value = mc.getAttr('{}_ckr.color2'.format(shd_name))
+            set1, set2, set3  = self.gamble_slight( type_color, get_clr_value)                  
+            mc.setAttr('{}_ckr.color2'.format(shd_name), set1, set2, set3, type='double3')  
+            mc.setAttr('{}_p2dt.repeatU'.format(shd_name), u_tile_value)
+            mc.setAttr('{}_p2dt.repeatV'.format(shd_name), v_tile_value)   
+            mc.setAttr('{}_p2dt.offsetU'.format(shd_name), u_trns_value)
+            mc.setAttr('{}_p2dt.offsetV'.format(shd_name), v_trns_value)
+            mc.setAttr('{}_p2dt.rotateUV'.format(shd_name), UV_rotnum)
         else:
-            print "action not applicable"
+            print 'action not applicable'
             
-    def _strong_contrast(self):
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()
-        getgrp = mc.ls(sl=1)
-        if len(getgrp)>0:
-            pass
-        else:
-            print "nothing selected"
-            return
-        for each in mc.ls(sl=1):
-            try:
-                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color1")
-                getvallow = random.uniform(0.0,0.25)
-                newval = getval[0][0]-getvallow, getval[0][1]-getvallow, getval[0][2]-getvallow             
-                mc.setAttr(each.split("_shd")[0]+"_ckr.color1",newval[0], newval[1], newval[2],type="double3")
-                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color2")
-                getvallow = random.uniform(0.0,0.25)
-                newval = getval[0][0]+getvallow, getval[0][1]+getvallow, getval[0][2]+getvallow           
-                mc.setAttr(each.split("_shd")[0]+"_ckr.color2",newval[0], newval[1], newval[2],type="double3")
-                plcname = each.split("_shd")[0]+"_p2dt"  
-                mc.setAttr( each.split("_shd")[0]+"_p2dt.repeatU", Unsize)
-                mc.setAttr( each.split("_shd")[0]+"_p2dt.repeatV", Vnsize)
-                mc.setAttr( each.split("_shd")[0]+"_p2dt.offsetU", U_trnnum)
-                mc.setAttr( each.split("_shd")[0]+"_p2dt.offsetV", V_trnnum)
-                mc.setAttr( each.split("_shd")[0]+"_p2dt.rotateUV", UV_rotnum)
-            except:
-                print "only affects checkered textures"               
-                pass           
-        mc.select(getgrp, r=1)
-
-    def _rev_contrast(self):
-        Unsize, Vnsize, UV_rotnum, U_trnnum, V_trnnum =self.getUV()
-        getgrp = mc.ls(sl=1)
-        if len(getgrp)>0:
-            pass
-        else:
-            print "nothing selected"
-            return
-        for each in mc.ls(sl=1):
-            try:
-                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color1")
-                getvallow = random.uniform(0.0,0.25)
-                newval = getval[0][0]+getvallow, getval[0][1]+getvallow, getval[0][2]+getvallow             
-                mc.setAttr(each.split("_shd")[0]+"_ckr.color1",newval[0], newval[1], newval[2],type="double3")
-                getval = mc.getAttr(each.split("_shd")[0]+"_ckr.color2")
-                getvallow = random.uniform(0.0,0.25)
-                newval = getval[0][0]-getvallow, getval[0][1]-getvallow, getval[0][2]-getvallow           
-                mc.setAttr(each.split("_shd")[0]+"_ckr.color2",newval[0], newval[1], newval[2],type="double3")  
-                mc.setAttr(each.split("_shd")[0]+"_p2dt.repeatU", Unsize)
-                mc.setAttr(each.split("_shd")[0]+"_p2dt.repeatV", Vnsize)
-                mc.setAttr(each.split("_shd")[0]+"_p2dt.offsetU", U_trnnum)
-                mc.setAttr(each.split("_shd")[0]+"_p2dt.offsetV", V_trnnum)
-                mc.setAttr(each.split("_shd")[0]+"_p2dt.rotateUV", UV_rotnum)                
-            except:
-                print "only affects checkered textures"               
-                pass           
-        mc.select(getgrp, r=1) 
+    def gamble_slight(self, type_color, get_clr_value):
+        if type_color == 'sl_grey':
+            get_dice_value = random.uniform(get_clr_value[0][0],get_clr_value[0][2])  
+            set1 = get_dice_value  
+            set2 = get_dice_value
+            set3 = get_dice_value 
+        if type_color == 'dark':
+            get_dice_value = random.uniform(0.0,0.25)
+            newval = get_clr_value[0][0]-get_dice_value, get_clr_value[0][1]-get_dice_value, get_clr_value[0][2]-get_dice_value 
+            set1 = newval[0] 
+            set2 = newval[1]               
+            set3 = newval[2]
+        if type_color =='light':
+            get_dice_value = random.uniform(0.0,0.25)
+            newval = get_clr_value[0][0]+get_dice_value, get_clr_value[0][1]+get_dice_value, get_clr_value[0][2]+get_dice_value
+            set1 = newval[0] 
+            set2 = newval[1]               
+            set3 = newval[2] 
+        return set1, set2, set3 
+            
+    def checker_contrast_gamble(self, contrast_type, get_shad_val_1, get_shad_val_2):
+        if contrast_type == 'enhance':
+            #contrast - subtract from first color. add to second.
+            dice_value = random.uniform(0.0,0.25)
+            get_first = get_shad_val_1[0][0]-dice_value, get_shad_val_1[0][1]-dice_value, get_shad_val_1[0][2]-dice_value           
+            dice_value = random.uniform(0.0,0.25)
+            get_second = get_shad_val_2[0][0]+dice_value, get_shad_val_2[0][1]+dice_value, get_shad_val_2[0][2]+dice_value
+        elif contrast_type == 'reverse':
+            #reverse - add to first color, subtract from second
+            dice_value = random.uniform(0.0,0.25)
+            get_first = get_shad_val_1[0][0]+dice_value, get_shad_val_1[0][1]+dice_value, get_shad_val_1[0][2]+dice_value        
+            dice_value = random.uniform(0.0,0.25)
+            get_second = get_shad_val_2[0][0]-dice_value, get_shad_val_2[0][1]-dice_value, get_shad_val_2[0][2]-dice_value 
+        return get_first, get_second
 
 
-    def _change_ambient(self):
-        getgrp = mc.ls(sl=1)
-        if len(getgrp)>0:
+    def contrast_function(self, contrast_type):
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection()
+        get_sel_obj = mc.ls(sl=1)
+        mc.hyperShade (get_sel_obj[0], smn=1)
+        if len(get_sel_obj)<1:
+            print 'nothing selected'
+            return
+        else:
+            for each_sel_obj in mc.ls(sl=1):
+                print each_sel_obj
+                try:
+                    get_shad_val_1 = mc.getAttr('{}_ckr.color1'.format(each_sel_obj.split('_shd')[0]))
+                    get_shad_val_2 = mc.getAttr('{}_ckr.color2'.format(each_sel_obj.split('_shd')[0]))
+                    get_first_value, get_second_value = self.checker_contrast_gamble(contrast_type, get_shad_val_1, get_shad_val_2)
+                    mc.setAttr('{}_ckr.color1'.format(each_sel_obj.split('_shd')[0]),get_first_value[0], get_first_value[1], get_first_value[2],type='double3')          
+                    mc.setAttr('{}_ckr.color2'.format(each_sel_obj.split('_shd')[0]),get_second_value[0], get_second_value[1], get_second_value[2],type='double3')            
+                except:
+                    print 'only affects checkered textures'               
+                    pass           
+            mc.select(get_sel_obj, r=1)       
+            
+
+    def enhanceContrastChecker(self):
+        self.contrast_function('enhance')
+
+
+    def reverseContrastChecker(self):
+        self.contrast_function('reverse')
+
+ 
+    def ambientRandomizer(self):
+        get_sel_obj = mc.ls(sl=1)
+        if len(get_sel_obj)>0:
             pass
         else:
-            print "nothing selected"
+            print 'nothing selected'
             return
-        mc.hyperShade (getgrp[0], smn=1)
-        for each in mc.ls(sl = 1):
+        mc.hyperShade (get_sel_obj[0], smn=1)
+        for each_sel_shdr in mc.ls(sl = 1):
             get_float = random.uniform(0.0,1.0)
-            mc.setAttr(each+".incandescence", get_float, get_float, get_float, type="double3")
-        mc.select(getgrp, r=1)  
+            mc.setAttr('{}.incandescence'.format, get_float, get_float, get_float, type='double3')
+        mc.select(get_sel_obj, r=1)  
 
 
-
-    def save_gamut(self, arg=None):
+    def saveGamut(self, arg=None):
         self.saveSelection()
 
     def saveSelection(self, arg=None):
