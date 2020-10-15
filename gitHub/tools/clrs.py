@@ -134,22 +134,8 @@ class set_colors_win(QtWidgets.QMainWindow):
         self.v_tile_slider.setTickPosition(self.v_tile_slider.TicksBelow)
         self.v_tile_slider.valueChanged.connect(self.slider_set_v_tile_text)
         self.tile_setup_layout.addWidget(self.v_tile_slider,1,2,1,1)
-                    
-                    
-                    
-        #sliders
-        self.SSSetupLayout = QtWidgets.QGridLayout()
-        self.SSOverride = QtWidgets.QFrame()
-        self.SSOverride.setStyleSheet("color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;")
-        self.SSOverride.setLayout(self.SSSetupLayout)
 
-        self.ss_order_layout_ta = QtWidgets.QHBoxLayout()
-        self.layout.addLayout(self.ss_order_layout_ta, 1,0,1,1)
-
-        self.uv_label_row_layout = QtWidgets.QVBoxLayout()
-        self.ss_order_layout_ta.addLayout(self.uv_label_row_layout)
-
-        self.u_sliderinside_stack_layout = QtWidgets.QVBoxLayout()
+            
 
         #uv rot
 
@@ -175,187 +161,364 @@ class set_colors_win(QtWidgets.QMainWindow):
         self.uv_rot_slider.setTickPosition(self.uv_rot_slider.TicksBelow)
         self.uv_rot_slider.valueChanged.connect(self.slider_set_rot_text)
         self.uv_rot_setup_layout.addWidget(self.uv_rot_slider, 0,2,1,1)
-                    
-                    
-                        
-                        
-                        
-                        
-                        
-                        
-                        
 
-        #tiles
+        #uv trans
+        self.uv_trns_setup_layout = QtWidgets.QGridLayout()
+        self.uv_trns_frame = QtWidgets.QFrame()
+        self.uv_trns_frame.setStyleSheet('color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;')
+        self.uv_trns_frame.setLayout(self.uv_trns_setup_layout)
 
-        self.tileSetupLayout = QtWidgets.QGridLayout()
-        self.tileOverride = QtWidgets.QFrame()
-        self.tileOverride.setStyleSheet("color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;")
-        self.tileOverride.setLayout(self.tileSetupLayout)
+        self.u_sliderinside_stack_layout.addWidget(self.uv_trns_frame)
 
-        self.u_sliderinside_stack_layout.addWidget(self.tileOverride)
-        self.uv_label_row_layout.addLayout(self.u_sliderinside_stack_layout)
+        self.u_trns_button = QtWidgets.QPushButton('U translate')
+        self.connect(self.u_trns_button, SIGNAL('clicked()'),
+                    lambda: self.u_trns_force())
+        self.uv_trns_setup_layout.addWidget(self.u_trns_button, 0,0,1,1)
+            
+        self.u_trns_line_edit = QtWidgets.QLineEdit('0.0')
+        self.u_trns_line_edit.setFixedWidth(50)
+        self.u_trns_line_edit.connect(self.u_trns_line_edit,QtCore.SIGNAL('returnPressed()'),self.text_set_u_trns_slider)
+        self.uv_trns_setup_layout.addWidget(self.u_trns_line_edit, 0,1,1,1)
+        self.u_trns_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.u_trns_slider.setFixedWidth(200)
+        self.u_trns_slider.setMinimum(0)
+        self.u_trns_slider.setMaximum(200)
+        self.u_trns_slider.setValue(0)        
+        self.u_trns_slider.setTickInterval(2)
+        self.u_trns_slider.setTickPosition(self.u_trns_slider.TicksBelow)
+        self.u_trns_slider.valueChanged.connect(self.slider_set_u_trns_text)
+        self.uv_trns_setup_layout.addWidget(self.u_trns_slider, 0,2,1,1)
 
-        self.utile_button = QtWidgets.QPushButton("U tile")
-        self.connect(self.utile_button, SIGNAL("clicked()"),
-                    lambda: self.util_set())
-        self.tileSetupLayout.addWidget(self.utile_button,0,0,1,1)
-        # self.uv_stack_tile_slide_row_layout.addWidget(self.utile_button) 
-        self.vtile_button = QtWidgets.QPushButton("V tile")
-        self.connect(self.vtile_button, SIGNAL("clicked()"),
-                    lambda: self.vtil_set())
-        self.tileSetupLayout.addWidget(self.vtile_button,1,0,1,1)
-
-        self.UtextNum = QtWidgets.QLineEdit("1.0")
-        self.UtextNum.setFixedWidth(50)
-        self.UtextNum.connect(self.UtextNum,QtCore.SIGNAL("returnPressed()"),self.set_Uslider)
-        self.tileSetupLayout.addWidget(self.UtextNum, 0,1,1,1)
-        self.Utl_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
-        self.Utl_slider.setFixedWidth(200)
-        self.Utl_slider.setSingleStep(0.1)
-        self.Utl_slider.setMinimum(0)
-        self.Utl_slider.setMaximum(200)
-        self.Utl_slider.setValue(1)        
-        self.Utl_slider.setTickInterval(2)
-        self.Utl_slider.setTickPosition(self.Utl_slider.TicksBelow)
-        self.Utl_slider.valueChanged.connect(self.print_Uslider)
-        self.tileSetupLayout.addWidget(self.Utl_slider, 0,2,1,1)   
+        self.v_trns_button = QtWidgets.QPushButton('V translate')
+        self.connect(self.v_trns_button, SIGNAL('clicked()'),
+                    lambda: self.v_trns_force())
+        self.uv_trns_setup_layout.addWidget(self.v_trns_button, 1,0,1,1)
+        self.v_trns_line_edit = QtWidgets.QLineEdit('0.0')
+        self.v_trns_line_edit.setFixedWidth(50)
+        self.v_trns_line_edit.connect(self.v_trns_line_edit,QtCore.SIGNAL('returnPressed()'),self.text_set_v_trns_slider)
+        self.uv_trns_setup_layout.addWidget(self.v_trns_line_edit, 1,1,1,1)
+        self.v_trns_sider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.v_trns_sider.setFixedWidth(200)
+        self.v_trns_sider.setMinimum(0)
+        self.v_trns_sider.setMaximum(200)
+        self.v_trns_sider.setValue(0)        
+        self.v_trns_sider.setTickInterval(2)
+        self.v_trns_sider.setTickPosition(self.v_trns_sider.TicksBelow)
+        self.v_trns_sider.valueChanged.connect(self.slider_set_v_trns_text)
+        self.uv_trns_setup_layout.addWidget(self.v_trns_sider, 1,2,1,1)
 
 
-        self.VtextNum = QtWidgets.QLineEdit("1.0")
-        self.VtextNum.setFixedWidth(50)
-        self.VtextNum.connect(self.VtextNum,QtCore.SIGNAL("returnPressed()"),self.set_Vslider)
-        self.tileSetupLayout.addWidget(self.VtextNum,1,1,1,1)
-        self.Vtl_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
-        self.Vtl_slider.setFixedWidth(200)
-        self.Vtl_slider.setSingleStep(0.1)
-        self.Vtl_slider.setMinimum(0)
-        self.Vtl_slider.setMaximum(200)
-        self.Vtl_slider.setValue(1)        
-        self.Vtl_slider.setTickInterval(2)
-        self.Vtl_slider.setTickPosition(self.Vtl_slider.TicksBelow)
-        self.Vtl_slider.valueChanged.connect(self.print_Vslider)
-        self.tileSetupLayout.addWidget(self.Vtl_slider,1,2,1,1)
-        
-        
+        #end window for uv placement
 
-        #rot
 
-        self.rotSetupLayout = QtWidgets.QGridLayout()
-        self.rotOverride = QtWidgets.QFrame()
-        self.rotOverride.setStyleSheet("color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;")
-        self.rotOverride.setLayout(self.rotSetupLayout)
+        self.uv_app_butt_layout = QtWidgets.QGridLayout()
+        self.uv_app_frame = QtWidgets.QFrame()
+        self.uv_app_frame.setStyleSheet('color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;')
+        self.uv_app_frame.setLayout(self.uv_app_butt_layout)
 
-        self.u_sliderinside_stack_layout.addWidget(self.rotOverride)
-
-        self.uvrot_button = QtWidgets.QLabel("UV rotate")
-        # self.connect(self.uvrot_button, SIGNAL("clicked()"),
-        #             lambda: self.utrn_set())
-        self.rotSetupLayout.addWidget(self.uvrot_button, 0,0,1,1)
-        self.UrottextNum = QtWidgets.QLineEdit("0")
-        self.UrottextNum.setFixedWidth(50)
-        self.UrottextNum.connect(self.UrottextNum,QtCore.SIGNAL("returnPressed()"),self.set_UV_rotslider)
-        self.rotSetupLayout.addWidget(self.UrottextNum, 0,1,1,1)
-        self.UVrot_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
-        self.UVrot_slider.setFixedWidth(200)
-        self.UVrot_slider.setMinimum(0)
-        self.UVrot_slider.setMaximum(360)
-        self.UVrot_slider.setValue(0)        
-        self.UVrot_slider.setTickInterval(5)
-        self.UVrot_slider.setTickPosition(self.UVrot_slider.TicksBelow)
-        self.UVrot_slider.valueChanged.connect(self.print_UvRotslider)
-        self.rotSetupLayout.addWidget(self.UVrot_slider, 0,2,1,1)
-        
-      
-        #trans
-        self.trnsSetupLayout = QtWidgets.QGridLayout()
-        self.trnsOverride = QtWidgets.QFrame()
-        self.trnsOverride.setStyleSheet("color: #ffffff; background-color: rgba(120,120,120,50); border-style: solid; border-color:#434343;")
-        self.trnsOverride.setLayout(self.trnsSetupLayout)
-
-        self.u_sliderinside_stack_layout.addWidget(self.trnsOverride)
-
-        self.utrns_button = QtWidgets.QPushButton("U translate")
-        self.connect(self.utrns_button, SIGNAL("clicked()"),
-                    lambda: self.utrn_set())
-        self.trnsSetupLayout.addWidget(self.utrns_button, 0,0,1,1)
-        
-        self.UtrnstextNum = QtWidgets.QLineEdit("0.0")
-        self.UtrnstextNum.setFixedWidth(50)
-        self.UtrnstextNum.connect(self.UtrnstextNum,QtCore.SIGNAL("returnPressed()"),self.set_U_trnsslider)
-        self.trnsSetupLayout.addWidget(self.UtrnstextNum, 0,1,1,1)
-        self.Utrns_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
-        self.Utrns_slider.setFixedWidth(200)
-        self.Utrns_slider.setMinimum(0)
-        self.Utrns_slider.setMaximum(200)
-        self.Utrns_slider.setValue(0)        
-        self.Utrns_slider.setTickInterval(2)
-        self.Utrns_slider.setTickPosition(self.Utrns_slider.TicksBelow)
-        self.Utrns_slider.valueChanged.connect(self.print_Utrnsslider)
-        self.trnsSetupLayout.addWidget(self.Utrns_slider, 0,2,1,1)
-        
-        
-        
-
-        self.vtrns_button = QtWidgets.QPushButton("V translate")
-        self.connect(self.vtrns_button, SIGNAL("clicked()"),
-                    lambda: self.vtrn_set())
-        self.trnsSetupLayout.addWidget(self.vtrns_button, 1,0,1,1)
-        self.VtrnstextNum = QtWidgets.QLineEdit("0.0")
-        self.VtrnstextNum.setFixedWidth(50)
-        self.VtrnstextNum.connect(self.VtrnstextNum,QtCore.SIGNAL("returnPressed()"),self.set_V_trnsslider)
-        self.trnsSetupLayout.addWidget(self.VtrnstextNum, 1,1,1,1)
-        self.Vtrns_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
-        self.Vtrns_slider.setFixedWidth(200)
-        self.Vtrns_slider.setMinimum(0)
-        self.Vtrns_slider.setMaximum(200)
-        self.Vtrns_slider.setValue(0)        
-        self.Vtrns_slider.setTickInterval(2)
-        self.Vtrns_slider.setTickPosition(self.Vtrns_slider.TicksBelow)
-        self.Vtrns_slider.valueChanged.connect(self.print_Vtrnsslider)
-        self.trnsSetupLayout.addWidget(self.Vtrns_slider, 1,2,1,1)
-        
-        
-        
         self.uvtile_butt_row_layout = QtWidgets.QVBoxLayout()
         self.ss_order_layout_ta.addLayout(self.uvtile_butt_row_layout)
-        self.uvtile_button = QtWidgets.QPushButton("Apply UV only")
-        self.connect(self.uvtile_button, SIGNAL("clicked()"),
-                    lambda: self.vtil_set_only())
-        self.SSSetupLayout.addWidget(self.uvtile_button) 
+        self.uv_app_button = QtWidgets.QPushButton('Apply UV only')
+        self.connect(self.uv_app_button, SIGNAL('clicked()'),
+                    lambda: self.apply_uv_setting())
+        self.uv_app_butt_layout.addWidget(self.uv_app_button) 
+        self.uv_eye_drp_button = QtWidgets.QPushButton('Eyedrop UV')
+        self.connect(self.uv_eye_drp_button, SIGNAL('clicked()'),
+                    lambda: self.obtain_uv_Setting())
+        self.uv_app_butt_layout.addWidget(self.uv_eye_drp_button) 
 
-        self.uveyedrp_button = QtWidgets.QPushButton("Eyedrop UV")
-        self.connect(self.uveyedrp_button, SIGNAL("clicked()"),
-                    lambda: self.vtil_get())
-        self.SSSetupLayout.addWidget(self.uveyedrp_button) 
+        self.uv_reset_button = QtWidgets.QPushButton('Reset sliders')
+        self.connect(self.uv_reset_button, SIGNAL('clicked()'),
+                    lambda: self.reset_uv_ui())
+        self.uv_app_butt_layout.addWidget(self.uv_reset_button) 
 
-        self.uvreset_button = QtWidgets.QPushButton("Reset sliders")
-        self.connect(self.uvreset_button, SIGNAL("clicked()"),
-                    lambda: self.vtil_reset())
-        self.SSSetupLayout.addWidget(self.uvreset_button) 
-
-        self.ss_order_layout_ta.addWidget(self.SSOverride)
-        #UVMAP
-        
-
-        self.UVSetupLayout = QtWidgets.QGridLayout()
-        self.UVOverride = QtWidgets.QFrame()
-        self.UVOverride.setStyleSheet("color: #ffffff; background-color: rgba(255,255,255,30); border-style: solid; border-color:#434343;")
-        self.UVOverride.setLayout(self.UVSetupLayout)
-
-        self.text_order_layout_ta = QtWidgets.QVBoxLayout()
-        self.layout.addLayout(self.text_order_layout_ta, 2,0,1,1)
-        self.text_order_layout_ta.addWidget(self.UVOverride)
-
-        self.uv_dial = QtWidgets.QComboBox()
-        self.uv_dial.addItems(uv_select)
-        self.UVSetupLayout.addWidget(self.uv_dial)
+        self.ss_order_layout_ta.addWidget(self.uv_app_frame)
             
-        self.uvmap_button = QtWidgets.QPushButton("Apply UVmap")
-        self.connect(self.uvmap_button, SIGNAL("clicked()"),
-                    lambda: self.type_uv(uv_load=self.uv_dial))
-        self.UVSetupLayout.addWidget(self.uvmap_button)   
+            
+        #UVMAP
+        self.uv_map_layout = QtWidgets.QGridLayout()
+        self.uv_map_frame = QtWidgets.QFrame()
+        self.uv_map_frame.setStyleSheet('color: #ffffff; background-color: rgba(255,255,255,30); border-style: solid; border-color:#434343;')
+        self.uv_map_frame.setLayout(self.uv_map_layout)
+
+        self.uv_map_drpdwn_vbox_layout = QtWidgets.QVBoxLayout()
+        self.layout.addLayout(self.uv_map_drpdwn_vbox_layout, 2,0,1,1)
+        self.uv_map_drpdwn_vbox_layout.addWidget(self.uv_map_frame)
+
+        self.uv_dial_combobox = QtWidgets.QComboBox()
+        self.uv_dial_combobox.addItems(uv_select)
+        self.uv_map_layout.addWidget(self.uv_dial_combobox)
+
+
+        self.uv_map_button = QtWidgets.QPushButton('Apply UVmap')
+        self.connect(self.uv_map_button, SIGNAL('clicked()'),
+                    lambda: self.apply_uv_map(uv_load=self.uv_dial_combobox))
+        self.uv_map_layout.addWidget(self.uv_map_button)   
 
         self.setLayout(self.layout)
+
+
+    def help_page_launch(self):
+        """
+        opens the helppage for tool in confluence
+        """
+        url='https://atlas.bydeluxe.com/confluence/display/~deglaue/Set+Color+Tool'
+        subprocess.Popen('gio open %s' % url, stdout=subprocess.PIPE, shell=True) 
+
+
+    def v_tile_force(self):
+        """
+        forces the U tile slider to match the value on V tile slider
+        """
+        get_text_from_field = self.v_tile_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.u_tile_slider.setValue(get_text_from_field)
+
+    def u_tile_force(self):
+        """
+        forces the V tile slider to match the value on U tile slider
+        """        
+        get_text_from_field = self.u_tile_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.v_tile_slider.setValue(get_text_from_field)
+            
+    def v_trns_force(self):
+        """
+        forces the V offset slider to match the value on U offset slider
+        """              
+        get_text_from_field = self.v_trns_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.u_trns_slider.setValue(get_text_from_field)
+
+    def u_trns_force(self):
+        """
+        forces the U offset slider to match the value on V offset slider
+        """          
+        get_text_from_field = self.u_trns_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.v_trns_sider.setValue(get_text_from_field)
+            
+
+    def slider_set_u_tile_text(self):
+        """
+        This connects the U tile slider to the field
+        """          
+        get_size_from_slider = self.u_tile_slider.value()
+        size_mult = get_size_from_slider*0.10
+        self.u_tile_line_edit.setText(str(size_mult))
+
+    def slider_set_rot_text(self):
+        """
+        This connects the rotation slider value to the field of the rotation
+        """         
+        get_size_from_slider = self.uv_rot_slider.value()
+        self.uv_rot_line_edit.setText(str(get_size_from_slider))
+
+    def text_set_rot_slider(self):
+        """
+        This updates the rotation slider value to the value in the field(in case of user input)
+        """
+        get_text_from_field = self.uv_rot_line_edit.text()
+        get_text_from_field = int(get_text_from_field)
+        self.uv_rot_slider.setValue(get_text_from_field)
+            
+    def slider_set_u_trns_text(self):
+        """
+        This updates the rotation slider value to the value in the field(in case of user input)
+        """        
+        get_size_from_slider = self.u_trns_slider.value()
+        size_mult = get_size_from_slider*0.10
+        self.u_trns_line_edit.setText(str(size_mult))
+
+    def text_set_u_trns_slider(self):
+        """
+        sets the U translate slider to text number
+        """         
+        get_text_from_field = self.u_trns_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.u_trns_slider.setValue(get_text_from_field)
+            
+
+    def slider_set_v_trns_text(self):
+        """
+        sets the V translate slider to text number
+        """         
+        get_size_from_slider = self.v_trns_sider.value()
+        size_mult = get_size_from_slider*0.10
+        self.v_trns_line_edit.setText(str(size_mult))
+
+    def text_set_v_trns_slider(self):
+        """
+        sets the V translate text to the slider value
+        """         
+        get_text_from_field = self.v_trns_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.v_trns_sider.setValue(get_text_from_field)
+
+    def slider_set_v_tile_text(self):
+        """
+        sets the U tile slider to text number
+        """          
+        get_size_from_slider = self.v_tile_slider.value()
+        size_mult = get_size_from_slider*0.10
+        self.v_tile_line_edit.setText(str(size_mult))
+
+    def text_set_u_tile_slider(self):
+        """
+        Sets the U tile slider to the text value
+        """           
+        get_text_from_field = self.u_tile_line_edit.text()
+        get_text_from_field = float(get_text_from_field)*10
+        self.u_tile_slider.setValue(get_text_from_field)
+            
+    def text_set_v_tile_slider(self):
+        """
+        Sets the V tile slider to the text value
+        """         
+        get_text_from_field = self.v_tile_line_edit.text()
+        get_text_from_field = float(getvtText)*10
+        self.v_tile_slider.setValue(get_text_from_field)
+
+    def uv_collection(self):
+        """
+        Function to return all values currently set in the UV placement interface
+        """          
+        u_tile_value = float(self.u_tile_line_edit.text())
+        v_tile_value = float(self.v_tile_line_edit.text())
+        UV_rot = self.uv_rot_slider.value()
+        UV_rotnum = int(UV_rot)
+        u_trns_value = float(self.v_trns_line_edit.text())
+        v_trns_value = float(self.v_trns_line_edit.text())
+        return u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value
+
+
+    def obtain_uv_Setting(self): 
+        """This function will interrogate the current selected object shader for the UV settings and update interface with this"""
+        try:
+            get_sel_obj = mc.ls(sl=1, fl=1)[0]
+            if len(get_sel_obj)>0:
+                placement_node_p2dt = '{}_p2dt'.format(get_sel_obj)
+                if mc.objExists(placement_node_p2dt) == True:
+                    u_tile_value = mc.getAttr('{}.repeatU'.format(placement_node_p2dt))
+                    self.u_tile_slider.setValue(u_tile_value*10)
+                    v_tile_value = mc.getAttr('{}.repeatV'.format(placement_node_p2dt))
+                    self.v_tile_slider.setValue(v_tile_value*10)
+                    u_trns_value = mc.getAttr('{}.offsetU'.format(placement_node_p2dt))
+                    self.u_trns_slider.setValue(u_trns_value*10)
+                    v_trns_value = mc.getAttr('{}.offsetV'.format(placement_node_p2dt))
+                    self.v_trns_sider.setValue(v_trns_value*10)
+                    UV_rotnum = mc.getAttr('{}.rotateUV'.format(placement_node_p2dt))
+                    self.uv_rot_slider.setValue(UV_rotnum)
+                else:
+                    print ' no object in scene called {}'.format(placement_node_p2dt)
+        except:
+            print 'nothing selected'
+            return
+
+    def reset_uv_ui(self):  
+        """This resets the interface to default values so you dont have to reload or reset manually"""
+        get_sel_obj = mc.ls(sl=1, fl=1)
+        if len(get_sel_obj)>0:
+            pass
+        else:
+            print 'nothing selected'
+            return
+        self.u_tile_slider.setValue(10)
+        self.v_tile_slider.setValue(10)
+        self.u_trns_slider.setValue(0)
+        self.v_trns_sider.setValue(0.0)
+        self.uv_rot_slider.setValue(0.0)
+            
+    def apply_uv_setting(self):
+        """This applies the current UV slider values to the current selection in scene"""
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection()  
+        get_sel_obj = mc.ls(sl=1, fl=1)
+        if len(get_sel_obj)>0:
+            pass
+        else:
+            print 'nothing selected'
+            return
+        for each_sel_obj in get_sel_obj:
+            placement_node_p2dt = '{}_p2dt'.format(each_sel_obj)
+            mc.setAttr('{}.repeatU'.format(placement_node_p2dt), u_tile_value)
+            mc.setAttr('{}.repeatV'.format(placement_node_p2dt), v_tile_value)
+            mc.setAttr('{}.offsetU'.format(placement_node_p2dt), u_trns_value)
+            mc.setAttr('{}.offsetV'.format(placement_node_p2dt), v_trns_value)
+            mc.setAttr('{}.rotateUV'.format(placement_node_p2dt), UV_rotnum)
+            
+            
+    def apply_uv_map(self, uv_load):
+        """This is the function that applies a uv map from the dropdown menu"""
+        u_tile_value, v_tile_value, UV_rotnum, u_trns_value, v_trns_value =self.uv_collection()   
+        imgfile_name=uv_load.currentText() 
+        imgfile = maphome+imgfile_name
+        get_sel_obj = mc.ls(sl=1, fl=1)
+        if len(get_sel_obj)>0:
+            pass
+        else:
+            print 'nothing selected'
+            return
+        for each_sel_obj in get_sel_obj:
+            """First clear any remaining maps on current selected objects"""
+            placement_node_p2dt = '{}_p2dt'.format(each_sel_obj)
+            name_file_node = '{}_file'.format(each_sel_obj)
+            name_chkr_node = '{}_ckr'.format(each_sel_obj)
+            name_shdr_nde = '{}_shd'.format(each_sel_obj)
+            name_SG_node = '{}_shdSG'.format(each_sel_obj)
+            if len(mc.ls(name_shdr_nde))>0:
+                    mc.delete(name_shdr_nde)
+                    mc.delete(name_SG_node)
+                    try:
+                        mc.delete(placement_node_p2dt)
+                    except:
+                        pass
+                    try:
+                        mc.delete(name_file_node)
+                    except:
+                        pass
+                    try:
+                        mc.delete(name_chkr_node)
+                    except:
+                        pass
+            """Now create fresh shaders and nodes for the map"""
+            create_shade_node = mc.shadingNode('lambert', asShader=True, n=name_shdr_nde)
+            mc.shadingNode('place2dTexture', asUtility=True, n=placement_node_p2dt)
+            mc.shadingNode('file', asTexture = 1, isColorManaged = 1, n=name_file_node)
+            lst_sg_node=[create_shade_node]
+            """put it inside the texture set for easy finding later"""
+            set_name='techanim_textures' 
+            if mc.objExists(set_name):
+                pass
+            else:
+                mc.sets(n=set_name, co=3)
+            """now set and hook everything up"""
+            mc.sets(lst_sg_node, add=set_name)
+            mc.select(each_sel_obj)
+            mc.hyperShade(assign=str(create_shade_node))           
+            mc.connectAttr('{}.outUV'.format(placement_node_p2dt),'{}.uv'.format(name_file_node), force=1)            
+            mc.connectAttr('{}.outUvFilterSize'.format(placement_node_p2dt), '{}.uvFilterSize'.format(name_file_node), force=1)    
+            mc.connectAttr('{}.outColor'.format(name_file_node),  '{}_shd.color'.format(each_sel_obj), f=1)
+            mc.setAttr('{}.fileTextureName'.format(name_file_node),  imgfile, type = 'string')
+            mc.setAttr('{}.repeatU'.format(placement_node_p2dt), u_tile_value)
+            mc.setAttr('{}.repeatV'.format(placement_node_p2dt), v_tile_value)
+            mc.setAttr('{}.offsetU'.format(placement_node_p2dt), u_trns_value)
+            mc.setAttr('{}.offsetV'.format(placement_node_p2dt), v_trns_value)
+            mc.setAttr('{}.rotateUV'.format(placement_node_p2dt), UV_rotnum)              
+        mc.select(get_sel_obj, r=1) 
+
+
+
+
+
+
+                                           
+
+
+            
+            
+            
+            
+            
             
 
     def extractAction(self):
