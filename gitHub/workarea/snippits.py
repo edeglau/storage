@@ -2108,4 +2108,14 @@ if (len(acksel))==0:
             getControllerBucket=smlinfluencedCtrl              
  
         print getControllerBucket
-        
+    
+    
+    
+    
+    
+import sys
+sys.path.append("C:/Users/edegl/git/storage/gitHub/rigmodules/")
+
+import RigToolKit
+go=RigToolKit.ToolKitUI()
+go.create()
