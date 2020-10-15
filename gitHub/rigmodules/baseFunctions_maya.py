@@ -19,7 +19,7 @@ import maya.cmds as cmds
 import sys, os, glob
 import maya.mel
 
-from numpy import arange
+# from numpy import arange
 
 
 getdef=[".sx", ".sy", ".sz", ".rx", ".ry", ".rz", ".tx", ".ty", ".tz", ".visibility"]
@@ -471,7 +471,7 @@ class BaseClass():
             cmds.select(eachChild)
             cmds.skinPercent(skinID, normalize=1) 
 	
-     def getinput(self):
+    def getinput(self):
         excluded=["BaseShape"]
         foundinput= [(each) for each in cmds.listConnections(cmds.ls(sl=1)[0], s=1, c=1, p=1, scn=1, sh = 1, d=0) for item in inputTypes for nono in excluded if item in each if nono not in each]        
         cmds.select(foundinput[0], r=1)
@@ -1113,25 +1113,25 @@ class BaseClass():
             inp.write(str(collection_of_valueRZ))
         inp.close()
 
-    def plot_matrix(self):
-        from numpy import arange
-        selObj=cmds.ls(sl=1, fl=1)      
-        if len(selObj)>0:
-            pass
-        else:
-            print "Select 1 object" 
-        getTopRange=cmds.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
-        getLowRange=cmds.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
-        edgeBucket=[]
-        getRange=arange(getLowRange,getTopRange, 1 )
-        getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
-        for each in getRange:
-            cmds.currentTime(each)            
-            matrix=cmds.xform(selObj[0], q=1, ws=1, m=1)
-            cmds.xform(getloc[0], ws=1, m=matrix)       
-            cmds.SetKeyTranslate(getloc[0])          
-            cmds.SetKeyRotate(getloc[0])
-            cmds.currentTime(each)
+#     def plot_matrix(self):
+#         from numpy import arange
+#         selObj=cmds.ls(sl=1, fl=1)      
+#         if len(selObj)>0:
+#             pass
+#         else:
+#             print "Select 1 object" 
+#         getTopRange=cmds.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
+#         getLowRange=cmds.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
+#         edgeBucket=[]
+#         getRange=arange(getLowRange,getTopRange, 1 )
+#         getloc=cmds.spaceLocator(n=selObj[0]+"cnstr_lctr")
+#         for each in getRange:
+#             cmds.currentTime(each)            
+#             matrix=cmds.xform(selObj[0], q=1, ws=1, m=1)
+#             cmds.xform(getloc[0], ws=1, m=matrix)       
+#             cmds.SetKeyTranslate(getloc[0])          
+#             cmds.SetKeyRotate(getloc[0])
+#             cmds.currentTime(each)
 
     def removekey_callup(self, each):
         cmds.select(each)
@@ -1587,7 +1587,7 @@ class BaseClass():
                 except:
                     pass
                 name=self.guide_names(indexNumber, guideName) 
-                if objExists(name):
+                if cmds.objExists(name) == True:
                     name=self.nameExist(guideName, namePortionTwo)               
                 transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selectionCheck[eachPoint])
                 self.guideBuild(name, transformWorldMatrix, rotateWorldMatrix, colour1, colour2, colour3)
@@ -1604,7 +1604,7 @@ class BaseClass():
         else:
             indexNumber=00
             name=self.guide_names(indexNumber, guideName) 
-            if objExists(name):
+            if cmds.objExists(name) == True:
                 name=self.nameExist(guideName, namePortionTwo)
                 # getNumbs=[]
                 # getAll=cmds.ls(guideName+"*_guide")
@@ -3593,20 +3593,20 @@ class BaseClass():
             cmds.select(childItem, add=1)
             cmds.blendShape(n=str(parentItem[0])+"_BShape", w=(0, 1.0)) 
 
-    def blendSearch(self):
-        selObj=cmds.ls(sl=1, fl=1)
-        parentObj=selObj[0]
-        childrenObj=selObj[1]
-        getparentObj=cmds.listRelatives(parentObj, ad=1, type="mesh")
-        getchildObj=cmds.listRelatives(childrenObj, ad=1, type="mesh")
-        for parentItem in getparentObj:
-            for childItem in getchildObj:
-            	if "Orig" not in str(pm.PyNode(parentItem).nodeName()):
-            		if str(pm.PyNode(childItem).nodeName()) in str(pm.PyNode(parentItem).nodeName())
-	                    parentItemls=pm.ls(parentItem)
-	                    childItemls=pm.ls(childItem)
-                    	defName=str(pm.PyNode(parentItem).nodeName())+"_BS"
-                    	BlendShapeName=cmds.blendShape(childItemls, parentItemls, n=defName, w=(0, 1.0))
+#     def blendSearch(self):
+#         selObj=cmds.ls(sl=1, fl=1)
+#         parentObj=selObj[0]
+#         childrenObj=selObj[1]
+#         getparentObj=cmds.listRelatives(parentObj, ad=1, type="mesh")
+#         getchildObj=cmds.listRelatives(childrenObj, ad=1, type="mesh")
+#         for parentItem in getparentObj:
+#             for childItem in getchildObj:
+#                 if "Orig" not in str(pm.PyNode(parentItem).nodeName()):
+#                     if str(pm.PyNode(childItem).nodeName()) in str(pm.PyNode(parentItem).nodeName())
+#                         parentItemls=pm.ls(parentItem)
+#                         childItemls=pm.ls(childItem)
+#                         defName=str(pm.PyNode(parentItem).nodeName())+"_BS"
+#                         BlendShapeName=cmds.blendShape(childItemls, parentItemls, n=defName, w=(0, 1.0))
 
     def mirrorBlendshape(self):
         selObj=cmds.ls(sl=1)
@@ -4163,7 +4163,7 @@ class BaseClass():
             # cmds.parent(newObj[0],getParent)
     
     def locationXForm(self, each):
-        getObj=ls(each)[0]
+        getObj=cmds.ls(each)[0]
         #transform=getObj.getTranslation()
         transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0.0, 0.0, 0.0]:

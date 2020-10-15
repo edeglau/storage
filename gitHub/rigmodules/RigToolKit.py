@@ -28,7 +28,7 @@ __version__ = 1.00
 
 
 
-scriptPath=""
+scriptPath="C:/Users/edegl/git/storage/gitHub/rigmodules"
 sys.path.append(str(scriptPath))
 
 getToolArrayPath=str(scriptPath)+"/Tools.py"
@@ -41,8 +41,9 @@ exec(open(getBasePath))
 getBaseClass=BaseClass()
 
 #gtepiece=getfilePath.split("\\")
-getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
-sys.path.append(str(getguideFilepath))
+# getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
+# print getguideFilepath
+# sys.path.append(str(getguideFilepath))
 
 getSAFilepath='/'.join(gtepiece[:-2])+"/selectArray/"
 sys.path.append(str(getSAFilepath))
@@ -57,6 +58,7 @@ getSSDArrayPath='/'.join(gtepiece[:-2])+"/SSD/"
 sys.path.append(str(getSSDArrayPath))
 
 getToolArrayPath='/'.join(gtepiece[:-2])+"/tools/"
+print getToolArrayPath
 sys.path.append(str(getToolArrayPath))
 
 getScenePath=cmds.file(q=1, location=1)
@@ -388,6 +390,7 @@ class ToolKitUI(object):
 
         
     def _guides(self, arg=None):
+#         getguideFilepath.combinedGuides()
         import combinedGuides
         reload (combinedGuides)
         combinedGuides.GuideUI()

@@ -49,24 +49,19 @@ from inspect import getsourcefile
 from os.path import abspath
 
 getfilePath=str(abspath(getsourcefile(lambda _: None)))
-
+print getfilePath
 if "Windows" in OSplatform:
     gtepiece=getfilePath.split("\\")
-    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
     
-    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+    scriptPath="C:/Users/edegl/git/storage/gitHub/rigmodules"
     sys.path.append(str(scriptPath))
     
-    getBasePath=str(scriptPath)+"\baseFunctions_maya.py"
-    exec(open(getBasePath))
-    getBaseClass=BaseClass()    
+
     
 if "Linux" in OSplatform: 
     scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
     sys.path.append(str(scriptPath))
-    
-    
-    
     getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
     exec(open(getBasePath))
     getBaseClass=BaseClass()
@@ -84,6 +79,13 @@ if "Linux" in OSplatform:
 # exec(open(stretchIKpath))
 # getIKClass=stretchIKClass()
 
+
+getBasePath=str(scriptPath)+"/baseFunctions_maya.py"
+import baseFunctions_maya
+reload(baseFunctions_maya)
+getBaseClass = baseFunctions_maya.BaseClass()     
+#     
+    
 gtepiece=getfilePath.split("/")
 getguideFilepath='/'.join(gtepiece[:-2])+"/guides/"
 sys.path.append(str(getguideFilepath))
