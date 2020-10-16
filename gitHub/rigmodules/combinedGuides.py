@@ -56,11 +56,17 @@ class GuideUI(object):
         cmds.button (label='Pface Guides', p='listBuildButtonLayout', command = self.build_previs_face_guides)    
         cmds.button (label='Save Guides', p='listBuildButtonLayout', command = self.save_guides)
         cmds.button (label='Open Guides', p='listBuildButtonLayout', command = self.open_guides)        
+        cmds.button (label='Extra Guides', p='listBuildButtonLayout', command = self.open_extra_guides)        
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')
 #         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
 #         cmds.text (label='http://creativecommons.org/licenses/by/4.0/', hl=1, w=350, al='left', p='selectArrayColumn')        
         cmds.showWindow(self.window)
 
+    def open_extra_guides(self, arg=None):
+        import extraGuides
+        reload(extraGuides)
+        extraGuides.GuideUI()
+        
     def build_arm_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
         cmds.rename(Ggrp, "Guides_Arm_grp")

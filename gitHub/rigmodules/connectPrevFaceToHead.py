@@ -19,14 +19,24 @@ __version__ = 1.00
 
 class PFaceConn(object):
     def __init__(self): 
-        cmds.parent("Jaw_Ctrl_nod_grp", "head01_jnt")
-
-        cmds.parent("EyeMask_Ctrl_grp", "EyeMask_Offset_Ctrl")
+        try:
+            cmds.parent("Jaw_Ctrl_nod_grp", "head01_jnt")
+        except:
+            pass
+        try:
+            cmds.parent("EyeMask_Ctrl_grp", "EyeMask_Offset_Ctrl")
+        except:
+            pass
         try:
             cmds.parent("EyeMask_Offset_grp", "UpperBody_Ctrl")
         except:
+            pass
+        try:
             cmds.parent("EyeMask_Offset_grp", "LowerBody_Ctrl")
-        cmds.parentConstraint("Head_Ctrl", "EyeMask_Offset_Ctrl", mo=1)
-        
- 
+        except:
+            pass
+        try:
+            cmds.parentConstraint("Head_Ctrl", "EyeMask_Offset_Ctrl", mo=1)
+        except:
+            pass
         

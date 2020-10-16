@@ -4163,12 +4163,13 @@ class BaseClass():
             # cmds.parent(newObj[0],getParent)
     
     def locationXForm(self, each):
+        print each
         getObj=cmds.ls(each)[0]
         #transform=getObj.getTranslation()
         transform=cmds.xform(each , q=True, ws=1, t=True)
         if transform==[0.0, 0.0, 0.0]:
-            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
-            #transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)
+#             transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
+            transformWorldMatrix = cmds.xform(each, q=True, wd=1, sp=True)
             rotateWorldMatrix = cmds.xform(each, q=True, wd=1, ra=True)
         else:
 #            transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]

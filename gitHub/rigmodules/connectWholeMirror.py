@@ -18,8 +18,6 @@ __version__ = 1.00
 
 class BodConn(object):
     def __init__(self):
-        
-
         Side=["Right", "Left"]
         for eachSide in Side:    
             try:
@@ -44,16 +42,37 @@ class BodConn(object):
             
             #this causes fk arm to follow body - needs work
 #             cmds.orientConstraint("UpperBody_Ctrl", "armshoulder"+eachSide+"_grp", mo=1)
-            bindSpine=[(each) for each in cmds.listRelatives("spine01_jnt", ad=1, typ="joint") if "spine" in each]
-            cmds.parent("armcollar"+eachSide+"_nod_grp", "spineArmParent_nod")
-            cmds.parent("leghip"+eachSide+"_nod_grp","Hips_Ctrl")
-            cmds.parent("leghip"+eachSide+"FK_jnt","Hips_Ctrl")
-            cmds.parent("leghip"+eachSide+"IK_jnt","Hips_Ctrl")
+#             bindSpine=[(each) for each in cmds.listRelatives("spine01_jnt", ad=1, typ="joint") if "spine" in each]
+            cmds.orientConstraint("UpperBody_Ctrl", "armshoulder"+eachSide+"_grp", mo=1)
+            try:
+                cmds.parent("leghip"+eachSide+"_nod_grp","Hips_Ctrl")
+            except:
+                pass
+            try:
+                cmds.parent("leghip"+eachSide+"FK_jnt","Hips_Ctrl")
+            except:
+                pass
+            try:        
+                cmds.parent("leghip"+eachSide+"IK_jnt","Hips_Ctrl")
+            except:
+                pass
 
-            cmds.parent("footheel"+eachSide+"IK_grp","Main_Ctrl")
-            cmds.addAttr("Hips_Ctrl", ln="Leg"+eachSide+"FK_IK", min=0, max=1, at="double", en="FK:IK:", k=1, nn="Leg"+eachSide+"FK_IK")
-            cmds.connectAttr("Hips_Ctrl.Leg"+eachSide+"FK_IK", "leghip"+eachSide+"_ctrl."+eachSide+"LegFK_IK")
-            cmds.setAttr("Hips_Ctrl.Leg"+eachSide+"FK_IK", 1)
+            try:
+                cmds.parent("footheel"+eachSide+"IK_grp","Main_Ctrl")
+            except:
+                pass
+            try:
+                cmds.addAttr("Hips_Ctrl", ln="Leg"+eachSide+"FK_IK", min=0, max=1, at="double", en="FK:IK:", k=1, nn="Leg"+eachSide+"FK_IK")
+            except:
+                pass            
+            try:
+                cmds.connectAttr("Hips_Ctrl.Leg"+eachSide+"FK_IK", "leghip"+eachSide+"_ctrl."+eachSide+"LegFK_IK")
+            except:
+                pass
+            try:
+                cmds.setAttr("Hips_Ctrl.Leg"+eachSide+"FK_IK", 1)
+            except:
+                pass
 
             ChildActivatedValue=1
             ChildDeactivatedValue=0
@@ -76,7 +95,10 @@ class BodConn(object):
         
         
         gethandles=cmds.select()
-        cmds.setAttr("spineIK.visibility", 0)
+        try:
+            cmds.setAttr("spineIK.visibility", 0)
+        except:
+            pass        
         
         getHandles=cmds.ls(typ="ikHandle")
         for each in getHandles:
