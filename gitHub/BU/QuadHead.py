@@ -11,8 +11,11 @@ import stretchIK
 reload (stretchIK)
 getIKClass=stretchIK.stretchIKClass()
 
+'''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
+'This work is licensed under a Creative Commons License'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 import maya.cmds as cmds
 import maya.mel
@@ -33,7 +36,11 @@ class HeadRig(object):
             lastNeckJoint=neckChildBones[:1]
         except:
             lastNeckJoint='neck01_jnt'
-        cmds.parent("head01_jnt", lastNeckJoint)
+        try:
+            cmds.parent("head01_jnt", lastNeckJoint)
+        except:
+            print "no neck, neck connect skipped"
+            pass
 
 
         resetOrient=[
@@ -77,11 +84,15 @@ class HeadRig(object):
         
 
         cmds.parentConstraint("Head_Ctrl", "head01_jnt", mo=1)
-        neckjoints=[(each) for each in cmds.listRelatives("neck01_jnt", ad=1, typ="joint")]
+        try:
+            neckjoints=[(each) for each in cmds.listRelatives("neck01_jnt", ad=1, typ="joint")]
         #cmds.parentConstraint("head01_grp", neckjoints[-1:], mo=1)
         #cmds.parent("head01_jnt", neckjoints[0])
         
-        cmds.parent("head01_grp", "neckParent_nod")
+            cmds.parent("head01_grp", "neckParent_nod")
+        except:
+            print "no neck present, skipped neck connect"
+            pass
 
 #         cmds.pointConstraint("neckParent_nod", "head01_grp", mo=1)
 #         

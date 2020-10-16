@@ -54,6 +54,8 @@ class GuideUI(object):
         cmds.button (label='Hand Guides', p='listBuildButtonLayout', command = self.build_hand_guides)
         cmds.button (label='Tail Guides', p='listBuildButtonLayout', command = self.build_tail_guides)    
         cmds.button (label='Pface Guides', p='listBuildButtonLayout', command = self.build_previs_face_guides)    
+        cmds.button (label='hoof rear Guides', p='listBuildButtonLayout', command = self.build_hoofrear_guides)    
+        cmds.button (label='hoof front Guides', p='listBuildButtonLayout', command = self.build_hooffrnt_guides)    
         cmds.button (label='Save Guides', p='listBuildButtonLayout', command = self.save_guides)
         cmds.button (label='Open Guides', p='listBuildButtonLayout', command = self.open_guides)        
         cmds.button (label='Extra Guides', p='listBuildButtonLayout', command = self.open_extra_guides)        
@@ -61,7 +63,46 @@ class GuideUI(object):
 #         cmds.text (label='This work is licensed under a Creative Commons License', hl=1, w=300, al='left', p='selectArrayColumn')
 #         cmds.text (label='http://creativecommons.org/licenses/by/4.0/', hl=1, w=350, al='left', p='selectArrayColumn')        
         cmds.showWindow(self.window)
+        
+        
 
+        
+    def build_hoofrear_guides(self, arg=None):
+        Ggrp=cmds.CreateEmptyGroup()
+        cmds.rename(Ggrp, "Guides_hoofrr_grp")
+        guideDict= {
+                    "anklerearRight_guide":[-5.0, 3.0970688461279243, -8.513027336231843, 0.0, -0.0,  0.0],
+                    "heelrearLeft_guide":[5.0, 2.465190328815662e-31, -10.650904482274765, 0.0, -0.0,  0.0],
+                    "heelrearRight_guide":[-5.0, 2.465190328815662e-31, -10.650904482274765, 0.0, -0.0,  0.0],
+                    "toeTipRearRight_guide":[-5.000000000000002, -3.810384843470966e-15, -3.1231798833917024, 0.0, -0.0,  0.0],
+                    "toerearRight_guide":[-5.082752227783203, 0.026624999940395355, -6.458255767822266, 0.0, -0.0,  0.0],
+                    }
+        colour1, colour2, colour3=17, 17, 17      
+        for key, value in guideDict.items():
+            Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
+            cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
+            cmds.rotate(value[3], value[4], value[5], Guide)       
+            #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
+            cmds.parent(key,"Guides_hoofrr_grp")
+            
+    def build_hooffrnt_guides(self, arg=None):
+        Ggrp=cmds.CreateEmptyGroup()
+        cmds.rename(Ggrp, "Guides_hooffrnt_grp")
+        guideDict= {
+                    "anklefrontRight_guide":[-5.0, 3.1118345297879775, 8.047503453420148, 0.0, -0.0,  0.0],
+                    "heelfrontLeft_guide":[5.0, 2.465190328815662e-31, 7.51108154717235, 0.0, -0.0,  0.0],
+                    "heelfrontRight_guide":[-5.0, 2.465190328815662e-31, 7.51108154717235, 0.0, -0.0,  0.0],
+                    "toeTipFrontRight_guide":[-4.999999795034595, 1.0373128559286908e-14, 14.985817311891347, 0.0, -0.0,  0.0],
+                    "toefrontRight_guide":[-4.999999867018048, 8.881784197001252e-15, 11.627608356667464, 0.0, -0.0,  0.0],
+                    }    
+        colour1, colour2, colour3=17, 17, 17         
+        for key, value in guideDict.items():
+            Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
+            cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
+            cmds.rotate(value[3], value[4], value[5], Guide)       
+            #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
+            cmds.parent(key,"Guides_hooffrnt_grp")
+            
     def open_extra_guides(self, arg=None):
         import extraGuides
         reload(extraGuides)

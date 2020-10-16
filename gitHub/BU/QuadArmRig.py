@@ -9,9 +9,11 @@ import os, subprocess, sys, platform
 from os  import popen
 from sys import stdin
 
+'''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-
+'This work is licensed under a Creative Commons License'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 filepath= os.getcwd()
 sys.path.append(str(filepath))

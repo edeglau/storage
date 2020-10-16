@@ -9,9 +9,11 @@ import os, subprocess, sys, platform
 from os  import popen
 from sys import stdin
 
+'''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
-
+'This work is licensed under a Creative Commons License'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
 filepath= os.getcwd()
 sys.path.append(str(filepath))
@@ -26,6 +28,45 @@ getIKClass=stretchIK.stretchIKClass()
 
 class ArmRig(object):
     def __init__(self):
+        winName = "Size set"
+        global typeMenu
+        winTitle = winName
+        if cmds.window(winName, exists=True):
+                cmds.deleteUI(winName)
+
+#         self.window = cmds.window(self.winName, title=self.winTitle, tbm=1, w=150, h=100 )
+        window = cmds.window(winName, title=winTitle, tbm=1, w=250, h=100 )
+
+        cmds.menuBarLayout(h=30)
+        cmds.rowColumnLayout  (' selectArrayRow ', nr=1, w=250)
+
+        cmds.frameLayout('LrRow', label='', lv=0, nch=1, borderStyle='out', bv=1, p='selectArrayRow')
+        
+        cmds.rowLayout  (' rMainRow ', w=300, numberOfColumns=6, p='selectArrayRow')
+        cmds.columnLayout ('selectArrayColumn', parent = 'rMainRow')
+        cmds.setParent ('selectArrayColumn')
+        cmds.separator(h=10, p='selectArrayColumn')
+        cmds.gridLayout('listBuildButtonLayout', p='selectArrayColumn', numberOfColumns=2, cellWidthHeight=(100, 20))
+        typeMenu=cmds.optionMenu( label='ctrl size')
+        cmds.menuItem( label="Large" )
+        cmds.menuItem( label="Med" )
+        cmds.menuItem( label="Small" )           
+        cmds.button (label='Change Selection', p='listBuildButtonLayout', command = lambda *args:self.controllerSize())
+        cmds.showWindow(window)    
+    def controllerSize(self):
+        queryType=cmds.optionMenu(typeMenu, q=1, sl=1)
+        if queryType==1:
+            controlSize=[20, 15, 10, 3, 4]
+            controlDist=[30.0, 40.0]
+        elif queryType==2:
+            controlSize=[15, 12, 7, 3, 2]
+            controlDist=[10.0, 15.0]
+        elif queryType==3:
+            controlSize=[7, 6, 5, 1, 1]
+            controlDist=[5.0, 7.0]
+        self.createLimb(controlSize, controlDist)
+
+    def createLimb(self, controlSize, controlDist):
         getGuide=cmds.ls("*_guide")
         shoulderShrug=("armcollarRight_guide",
                         "armshoulderRight_guide", )
@@ -99,22 +140,21 @@ class ArmRig(object):
                 name=eachjoint+"_ctrl"
                 grpname=eachjoint+"_grp"  
                 if "shoulder" in eachjoint:
-                    size=15
+                    size=controlSize[1]
                     colour=6
                 if "wrist" in eachjoint:
                     nrx=0
                     nry=1
                     nrz=0            
                 else:
-                    size=10
+                    size=controlSize[2]
                     colour=6
                     nrx=1
                     nry=0
                     nrz=0
                 getTranslation, getRotation=getClass.locationXForm(eachPiece)
                 getClass.buildCtrl(eachjoint, name, grpname, getTranslation, getRotation, size, colour, nrx, nry, nrz)
-                if "shoulder" in eachjoint and "Right" in eachjoint:
-                    cmds.rotate(0, 180, 0, grpname)             
+       
 
                                      
             
@@ -123,12 +163,12 @@ class ArmRig(object):
                 name=eachjoint+"IK_ctrl"
                 grpname=eachjoint+"IK_grp" 
                 if "collar" in eachjoint:
-                    size=20
+                    size=controlSize[0]
                     nrx=1
                     nry=0
                     nrz=0                    
                 else:
-                    size=20
+                    size=controlSize[0]
                     nrx=0
                     nry=1
                     nrz=0                    
@@ -148,7 +188,7 @@ class ArmRig(object):
    
             eachPiece="armwrist"+eachSide+"_jnt"              
             getTranslation, getRotation=getClass.locationXForm(eachPiece)
-            size=4
+            size=controlSize[4]
             name="armwrist"+eachSide+"_offset_IK_ctrl"
             grpname="armwrist"+eachSide+"_offset_IK_grp"
             colour=23
@@ -194,18 +234,18 @@ class ArmRig(object):
             for each in IKHandlesLimbs:
                 name=each+"_jnt_ikPole_lctr"
                 grpname=each+"_jnt_ikPole_lctr_grp"
-                num=3
+                num=controlSize[3]
                 color=13                
                 getTranslation=cmds.xform(each+"_jnt", q=1, t=1, ws=1)
                 if "elbow" in each:
                     getClass.JackI(name, grpname, num, getTranslation, (0.0,0.0,0.0), color)
-                    cmds.move( 0.0, 0.0, 30.0,grpname,r=1, rpr=1)                    
+                    cmds.move( 0.0, 0.0, -controlDist[0],grpname,r=1, rpr=1)                    
                 elif "wrist" in each and "Right" in each:
                     getClass.JackI(name, grpname, num, getTranslation, (0.0,0.0,0.0), color)
-                    cmds.move( 40.0, 0.0, -30.0,grpname,r=1, rpr=1)                     
+                    cmds.move( controlDist[1], 0.0, -controlDist[0],grpname,r=1, rpr=1)                     
                 elif "wrist" in each and "Left" in each:
                     getClass.JackI(name, grpname, num, getTranslation, (0.0,0.0,0.0), color)
-                    cmds.move( -40.0, 0.0, -30.0,grpname,r=1, rpr=1)                     
+                    cmds.move( -controlDist[1], 0.0, -controlDist[0],grpname,r=1, rpr=1)                     
                 else:
                     getClass.JackI(name, grpname, num, getTranslation, (0.0,0.0,0.0), color)                   
  
@@ -213,7 +253,17 @@ class ArmRig(object):
                 cmds.move(getTranslation[0], getTranslation[1], getTranslation[2],each+"_jnt_ikPole_lctr"+"_grp"+".rotatePivot", ws=1, rpr=1 )
                 if 'wrist' in each:
                      cmds.setAttr(each+"_jnt_ikPole_lctr.visibility", 0)
-
+                name=each+"FK_target"
+                grpname=each+"FK_target"+"_grp"
+                print grpname
+                num=3
+                color=22
+                if "elbow" in each:
+                    getClass.JackI(name, grpname, num, getTranslation, (0.0,0.0,0.0), color)
+                    cmds.move( 0.0, 0.0, -controlDist[0],grpname,r=1, rpr=1)     
+                    cmds.parent(grpname,each+"FK_jnt")
+                    cmds.setAttr(name+".visibility", 0)
+                    cmds.makeIdentity(name, a=True, t=1, s=1, r=1, n=0)  
             cmds.ikHandle(n="armwrist"+eachSide+"_ik", sj="armshoulder"+eachSide+"IK_jnt", ee="armwrist"+eachSide+"IK_jnt", sol="ikRPsolver")
             cmds.setAttr("armwrist"+eachSide+"_ik.visibility", 0)
 

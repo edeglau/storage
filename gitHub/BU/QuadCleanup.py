@@ -9,12 +9,14 @@ import os, subprocess, sys, platform
 from os  import popen
 from sys import stdin
 import unicodedata
+
+'''MG rigging modules'''
 __author__ = "Elise Deglau"
 __version__ = 1.00
+'This work is licensed under a Creative Commons License'
+'http://creativecommons.org/licenses/by-sa/3.0/au/'
 
-
-
-filepath=( "G:\\_PIPELINE_MANAGEMENT\\Published\\maya\\AutoRig_MG\\" )
+filepath= os.getcwd()
 sys.path.append(str(filepath))
 import baseFunctions_maya
 reload (baseFunctions_maya)
@@ -282,29 +284,37 @@ class cln(object):
         getFaceControllerSets=["EyeMask_Offset_Ctrl", "Chin_Ctrl", "EyeMask_Ctrl", "EyeOrient_L_Ctrl", "EyeOrient_R_Ctrl", "BottomLid_R_Ctrl", "BottomLid_L_Ctrl", "TopLid_R_Ctrl", "TopLid_L_Ctrl"]
         cmds.sets(getFaceControllerSets, n="FaceControllers")   
 
-        bindSpine=[(each) for each in cmds.listRelatives("spine01_jnt", ad=1, typ="joint") if "IK" not in each and "FK" not in each]
+#old
+#         bindSpine=[(each) for each in cmds.listRelatives("spine01_jnt", ad=1, typ="joint") if "IK" not in each and "FK" not in each]
         try: 
             tailbones=[(each) for each in cmds.listRelatives("tail01_jnt", ad=1, typ="joint") if "IK" not in each and "FK" not in each]
         except:
             pass
-        #bindSpine=cmds.ls("spine*_jnt")
-        getskinBones=["legLeft_jnt", 
-                      "legRight_jnt", 
-                      "armcollarLeftSH_jnt", 
-                      "armcollarRightSH_jnt", 
-                      "armshoulderLeft_jnt", 
-                      "armshoulderRight_jnt", 
+#         #bindSpine=cmds.ls("spine*_jnt")
+        getfootBones=[
                       "anklefrontLeft_jnt", 
                       "anklefrontRight_jnt",
                       "anklerearLeft_jnt",
                       "anklerearRight_jnt"
                       ]
-        try:
-            Bones=bindSpine+getskinBones+tailbones
-        except:
-            Bones=bindSpine+getskinBones
-        cmds.sets(Bones, n="skinBones")       
-              
+#         try:
+#             Bones=bindSpine+getskinBones+tailbones
+#         except:
+#             Bones=bindSpine+getskinBones
+#         cmds.sets(Bones, n="skinBones")       
+
+        bindSpine=[(each) for each in cmds.listRelatives("spine01_jnt", ad=1, typ="joint") if "IK" not in each and "FK" not in each]
+        #bindSpine=cmds.ls("spine*_jnt")
+        getskinBones=["legLeft_jnt", "legRight_jnt", "armcollarLeftSH_jnt", "armcollarRightSH_jnt", "armshoulderLeft_jnt", "armshoulderRight_jnt"]
+        bagOfChildrensBones=[]
+        for each in getskinBones:
+            getChildren=cmds.listRelatives(each, ad=1, typ="joint")
+            for item in getChildren:
+                bagOfChildrensBones.append(item)
+        Bones=bindSpine+getskinBones+bagOfChildrensBones+tailbones
+        cmds.sets(Bones, n="skinBones") 
+
+
         hideList=("Basetail_Ctrl", "Baseneck_Ctrl", "tailMain_Ctrl", "neckMain_Ctrl")
         for each in hideList:
             try:
@@ -319,7 +329,24 @@ class cln(object):
                 cmds.setAttr(str(each)+".Strech*" , 0)
             except:
                 pass
-        
+            
+        try:
+            lockOffAttributes=["neckMain_Ctrl"]
+            for each in lockOffAttributes:
+                cmds.setAttr(each+".tx" , k=0, cb=0)
+                cmds.setAttr(each+".ty" , k=0, cb=0)
+                cmds.setAttr(each+".tz", k=0, cb=0) 
+                
+            lockOffAttributes=["neckMain_Ctrl"]          
+            for each in lockOffAttributes:
+                cmds.setAttr(each+".rx" , k=0, cb=0)
+                cmds.setAttr(each+".ry" , k=0, cb=0)
+                cmds.setAttr(each+".rz", k=0, cb=0)             
+        except:
+            pass
+
+
+            
         lockOffAttributes=[]
         getTail=cmds.ls("tail*Ctrl")
         for item in getTail:
@@ -357,7 +384,161 @@ class cln(object):
         gethidelist=("Chest_IK_Ctrl", "Chest_FK_Ctrl" )
         for each in gethidelist:
             cmds.pickWalk(d="down")
-            setAttr(getshape+".visibility", 0)
+            getshape=cmds.ls(sl=1)
+            cmds.setAttr(getshape[0]+".visibility", 0)
+        self.updates()
+    def updates(self):
+        if cmds.ls("Chin_SDK_Ctrl"):
+            pass     
+        else:
+            getClass.sandwichAuto("Chin_Ctrl", "_SDK", 22, 1)        
+            getObject=cmds.ls("Chin_SDK_Ctrl")[0]
+            getChildShape=cmds.listRelatives(getObject, c=1, typ="shape")
+            cmds.setAttr(getChildShape[0]+".visibility", 0)
+            lognm=getObject.replace('_Ctrl', "")
+            cmds.rename(getObject, lognm)          
+        
+        
+        #steady head update  
+        cmds.parent("head01_jnt", w=1)
+        cmds.delete("head01_grp_parentConstraint1")
+        cmds.orientConstraint("LowerBody_Ctrl", "head01_grp", mo=1)
+        trans, rot=getClass.locationXForm("head01_jnt")
+        #cmds.joint(n="neck02_jnt", p=trans)
+        if cmds.ls("neck01_jnt"):
+            getNeckFirstJoint=cmds.ls("neck01_jnt")[0]
+            childBones=[(each) for each in cmds.listRelatives(getNeckFirstJoint, ad=1, typ="joint") if "neck" in each]#get all child bones
+        getLastNeckBone=childBones[0]     
+        try:     
+            cmds.parent("neck02_jnt", "neck01_jnt")
+        except:
+            pass
+        cmds.pointConstraint(getLastNeckBone, "head01_grp", mo=1)
+        cmds.parent("head01_jnt", "Rig")
+        
+        #clean empty transforms
+        transforms =  cmds.ls(type='transform')
+        deleteList = []
+        for tran in transforms:
+            if cmds.nodeType(tran) == 'transform':
+                children = cmds.listRelatives(tran, c=True) 
+                if children == None:
+                    deleteList.append(tran)  
+        cmds.delete(deleteList)
+        
+        #turn off stretch
+        getAllCtrl=cmds.ls("*_Ctrl")
+        for each in getAllCtrl:
+            try:
+                cmds.setAttr(each+".Stretch", 1)
+            except:
+                pass
+        cmds.setAttr("Hips_Ctrl.StretchSpine", 1)
+        try:
+            cmds.setAttr("Basetail_Ctrl.Stretchtail", 1)
+        except:
+            pass
+        
+        #rename pole ctrls
+        getSel=("armwristLeft_jnt_ikPole_lctr",
+                "armelbowLeft_jnt_ikPole_lctr",
+                "armelbowRight_jnt_ikPole_lctr",
+                "armwristRight_jnt_ikPole_lctr")
+        for each in getSel:
+            cmds.sets(each, include="BodyControllers")
+            lognm=each.replace("_lctr", '_Ctrl')
+            getnewname=lognm.replace("_jnt", "")
+            getcleanname=getnewname.replace("ikPole", "PoleVector")
+            getFullName=getcleanname.replace("arm", "")
+            #capitalString=getFullName.capitalize()
+            if "Right" in each:
+                getPartname=getFullName.replace("Right", "_R")
+            else:
+                getPartname=getFullName.replace("Left", "_L")
+            print getPartname
+            cmds.rename(each, getPartname)    
+        
+        #remove obsolete locators
+        getemptylocs=cmds.ls("toe*_lctr")
+        for each in getemptylocs:
+            cmds.delete(each)
+        getemptylocs=cmds.ls("heel*_lctr")
+        for each in getemptylocs:
+            cmds.delete(each)
+        getemptylocs=cmds.ls("ankle*_lctr")
+        for each in getemptylocs:
+            cmds.delete(each)
+        
+        getemptylocs=cmds.ls("*dloc")
+        for each in getemptylocs:
+            cmds.setAttr(each+".visibility", 0)
+#         getemptylocs=cmds.ls("*FK_jnt")
+#         for each in getemptylocs:
+#             cmds.setAttr(each+".visibility", 0)
+        getemptylocs=cmds.ls("*IK_jnt")
+        for each in getemptylocs:
+            cmds.setAttr(each+".visibility", 0)
+        getemptylocs=cmds.ls("*_crv")
+        for each in getemptylocs:
+            cmds.setAttr(each+".visibility", 0)            
+        getemptylocs=cmds.ls(type="ikHandle")
+        for each in getemptylocs:
+            cmds.setAttr(each+".visibility", 0)    
+        try:
+            getTailmain= cmds.ls("tailMain_Ctrl")
+            getShape=cmds.listRelatives(getTailmain[0], typ="shape")
+            cmds.setAttr(getShape[0]+".visibility", 0)       
+        except:
+            pass
+        hideObjects=("BottomLid_L_Ctrl", "BottomLid_R_Ctrl", "TopLid_R_Ctrl", "TopLid_L_Ctrl")
+        for each in hideObjects:
+            getShape=cmds.listRelatives(each, typ="shape")
+            cmds.setAttr(getShape[0]+".visibility", 0)          
+#         cmds.parent("heelfrontRightIK_grp", "toefrontRight_Tip_ik_loc_lctr")
+#         cmds.parent("heelfrontLeftIK_grp", "toefrontLeft_Tip_ik_loc_lctr")
+#         cmds.parent("heelrearRightIK_grp", "toerearRight_Tip_ik_loc_lctr")
+#         cmds.parent("heelrearLeftIK_grp", "toerearLeft_Tip_ik_loc_lctr")
+#         getToeGrp=["toefrontRight_Tip_ik_loc_lctr", "toefrontLeft_Tip_ik_loc_lctr", "toerearRight_Tip_ik_loc_lctr", "toerearLeft_Tip_ik_loc_lctr"]
+#         for each in getToeGrp:
+#             cmds.parent(each+"_grp", "Main_Ctrl")
+#         Side=["Right", "Left"]
+#         DepthDimension=["front", "rear"]
+#         for eachSide in Side:
+#             for eachDim in DepthDimension:
+#                 cmds.connectAttr ("heel"+eachDim+eachSide+"IK_ctrl.RaiseHeel", "toe"+eachDim+eachSide+"_Tip_ik_loc_lctr.rotateX", f=1)
+#                 cmds.connectAttr ("heel"+eachDim+eachSide+"IK_ctrl.TipToe", "toe"+eachDim+eachSide+"IK_jnt.rotateZ", f=1)
+
+        #centralize controls
+        try:
+            cmds.connectAttr("Hips_Ctrl.tailFK_IK", "Basetail_Ctrl.tailFK_IK", f=1)
+            cmds.addAttr("Hips_Ctrl", ln="StretchTail", at="enum",en="on:off:", k=1, nn="StretchTail")
+            cmds.connectAttr("Hips_Ctrl.StretchTail", "Basetail_Ctrl.Stretchtail", f=1)
+            cmds.setAttr("Hips_Ctrl.StretchTail", 1)
+            cmds.setAttr("Hips_Ctrl.tailFK_IK", 1)
+            cmds.setAttr("Basetail_Ctrl.tailFK_IK", l=0, k=0)
+            cmds.setAttr("Basetail_Ctrl.Stretchtail", l=0, k=0)
+        except:
+            print "no tail present, skipping FK/IK hookup to spine"
+            pass
+ 
+        getSel=("heelfrontLeftIK_ctrl",
+        "heelfrontRightIK_ctrl",
+        "heelrearRightIK_ctrl",
+        "heelrearLeftIK_ctrl")
+        for each in getSel:
+            cmds.sets(each, include="BodyControllers")
+            lognm=each.replace("_ctrl", '_Ctrl')
+            getnewname=lognm.replace("_jnt", "")
+            getcleanname=getnewname.replace("ikPole", "PoleVector")
+            getFullName=getcleanname.replace("heel", "Heel_")
+            #capitalString=getFullName.capitalize()
+            if "Right" in each:
+                getPartname=getFullName.replace("Right", "_R_")
+            else:
+                getPartname=getFullName.replace("Left", "_L_")
+            print getPartname
+            cmds.rename(each, getPartname)    
+    
     def renaming_centric_kenetic(self, each, bodyPart, Kinetic):
         cullKinetic=each.split(Kinetic)
         cullCentric=cullKinetic[0].replace(bodyPart, '')  
@@ -434,5 +615,18 @@ class cln(object):
         splitCentric[-1:]=str(splitCentric[-1:])[2] 
         return splitCentric
     
-    
-    
+    def alternate_head_leveller(self):
+            cmds.parent("head01_jnt", w=1)
+            cmds.orientConstraint("LowerBody_Ctrl", "head01_grp", mo=1)
+            trans, rot=getClass.locationXForm("head01_jnt")
+            #cmds.joint(n="neck02_jnt", p=trans)
+            if cmds.ls("neck01_jnt"):
+                getNeckFirstJoint=cmds.ls("neck01_jnt")[0]
+                childBones=[(each) for each in cmds.listRelatives(getNeckFirstJoint, ad=1, typ="joint") if "neck" in each]#get all child bones
+            getLastNeckBone=childBones[0]     
+            try:     
+                cmds.parent("neck02_jnt", "neck01_jnt")
+            except:
+                pass
+            cmds.pointConstraint(getLastNeckBone, "head01_grp", mo=1)
+            cmds.parent("head01_jnt", "Rig")    

@@ -141,8 +141,20 @@ class GuideUI(object):
         cmds.text(label="Partial Templates",bgc=[0.5, 0.45, 0.3])          
         cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
         cmds.button (label='Tail', p='listBuildButtonLayout', command = self.build_tail_guides)    
+        cmds.button (label='quad hoof', p='listBuildButtonLayout', command = self.template_quad_hoof_guides)    
+        cmds.button (label='quad arm', p='listBuildButtonLayout', command = self.template_qarm_guides)    
+        cmds.button (label='quad leg', p='listBuildButtonLayout', command = self.template_quad_leg_guides)    
+        cmds.button (label='quad spine', p='listBuildButtonLayout', command = self.template_quad_spine_guides)    
+        cmds.button (label='toe', p='listBuildButtonLayout', command = self.template_toe_guides)    
+        cmds.button (label='hand', p='listBuildButtonLayout', command = self.build_hand_guides)    
+        cmds.button (label='arm', p='listBuildButtonLayout', command = self.build_arm_guides)    
+        cmds.button (label='foot', p='listBuildButtonLayout', command = self.build_foot_guides)    
+        cmds.button (label='leg', p='listBuildButtonLayout', command = self.build_leg_guides)    
+        cmds.button (label='neck', p='listBuildButtonLayout', command = self.build_neck_guides)    
+        cmds.button (label='spine', p='listBuildButtonLayout', command = self.build_spine_guides)    
+        cmds.button (label='animface', p='listBuildButtonLayout', command = self.build_anim_face_guides)    
         cmds.text(label="",bgc=[0.5, 0.45, 0.3])   
-        cmds.text(label="Editting",bgc=[0.5, 0.45, 0.3])          
+        cmds.text(label="Editing",bgc=[0.5, 0.45, 0.3])          
         cmds.text(label="",bgc=[0.5, 0.45, 0.3]) 
         cmds.button (label='Build Guide ',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self.build_helper_guides)    
         # cmds.button (label='Recreate Guides ',bgc=[0.8, 0.75, 0.6], p='listBuildButtonLayout', command = self._recreate_guide)                          
@@ -422,7 +434,22 @@ class GuideUI(object):
             cmds.rotate(value[3], value[4], value[5], Guide )       
             #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
             cmds.parent(key,"Guides_Template_grp")
-            
+
+    def template_quad_leg_guides(self, arg=None):
+        Ggrp=cmds.CreateEmptyGroup()
+        cmds.rename(Ggrp, "Guides_leg_grp")
+        guideDict= {
+                    "legRight_guide":[-14.826, 92.54541214992332, -33.88014194665299, 0.0, -0.0, 0.0],
+                    "leghipRight_guide":[-14.825910930225792, 75.19695820649581, -26.088312543247913, 0.0, -0.0, 0.0],
+                    "foottalusRight_guide":[-14.825695393086242, 13.021493845700569, -37.19130571392873, 0.0, -0.0, 0.0],                    
+                    "legkneeRight_guide":[-15.046664650175586, 44.283251815515364, -45.658280108504016, 0.0, -0.0, 0.0],}
+        for key, value in guideDict.items():
+            Guide=getClass.makeguide_shapes(key, colour1, colour2, colour3)  
+            cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
+            cmds.rotate(value[3], value[4], value[5], Guide)       
+            #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
+            cmds.parent(key,"Guides_leg_grp")
+
     def template_quad_hoof_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
         cmds.rename(Ggrp, "Guides_Template_grp")
@@ -483,7 +510,7 @@ class GuideUI(object):
             
     def template_hoof_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
-        cmds.rename(Ggrp, "Guides_Template_grp")
+        cmds.rename(Ggrp, "Guides_qdhf_grp")
         guideDict= {
                     "anklefrontRight_guide":[-5.0, 3.1118345297879775, 8.047503453420148, 0.0, -0.0,  0.0],
                     "anklerearRight_guide":[-5.0, 3.0970688461279243, -8.513027336231843, 0.0, -0.0,  0.0],
@@ -503,13 +530,13 @@ class GuideUI(object):
             cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
             cmds.rotate(value[3], value[4], value[5], Guide)       
             #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
-            cmds.parent(key,"Guides_Template_grp")
+            cmds.parent(key,"Guides_qdhf_grp")
             
     def template_qarm_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
-        cmds.rename(Ggrp, "Guides_Template_grp")
+        cmds.rename(Ggrp, "Guides_qdarm_grp")
         guideDict= {
-                    "anklefrontRight_guide":[-5.0, 3.1118345297879775, 8.047503453420148, 0.0, -0.0, 0.0],
+#                     "anklefrontRight_guide":[-5.0, 3.1118345297879775, 8.047503453420148, 0.0, -0.0, 0.0],
                     "armcollarRight_guide":[-3.089627453372503, 18.587303670001095, 7.285996154876258, 0.0, -0.0, 79.0],
                     "armelbowRight_guide":[-5.0, 7.913475345259108, 6.523239359103034, 0.0, 0.0, -7.000000000000002],
                     "armshoulderRight_guide":[-5.0, 14.021601789305993, 7.37196049886393, 0.0, 0.0, -3.000000000000001],
@@ -520,7 +547,7 @@ class GuideUI(object):
             cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
             cmds.rotate(value[3], value[4], value[5], Guide)       
             #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
-            cmds.parent(key,"Guides_Template_grp")
+            cmds.parent(key,"Guides_qdarm_grp")
             
     def template_toe_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
@@ -547,7 +574,7 @@ class GuideUI(object):
             cmds.parent(key,"Guides_Template_grp")
     def template_quad_spine_guides(self, arg=None):
         Ggrp=cmds.CreateEmptyGroup()
-        cmds.rename(Ggrp, "Guides_Template_grp")
+        cmds.rename(Ggrp, "Guides_qdspne_grp")
         guideDict= {
                     "spine01_guide":[0.0, 18.68492637166078, -7.463167718021331, 124.0, -0.0, 0.0],
                     "spine02_guide":[0.0, 17.699004311867505, -5.429869673438407, 110.0, -0.0, 0.0],
@@ -562,7 +589,7 @@ class GuideUI(object):
             cmds.move(value[0], value[1], value[2], Guide,r=1, rpr=1 )
             cmds.rotate(value[3], value[4], value[5], Guide)       
             #cmds.makeIdentity(key, a=True, t=1, s=1, r=1, n=0)
-            cmds.parent(key,"Guides_Template_grp")
+            cmds.parent(key,"Guides_qdspne_grp")
             
             
 
