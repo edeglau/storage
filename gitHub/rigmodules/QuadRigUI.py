@@ -9,6 +9,7 @@ from sys import stdin
 import sys
 #import win32clipboard
 import operator
+# from rigmodules import chainRigSupplemental
 
 __author__ = "Elise Deglau"
 __version__ = 1.00
@@ -52,19 +53,33 @@ class QuadUI(object):
         cmds.button (label='QuadHead', p='listBuildButtonLayout', command = self.quad_head)                
         cmds.button (label='PrevisFace', p='listBuildButtonLayout', command = self.previs_face)  
         cmds.button (label='ConPrevHead', p='listBuildButtonLayout', command = self.con_previs_face)
+        cmds.button (label='Quad_horse', p='listBuildButtonLayout', command = self._quad_whole)  
         cmds.button (label='Face', p='listBuildButtonLayout', command = self.Face)        
         cmds.button (label='Clean', p='listBuildButtonLayout', command = self.clean)        
         #cmds.symbolButton (p='listBuildButtonLayout', command = self.Face, image="D:\myGraphics\icons\SP.jpg") 
         cmds.text (label='Author: Elise Deglau',w=120, al='left', p='selectArrayColumn')      
         cmds.showWindow(self.window)
 
- 
+    def _quad_whole(self, arg=None):
+        self.build_quad_leg_rig()
+        self.build_quad_arm_rig()
+        self.hoof()
+        self.connect_hoof()
+        self.quad_spine()
+        self.quad_neck()
+        self.build_tail_rig()
+        self.connect_quad_whole()
+        self.quad_head()
+        self.con_previs_face()
+        self._quad_whole_hoofs()
+        
         
     def build_quad_arm_rig(self, arg=None):
         import QuadArmRig
         reload (QuadArmRig)
         getClass=QuadArmRig.ArmRig()
         #getClass.ArmRig()        
+
 
     def build_leg_rig(self, arg=None):
         import LegRig
@@ -103,14 +118,14 @@ class QuadUI(object):
         getClass=connectFootToLeg.FootConn()
 
     def build_tail_rig(self, arg=None): 
-        import ChainWork 
-        reload (ChainWork)
+        import chainRigSupplemental 
+        reload (chainRigSupplemental)
         mainName="tail"
         nrx=0
         nry=1
         nrz=0
         ControllerSize=10
-        getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize)
+        getClass=chainRigSupplemental.ChainRig(nrz, nry, nrx, mainName, ControllerSize)
 
     def clean(self, arg=None):    
         import QuadCleanup
@@ -148,14 +163,14 @@ class QuadUI(object):
         getClass=QuadSpineRig.SpineRig()   
         
     def quad_neck(self, arg=None):
-        import ChainWork 
-        reload (ChainWork)
+        import chainRigSupplemental 
+        reload (chainRigSupplemental)
         mainName="neck"
         nrx=0
         nry=1
         nrz=0
         ControllerSize=20
-        getClass=ChainWork.ChainRig(nrz, nry, nrx, mainName, ControllerSize)
+        getClass=chainRigSupplemental.ChainRig(nrz, nry, nrx, mainName, ControllerSize)
         #getClass.Trigger(nrz, nry, nrx, mainName)              
 
 

@@ -2,26 +2,26 @@ import sys, os, platform
 from pymel.core import *
 OSplatform=platform.platform()
 
-if "Windows" in OSplatform:
-    gtepiece=getfilePath.split("\\")
-    getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
-    scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
-    sys.path.append(str(scriptPath))
-
-    getToolArrayPath=str(scriptPath)+"\Tools.py"
-    exec(open(getToolArrayPath))
-    toolClass=ToolFunctions()      
-    
-if "Linux" in OSplatform: 
-    scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
-    sys.path.append(str(scriptPath))
-
-    getToolArrayPath=str(scriptPath)+"/Tools.py"
-    exec(open(getToolArrayPath))
-    toolClass=ToolFunctions()
-
-    gtepiece=getfilePath.split("/")  
-    getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
+# if "Windows" in OSplatform:
+#     gtepiece=getfilePath.split("\\")
+#     getRigModPath='/'.join(gtepiece[:-2])+"\rigModules"
+#     scriptPath="D:\\code\\git\\myGit\\gitHub\\rigModules"
+#     sys.path.append(str(scriptPath))
+# 
+#     getToolArrayPath=str(scriptPath)+"\Tools.py"
+#     exec(open(getToolArrayPath))
+#     toolClass=ToolFunctions()      
+#     
+# if "Linux" in OSplatform: 
+#     scriptPath="//usr//people//elise-d//workspace//techAnimTools//personal//elise-d//rigModules"
+#     sys.path.append(str(scriptPath))
+# 
+#     getToolArrayPath=str(scriptPath)+"/Tools.py"
+#     exec(open(getToolArrayPath))
+#     toolClass=ToolFunctions()
+# 
+#     gtepiece=getfilePath.split("/")  
+#     getRigModPath='/'.join(gtepiece[:-2])+"/rigModules"
 
 
 # from inspect import getsourcefile
