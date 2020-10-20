@@ -811,8 +811,55 @@ class BaseClass():
                 print "nothing collected"        
         selObj=cmds.ls(sl=1, fl=1)
         for each in selObj:
-            self.importXMLSkinWeights_callup(resultInfo, each)
-            
+            self.importXMLSkinWeights_new(resultInfo, each)
+
+    def importXMLSkinWeights_new(self, resultInfo):
+        #only prefix
+        selObj=cmds.ls(sl=1, fl=1)
+        if selObj:
+            pass
+        else:
+            print "must select a driver group and a driven group(same shortnames)"
+        bag_o_bones = []
+        getmesh=cmds.listRelatives(selObj, ad=1, type="mesh")
+        for each_mesh in getmesh:
+            grab_transform=cmds.listRelatives(each_mesh, p=1, type="transform")[0]
+            printFolder = resultInfo+'/'+grab_transform+".xml"
+            List = open(printFolder).readlines()
+            for aline in List:
+                if "jnt" in aline:
+                    geta = aline.split('source="')[-1]
+                    getJnt = geta.split('" shape=')[0]
+                    print getJnt
+                    bag_o_bones.append(getJnt)
+            cmds.select(cl=1)
+            for each_bone in bag_o_bones:
+                try:
+                    cmds.select(each_bone, add=1)
+                except:
+                    pass
+            cmds.select(grab_transform, add=1)
+            cmds.skinCluster(tsb=1)
+            newname, skinID=getSkinWeightsforXML(each_mesh)    
+            print skinID 
+            get_xml_path = str(resultInfo)+"//"
+            get_xml_file = str(grab_transform)+".xml"
+            print get_xml_path+"this is path"
+            print get_xml_file+"this is newname"
+            try:      
+                cmds.deformerWeights (get_xml_file, p=get_xml_path, im=True, deformer=skinID)
+                print "imported skinweights for "+childItem
+            except:
+                print "unable to open xml file for "+newname
+                pass
+            try:
+                cmds.select(each_mesh)
+                cmds.skinPercent(each_mesh, normalize=1)
+                print "normalized"
+            except:
+                print "skipped normalized on "+grab_transform
+	
+	
     def importXMLSkinWeights_callup(self, resultInfo, each):
         '''import skinweights function'''        
         newname, skinID=self.getSkinWeightsforXML(each)     
