@@ -1205,5 +1205,44 @@ class annot_range_win(QtWidgets.QMainWindow):
         mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                        
 
+    def test_morph(self):
+        get_morph_obj = mc.ls(sl=1)[0]
+        print get_morph_obj
+        get_Shape = [(each) for each in mc.listRelatives(get_morph_obj, typ="shape")][0]
+        print get_Shape
+        get_morph = mc.ls(mc.listHistory(get_Shape), typ='morph')[0]
+        print get_morph
+        targetAttrs = mc.listAttr("{}.controlWeight".format(get_morph), m=True) or []
+        print targetAttrs
+        getrange = len(targetAttrs)
+        getstrt = mc.currentTime(q=1)
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        for each in targetAttrs:  
+            if "_" not in each:
+                get_cur = mc.currentTime(q=1)
+                getstartval = get_cur
+                getactiveval = get_cur+5
+                getendval = get_cur+10.0
+                try:
+                    new_name_annot = self.type_list_preset(mc.ls(sl=1)[0], each, get_loc)
+                    mc.select(new_name_annot, r=1)
+                    mc.hyperShade(assign=str(create_shade_node)) 
+                    mc.parent(new_name_annot, annot_title_grp)
+                    # mc.setAttr(new_name_annot+"Shape.displayArrow", 0)
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval))    
+                    mc.setKeyframe(get_morph, at=each, v=0.0, time=(getstartval))   
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getstartval+1))    
+                    mc.setKeyframe(get_morph, at=each, v=1.0, time=(getactiveval))
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getendval-1))    
+                    mc.setKeyframe(get_morph, at=each, v=0.0, time=(getendval))
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getendval))    
+                    mc.currentTime(getendval)
+                except:
+                    pass
+        mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+        mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                                      
+                                              
 inst_win = annot_range_win()
 inst_win.show()    
