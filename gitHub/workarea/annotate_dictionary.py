@@ -1204,3 +1204,6 @@ class annot_range_win(QtWidgets.QMainWindow):
         mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                        
+
+inst_win = annot_range_win()
+inst_win.show()    
