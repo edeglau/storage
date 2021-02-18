@@ -573,3 +573,31 @@ class annot_range_win(QtWidgets.QMainWindow):
         # mc.rename(getNew, item)
         mc.parent(buildParent, annot_title_grp)
         return new_name_annot                                              
+
+    def set_annot(self):
+        # inst_win = get_sel_val_frm()
+        inst_win = get_set_sel_val()
+    
+
+    def ctrlr_annot(self):
+        # inst_win = get_ctrls_val_frm()
+        inst_win = get_set_sel_val()        
+                                              
+    def ctrlr_set_annot(self, get_val, get_frames, drp_attr, attr_line_edit, use_cust):
+        parentObj = mc.ls(sl=1)[0]
+        if use_cust == False:
+            drvn_attr = drp_attr
+        else: 
+            drvn_attr = attr_line_edit
+        trgt_ctrlrs=[(each) for each in mc.listRelatives(parentObj, ad=1, type="transform") if "_ctrl" in each and "_grp" not in each]
+        getrange = len(trgt_ctrlrs)
+        getstrt = mc.currentTime(q=1)
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        for each in trgt_ctrlrs:
+            # get_attrs_chn = [(the_item) for the_item in mc.listAttr (each, k=1) if 'visibility' not in the_item]
+            get_cur = mc.currentTime(q=1)
+            getstartval = get_cur
+            gethalf = get_frames/2
+            getactiveval = get_cur+gethalf
+            getendval = get_cur+get_frames                                        
+                                                                                            
