@@ -1136,4 +1136,71 @@ class annot_range_win(QtWidgets.QMainWindow):
             annot_title_grp=mc.ls("*ANNOTATE_GRP*") 
         #create the shader for the text 
         create_shade_node=mc.ls("annotate_shd")
+        if len(create_shade_node)<1:
+            create_shade_node = mc.shadingNode('lambert', asShader=True, n="annotate_shd")
+        else:
+            create_shade_node=mc.ls(create_shade_node)[0]            
+        lst_sg_node = [create_shade_node]
+        #add the texture to a set
+        set_name = 'techanim_textures' 
+        if mc.objExists(set_name):
+            pass
+        else:
+            mc.sets(n=set_name, co=3)
+        mc.sets(lst_sg_node, add=set_name)  
+        mc.setAttr("annotate_shd.color", 1, 0.5, 0, type = 'double3')
+        return get_loc, create_shade_node, annot_title_grp
                                               
+    def trigger_annot(self, get_val, get_frames):
+        targetAttrs = mc.ls(sl=1)[0]
+        #get selected attribute in channelbox
+        getChannels =mm.eval('global string $gChannelBoxName; $temp=$gChannelBoxName;')
+        try:
+            attr_channel = mc.channelBox(getChannels, q=1, sma=1) [0]   
+            pass
+        except:
+            print "select attribute on slected object"
+            return
+        title_content = targetAttrs+"."+attr_channel
+        #add the attributes to a set
+        ctrl_set_name = 'titled_controllers' 
+        if mc.objExists(ctrl_set_name):
+            pass
+        else:
+            mc.sets(n=ctrl_set_name, co=3)
+        mc.sets(targetAttrs, add=ctrl_set_name)
+        #create the title group for camera lineup with text
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        #calculate length and time to key on/off functions
+        getstrt = mc.currentTime(q=1)
+        getName=["namespace"]
+        # for each in targetAttrs: 
+        mc.select(targetAttrs, r=1)
+        get_cur = mc.currentTime(q=1)
+        getstartval = get_cur
+        div_two = get_frames/2
+        getactiveval = get_cur+div_two
+        getendval = get_cur+get_frames
+        print title_content
+        try:
+            #create title
+            new_name_annot = self.type_list_preset(targetAttrs, title_content, get_loc)
+            #assign shader to the new title
+            mc.select(new_name_annot, r=1)
+            mc.hyperShade(assign=str(create_shade_node)) 
+            mc.parent(new_name_annot, annot_title_grp)
+            # mc.setAttr(new_name_annot+"Shape.displayArrow", 0)
+            mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval))    
+            mc.setKeyframe(targetAttrs, at=attr_channel, v=0.0, time=(getstartval))   
+            mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getstartval+1))   
+            mc.setKeyframe(targetAttrs, at=attr_channel, v=get_val, time=(getactiveval))
+            mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getendval-1))    
+            mc.setKeyframe(targetAttrs, at=attr_channel, v=0.0, time=(getendval))
+            mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getendval))    
+            mc.currentTime(getendval)
+        except:
+            pass
+        mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+        mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                        
