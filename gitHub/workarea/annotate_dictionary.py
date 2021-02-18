@@ -378,3 +378,198 @@ class get_val_frm(QtWidgets.QWidget):
         access_main = annot_range_win()
         access_main.trigger_annot(get_val, get_frames)
         self.close()
+
+        
+class annot_range_win(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(annot_range_win, self).__init__()
+        self.initUI()
+
+    def initUI(self):    
+        """
+        Main window setup
+        """
+        self.setWindowTitle("Annotate")
+
+        self.central_widget=QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.master_layout=QtWidgets.QGridLayout(self.central_widget)
+        self.master_layout.setAlignment(QtCore.Qt.AlignTop)
+        file_menu = QtWidgets.QMenu('&Help', self)
+        self.menuBar().addMenu(file_menu)
+        file_menu.addAction('&Open help page...', self.help_page_launch, 'Ctrl+L')
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.btnlayout = QtWidgets.QVBoxLayout()
+        self.layout.addLayout(self.btnlayout)
+        self.master_layout.addLayout(self.layout, 0,0,1,1)
+        self.annot_sel_button =QtWidgets. QPushButton("Annotate Selected")
+        self.annot_sel_button.setToolTip("Pipeline issues/data retrieval/IT")
+        self.annot_sel_button.clicked.connect(lambda: self.annotations_list())
+        self.auto_annot_button = QtWidgets.QPushButton("Auto Annotate")
+        self.auto_annot_button.clicked.connect(lambda: self.dealers_choice())                  
+        self.colour_annot_button = QtWidgets.QPushButton("Change Annot Colours")
+        self.colour_annot_button.clicked.connect(lambda:self._change_anot_colors())  
+        self.mrph_annot_button = QtWidgets.QPushButton("test morphs Annot")
+        self.mrph_annot_button.clicked.connect(lambda: self.test_morph())       
+        self.ctrl_annot_button = QtWidgets.QPushButton("test ctrls under selected")
+        self.ctrl_annot_button.clicked.connect(lambda: self.ctrlr_annot())     
+        self.set_annot_button = QtWidgets.QPushButton("test set")
+        self.set_annot_button.clicked.connect(lambda: self.set_annot()        
+        self.attr_annot_button = QtWidgets.QPushButton("attribute")
+        self.attr_annot_button.clicked.connect(lambda: self.test_attr())      
+        self.sel_annot_button = QtWidgets.QPushButton("selected")
+        self.sel_annot_button.clicked.connect(lambda: self.test_sel())     
+        self.recon_annot_button = QtWidgets.QPushButton("reconstrain title")
+        self.recon_annot_button.clicked.connect(lambda: self.retape_to_selection())   
+        self.mk_annot_button = QtWidgets.QPushButton("Make title")
+        self.mk_annot_button.clicked.connect(lambda: self.make_arbitrary_title()) 
+        self.btnlayout.addWidget(self.auto_annot_button)     
+        self.btnlayout.addWidget(self.annot_sel_button)
+        self.btnlayout.addWidget(self.colour_annot_button)
+        self.btnlayout.addWidget(self.mrph_annot_button)
+        self.btnlayout.addWidget(self.ctrl_annot_button)
+        self.btnlayout.addWidget(self.set_annot_button)
+        self.btnlayout.addWidget(self.attr_annot_button)
+        self.btnlayout.addWidget(self.sel_annot_button)
+        self.btnlayout.addWidget(self.recon_annot_button)
+        self.btnlayout.addWidget(self.mk_annot_button)
+
+        self.setLayout(self.layout)                                              
+                                              
+    def help_page_launch(self):
+        """
+        opens the helppage for tool in confluence
+        """
+        url=''
+        subprocess.Popen('gio open %s' % url, stdout=subprocess.PIPE, shell=True) 
+                                              
+                                              
+    def point_const(self, arg=None):
+        getSel=mc.ls(sl=1, fl=1)
+        self.point_const_callup(getSel)
+
+    def point_const_callup(self, getSel):
+        edgeBucket=[]
+        if ".vtx[" in getSel[0]:
+            pass
+        else:
+            print "You need to make some vertex selections for this tool to operate on."
+        for each in getSel:
+            print each
+            if ":" in each:
+                findName=each.split(":")[-1:][0]
+            else:
+                findName=each
+            if ":" in getSel[0]:
+                getObj=getSel[0].split(":")[-1:]
+            else:
+                getObj=getSel
+            getObj=getObj[0].split('.')[0]
+            getUVmap = mc.polyListComponentConversion(each, fv=1, tuv=1)
+            getCoords=mc.polyEditUV(getUVmap, q=1)
+            getNew=mc.spaceLocator(n=str(findName)+"ploc")
+            mc.select(each, r=1)
+            mc.select(getNew[0], add=1)
+            buildConst=mc.pointOnPolyConstraint(each, getNew[0], mo=0, offset=(0.0, 0.0, 0.0))
+            propShape = getObj.replace("Shape", "")
+            getPropName = buildConst[0]
+            mc.setAttr(getPropName+"."+propShape+"U0", getCoords[0])
+            mc.setAttr(getPropName+"."+propShape+"V0", getCoords[1])   
+                                              
+    def dealers_choice(self):
+        collectedVtx=[]
+        if len(mc.ls(sl=1))<1:
+            methodSpacerig = [(each) for each in mc.ls("*:animGeo") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            nameSpacerig = [(each) for each in mc.ls("*:*") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            normalrig = [(each) for each in mc.ls("*") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            rigs = nameSpacerig+methodSpacerig+normalrig
+            for item in rigs:
+                if mc.listRelatives(item, ad=1, type="mesh"):
+                    getparentObj=[(each) for each in mc.listRelatives(item, ad=1, type="mesh")][0]
+                    # print getparentObj
+                    getvert=getparentObj+".vtx[0]"
+                    collectedVtx.append(getvert)
+            mc.select(collectedVtx, r=1)
+            self.annotations_list()                                  
+    def dealers_choice(self):
+        collectedVtx=[]
+        if len(mc.ls(sl=1))<1:
+            methodSpacerig = [(each) for each in mc.ls("*:animGeo") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            nameSpacerig = [(each) for each in mc.ls("*:*") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            normalrig = [(each) for each in mc.ls("*") if mc.nodeType(each) == "transform" and mc.listRelatives(each, p=1) == None]
+            rigs = nameSpacerig+methodSpacerig+normalrig
+            for item in rigs:
+                if mc.listRelatives(item, ad=1, type="mesh"):
+                    getparentObj=[(each) for each in mc.listRelatives(item, ad=1, type="mesh")][0]
+                    # print getparentObj
+                    getvert=getparentObj+".vtx[0]"
+                    collectedVtx.append(getvert)
+            mc.select(collectedVtx, r=1)
+            self.annotations_list()                                                        
+
+    def _change_anot_colors(self):
+        getgrp = mc.ls(sl=1)
+        if len(getgrp)==0:
+            getgrp = mc.ls(type="annotationShape")
+        elif mc.ls(sl=1)>0:
+            getgrp=[(each) for item in getgrp for each in mc.listRelatives(item, ad=1, type="annotationShape")]
+        else:
+            print "annotations not present in scene"
+            return
+        for each in getgrp:
+            random.shuffle(colorlist, random.random)
+            offset = colorlist[0]
+            mc.setAttr(each+".overrideEnabled", 1)
+            mc.setAttr(each+".overrideColor", offset)                             
+                                              
+    def setTextVal(self, typeNode, textString):
+        hexValues = []
+        for character in textString:
+            hexValues.append(character.encode('hex'))
+        attrVal = ' '.join(hexValues)
+        mc.setAttr(typeNode+'.textInput', attrVal, type = 'string')
+                                              
+    def type_list_preset(self, item, getTitle, get_loc):      
+        transformWorldMatrix=mc.xform(get_loc, q=True, ws=1, t=True)
+        plusnum=random.uniform(.2,3)
+        newTransform = [transformWorldMatrix[0], transformWorldMatrix[1]+plusnum, transformWorldMatrix[2]]
+        mm.eval('typeCreateText;')
+        sel_typ = [(hist_type) for hist_type in mc.listHistory(mc.ls(sl=1)) if mc.nodeType(hist_type) == "type"][0]
+        self.setTextVal(sel_typ, str(getTitle))
+        selectMesh = [(each) for each in mc.listHistory(sel_typ) if mc.nodeType(each) == "transform"][0]
+        mc.select(selectMesh, r=1)
+        mc.CenterPivot()
+        buildParent = mc.group(n=getTitle+"_grp")
+        mc.parentConstraint(get_loc, buildParent, mo=0)
+        mc.scaleConstraint(get_loc, buildParent, mo=0)
+        return buildParent                              
+                                              
+    def annotations_list_preset(self, item, getTitle, getNew, get_color):
+        getName=["namespace"]
+        annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        if len(annot_title_grp)<1:
+            annot_title_grp=mc.CreateEmptyGroup()
+            mc.rename(annot_title_grp, "ANNOTATE_GRP")
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        else:
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")             
+        random.shuffle(colorlist, random.random)
+        offset = colorlist[0]
+        mc.select(item, r=1)
+        transformWorldMatrix=mc.xform(getNew, q=True, ws=1, t=True)
+        plusnum=random.uniform(.2,3)
+        newTransform = [transformWorldMatrix[0], transformWorldMatrix[1]+plusnum, transformWorldMatrix[2]]
+        getAnnot = mc.annotate(getNew, p=newTransform)
+        buildParent = mc.group(n=getTitle+"_grp")
+        mc.CenterPivot()
+        mc.setAttr(getAnnot+".text", getTitle, type="string")
+        mc.setAttr(getAnnot+".overrideEnabled", 1)
+        mc.setAttr(getAnnot+".overrideColor", get_color)
+        getparent = mc.listRelatives(getAnnot, p=1)[0]
+        mc.pointConstraint(getNew, buildParent, mo=1)
+        new_name_annot = getTitle+"_ant"
+        mc.rename(getparent, getTitle+"_ant")
+        # mc.rename(getNew, item)
+        mc.parent(buildParent, annot_title_grp)
+        return new_name_annot                                              
