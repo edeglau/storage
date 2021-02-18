@@ -1094,3 +1094,46 @@ class annot_range_win(QtWidgets.QMainWindow):
         self.control_anim(dictionary_saved, get_obj, anim_loc[0])
         mc.delete(anim_loc_grp)                                              
                                               
+    def control_anim(self, dictionary_saved, get_obj, anim_loc):
+        for time in dictionary_saved:
+            mc.currentTime(time)
+            matrix=mc.xform(anim_loc, q=True, ws=1, t=True)
+            mc.xform(get_obj,  ws=1, t=matrix)
+            mc.select(get_obj, r=1)
+            mc.SetKey()
+
+    def transform_anim(self, cur_obj, val_list, time_frame):
+        trns = [".tx", ".ty", ".tz", ".rx", ".ry", ".rz"]
+        for attr, val in map(None, trns, val_list):
+            print attr, val
+            mc.setKeyframe(cur_obj, at=attr, v=val, time=(time_frame))
+                                              
+    def test_attr(self):
+        inst_win = get_val_frm()
+
+    def build_the_cam_titles(self):
+        #create the title group for camera lineup with text
+        try:
+            get_loc=mc.ls("*_ploc")[0]
+        except:
+            get_loc=mc.spaceLocator(n="annot_ploc")
+            get_loc=get_loc[0]                                
+        mc.select(get_loc, r=1)
+        mc.group()
+        mc.rename(mc.ls(sl=1)[0], 'annot_loc_trn')
+        self.cam_constraint('annot_loc_trn')
+        mc.setAttr('annot_ploc.ty', -.16)
+        mc.setAttr('annot_ploc.tz', -.845)
+        mc.setAttr('annot_ploc.sx', 0.002)
+        mc.setAttr('annot_ploc.sy', 0.002)
+        mc.setAttr('annot_ploc.sz', 0.002)
+        annot_title_grp=mc.ls("*ANNOTATE_GRP*")                                        
+        if len(annot_title_grp)<1:
+            annot_title_grp=mc.CreateEmptyGroup()
+            mc.rename(annot_title_grp, "ANNOTATE_GRP")
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        else:
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*") 
+        #create the shader for the text 
+        create_shade_node=mc.ls("annotate_shd")
+                                              
