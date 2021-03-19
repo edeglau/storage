@@ -886,3 +886,182 @@ class annot_range_win(QtWidgets.QMainWindow):
         mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                      
+
+    def create_the_anim_loc(self, get_cur, get_portion, get_obj, directional_plane, size_area):
+        dictionary_saved = []
+        anim_loc_name = "{}_anim_loc".format(get_obj)
+        anim_loc_grp = "{}_anim_grp".format(get_obj)
+        if mc.objExists(anim_loc_name) == True:
+            anim_loc_grp = mc.ls(anim_loc_grp)[0]
+            anim_loc = mc.ls(anim_loc_name)[0]
+        else:
+            anim_loc = mc.spaceLocator(n=anim_loc_name)
+            mc.select(cl=1)
+            mk_grp=mc.CreateEmptyGroup()
+            mc.rename(mk_grp, anim_loc_grp)
+            mc.parent(anim_loc, anim_loc_grp)    
+        val00 = [0.0, 0.0, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur-1
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)
+        val01 = [0.084, 0.0, 0.012,0.0, 0.0, 0.0]
+        time_frame = get_cur
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val01, time_frame)
+        val02 = [0.727, 0.0, .129, 0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*2
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val02, time_frame)
+        val03 = [1.032, 0.0, .785,0.0, -30, 0.0]
+        time_frame = get_cur+get_portion*3
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val03, time_frame)
+        val04 = [0.985, 0.0, 1.406,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*4
+        dictionary_saved.append(time_frame)         
+        self.transform_anim(anim_loc, val04, time_frame)
+        val05 = [0.544, 0.0, 1.914,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*5
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val05, time_frame)
+        val06 = [-0.086, 0.0, 2.058,0.0, -90, 0.0]
+        time_frame = get_cur+get_portion*6
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val06, time_frame)
+        val07 = [-0.701, 0.0, 1.799,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*7
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val07, time_frame)
+        val08 = [-1.026, 0.0, 1.257,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*8
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val08, time_frame)
+        val09 = [-1.011, 0.0, 0.565,0.0, 30, 0.0]        
+        time_frame = get_cur+get_portion*9
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val09, time_frame)
+        val10 = [-0.496, 0.0, 0.035,0.0, 20, 0.0]
+        time_frame = get_cur+get_portion*10
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val10, time_frame)        
+        val12 = [0.717, 0.0, -.0142,0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*12
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val12, time_frame)
+        val13 = [1.055, 0.0, -0.786,0.0, -30, 0.0]
+        time_frame = get_cur+get_portion*13
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val13, time_frame)
+        val14 = [0.964, 0.0, -1.441,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*14
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val14, time_frame)
+        val15 = [0.529, 0.0, -1.926,0.0, 40.0, 0.0]
+        time_frame = get_cur+get_portion*15
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val15, time_frame)
+        val16 = [-0.121, 0.0, -2.049,0.0, 90.0, 0.0]  
+        time_frame = get_cur+get_portion*16
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val16, time_frame)
+        val17 = [-0.708, 0.0, -1.799, 0.0, -30.0, 0.0]
+        time_frame = get_cur+get_portion*17
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val17, time_frame)
+        val18 = [-1.054, 0.0, -1.195, 0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*18
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val18, time_frame)
+        val19 = [-.96, 0.0, -0.605,0.0, 40.0, 0.0]
+        time_frame = get_cur+get_portion*19
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val19, time_frame)      
+        val20 = [-0.541, 0.0, -0.09,0.0, 20.0, 0.0]
+        time_frame = get_cur+get_portion*20
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val20, time_frame)
+        time_frame = get_cur+get_portion*20+1
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)
+        mk_cnstrnt = mc.parentConstraint(get_obj, anim_loc_grp, mo=0)
+        mc.delete(mk_cnstrnt)   
+        if "X" in directional_plane:
+            print "X"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+            mc.setAttr("{}.rotateY".format(anim_loc_grp), 90)
+        elif "Z" in directional_plane:
+            print "Z"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+        mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
+        self.control_anim(dictionary_saved, get_obj, anim_loc[0])
+        mc.delete(anim_loc_grp)        
+        
+    def create_circle_anim_loc(self, get_cur, get_portion, get_obj, directional_plane, size_area):
+        dictionary_saved = []
+        anim_loc_name = "{}_anim_loc".format(get_obj)
+        anim_loc_grp = "{}_anim_grp".format(get_obj)
+        if mc.objExists(anim_loc_name) == True:
+            anim_loc_grp = mc.ls(anim_loc_grp)[0]
+            anim_loc = mc.ls(anim_loc_name)[0]
+        else:
+            anim_loc = mc.spaceLocator(n=anim_loc_name)
+            mc.select(cl=1)
+            mk_grp=mc.CreateEmptyGroup()
+            mc.rename(mk_grp, anim_loc_grp)
+            mc.parent(anim_loc, anim_loc_grp)        
+        val00 = [0.0, 0.0, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur-1
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)            
+        val01 = [0.0, 0.0, -1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val01, time_frame)
+        val02 = [-0.766, 0.0, -0.766, 0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*2
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val02, time_frame)
+        val03 = [-1.083, 0.0, 0.0,0.0, -30, 0.0]
+        time_frame = get_cur+get_portion*3
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val03, time_frame)
+        val04 = [-0.766, 0.0, 0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*4
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val04, time_frame)
+        val05 = [0.0, 0.0, 1.083,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*5
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val05, time_frame)
+        val06 = [0.766, 0.0, 0.766,0.0, -90, 0.0]
+        time_frame = get_cur+get_portion*6
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val06, time_frame)
+        val07 = [1.083, 0.0, 0.0,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*7
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val07, time_frame)
+        val08 = [0.766, 0.0, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*8
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val08, time_frame)
+        time_frame = get_cur+get_portion*8+1
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)        
+        mk_cnstrnt = mc.parentConstraint(get_obj, anim_loc_grp, mo=0)
+        mc.delete(mk_cnstrnt)        
+        if "X" in directional_plane:
+            print "X"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+            mc.setAttr("{}.rotateY".format(anim_loc_grp), 90)
+        elif "Z" in directional_plane:
+            print "Z"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+        mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
+        self.control_anim(dictionary_saved, get_obj, anim_loc[0])
+        mc.delete(anim_loc_grp)
+        
