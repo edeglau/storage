@@ -363,5 +363,65 @@ class annot_range_win(QtWidgets.QMainWindow):
 
         self.setLayout(self.layout)
 
-    def help_page_launch(self):        
-        
+    def dealers_choice(self):
+        collectedVtx=[]
+        if len(mc.ls(sl=1))>0:
+            for sel_item in mc.ls(sl=1):
+                try:
+                    getmeshObj=[(each) for each in mc.listRelatives(item, ad=1, type="mesh")][0]
+                    getvert=getmeshObj+".vtx[0]"
+                    self.annotations_list(getvert)
+                except:
+                    self.drop_annot(sel_item)
+        else:
+            exclude= ["front", "side", "persp", "top", "ANNOTATE_GRP"]
+            rigs = [(each) for each in mc.ls(type = "transform") if mc.listRelatives(each, p=1) == None if each not in exclude]
+            for sel_item in rigs:
+                try:
+                    getmeshObj=[(item) for item in mc.listRelatives(sel_item, ad=1, type="mesh")][0]
+                    getvert=getmeshObj+".vtx[0]"
+                    print "found mesh"
+                    print getvert
+                    self.annotations_list(getvert)
+                except:
+                    print "found no mesh"
+  
+    def _change_anot_colors(self):
+        getgrp = mc.ls(sl=1)
+        if len(getgrp)==0:
+            getgrp = mc.ls(type="annotationShape")
+        elif mc.ls(sl=1)>0:
+            getgrp=[(each) for item in getgrp for each in mc.listRelatives(item, ad=1, type="annotationShape")]
+        else:
+            print "annotations not present in scene"
+            return
+        for each in getgrp:
+            random.shuffle(colorlist, random.random)
+            offset = colorlist[0]
+            mc.setAttr(each+".overrideEnabled", 1)
+            mc.setAttr(each+".overrideColor", offset)
+            
+    def setTextVal(self, typeNode, textString):
+        hexValues = []
+        for character in textString:
+            hexValues.append(character.encode('hex'))
+        attrVal = ' '.join(hexValues)
+        mc.setAttr(typeNode+'.textInput', attrVal, type = 'string')       
+
+    def type_list_preset(self, item, getTitle, get_loc):    
+        if mc.objExists(getTitle+"_grp") ==0:
+            transformWorldMatrix=mc.xform(get_loc, q=True, ws=1, t=True)
+            plusnum=random.uniform(.2,3)
+            newTransform = [transformWorldMatrix[0], transformWorldMatrix[1]+plusnum, transformWorldMatrix[2]]
+            mm.eval('typeCreateText;')
+            sel_typ = [(hist_type) for hist_type in mc.listHistory(mc.ls(sl=1)) if mc.nodeType(hist_type) == "type"][0]
+            self.setTextVal(sel_typ, str(getTitle))
+            selectMesh = [(each) for each in mc.listHistory(sel_typ) if mc.nodeType(each) == "transform"][0]
+            mc.select(selectMesh, r=1)
+            mc.CenterPivot()
+            buildParent = mc.group(n=getTitle+"_grp")
+            mc.parentConstraint(get_loc, buildParent, mo=0)
+            mc.scaleConstraint(get_loc, buildParent, mo=0)
+        else:
+            buildParent = mc.ls(getTitle+"_grp")[0]
+        return buildParent        
