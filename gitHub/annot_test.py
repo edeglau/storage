@@ -212,5 +212,156 @@ class get_set_sel_val(QtWidgets.QWidget):
         self.setLayout(self.layout)
         self.show()     
         
+    def build_ctrl_annot_one(self, trgt_ctrlrs):
+        fnd_dir = str(self.dir_list.currentText())
+        cust_dict = {}
+        get_frames = float(self.frames.text())
+        drp_attr = str(self.attrlist.currentText())
+        get_val_one_1 = float(self.valueset_lo_one.text())
+        get_val_one_2 = float(self.valueset_hi_one.text())
+        set_val_1 = get_val_one_1, get_val_one_2
+        cust_check_qry = self.cust_checked
+        if cust_check_qry.isChecked():
+            make_dict_part = {drp_attr : set_val_1 }
+            cust_dict.update(make_dict_part)
+        drp_attr_two = str(self.attrlist_two.currentText())
+        get_val_two_1 = float(self.valueset_lo_two.text())
+        get_val_two_2 = float(self.valueset_hi_two.text())
+        set_val_2= get_val_two_1, get_val_two_2
+        cust_check_qry_two = self.cust_checked_two     
+        if cust_check_qry_two.isChecked():
+            make_dict_part = {drp_attr_two : set_val_2}
+            cust_dict.update(make_dict_part)
+        drp_attr_three = str(self.attrlist_three.currentText())
+        get_val_three_1 = float(self.valueset_lo_three.text())
+        get_val_three_2 = float(self.valueset_hi_three.text())
+        set_val_3 = get_val_three_1, get_val_three_2
+        cust_check_qry_three = self.cust_checked_three
+        if cust_check_qry_three.isChecked():
+            make_dict_part = {drp_attr_three : set_val_3}
+            cust_dict.update(make_dict_part)      
+        drp_attr_four = str(self.attrlist_four.currentText())
+        get_val_four_1 = float(self.valueset_lo_four.text())
+        get_val_four_2 = float(self.valueset_hi_four.text())
+        set_val_4 = get_val_four_1, get_val_four_2
+        cust_check_qry_four = self.cust_checked_four        
+        if cust_check_qry_four.isChecked():
+            make_dict_part = {drp_attr_four : set_val_4}
+            cust_dict.update(make_dict_part)  
+        drp_attr_five = str(self.attrlist_five.currentText())
+        get_val_five_1 = float(self.valueset_lo_five.text())
+        get_val_five_2 = float(self.valueset_hi_five.text())
+        set_val_5 = get_val_five_1, get_val_five_2
+        cust_check_qry_five = self.cust_checked_five
+        if cust_check_qry_five.isChecked():
+            make_dict_part = {drp_attr_five : set_val_5}
+            cust_dict.update(make_dict_part) 
+        drp_attr_six = str(self.attrlist_six.currentText())
+        get_val_six_1 = float(self.valueset_lo_six.text())
+        get_val_six_2 = float(self.valueset_hi_six.text())
+        set_val_6 = get_val_six_1, get_val_six_2
+        cust_check_qry_six = self.cust_checked_six        
+        if cust_check_qry_six.isChecked():
+            make_dict_part = {drp_attr_six : set_val_6}
+            cust_dict.update(make_dict_part)     
+        access_main = annot_range_win()
+        access_main.animate_function( get_frames, cust_dict, fnd_dir, trgt_ctrlrs)
+        self.close()
         
+class get_val_frm(QtWidgets.QWidget):
+    def __init__(self, ):
+        super(get_val_frm, self).__init__()
+        self.initUI()
+
+    def initUI(self):  
+        title = "Set Values for review titles"   
+        self.setWindowTitle(title)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.btnlayout = QtWidgets.QGridLayout()
+        self.value_label = QtWidgets.QLabel("Amount to animate")
+        self.valueset = QtWidgets.QLineEdit("1")
+        self.frames_label = QtWidgets.QLabel("accross frames")
+        self.frames = QtWidgets.QLineEdit("8")
+        self.layout.addLayout(self.btnlayout)
+        self.sel_button = QtWidgets.QPushButton("annot attr")
+        self.sel_button.clicked.connect(lambda: self.build_annot())
+        self.btnlayout.addWidget(self.value_label)
+        self.btnlayout.addWidget(self.valueset)
+        self.btnlayout.addWidget(self.frames_label)
+        self.btnlayout.addWidget(self.frames)
+        self.btnlayout.addWidget(self.sel_button)
+        self.setLayout(self.layout)
+        self.show()
+
+    def build_annot(self):
+        get_val = self.valueset.text()
+        get_val = float(get_val)
+        get_frames = self.frames.text()
+        get_frames = float(get_frames)
+        access_main = annot_range_win()
+        access_main.trigger_annot(get_val, get_frames)
+        self.close()        
+        
+class annot_range_win(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(annot_range_win, self).__init__()
+        self.initUI()
+
+    def initUI(self):    
+        """
+        Main window setup
+        """
+        self.setWindowTitle("Annotate")
+
+        self.central_widget=QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.master_layout=QtWidgets.QGridLayout(self.central_widget)
+        self.master_layout.setAlignment(QtCore.Qt.AlignTop)
+        file_menu = QtWidgets.QMenu('&Help', self)
+        self.menuBar().addMenu(file_menu)
+        file_menu.addAction('&Open help page...', self.help_page_launch, 'Ctrl+L')
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.btnlayout = QtWidgets.QVBoxLayout()
+        self.layout.addLayout(self.btnlayout)
+        self.master_layout.addLayout(self.layout, 0,0,1,1)
+        
+        self.annot_sel_button =QtWidgets. QPushButton("Annotate Selected")
+        self.annot_sel_button.setToolTip("Pipeline issues/data retrieval/IT")
+        self.annot_sel_button.clicked.connect(lambda: self.selected_vtx_annot())
+        self.auto_annot_button = QtWidgets.QPushButton("Auto Annotate")
+        self.auto_annot_button.clicked.connect(lambda: self.dealers_choice())                  
+        self.colour_annot_button = QtWidgets.QPushButton("Change Annot Colours")
+        self.colour_annot_button.clicked.connect(lambda:self._change_anot_colors())  
+        self.mrph_annot_button = QtWidgets.QPushButton("Test morphs")
+        self.mrph_annot_button.clicked.connect(lambda: self.test_morph())       
+        self.ctrl_annot_button = QtWidgets.QPushButton("Test ctrlrs under hrchy")
+        self.ctrl_annot_button.clicked.connect(lambda: self.ctrlr_annot())     
+        self.set_annot_button = QtWidgets.QPushButton("Test set")
+        self.set_annot_button.clicked.connect(lambda: self.set_annot())       
+        self.attr_annot_button = QtWidgets.QPushButton("Selected Attribute")
+        self.attr_annot_button.clicked.connect(lambda: self.test_attr())   
+        self.all_attr_annot_button = QtWidgets.QPushButton("Attribute(s) on Selected")
+        self.all_attr_annot_button.clicked.connect(lambda: self.test_attr_controllers())      
+        self.sel_annot_button = QtWidgets.QPushButton("Selected")
+        self.sel_annot_button.clicked.connect(lambda: self.test_sel())     
+        self.recon_annot_button = QtWidgets.QPushButton("Reconstrain title")
+        self.recon_annot_button.clicked.connect(lambda: self.retape_to_selection())   
+        self.mk_annot_button = QtWidgets.QPushButton("Make title")
+        self.mk_annot_button.clicked.connect(lambda: self.make_arbitrary_title())      
+        self.btnlayout.addWidget(self.auto_annot_button)     
+        self.btnlayout.addWidget(self.annot_sel_button)
+        self.btnlayout.addWidget(self.colour_annot_button)
+        self.btnlayout.addWidget(self.sel_annot_button)
+        self.btnlayout.addWidget(self.attr_annot_button)
+        self.btnlayout.addWidget(self.all_attr_annot_button)
+        self.btnlayout.addWidget(self.ctrl_annot_button)
+        self.btnlayout.addWidget(self.set_annot_button)
+        self.btnlayout.addWidget(self.mrph_annot_button)
+        self.btnlayout.addWidget(self.mk_annot_button)
+        self.btnlayout.addWidget(self.recon_annot_button)
+
+        self.setLayout(self.layout)
+
+    def help_page_launch(self):        
         
