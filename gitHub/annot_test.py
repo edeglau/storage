@@ -425,3 +425,97 @@ class annot_range_win(QtWidgets.QMainWindow):
         else:
             buildParent = mc.ls(getTitle+"_grp")[0]
         return buildParent        
+
+    def point_obj_const_callup(self, getSel):
+        edgeBucket=[]
+        if ":" in getSel:
+            findName=getSel.split(":")[-1:][0]
+        else:
+            findName=getSel
+        if ":" in getSel[0]:
+            getObj=getSel[0].split(":")[-1:]
+        else:
+            getObj=getSel
+        getNew=mc.spaceLocator(n=str(findName)+"ploc")
+        if "animGeo"in getObj:
+            getroot = '{}:c_root_jnt'.format(getSel.split(":")[0])
+            print getroot
+            mc.pointConstraint([getroot, getNew[0]], n = '{}_{}_annot_cnst'.format(getSel, getNew[0]), mo=0) 
+        else:
+            mc.pointConstraint([getSel, getNew[0]], n = '{}_{}_annot_cnst'.format(getSel, getNew[0]), mo=0) 
+            
+    def selected_vtx_annot(self):
+        getSel = mc.ls(sl=1)
+        if '.vtx' in mc.ls(sl=1)[0]:
+            for item in getSel:
+                self.annotations_list(item)
+        else:
+            print "select a vertice"
+            pass
+
+    def annotations_list(self, selObj):
+        print selObj
+        # selObj = mc.ls(sl=1)
+        getIt=mc.ls("*ANNOTATE_GRP*")
+        if len(getIt)<1:
+            getIt=mc.CreateEmptyGroup()
+            mc.rename(getIt, "ANNOTATE_GRP")
+            getIt=mc.ls("*ANNOTATE_GRP*")
+        else:
+            getIt=mc.ls("*ANNOTATE_GRP*")    
+        getTitle = selObj.split('.vtx')[0]
+        self.annot_function(selObj, getTitle, getIt)    
+        
+    def annot_function(self, item, getTitle, getIt):
+        random.shuffle(colorlist, random.random)
+        offset = colorlist[0]
+        mc.select(item, r=1)
+        if ".vtx" in item:
+            self.point_const(item)
+        else:
+            self.point_obj_const_callup(item)
+        selected = mc.ls(sl=1)
+        if len(selected)>1:
+            selected = selected[-1]
+        else:
+            selected = selected[0]
+        mc.parent(selected, getIt)
+        transformWorldMatrix=mc.xform(selected, q=True, ws=1, t=True)
+        newTransform = [transformWorldMatrix[0], transformWorldMatrix[1]+offset, transformWorldMatrix[2]]
+        getAnnot = mc.annotate(selected, p=newTransform)
+        buildParent = mc.group(n=getTitle+"_grp")
+        mc.CenterPivot()
+        mc.setAttr(getAnnot+".text", getTitle, type="string")
+        mc.setAttr(getAnnot+".overrideEnabled", 1)
+        mc.setAttr(getAnnot+".overrideColor", offset)
+        getparent = mc.listRelatives(getAnnot, p=1)[0]
+        mc.pointConstraint(selected, buildParent, mo=1)
+        mc.rename(getparent, getTitle+"_ant")
+        mc.rename(selected, item)
+        mc.parent(buildParent, getIt)
+        
+
+    def point_const(self, getSel):
+        self.point_const_callup(getSel)
+
+
+    def point_const_callup(self, getSel):
+        if ":" in getSel:
+            getObj=getSel.split(":")[-1:]
+        else:
+            getObj=getSel
+        print getObj
+        getMod=getObj[0].split('.')[0]
+        getUVmap = mc.polyListComponentConversion(getSel, fv=1, tuv=1)
+        getCoords=mc.polyEditUV(getUVmap, q=1)
+        print str(getMod)+"ploc"
+        getNew=mc.spaceLocator(n=str(getMod)+"ploc")
+        mc.select(getSel, r=1)
+        mc.select(getNew[0], add=1)
+        buildConst=mc.pointOnPolyConstraint(getSel, getNew[0], mo=0, offset=(0.0, 0.0, 0.0))
+        try:
+            mc.setAttr(buildConst[0]+"."+getMod+"U0", getCoords[0])
+            mc.setAttr(buildConst[0]+"."+getMod+"V0", getCoords[1])    
+        except:
+            pass        
+        
