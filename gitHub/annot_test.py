@@ -1065,3 +1065,270 @@ class annot_range_win(QtWidgets.QMainWindow):
         self.control_anim(dictionary_saved, get_obj, anim_loc[0])
         mc.delete(anim_loc_grp)
         
+    def create_orbit_anim_loc(self, get_cur, get_portion, get_obj, directional_plane, size_area):
+        dictionary_saved = []
+        anim_loc_name = "{}_anim_loc".format(get_obj)
+        anim_loc_grp = "{}_anim_grp".format(get_obj)
+        if mc.objExists(anim_loc_name) == True:
+            anim_loc_grp = mc.ls(anim_loc_grp)[0]
+            anim_loc = mc.ls(anim_loc_name)[0]
+        else:
+            anim_loc = mc.spaceLocator(n=anim_loc_name)
+            mc.select(cl=1)
+            mk_grp=mc.CreateEmptyGroup()
+            mc.rename(mk_grp, anim_loc_grp)
+            mc.parent(anim_loc, anim_loc_grp)
+        val00 = [0.0, 0.0, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur-1
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)                
+        val01 = [0.0, 0.0, -1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val01, time_frame)
+        val02 = [-0.766, 0.0, -0.766, 0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*2
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val02, time_frame)
+        val03 = [-1.083, 0.0, 0.0,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*3
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val03, time_frame)
+        val04 = [-0.766, 0.0, 0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*4
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val04, time_frame)
+        val05 = [0.0, 0.0, 1.083,0.0, 0, 0.0]        
+        time_frame = get_cur+get_portion*5
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val05, time_frame)
+        val06 = [0.766, 0.0, 0.766,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*6
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val06, time_frame)
+        val07 = [1.083, 0.0, 0.0,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*7
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val07, time_frame)
+        val08 = [0.766, 0.0, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*8
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val08, time_frame)        
+        val11 = [0.0, 0.766, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*11
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val11, time_frame)
+        val12 = [0.0, 1.083, 0.0,0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*12
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val12, time_frame)
+        val13 = [0.0, 0.766, 0.786,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*13
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val13, time_frame)
+        val14 = [0.0, 0.0, 1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*14
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val14, time_frame)
+        val15 = [0.0, -0.766, 0.766,0.0, 0.0, 0.0]        
+        time_frame = get_cur+get_portion*15
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val15, time_frame)
+        val16 =[0.0, -1.083, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*16
+        dictionary_saved.append(time_frame)
+        self.transform_anim( anim_loc, val16, time_frame)
+        val17 = [0.0, -0.766, -0.766, 0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*17
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val17, time_frame)
+        val18 = [0.0, 0.0, -1.083, 0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*18
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val18, time_frame)
+        time_frame = get_cur+get_portion*18+1        
+        dictionary_saved.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)          
+        mk_cnstrnt = mc.parentConstraint(get_obj, anim_loc_grp, mo=0)
+        mc.delete(mk_cnstrnt)
+        mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
+        self.control_anim(dictionary_saved, get_obj, anim_loc[0])
+        mc.delete(anim_loc_grp)
+
+            def control_anim(self, dictionary_saved, get_obj, anim_loc):
+        for time in dictionary_saved:
+            mc.currentTime(time)
+            matrix=mc.xform(anim_loc, q=True, ws=1, t=True)
+            mc.xform(get_obj,  ws=1, t=matrix)
+            mc.select(get_obj, r=1)
+            mc.SetKey()
+
+    def transform_anim(self, cur_obj, val_list, time_frame):
+        trns = [".tx", ".ty", ".tz", ".rx", ".ry", ".rz"]
+        for attr, val in map(None, trns, val_list):
+            print attr, val
+            mc.setKeyframe(cur_obj, at=attr, v=val, time=(time_frame))
+
+    def test_attr(self):
+        inst_win = get_val_frm()
+
+        
+    def test_morph(self):
+        try:
+            get_morph_obj = mc.ls(sl=1)[0]
+            if mc.nodeType(get_morph_obj) != "morph":
+                get_Shape = [(each) for each in mc.listRelatives(get_morph_obj, ad=1, typ="shape")][0]
+                get_morph = mc.ls(mc.listHistory(get_Shape), typ='morph')[0]
+            else:
+                get_morph = get_morph_obj
+            targetAttrs = mc.listAttr("{}.controlWeight".format(get_morph), m=True) or []
+            if len(targetAttrs)<1:
+                print "cannot find morph targets"
+                return
+            else:
+                getstrt = mc.currentTime(q=1)
+                get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+                for each in targetAttrs:
+                    if "_" not in each:
+                        get_cur = mc.currentTime(q=1)
+                        getstartval = get_cur
+                        getactiveval = get_cur+5
+                        getendval = get_cur+10.0
+                        try:
+                            self.build_anim_singles(get_morph, get_morph_obj, each, get_loc, get_cur, getstartval, getactiveval, getendval, annot_title_grp)
+                        except:
+                            pass
+                mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+                mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                 
+        except:
+            print "cannot find morph target weights"
+            return
+
+
+
+    def build_the_cam_titles(self):
+        #create the title group for camera lineup with text
+        try:
+            get_loc=mc.ls("*_ploc")[0]
+        except:
+            get_loc=mc.spaceLocator(n="annot_ploc")
+            get_loc=get_loc[0]  
+        mc.select(get_loc, r=1)
+        mc.group()
+        mc.rename(mc.ls(sl=1)[0], 'annot_loc_trn')
+        self.cam_constraint('annot_loc_trn')
+        mc.setAttr('annot_ploc.ty', -.16)
+        mc.setAttr('annot_ploc.tz', -.845)
+        mc.setAttr('annot_ploc.sx', 0.002)
+        mc.setAttr('annot_ploc.sy', 0.002)
+        mc.setAttr('annot_ploc.sz', 0.002)        
+        annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        if len(annot_title_grp)<1:
+            annot_title_grp=mc.CreateEmptyGroup()
+            mc.rename(annot_title_grp, "ANNOTATE_GRP")
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        else:
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*") 
+        #create the shader for the text 
+        create_shade_node=mc.ls("annotate_shd")
+        if len(create_shade_node)<1:
+            create_shade_node = mc.shadingNode('lambert', asShader=True, n="annotate_shd")
+        else:
+            create_shade_node=mc.ls(create_shade_node)[0]            
+        lst_sg_node = [create_shade_node]
+        #add the texture to a set
+        set_name = 'techanim_textures'         
+        if mc.objExists(set_name):
+            pass
+        else:
+            mc.sets(n=set_name, co=3)
+        mc.sets(lst_sg_node, add=set_name)  
+        #change shader color to be more visible in grey viewport
+        mc.setAttr("annotate_shd.color", 1, 0.5, 0, type = 'double3')
+        return get_loc, create_shade_node, annot_title_grp
+    
+    def trigger_annot(self, get_val, get_frames):
+        targetAttrs = mc.ls(sl=1)[0]
+        #get selected attribute in channelbox
+        getChannels =mm.eval('global string $gChannelBoxName; $temp=$gChannelBoxName;')
+        try:
+            attr_channel = mc.channelBox(getChannels, q=1, sma=1) [0]   
+            pass
+        except:
+            print "select attribute on slected object"
+            return
+        title_content = targetAttrs+"."+attr_channel
+        #add the attributes to a set
+        ctrl_set_name = 'titled_controllers' 
+        if mc.objExists(ctrl_set_name):
+            pass
+        else:
+            mc.sets(n=ctrl_set_name, co=3)
+        mc.sets(targetAttrs, add=ctrl_set_name)
+        #create the title group for camera lineup with text
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        #calculate length and time to key on/off functions
+        getstrt = mc.currentTime(q=1)
+        getName=["namespace"]
+        # for each in targetAttrs: 
+        mc.select(targetAttrs, r=1)
+        get_cur = mc.currentTime(q=1)
+        getstartval = get_cur
+        div_two = get_frames/2
+        getactiveval = get_cur+div_two
+        getendval = get_cur+get_frames
+        print title_content
+        try:
+            self.build_anim_singles(targetAttrs, targetAttrs, attr_channel, get_loc, get_cur, getstartval, getactiveval, getendval, annot_title_grp)
+        except:
+            pass
+        mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+        mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)      
+        
+    def build_anim_singles(self, obj_item, sel_obj, anim_attr, get_loc, get_cur, getstartval, getactiveval, getendval, annot_title_grp):
+        '''
+        obj_item = the object the attribute belongs to(EG:sphere1)
+        sel_obj = the selected object the attribute belongs to(EG:morph node)
+        anim_attr = the attribute to be keyed at(EG:1.0)
+        get_loc = the object in which the resulting title will be contrained to(annot_loc_trn)
+        getstartval = the relative frame that the animation of that attribute starts(EG:1000)
+        getactiveval = the "on" time frame for the attribute to be tested at(EG:1008)
+        getendval = the relative frame that the animation of that attribute ends(EG:1012)
+        '''
+        if mc.objExists(anim_attr+'_grp') == False:
+            title_label = sel_obj+'.'+anim_attr
+            new_name_annot = self.type_list_preset(sel_obj, title_label, get_loc)
+        else:
+            new_name_annot = mc.ls(anim_attr+'_grp')[0]
+        # print new_name_annot
+        try:
+            mc.select(new_name_annot, r=1)
+            mc.hyperShade(assign=str(create_shade_node)) 
+        except:
+            pass
+        try:
+            mc.parent(new_name_annot, annot_title_grp)
+        except:
+            pass
+        #key morphs
+        mc.setKeyframe(obj_item, at=anim_attr, v=0.0, time=(getstartval))   
+        mc.setKeyframe(obj_item, at=anim_attr, v=1.0, time=(getactiveval))
+        mc.setKeyframe(obj_item, at=anim_attr, v=0.0, time=(getendval))
+        #key the title
+        mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval)) 
+        mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getstartval+1))
+        mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getendval-1))
+        mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getendval))    
+        mc.currentTime(getendval)
+
+    
+inst_win = annot_range_win()
+inst_win.show()    
+
+   
