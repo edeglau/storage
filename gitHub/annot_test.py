@@ -519,3 +519,370 @@ class annot_range_win(QtWidgets.QMainWindow):
         except:
             pass        
         
+    def drop_annot(self, obj_item):
+        getIt=mc.ls("*ANNOTATE_GRP*")
+        if len(getIt)<1:
+            getIt=mc.CreateEmptyGroup()
+            mc.rename(getIt, "ANNOTATE_GRP")
+            getIt=mc.ls("*ANNOTATE_GRP*")
+        else:
+            getIt=mc.ls("*ANNOTATE_GRP*")         
+        self.annot_function(obj_item, obj_item, getIt)
+
+    def selected_verts(self, selObj):
+        for item in selObj:
+            self.annotations_list(item)
+            
+    def annotations_list_preset(self, item, getTitle, getNew, get_color):
+        getName=["namespace"]
+        annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        if len(annot_title_grp)<1:
+            annot_title_grp=mc.CreateEmptyGroup()
+            mc.rename(annot_title_grp, "ANNOTATE_GRP")
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        else:
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")         
+        random.shuffle(colorlist, random.random)
+        offset = colorlist[0]
+        mc.select(item, r=1)
+        transformWorldMatrix=mc.xform(getNew, q=True, ws=1, t=True)
+        plusnum=random.uniform(.2,3)
+        newTransform = [transformWorldMatrix[0], transformWorldMatrix[1]+plusnum, transformWorldMatrix[2]]
+        getAnnot = mc.annotate(getNew, p=newTransform)
+        buildParent = mc.group(n=getTitle+"_grp")
+        mc.CenterPivot()
+        mc.setAttr(getAnnot+".text", getTitle, type="string")
+        mc.setAttr(getAnnot+".overrideEnabled", 1)
+        mc.setAttr(getAnnot+".overrideColor", get_color)
+        getparent = mc.listRelatives(getAnnot, p=1)[0]
+        mc.pointConstraint(getNew, buildParent, mo=1)
+        new_name_annot = getTitle+"_ant"
+        mc.rename(getparent, getTitle+"_ant")
+        # mc.rename(getNew, item)
+        mc.parent(buildParent, annot_title_grp)
+        return new_name_annot
+
+    def cam_constraint(self, tape_thing_to_cam):
+        if mc.objExists("*:*.cameraPreset") == True:
+            getCameraGrp=mc.ls("*:*.cameraPreset")[0]
+            getNode=getCameraGrp.split(".")[0]
+            selcnst = mc.parentConstraint(getNode, tape_thing_to_cam, mo=0)
+            mc.rename(selcnst, 'annot_duct_tape_par')
+        elif mc.objExists("shotcam*:camera") == True:
+            getCameraGrp=mc.ls("shotcam*:camera")[0]
+            getNode=getCameraGrp.split(".")[0]
+            selcnst = mc.parentConstraint(getNode, tape_thing_to_cam, mo=0)
+            mc.rename(selcnst, 'annot_duct_tape_par')
+        else:
+            getNode = [(mc.listRelatives(item, ap=1, type='transform')[0]) for item in mc.ls(type = 'camera') if 'persp' in item][0]
+            try:
+                selcnst = mc.parentConstraint(getNode, tape_thing_to_cam, mo=0)
+                mc.rename(selcnst, 'annot_duct_tape_par')
+            except:
+                print "skipping {}".format(tape_thing_to_cam)
+                pass
+            
+    def retape_to_selection(self):
+        # try:
+        getNode = mc.ls(sl=1)[0]
+        print getNode
+        if mc.objExists("annot_loc_trn") == True:
+            print "Label exists -  will skip creating it"
+            print 'taping label to selected'
+            try:
+                mc.delete('annot_duct_tape_par')
+            except:
+                pass
+            if len(getNode)>0:
+                selcnst = mc.parentConstraint(getNode, 'annot_loc_trn', mo=0)
+                mc.rename(selcnst, 'annot_duct_tape_par')
+            else:
+                print "Nothing selected. skipping"
+                pass
+        else:
+            try:
+                get_loc=mc.ls("*_ploc")[0]
+            except:
+                get_loc=mc.spaceLocator(n="annot_ploc")
+                get_loc=get_loc[0]  
+            mc.select(get_loc, r=1)
+            mc.group()
+            mc.rename(mc.ls(sl=1)[0], 'annot_loc_trn')
+            print 'taping label to selected'
+            if len(getNode)>0:
+                selcnst = mc.parentConstraint(getNode, 'annot_loc_trn', mo=0)
+                mc.rename(selcnst, 'annot_duct_tape_par')
+            else:
+                print "Nothing selected. skipping"
+                pass
+            
+
+    def make_arbitrary_title(self):
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        label = "label"
+        title_set = "label"
+        new_name_annot = self.type_list_preset(mc.ls(sl=1)[0], title_set, get_loc)
+        mc.select(new_name_annot, r=1)
+        mc.hyperShade(assign=str(create_shade_node)) 
+        mc.parent(new_name_annot, annot_title_grp)
+
+    def makeDialog(self, titleText, messageText, textText):
+        '''make dialog box function'''
+        result = mc.promptDialog( 
+            title=str(titleText), 
+            message=str(messageText), 
+            text=str(textText),
+            button=['Continue','Cancel'],
+            defaultButton='Continue', 
+            cancelButton='Cancel', 
+            dismissString='Cancel' )
+        if result == 'Continue':            
+            mainName=mc.promptDialog(q=1)
+            return mainName
+        else:
+            print "nothing collected"    
+            
+    def checkDialog(self, titleText, messageText):
+        result = mc.confirmDialog ( 
+            title=str(titleText),
+            message=str(messageText), 
+            button=['Continue','Cancel'],
+            defaultButton='Continue', 
+            cancelButton='Cancel', 
+            dismissString='Cancel' )
+        if result == 'Continue':
+            hall_pass = True
+            return hall_pass
+        else:
+            print "nothing collected"         
+
+
+    def test_attr_controllers(self):
+        max_items = 100
+        targetAttrs=mc.ls(sl=1)
+        get_attrs_chn = [(the_item) for each_obj in targetAttrs for the_item in mc.listAttr (each_obj, k=1) if 'visibility' not in the_item]
+        get_total = len(targetAttrs + get_attrs_chn)
+        get_blast_length = get_total * 8
+        get_pass = self.checkDialog("Function check", 'There are {} channels to parse which will potentially run a blast of {} frame length. Do you want to continue?'.format(get_total, get_blast_length))
+        if get_pass == True:
+            pass
+        else:
+            print "cancelling function"
+            return
+        getrange = len(targetAttrs)
+        get_frames = int(self.makeDialog('FrameRange', 'Set frame span', '8'))
+        fnd_dir="none"
+    #     #   USE FOR EACH ATTRIBUTE TEST
+        for each_obj in targetAttrs:
+            get_attrs_chn = [(the_item) for the_item in mc.listAttr (each_obj, k=1) if 'visibility' not in the_item]
+            for item in get_attrs_chn:
+                if "translate" in item:
+                    print "translation check"
+                    get_val_1 = -3
+                    get_val_2 = 3
+                    set_val= get_val_1, get_val_2
+                    make_dict_part = {item : set_val}
+                    self.animate_function(get_frames, make_dict_part, fnd_dir, [each_obj])
+                elif "rotate" in item:
+                    print "rotation check"
+                    get_val_1 = -25
+                    get_val_2 = 25
+                    set_val= get_val_1, get_val_2
+                    make_dict_part = {item : set_val}
+                    self.animate_function(get_frames, make_dict_part, fnd_dir, [each_obj])
+                elif "scale" in item:
+                    print "scale check"
+                    get_val_1 =0.001
+                    get_val_2 = 3
+                    set_val= get_val_1, get_val_2
+                    make_dict_part = {item : set_val}
+                    self.animate_function(get_frames, make_dict_part, fnd_dir, [each_obj])
+                else:
+                    print "other check"
+                    try:
+                        get_val_1 = mc.attributeQuery(item, node=each_obj, min=1)
+                    except:
+                        get_val_1 =0
+                    try:
+                        get_val_2 = mc.attributeQuery(item, node=each_obj, max=1)
+                    except:
+                        get_val_2 =1
+                    set_val= get_val_1, get_val_2
+                    make_dict_part = {item : set_val}
+                    self.animate_function(get_frames, make_dict_part, fnd_dir, [each_obj])
+
+
+    def set_annot(self):
+        get_set = mc.ls(sl=1)
+        mc.select(get_set)
+        trgt_ctrlrs = mc.ls(sl=1)
+        inst_win = get_set_sel_val(trgt_ctrlrs)
+        
+    def ctrlr_annot(self):
+        parentObj = mc.ls(sl=1)
+        trgt_ctrlrs=[(each) for each in mc.listRelatives(parentObj, ad=1, type="transform") if "_ctrl" in each and "_grp" not in each]
+        inst_win = get_set_sel_val(trgt_ctrlrs)
+
+    def test_sel(self):
+        trgt_ctrlrs = mc.ls(sl=1)
+        inst_win = get_set_sel_val(trgt_ctrlrs)        
+        
+    def animate_function(self, get_frames, cust_dict, fnd_dir, trgt_ctrlrs):
+        getRange = len(trgt_ctrlrs)
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        if fnd_dir == "none":
+            for each in trgt_ctrlrs:
+                try:
+                    mc.sets(each, add=ctrl_set_name)
+                except:
+                    pass
+                for key, value in cust_dict.items():
+                    #set key points
+                    find_def_val = mc.getAttr(each+"."+key)
+                    value_lo=value[0]
+                    if type(value_lo) == list:
+                        value_lo = value_lo[0]
+                    value_hi=value[1]
+                    if type(value_hi) == list:
+                        value_hi = value_hi[0]
+                    get_cur = mc.currentTime(q=1)
+                    getstartval = get_cur
+                    gethalf = get_frames/3
+                    getactiveval_lo = get_cur+gethalf
+                    getactiveval_hi = get_cur+gethalf+gethalf
+                    getendval = get_cur+get_frames
+                    #keyframe the object
+                    mc.setKeyframe(each, at=key, v=find_def_val, time=(getstartval))
+                    mc.setKeyframe(each, at=key, v=value_lo, time=(getactiveval_lo))
+                    mc.setKeyframe(each, at=key, v=value_hi, time=(getactiveval_hi))
+                    mc.setKeyframe(each, at=key, v=find_def_val, time=(getendval))
+                    #create the title
+                    title_set = each+"."+key
+                    if mc.objExists(title_set+'_grp') == False:
+                        new_name_annot = self.type_list_preset(each, title_set, get_loc)
+                    else:
+                        new_name_annot = mc.ls(title_set+'_grp')[0]
+                    # print new_name_annot
+                    try:
+                        mc.select(new_name_annot, r=1)
+                        mc.hyperShade(assign=str(create_shade_node)) 
+                    except:
+                        pass
+                    try:
+                        mc.parent(new_name_annot, annot_title_grp)
+                    except:
+                        pass
+                    #key the title
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval)) 
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getstartval+1))
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(getendval-1))
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getendval))  
+        elif fnd_dir == "fig_eight":
+            for each in trgt_ctrlrs:
+                try:
+                    mc.sets(each, add=ctrl_set_name)
+                except:
+                    pass
+                for key, value in cust_dict.items():
+                    get_cur = mc.currentTime(q=1)
+                    size_area=value[0]*-1
+                    if "rotateZ" or "translateZ" in key:
+                        rotate_plane = "Z"
+                    elif "rotateZ" or "translateZ" in key:
+                        rotate_plane = "X"
+                    getstartval = get_cur
+                    get_portion = get_frames/20 
+                    getendval = get_cur+get_frames
+                    self.create_the_anim_loc(get_cur, get_portion, each, rotate_plane, size_area)
+                    new_name_annot = self.type_list_preset(each, each, get_loc)         
+                    try:
+                        mc.select(new_name_annot, r=1)
+                        mc.hyperShade(assign=str(create_shade_node)) 
+                    except:
+                        pass
+                    try:
+                        mc.parent(new_name_annot, annot_title_grp)
+                    except:
+                        pass
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval)) 
+                    time_frame = get_cur+get_portion*2
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*19
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*20
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=time_frame)    
+                    mc.currentTime(getendval)                    
+        elif fnd_dir == "circle":
+            for each in trgt_ctrlrs:
+                try:
+                    mc.sets(each, add=ctrl_set_name)
+                except:
+                    pass
+                for key, value in cust_dict.items():
+                    get_cur = mc.currentTime(q=1)
+                    size_area=value[0]*-1
+                    if "rotateZ" or "translateZ" in key:
+                        rotate_plane = "Z"
+                    elif "rotateZ" or "translateZ" in key:
+                        rotate_plane = "X"
+                    getstartval = get_cur
+                    get_portion = get_frames/8
+                    getendval = get_cur+get_frames
+                    self.create_circle_anim_loc(get_cur, get_portion, each, rotate_plane, size_area)
+                    new_name_annot = self.type_list_preset(each, each, get_loc)        
+                    try:
+                        mc.select(new_name_annot, r=1)
+                        mc.hyperShade(assign=str(create_shade_node)) 
+                    except:
+                        pass
+                    try:
+                        mc.parent(new_name_annot, annot_title_grp)
+                    except:
+                        pass
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval)) 
+                    time_frame = get_cur+get_portion*2
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*7
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*8
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=time_frame)    
+                    mc.currentTime(getendval)                    
+        elif fnd_dir == "orbit":
+            for each in trgt_ctrlrs:
+                try:
+                    mc.sets(each, add=ctrl_set_name)
+                except:
+                    pass
+                for key, value in cust_dict.items():
+                    get_cur = mc.currentTime(q=1)
+                    size_area=value[0]*-1
+                    if "rotateZ" or "translateZ" in key:
+                        rotate_plane = "Z"
+                    elif "rotateZ" or "translateZ" in key:
+                        rotate_plane = "X"
+                    getstartval = get_cur
+                    get_portion = get_frames/16 
+                    getendval = get_cur+get_frames
+                    self.create_orbit_anim_loc(get_cur, get_portion, each, rotate_plane, size_area)
+                    new_name_annot = self.type_list_preset(each, each, get_loc)   
+                    try:
+                        mc.select(new_name_annot, r=1)
+                        mc.hyperShade(assign=str(create_shade_node)) 
+                    except:
+                        pass
+                    try:
+                        mc.parent(new_name_annot, annot_title_grp)
+                    except:
+                        pass
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(getstartval)) 
+                    time_frame = get_cur+get_portion*2
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*15
+                    mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=time_frame)
+                    time_frame = get_cur+get_portion*16
+                    mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=time_frame)    
+                    mc.currentTime(getendval)              
+        mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+        mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)                      
