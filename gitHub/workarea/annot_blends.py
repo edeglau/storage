@@ -1080,7 +1080,6 @@ class annot_range_win(QtWidgets.QMainWindow):
         mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
         mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)    
 
-
     def create_fig_eight_anim_loc(self, get_cur, get_portion, get_obj, directional_plane, size_area):
         """
         The figure eight animation curve applied to object
@@ -1131,7 +1130,7 @@ class annot_range_win(QtWidgets.QMainWindow):
         val03 = [1.032, 0.0, .785,0.0, -30, 0.0]
         time_frame = get_cur+get_portion*3
         tm_frm_coll.append(time_frame)
-        self.transform_anim(anim_loc, val03, time_frame)    
+        self.transform_anim(anim_loc, val03, time_frame)
         val04 = [0.985, 0.0, 1.406,0.0, 0.0, 0.0]
         time_frame = get_cur+get_portion*4
         tm_frm_coll.append(time_frame)
@@ -1152,7 +1151,7 @@ class annot_range_win(QtWidgets.QMainWindow):
         time_frame = get_cur+get_portion*8
         tm_frm_coll.append(time_frame)
         self.transform_anim(anim_loc, val08, time_frame)
-        val09 = [-1.011, 0.0, 0.565,0.0, 30, 0.0]        
+        val09 = [-1.011, 0.0, 0.565,0.0, 30, 0.0]
         time_frame = get_cur+get_portion*9
         tm_frm_coll.append(time_frame)
         self.transform_anim( anim_loc, val09, time_frame)
@@ -1192,7 +1191,7 @@ class annot_range_win(QtWidgets.QMainWindow):
         time_frame = get_cur+get_portion*19
         tm_frm_coll.append(time_frame)
         self.transform_anim( anim_loc, val19, time_frame)
-        val20 = [-0.541, 0.0, -0.09,0.0, 20.0, 0.0]
+        val20 = [-0.541, 0.0, -0.09,0.0, 20.0, 0.0]  
         time_frame = get_cur+get_portion*20
         tm_frm_coll.append(time_frame)
         self.transform_anim( anim_loc, val20, time_frame)
@@ -1208,6 +1207,207 @@ class annot_range_win(QtWidgets.QMainWindow):
         elif "Z" in directional_plane:
             print "Z"
             mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+        mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
+        self.control_anim(tm_frm_coll, get_obj, anim_loc[0])
+        mc.delete(anim_loc_grp)        
+        
+
+    def create_circle_anim_loc(self, get_cur, get_portion, get_obj, directional_plane, size_area):
+        """
+        The circle animation curve applied to object
+            Args:
+                get_cur (int) : the current time frame on the timeline EG: 1024
+                get_portion (float) : the division of the frame range that accomodates the span of keys required
+                get_obj (str) : The object that is to be animated
+                directional_plane (str) : The direction in which gets animated (XYZ)
+                size_area (str) : The scale to which the animation takes place (EG:1, -1, 5)
+            Examples:
+                get_cur: 1000
+                get_portion : portion of 1 frame each spaning 8 frames needing 8 keys at 1.0 frames.
+                get_obj : pSphere
+                directional_plane : Z
+                size_area : 5
+            Results: 
+                Locator created and animated in a flat circle pattern, keying each postion starting at 1000 
+                incrementing 8 frames at 1.0 frames to make up 8 frame range span, 
+                rotated to face the Z axis, scaled to 5 unites.This will then be 
+                transfered to the pSphere (control_anim function)
+            Callup:
+                animate_function
+        """ 
+        tm_frm_coll = []
+        anim_loc_name = "{}_anim_loc".format(get_obj)
+        anim_loc_grp = "{}_anim_grp".format(get_obj)
+        if mc.objExists(anim_loc_name) == True:
+            anim_loc_grp = mc.ls(anim_loc_grp)[0]
+            anim_loc = mc.ls(anim_loc_name)[0]
+        else:
+            anim_loc = mc.spaceLocator(n=anim_loc_name)
+            mc.select(cl=1)
+            mk_grp=mc.CreateEmptyGroup()
+            mc.rename(mk_grp, anim_loc_grp)
+            mc.parent(anim_loc, anim_loc_grp)
+        val00 = [0.0, 0.0, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur-1
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)            
+        val01 = [0.0, 0.0, -1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val01, time_frame)
+        val02 = [-0.766, 0.0, -0.766, 0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*2
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val02, time_frame)
+        val03 = [-1.083, 0.0, 0.0,0.0, -30, 0.0]
+        time_frame = get_cur+get_portion*3
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val03, time_frame)
+        val04 = [-0.766, 0.0, 0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*4
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val04, time_frame)
+        val05 = [0.0, 0.0, 1.083,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*5  
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val05, time_frame)
+        val06 = [0.766, 0.0, 0.766,0.0, -90, 0.0]
+        time_frame = get_cur+get_portion*6
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val06, time_frame)
+        val07 = [1.083, 0.0, 0.0,0.0, -40, 0.0]
+        time_frame = get_cur+get_portion*7
+        tm_frm_coll.append(time_frame)
+        self.transform_anim( anim_loc, val07, time_frame)
+        val08 = [0.766, 0.0, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*8
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val08, time_frame)
+        time_frame = get_cur+get_portion*8+1
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)        
+        mk_cnstrnt = mc.parentConstraint(get_obj, anim_loc_grp, mo=0)
+        mc.delete(mk_cnstrnt)
+        if "X" in directional_plane:  
+            print "X"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+            mc.setAttr("{}.rotateY".format(anim_loc_grp), 90)
+        elif "Z" in directional_plane:
+            print "Z"
+            mc.setAttr("{}.rotateX".format(anim_loc_grp), -90)
+        mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
+        mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
+        self.control_anim(tm_frm_coll, get_obj, anim_loc[0])
+        mc.delete(anim_loc_grp)            
+
+    def create_orbit_anim_loc(self, get_cur, get_portion, get_obj, size_area):
+        """
+        The orbit(3 axis) animation curve applied to object
+            Args:
+                get_cur (int) : the current time frame on the timeline EG: 1024
+                get_portion (float) : the division of the frame range that accomodates the span of keys required
+                get_obj (str) : The object that is to be animated
+                size_area (str) : The scale to which the animation takes place (EG:1, -1, 5)
+            Examples:
+                get_cur: 1000(current frame on timeline)
+                get_portion : (0.44) for incrementing across 8 frames requiring 18 keys at .44 frames.
+                get_obj : pSphere
+                size_area : 5
+            Results: 
+                Locator created and animated in a 3 Dimentional orbit pattern, keying each position starting at 1000 
+                incrementing at .44 frames to make up 8 frame range span, scaled to 5 unites. This will then be 
+                transfered to the pSphere (control_anim function)
+            Callup:
+                animate_function
+        """ 
+        tm_frm_coll = []
+        anim_loc_name = "{}_anim_loc".format(get_obj)
+        anim_loc_grp = "{}_anim_grp".format(get_obj)
+        if mc.objExists(anim_loc_name) == True:
+            anim_loc_grp = mc.ls(anim_loc_grp)[0]
+            anim_loc = mc.ls(anim_loc_name)[0]
+        else:
+            anim_loc = mc.spaceLocator(n=anim_loc_name)
+            mc.select(cl=1)
+            mk_grp=mc.CreateEmptyGroup()
+            mc.rename(mk_grp, anim_loc_grp)
+            mc.parent(anim_loc, anim_loc_grp)
+        val00 = [0.0, 0.0, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur-1
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)                
+        val01 = [0.0, 0.0, -1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val01, time_frame)
+        val02 = [-0.766, 0.0, -0.766, 0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*2
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val02, time_frame)
+        val03 = [-1.083, 0.0, 0.0,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*3
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val03, time_frame)
+        val04 = [-0.766, 0.0, 0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*4
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val04, time_frame)
+        val05 = [0.0, 0.0, 1.083,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*5
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val05, time_frame)
+        val06 = [0.766, 0.0, 0.766,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*6
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val06, time_frame)
+        val07 = [1.083, 0.0, 0.0,0.0, 0, 0.0]
+        time_frame = get_cur+get_portion*7
+        tm_frm_coll.append(time_frame)
+        self.transform_anim( anim_loc, val07, time_frame)
+        val08 = [0.766, 0.0, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*8
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val08, time_frame)
+        val11 = [0.0, 0.766, -0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*11
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val11, time_frame)
+        val12 = [0.0, 1.083, 0.0,0.0, -20, 0.0]
+        time_frame = get_cur+get_portion*12
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val12, time_frame)
+        val13 = [0.0, 0.766, 0.786,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*13
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val13, time_frame)
+        val14 = [0.0, 0.0, 1.083,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*14
+        tm_frm_coll.append(time_frame)
+        self.transform_anim( anim_loc, val14, time_frame)
+        val15 = [0.0, -0.766, 0.766,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*15
+        tm_frm_coll.append(time_frame)
+        self.transform_anim( anim_loc, val15, time_frame)
+        val16 =[0.0, -1.083, 0.0,0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*16
+        tm_frm_coll.append(time_frame)
+        self.transform_anim( anim_loc, val16, time_frame)
+        val17 = [0.0, -0.766, -0.766, 0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*17
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val17, time_frame)
+        val18 = [0.0, 0.0, -1.083, 0.0, 0.0, 0.0]
+        time_frame = get_cur+get_portion*18
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val18, time_frame)
+        time_frame = get_cur+get_portion*18+1
+        tm_frm_coll.append(time_frame)
+        self.transform_anim(anim_loc, val00, time_frame)          
+        mk_cnstrnt = mc.parentConstraint(get_obj, anim_loc_grp, mo=0)
+        mc.delete(mk_cnstrnt)
         mc.setAttr("{}.scaleX".format(anim_loc_grp), size_area)
         mc.setAttr("{}.scaleY".format(anim_loc_grp), size_area)
         mc.setAttr("{}.scaleZ".format(anim_loc_grp), size_area)
