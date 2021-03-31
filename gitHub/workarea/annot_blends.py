@@ -1273,5 +1273,312 @@ class annot_range_win(QtWidgets.QMainWindow):
             get_val_hi = 1
         def_val = mc.getAttr("{}.{}".format(trgt_obj, attr_channel))
         inst_win = get_val_frm(get_val_hi, def_val, trgt_obj, attr_channel)
+    def test_blendShape(self):
+        """
+        Triggers and animates all the controlWeights on blendshapes node as a sequence 
+            Callup:
+                "Test Blendshape targets"
+        """ 
+        try:
+            get_bsp_obj = mc.ls(sl=1)
+            if mc.nodeType(get_bsp_obj[0]) != "blendShape":
+                get_Shapes = [(each) for item in get_bsp_obj for each in mc.listRelatives(item, ad=1, typ="shape")]
+                get_bsp = [(items) for shapes in get_Shapes for items in mc.ls(mc.listHistory(shapes), typ='blendShape')]
+            else:
+                get_bsp = get_bsp_obj
+            # trgt_attrs = mc.listAttr("{}.controlWeight".format(get_bsp), m=True) or []
+            for blend_item in get_bsp:
+                trgt_attrs = mc.listAttr("{}.weight".format(blend_item), m=True) or []
+                if len(trgt_attrs)<1:
+                    print "cannot find bsp targets"
+                    return
+                else:
+                    getstrt = mc.currentTime(q=1)
+                    get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+                    for each in trgt_attrs:
+                        label_object = '{}.{}'.format(get_bsp_obj[0], blend_item)
+                        get_cur = mc.currentTime(q=1)
+                        strt_tm_frm = get_cur
+                        active_tm_frm = get_cur+5
+                        end_tm_frm = get_cur+10.0
+                        get_val = 1.0
+                        def_val = 0.0
+                        def_type = 'blendShape'
+                        try:
+                            self.build_anim_singles(get_val, 
+                                                    def_val, 
+                                                    blend_item, 
+                                                    label_object, 
+                                                    each, 
+                                                    get_loc, 
+                                                    get_cur, 
+                                                    strt_tm_frm, 
+                                                    active_tm_frm, 
+                                                    end_tm_frm, 
+                                                    annot_title_grp, 
+                                                    def_type, 
+                                                    create_shade_node
+                                                    )
+                            # self.build_anim_singles(get_val, def_val, blend_item, get_bsp_obj[0], each, get_loc, get_cur, strt_tm_frm, active_tm_frm, end_tm_frm, annot_title_grp)
+                        except:
+                            pass
+                mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+                mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)   
+        except:
+            print "cannot find bsp target weights"
+            return
 
+
+    def test_morph(self):
+        """
+        Triggers and animates all the controlWeights on a morph node as a sequence 
+            Callup:
+                "Test Morph targets"
+        """ 
+        try:
+            get_morph_obj = mc.ls(sl=1)[0]
+            if mc.nodeType(get_morph_obj) != "morph":
+                get_Shape = [(each) for each in mc.listRelatives(get_morph_obj, ad=1, typ="shape")][0]
+                get_morph = mc.ls(mc.listHistory(get_Shape), typ='morph')[0]
+            else:
+                get_morph = get_morph_obj
+            trgt_attrs = mc.listAttr("{}.controlWeight".format(get_morph), m=True) or []
+            if len(trgt_attrs)<1:
+                print "cannot find morph targets" 
+                return
+            else:
+                getstrt = mc.currentTime(q=1)
+                get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+                for each in trgt_attrs:
+                    if "_" not in each:
+                        get_cur = mc.currentTime(q=1)
+                        strt_tm_frm = get_cur
+                        active_tm_frm = get_cur+5
+                        end_tm_frm = get_cur+10.0
+                        get_val = 1.0
+                        def_val = 0.0
+                        def_type = 'morph'
+                        try:
+                            self.build_anim_singles(
+                                get_val, 
+                                def_val, 
+                                get_morph, 
+                                get_morph_obj, 
+                                each, 
+                                get_loc, 
+                                get_cur, 
+                                strt_tm_frm, 
+                                active_tm_frm, 
+                                end_tm_frm, 
+                                annot_title_grp, 
+                                def_type,
+                                create_shade_node
+                                )
+                        except:
+                            pass
+                mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+                mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+                mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)   
+        except:
+            print "cannot find morph target weights"
+            return
+
+
+
+    def build_the_cam_titles(self):
+        """
+        Creates the title group for camera lineup with text
+        """ 
+        try:
+            get_loc=mc.ls("*_ploc")[0]
+        except:
+            get_loc=mc.spaceLocator(n="annot_ploc")
+            get_loc=get_loc[0]  
+            mc.select(get_loc, r=1)
+            mc.group()
+            mc.rename(mc.ls(sl=1)[0], 'annot_trn')
+            mc.group()
+            mc.rename(mc.ls(sl=1)[0], 'annot_loc_trn')
+            self.cam_constraint('annot_loc_trn')
+            mc.setAttr('annot_trn.ty', -.16)
+            mc.setAttr('annot_trn.tz', -.845)
+            mc.setAttr('annot_trn.sx', 0.002)
+            mc.setAttr('annot_trn.sy', 0.002)
+            mc.setAttr('annot_trn.sz', 0.002)
+        annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        if len(annot_title_grp)<1:
+            annot_title_grp=mc.CreateEmptyGroup()
+            mc.rename(annot_title_grp, "ANNOTATE_GRP")
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*")
+        else:
+            annot_title_grp=mc.ls("*ANNOTATE_GRP*") 
+        #create the shader for the text 
+        create_shade_node=mc.ls("annotate_shd")
+        if len(create_shade_node)<1:
+            create_shade_node = mc.shadingNode('lambert', asShader=True, n="annotate_shd")
+        else:
+            create_shade_node=mc.ls(create_shade_node)[0]            
+        lst_sg_node = [create_shade_node]
+        #add the texture to a set
+        set_name = 'techanim_textures' 
+        if mc.objExists(set_name):
+            pass
+        else:
+            mc.sets(n=set_name, co=3)
+        mc.sets(lst_sg_node, add=set_name)  
+        #change shader color to be more visible in grey viewport
+        mc.setAttr("annotate_shd.color", 1, 0.5, 0, type = 'double3')
+        return get_loc, create_shade_node, annot_title_grp
+    
+
+    def trigger_annot(self, get_val, def_val, get_frames, trgt_obj, attr_channel):
+        """
+        The function for animating the current selected attribute
+            Callup:
+                "Selected Attribute"
+                get_val_frm
+        """
+        title_content = trgt_obj+"."+attr_channel
+        #add the attributes to a set
+        ctrl_set_name = 'titled_controllers' 
+        if mc.objExists(ctrl_set_name):
+            pass
+        else:
+            mc.sets(n=ctrl_set_name, co=3)
+        mc.sets(trgt_obj, add=ctrl_set_name)
+        #create the title group for camera lineup with text
+        get_loc,create_shade_node, annot_title_grp  = self.build_the_cam_titles()
+        #calculate length and time to key on/off functions
+        getstrt = mc.currentTime(q=1)
+        getName=["namespace"]
+        # for each in trgt_attrs: 
+        mc.select(trgt_obj, r=1)
+        get_cur = mc.currentTime(q=1)
+        strt_tm_frm = get_cur
+        div_two = get_frames/2
+        active_tm_frm = get_cur+div_two
+        # active_tm_frm = trgt_obj
+        end_tm_frm = get_cur+get_frames
+        def_type = 'None'
+        try:
+            self.build_anim_singles(get_val, 
+                def_val, 
+                trgt_obj, 
+                trgt_obj, 
+                attr_channel, 
+                get_loc, 
+                get_cur, 
+                strt_tm_frm, 
+                active_tm_frm, 
+                end_tm_frm, 
+                annot_title_grp, 
+                def_type,
+                create_shade_node
+                )
+        except:
+            pass
+        mm.eval('hyperShadePanelMenuCommand("hyperShadePanel1", "deleteUnusedNodes");')
+        mc.setAttr( "{}.scaleZ".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleX".format(annot_title_grp[0]), 0.2)        
+        mc.setAttr( "{}.scaleY".format(annot_title_grp[0]), 0.2)    
         
+    def build_anim_singles(self,get_val, 
+                            def_val, 
+                            obj_item, 
+                            sel_obj, 
+                            anim_attr, 
+                            get_loc, 
+                            get_cur, 
+                            strt_tm_frm, 
+                            active_tm_frm, 
+                            end_tm_frm, 
+                            annot_title_grp, 
+                            def_type,
+                            create_shade_node,
+                            ):
+        print obj_item, sel_obj, anim_attr        
+        '''
+        This passes the animation from the animated locator (created on the creat anim function) onto the group of controller(s)
+            Args:
+                get_val(float) : the maximum active value to animate the attribute
+                obj_item(str) : the object the attribute belongs to(EG:sphere1)
+                sel_obj(str) : the sel_obj object the attribute belongs to(EG:morph node)
+                anim_attr(str) : the attribute to key
+                get_loc(str) : the object in which the resulting title will be contrained to(annot_loc_trn)
+                strt_tm_frm(float) : the relative frame that the animation of that attribute starts(EG:1000)
+                active_tm_frm(float) : the "on" time frame for the attribute to be tested at(EG:1008)
+                end_tm_frm(float) : the relative frame that the animation of that attribute ends(EG:1012)
+            Examples:
+                get_val(float) : 90.0
+                obj_item(str) : pSphere)
+                sel_obj(str) : morph1(if using morph)
+                anim_attr(str) : translateX
+                get_loc(str) : annot_loc_trn
+                strt_tm_frm(float) : 1000
+                active_tm_frm(float) : 1008
+                end_tm_frm(float) : 1012
+            Results: 
+                pSphere.pivot will be animated on by a value of 90
+            Callup:
+                test_morph, trigger_annot
+
+        '''
+        ctrl_set_name = 'titled_controllers' 
+        if mc.objExists(ctrl_set_name):
+            pass
+        else:
+            mc.sets(n=ctrl_set_name, co=3)
+        try:
+            mc.sets(sel_obj, add=ctrl_set_name)
+        except:
+            print "cannot add {} to set".format(sel_obj)
+            pass
+        print def_type
+        if def_type == 'blendShape': 
+            if '.' in sel_obj:
+                sel_obj = sel_obj.replace('.', '_')
+            if mc.objExists('{}_{}_grp'.format(sel_obj, anim_attr)) == False:
+                    title_label = sel_obj+'.'+anim_attr
+                    new_name_annot = self.type_list_preset(title_label, get_loc)
+            else:
+                new_name_annot = mc.ls('{}_{}_grp'.format(sel_obj, anim_attr))[0]
+        elif def_type == 'morph':
+            if mc.objExists('{}_{}_grp'.format(obj_item, anim_attr)) == False:
+                title_label = obj_item+'.'+anim_attr
+                new_name_annot = self.type_list_preset(title_label, get_loc)
+            else:
+                new_name_annot = mc.ls('{}_{}_grp'.format(obj_item, anim_attr))[0]
+        else:
+            if mc.objExists('{}_{}_grp'.format(sel_obj, anim_attr)) == False:
+                title_label = sel_obj+'.'+anim_attr
+                new_name_annot = self.type_list_preset(title_label, get_loc)
+            else:
+                new_name_annot = mc.ls('{}_{}_grp'.format(sel_obj, anim_attr))[0]
+        # print new_name_annot
+        try:
+            mc.select(new_name_annot, r=1)
+            mc.hyperShade(assign=str(create_shade_node)) 
+        except:
+            pass
+        try:
+            mc.parent(new_name_annot, annot_title_grp)
+        except:
+            pass
+        #key morphs
+        mc.setKeyframe(obj_item, at=anim_attr, v=def_val, time=(strt_tm_frm))   
+        mc.setKeyframe(obj_item, at=anim_attr, v=get_val, time=(active_tm_frm))
+        mc.setKeyframe(obj_item, at=anim_attr, v=def_val, time=(end_tm_frm))
+        #key the title
+        mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(strt_tm_frm)) 
+        mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(strt_tm_frm+1))
+        mc.setKeyframe(new_name_annot, at="visibility", v=1.0, time=(end_tm_frm-1))       
+        mc.setKeyframe(new_name_annot, at="visibility", v=0.0, time=(end_tm_frm))    
+        mc.currentTime(end_tm_frm)
+
+    
+inst_win = annot_range_win()
+inst_win.show()    
+
