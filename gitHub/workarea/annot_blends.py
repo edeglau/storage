@@ -303,4 +303,145 @@ class get_val_frm(QtWidgets.QWidget):
         self.valueset = QtWidgets.QLineEdit(get_val_hi)
         self.frames_label = QtWidgets.QLabel("Across Frames")
         self.frames = QtWidgets.QLineEdit("8")
+        self.layout.addLayout(self.btnlayout)
+        self.sel_button = QtWidgets.QPushButton("Animate Attribute")
+        self.sel_button.clicked.connect(lambda: self.build_annot(def_val, trgt_obj, attr_channel))
+        self.btnlayout.addWidget(self.value_label)
+        self.btnlayout.addWidget(self.valueset)
+        self.btnlayout.addWidget(self.frames_label)
+        self.btnlayout.addWidget(self.frames)
+        self.btnlayout.addWidget(self.sel_button)
+        self.setLayout(self.layout)
+        self.show()
+
+    def build_annot(self, def_val, trgt_obj, attr_channel):
+        """
+        Gathers value amount and frame range to animate attribute
+        """         
+        get_val = self.valueset.text()
+        get_val = float(get_val)
+        get_frames = self.frames.text()
+        get_frames = float(get_frames)
+        access_main = annot_range_win()
+        access_main.trigger_annot(get_val, def_val, get_frames, trgt_obj, attr_channel)
+        self.close()        
         
+
+class annot_range_win(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(annot_range_win, self).__init__()
+        self.initUI()
+
+    def initUI(self):    
+        """
+        Main window setup
+        """
+        self.setWindowTitle("Annotate")
+
+        self.central_widget=QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.master_layout=QtWidgets.QGridLayout(self.central_widget)
+        self.master_layout.setAlignment(QtCore.Qt.AlignTop)
+
+
+        file_menu = QtWidgets.QMenu('&Help', self)
+        self.menuBar().addMenu(file_menu)
+        file_menu.addAction('&Open help page...', self.help_page_launch, 'Ctrl+L')
+
+        self.layout = QtWidgets.QVBoxLayout()
+        self.btnlayout = QtWidgets.QVBoxLayout()
+        self.layout.addLayout(self.btnlayout)
+        self.master_layout.addLayout(self.layout, 0,0,1,1)      
+        
+
+        self.annt_label = QtWidgets.QLabel("Annotate")
+        self.anm_label = QtWidgets.QLabel("Animate")
+        self.edt_label = QtWidgets.QLabel("Editing")
+        self.annot_sel_button =QtWidgets. QPushButton("Annotate selected")
+        self.annot_sel_button.setToolTip("Pipeline issues/data retrieval/IT")
+        self.annot_sel_button.clicked.connect(lambda: self.sel_obj_vtx_annot())
+        self.auto_annot_button = QtWidgets.QPushButton("Auto Annotate")
+        self.auto_annot_button.clicked.connect(lambda: self.dealers_choice())                  
+        self.colour_annot_button = QtWidgets.QPushButton("Change Annot Colours")
+        self.colour_annot_button.clicked.connect(lambda:self._change_anot_colors())  
+        self.mrph_annot_button = QtWidgets.QPushButton("Test Morph targets")
+        self.mrph_annot_button.clicked.connect(lambda: self.test_morph()) 
+        self.bsp_annot_button = QtWidgets.QPushButton("Test Blendshape weights")
+        self.bsp_annot_button.clicked.connect(lambda: self.test_blendShape())       
+        self.ctrl_annot_button = QtWidgets.QPushButton("Test Controller heirarchy")
+        self.ctrl_annot_button.clicked.connect(lambda: self.ctrlr_annot())     
+        self.set_annot_button = QtWidgets.QPushButton("Test Set")
+        self.set_annot_button.clicked.connect(lambda: self.set_annot())      
+        self.attr_annot_button = QtWidgets.QPushButton("Selected Attribute")
+        self.attr_annot_button.clicked.connect(lambda: self.test_attr())   
+        self.all_attr_annot_button = QtWidgets.QPushButton("All attribute(s) on Selected")
+        self.all_attr_annot_button.clicked.connect(lambda: self.test_attr_controllers())      
+        self.sel_annot_button = QtWidgets.QPushButton("Test Selected")
+        self.sel_annot_button.clicked.connect(lambda: self.test_sel())     
+        self.recon_annot_button = QtWidgets.QPushButton("Reconstrain Title")
+        self.recon_annot_button.clicked.connect(lambda: self.retape_to_selection())   
+        self.mk_annot_button = QtWidgets.QPushButton("Make Title")
+        self.mk_annot_button.clicked.connect(lambda: self.make_arbitrary_title())    
+        self.mk_pubcam_button = QtWidgets.QPushButton("Make pub cam")
+        self.mk_pubcam_button.clicked.connect(lambda: self.publishable_cam())    
+
+
+
+        self.annot_layout = QtWidgets.QGridLayout()
+        self.annot_frame = QtWidgets.QFrame()
+        self.annot_frame.setLayout(self.annot_layout)
+        self.btnlayout.addWidget(self.annot_frame)
+
+
+        self.anim_layout = QtWidgets.QGridLayout()
+        self.anim_frame = QtWidgets.QFrame()
+        self.anim_frame.setLayout(self.anim_layout)
+        self.btnlayout.addWidget(self.anim_frame)
+
+        self.edt_layout = QtWidgets.QGridLayout()
+        self.edt_frame = QtWidgets.QFrame()
+        self.edt_frame.setLayout(self.edt_layout)
+        self.btnlayout.addWidget(self.edt_frame)
+        
+        self.annot_layout.addWidget(self.annt_label)     
+        self.annot_layout.addWidget(self.auto_annot_button)     
+        self.annot_layout.addWidget(self.annot_sel_button)
+        self.annot_layout.addWidget(self.colour_annot_button)
+        self.anim_layout.addWidget(self.anm_label)
+        self.anim_layout.addWidget(self.sel_annot_button)
+        self.anim_layout.addWidget(self.attr_annot_button)
+        self.anim_layout.addWidget(self.all_attr_annot_button)
+        self.anim_layout.addWidget(self.ctrl_annot_button)
+        self.anim_layout.addWidget(self.set_annot_button)
+        self.anim_layout.addWidget(self.bsp_annot_button)
+        self.anim_layout.addWidget(self.mrph_annot_button)
+        self.edt_layout.addWidget(self.edt_label)
+        self.edt_layout.addWidget(self.mk_annot_button)
+        self.edt_layout.addWidget(self.recon_annot_button)
+        self.edt_layout.addWidget(self.mk_pubcam_button)
+
+        self.setLayout(self.layout)
+        
+    def publishable_cam(self):
+        nm_space = 'shotcam1'
+        mc.file(pub_cam, r=1, ns=nm_space)
+
+    def help_page_launch(self):
+        """
+        opens the helppage for tool in confluence
+        """
+        url='https://atlas.bydeluxe.com/confluence/display/~deglaue/annotate+showtool+maya'
+        subprocess.Popen('gio open %s' % url, stdout=subprocess.PIPE, shell=True) 
+
+    def sel_obj_vtx_annot(self):
+        """
+        Creates annotation by sel_obj vertex(only component: vertex)
+        Called up: Button: "Annotate sel_obj"
+        """ 
+        sel_obj = mc.ls(sl=1)
+        if '.vtx' in mc.ls(sl=1)[0]:
+            for sel_vert in sel_obj:
+                self.create_annot_grp(sel_vert)
+        else:
+            print "select a vertice"
+            pass        
