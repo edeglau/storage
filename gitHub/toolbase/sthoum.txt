@@ -1,0 +1,206 @@
+create rig with model for skeleton, muscles, fascia and tet
+shrink wrap a mesh around the muscles for the fascia
+shrinkwrap to the midmesh to be the outer border of tet
+use fascia to build the inner tet
+It is advised you give each of these meshes a separate shader. This will make it easier to separate (select by face, mesh → separate) should you have to.
+
+you will likely have to do a bit of sculpt work to clean it up. also sculpt cleanup the inner fascia mesh too if it needs it.
+
+reverse the inner mesh mesh display → reverse so that it's faces are pointing opposite to the outer as it will later be bridged and you will want this to be the same normal directions. 
+
+combine mesh → combine
+
+use bridge edit mesh → bridge to close the areas around the feet (there's an offset function to help line it up even)
+
+it might be worth just doing one side and mirroring mesh → mirror
+
+mesh → cleanup the mesh with most options ticked on. after cleanup, the mesh tends to triangulate. This is ok. It helps us with the coverage and will help later with tetrahedralizing the mesh.
+
+Use poly reduce mesh → reduce on 50% to get a more manageable surface  - note that you might think it needs more but hold off until you try out remesh and reducing again to keep the spans even. triangulating from cleanup will also help with this math.
+
+use cleanup mesh → cleanup , if there's any lamina faces being selected by the cleanup, you can merge these edit mesh → merge
+
+use remesh mesh → remesh to get a nice, evened out polygon coverage
+
+If it's still too dense, Use the poly reduce again to get a nice evenned out mesh now that it's triangulated, it should have better distancing between the polygon coverage
+
+This will be then brought into houdini into the tet fat level and ride on the fascia
+
+Skeleton anchor model
+After you have all the sim mesh lined up to the shape that works with the rig joint placement, give the skeleton mesh to model so that rigging can add the skeleton to the anim rig so that it will drive the simulated mesh.
+This will now get all exported as an .abc file that lives inside the scripts folder
+
+This bearA.abc (above) now gets imported through an alembic node into houdini and separated with blast nodes per type(keep names consistant as it relies on strings) 
+
+@path=*tissue*
+@path=*fascia*
+@path=*tetfat*
+These will have their own vellum solver for each layer later on
+These are separated out in their own layers to sim sequentially : muscle sim, fascia sim, and tetfat sim
+
+make sure all unpack nodes have 'path' in them(this is for the export later)
+Remesh .abc for muscle tissue
+There is a remesh in the pretech layer and it's run on the muscle tissue. This is for optimizing the muscle layer to help with simming speed.
+
+This is an optional workflow if you're requiring remesh to optimize a mesh surface for sim like in this example. If you're already happy with the reduction with the mesh you bring in straight from maya it might not be necessary to remesh at all.
+
+WARNING
+
+When using remesh(or poly reduce) be aware that these functions will recalculate and retopologize the surface and scatter the point order each and every change you do to the mesh even if it's just a sculpt or pulling the same point around which will affect any constraints that are set down the line. This said, the following few steps saves out that remesh as an abc so you can just use that mesh for sculpt updates to blend to. 
+Save out abc by switching node function to write
+After this is done, edit the mesh in maya as you need to and then export abc again
+
+Bring this in via same node(switch back to read and path to the new muscles)
+and blend into the sim model
+This way you can still access the primitives for attachment and still edit the shape and blend it back in.
+
+Linking the start and end frames to update in one place
+In Pretech layer, create an output node
+
+Change the index to number to reflect your preferred shot start frame (with preroll)
+Do the same to link up the filecache nodes within these sim layers for the startframes and endframes:
+and the postExport layer, do the same to link up the geo cache andabc export node
+Now only these two outputs in the pretech layer have to be updated for caching all start and end frames in this working .hip file.
+Muscle sim stage
+the muscles ride on the animated skeleton - the skeleton is brought in on the pretech layer
+
+and sourced into the object merge node on the muscle layer. This will be attached as the collision geometry of the vellum cloth for muscles
+
+The muscle model and resulting muscle remesh(sculped in maya) is sourced back in and blended
+
+This is attached to the bones and simmed with vellum
+
+setup the struts on the muscles whole
+
+
+
+connect the tissue to skeleton
+
+
+
+the muscle stitches are all done manually - this involves selecting points on the muscle layer that will latch onto the bone layer.
+
+After which there is an expansion container to connect each muscle
+(these attachments are named by muscles in the anatomy book referenced above)
+
+
+The muscles are generally using stitch points constraint type selected by primitives group → target group
+
+
+
+The resulting effect is that the muscles will now move with the animated skeleton with a vellum simulation.
+
+(See below for caching and flipbook for shot running)
+
+Fascia sim stage
+In the fascia stage, the muscle cache is object_merged so that the fascia is riding on top of it.
+
+fascia stitching is just through two nodes using Attach to Geometry Constraint type on selected points(we dont want all of it attached. This is a sliding layer so we want to only anchor areas that require no slide simming)
+The result should be a thin layer sheath that slides around on the muscle with few attach points(as outlined in the above)
+
+(See below for caching and flipbook for shot running)
+
+Tetmesh (fatty layer) sim stage
+This is a similar structure to the fascia level above only now it's bringing in the filecache of the fascia in the object merge (right) and the model of the tetmesh(left). The fascia(right) has a point deformer to animate a tpose shape(if needed).
+tetmesh is attached to the fascia layer with weld setting
+
+
+
+then attach(all points) by  attach to geometry and seeting width max distance
+
+
+
+now use attach to geometry to make a strut-like connection
+
+
+
+Now attach just the belly using a stitch points constraint
+
+
+
+The effect should be that the fatty layer is attached to the sliding fascia layer, creating a jiggle of it's own effect that is coming through from the muscles moving beneath.
+
+(See below for caching and flipbook for shot running)
+
+
+
+I gave the fatty layer a smooth and detla mush
+Skin stage
+Within the Skin attach layer, there isn't actually a simulation cache required to do in here as the skin model(left) is attached using point Deform to follow the tetfat (object merge on right). This will just require setup to a new asset requires the attachment. Shot running level will not require anything to be done at this step for the skin to follow the sim. 
+Paint in a blendshape for the animation for the feet and head so the muscle sim is isolated only to body(see below on making paintable blendshapes in houdini)
+
+All the mesh from the instanced asset (left) is brought in(object merge) and has the skin layer removed (blast)
+
+The new simulated skin (right) is object merged 
+
+All mesh are merged back together 
+
+All the mesh from the instanced asset (left) is brought in(object merge) and has the skin layer removed (blast)
+
+The new simulated skin (right) is object merged 
+
+All mesh are merged back together as one and connected to a Method Geo Cache node
+
+
+
+Set $M_SEQUENCE and $M_SHOT as the values in the 'Seq' and 'Shot' parameters of the Method Geo Cache node. 
+
+
+
+If you havne't linked the start and end frames as above, you'll have to set the start and end for the geo cache node
+
+
+
+Then run the 'save to disk'
+
+Now go to the MS Abc Export node , if you haven't linked the start and end frames as above, set the start and end timeframe here as well.
+
+Blendshape weights
+create an attribute wrangle and put in:
+
+f@blendPaint = 1;
+drop a paint color node
+
+activating painting sometimes might need to toggle the move tool and then the showhandle tool
+
+
+now to blendshape create another attribute wrangle and enter following code
+
+@P *= (1-@opinput1_blendPaint * ch("intensity"));
+@P += (@opinput1_P * @opinput1_blendPaint * ch("intensity"));
+now plug into the second input while the source shape is in the first.
+Adjust the intensity to preferred value.
+
+
+
+Caching
+This exists in each level. After setting the above constraints, Run the following sequentially:
+
+muscle,
+fascia,
+tet
+Flip vellumsolver node in the layer you are in to no longer bypass(this is off by default because it's going to process the moment it's back on and can slow down houdini)
+
+If you've done the above 'link up' for frames, this should update in the vellum solver node. Otherwise you will have to set the start frame to your preroll
+Set the fillecache node save start frame (with preroll) to your start frame and endframe(or do the link above so it's updated in the pretech layer),
+
+
+
+Change to preferred filename for Geometry file in each layerRun on each layer (or leave as is and it will bake over into your respective shot with this name)
+
+
+
+
+
+
+
+reload geometry on the solver
+
+and run save to disk
+
+
+
+
+
+
+
