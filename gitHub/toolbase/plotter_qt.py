@@ -746,7 +746,79 @@ class plotter_UI(QtWidgets.QMainWindow):
         matrix=mc.xform(objSel[1], q=1, ws=1, m=1)
         mc.xform(objSel[0], ws=1, m=matrix)  
         mc.select(objSel[0])
+
+    def xform_mirror_move(self):
+        '''mirror to matrix'''
+        objSel=mc.ls(sl=1)
+        mc.duplicate(objSel[0], n="new_place")
+        getIt=mc.CreateEmptyGroup()
+        mc.rename(mc.ls(sl=1)[0], "temp_grp")
+        mc.parent("new_place", "temp_grp")
+        mc.setAttr("temp_grp.scaleX", -1)
+        mc.parent("new_place", w=1)
+        matrix=mc.xform("new_place", q=1, ws=1, m=1)
+        mc.delete("temp_grp")
+        mc.xform(objSel[1], ws=1, m=matrix)
+        mc.select(objSel[1])
+        
+    def xform_mirror_create(self):
+        '''mirror to matrix'''
+        objSel=mc.ls(sl=1)
+        new_dup = mc.duplicate(objSel[0], n=objSel[0]+"_dup")
+        getIt=mc.CreateEmptyGroup()
+        mc.rename(mc.ls(sl=1)[0], "temp_grp")
+        mc.parent(new_dup, "temp_grp")
+        mc.setAttr("temp_grp.scaleX", -1)
+        mc.parent(new_dup[0], w=1)
+        mc.delete("temp_grp")        
  
+    def xform_set_origin(self):
+        '''reset transforms to sit at origin'''
+        objSel=mc.ls(sl=1)
+        for each in objSel:
+            mc.select(cl=1)
+            mc.CreateEmptyGroup()
+            getIt = mc.ls(sl=1)
+            mc.select([each, getIt[0]], r=1)
+            maya.mel.eval( "MatchPivots;" )
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            # mc.select(each, r=1)
+            mc.move(0,0,0, "{}.rotatePivot".format(each) ,r=1, rpr=1 )
+            # mc.xform("{}.rotatePivot".format(each), a=1, ro=0,0,0)
+            # mc.rotate(0,0,0, "{}.rotatePivot".format(each) , a =1)
+            mc.xform("{}.rotatePivot".format(each), ws=1, ro=rotateWorldMatrix)
+            print "reset {}".format(each)
+            mc.delete(getIt)
+           
+        
+    def xform_set_to_sel(self):
+        '''reset transforms to sit at origin'''
+        parObj=mc.ls(sl=1)[0]
+        objSel=mc.ls(sl=1)[1]
+        mc.select(cl=1)
+        getIt = mc.ls(sl=1)
+        mc.select([objSel, parObj], r=1)
+        maya.mel.eval( "MatchPivots;" )
+        mc.select(["{}.rotatePivot".format(objSel), parObj], r=1)
+        maya.mel.eval( "MatchRotation;" )
+        transformWorldMatrix, rotateWorldMatrix=self.locationXForm(parObj)
+        mc.select(objSel, r=1)
+        mc.xform("{}.rotatePivot".format(objSel),  ws=1, t=transformWorldMatrix)
+        mc.xform("{}.rotatePivot".format(objSel), ws=1, ro=rotateWorldMatrix)
+        print "reset {}".format(objSel)
+        mc.delete(getIt)
+        
+    def xform_reset_move(self):
+        '''reset transforms'''
+        objSel=mc.ls(sl=1)
+        matrix=mc.xform(objSel[0], q=1, ws=1, m=1)
+        getloc=mc.spaceLocator(n="cnstr_lctr")
+        mc.xform(getloc[0], m=matrix)
+        maya.mel.eval( "ResetTransformations;" )
+        mc.select([getloc[0], objSel[0]], r=1 )
+        mc.xform(objSel[0], m=matrix)
+        mc.delete(getloc[0])        
+        
     def shrink_intersections(self):
         myDict={
         ".alongX":0,
@@ -800,8 +872,6 @@ class plotter_UI(QtWidgets.QMainWindow):
                 mc.setAttr(getShrink[0]+key, value)       
             except:
                 pass
- 
- 
  
     def print_str_slider(self):
         size = self.strength_slider.value()
