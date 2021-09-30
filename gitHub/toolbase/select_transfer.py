@@ -106,91 +106,11 @@ class wgtmap_select_gui(QtWidgets.QMainWindow):
                     lambda: self.paint_crv_function(radius = self.selection_slider.value(), adding = True, reverse = False))
         self.sel_button_layout.addWidget(self.pt_crv_button)    
         
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-#icon
- 
-# /sw/dev/deglaue/icons/deglaue_toolset_seltransfr.png
-class wgtmap_select_gui(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(wgtmap_select_gui, self).__init__()
-        self.initUI()
- 
-    def initUI(self):    
-        self.setWindowTitle("Select based on weightmap")
-        self.central_widget=QtWidgets.QWidget(self)
-        self.setCentralWidget(self.central_widget)
-        self.masterLayout=QtWidgets.QGridLayout(self.central_widget)
-        self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
- 
- 
-        self.myform = QtWidgets.QFormLayout()
-        self.wgt_layout = QtWidgets.QGridLayout()
-        self.masterLayout.addLayout(self.wgt_layout, 0,0,1,1)
- 
-        self.SelectionSetupLayout = QtWidgets.QGridLayout()
-        self.selection_widgetframe = QtWidgets.QFrame()
-        self.selection_widgetframe.setLayout(self.SelectionSetupLayout)
-        self.SelectionSetupLayout.addLayout(self.myform, 0,0,1,1)
-        self.wgt_layout.addLayout(self.SelectionSetupLayout, 0,0,1,1)
- 
-        self.add_widgets()
- 
-        scroll = QtWidgets.QScrollArea()
-        scroll.setWidget(self.selection_widgetframe)
-        scroll.setWidgetResizable(False)
-        self.wgt_layout.addWidget(scroll, 1,0,1,1)
-        self.setLayout(self.wgt_layout)
- 
-    def add_widgets(self):
-        self.sel_order_layout = QtWidgets.QHBoxLayout()
-        self.myform.addRow(self.sel_order_layout)
-        self.sel_button_layout = QtWidgets.QHBoxLayout()
-        self.myform.addRow(self.sel_button_layout)        
-        self.value_label = QtWidgets.QLabel("value")
-        self.sel_order_layout.addWidget(self.value_label)    
-        self.textNum = QtWidgets.QLabel("10%")
-        self.sel_order_layout.addWidget(self.textNum)
-        self.selection_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self.selection_slider.Orientation = (0)
-        self.selection_slider.setMinimum(1)
-        self.selection_slider.setMaximum(100)
-        self.selection_slider.setValue(10)       
-        self.selection_slider.valueChanged.connect(self.print_slider)
-        self.sel_order_layout.addWidget(self.selection_slider)
-        self.swap_button = QtWidgets.QPushButton("Swap")
-        self.connect(self.swap_button, SIGNAL("clicked()"),
-                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = False))
-        self.sel_button_layout.addWidget(self.swap_button)    
-        self.add_button = QtWidgets.QPushButton("Add")
-        self.connect(self.add_button, SIGNAL("clicked()"),
-                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = False))
-        self.sel_button_layout.addWidget(self.add_button)    
-        self.swap_rev_button = QtWidgets.QPushButton("SwapReverseValue")
-        self.connect(self.swap_rev_button, SIGNAL("clicked()"),
-                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = True))
-        self.sel_button_layout.addWidget(self.swap_rev_button)    
-        self.add_rev_button = QtWidgets.QPushButton("AddReverseValue")
-        self.connect(self.add_rev_button, SIGNAL("clicked()"),
-                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = True))
-        self.sel_button_layout.addWidget(self.add_rev_button)                                    
-        self.sel_errant_button = QtWidgets.QPushButton("Grab Errant")
-        self.connect(self.sel_errant_button, SIGNAL("clicked()"),
-                    lambda: self.sel_errant_weight(adding = False, reverse = False))
-        self.sel_button_layout.addWidget(self.sel_errant_button)                                    
+
+    def set_slider(self):
+        getText = self.textNum.text()
+        getText = int(getText)
+        self.selection_slider.setValue(getText)
  
     def print_slider(self):
         size = self.selection_slider.value()
@@ -242,7 +162,57 @@ class wgtmap_select_gui(QtWidgets.QMainWindow):
         if adding == False:
             mc.select(cl=1)                                         
         mc.select(collect, add=1)       
- 
+
+        
+    def paint_fol_function(self, radius, adding, reverse):
+        dropoff = float(self.droppoff.text())
+        targetSelection_crvs = [(each) for item in mc.ls(sl=1) if mc.listRelatives(item, ad=1, type="follicle") for each in mc.listRelatives(item, ad=1, type="follicle") ]
+        self.sel_wgt_function(radius, adding, reverse)
+        selObj = mc.ls(sl=1)
+        collectmycurve = []
+        for each_src in selObj:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                getpar=mc.listRelatives(each_tgt_crv, p=1, type="transform")[0]
+                tgt_pos=mc.xform(getpar, ws=1, q=1, t=1)
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    collectmycurve.append(each_tgt_crv)    
+        mc.select(collectmycurve, r=1)   
+
+
+    def paint_crv_function(self, radius, adding, reverse):
+        dropoff = float(self.droppoff.text())
+        targetSelection_crvs = [(each) for item in mc.ls(sl=1) if mc.listRelatives(item, ad=1, type="nurbsCurve") for each in mc.listRelatives(item, ad=1, type="nurbsCurve") ]        
+        # targetSelection_crvs = [(each) for each in mc.listRelatives(item, ad=1, type="nurbsCurve") for item in mc.ls(sl=1) if mc.listRelatives(item, ad=1, type="nurbsCurve")]
+        self.sel_wgt_function(radius, adding, reverse)
+        selObj = mc.ls(sl=1)
+        if selObj:
+            result = mc.confirmDialog(
+                title="Select mode for curves",
+                # message="Radius:",
+                # text=".1",
+                button=["CV","Crv","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "CV":
+                selectcmpnt = True
+            elif result == "Crv":
+                selectcmpnt = False
+        collectmycurve = []
+        for each_src in selObj:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                tgt_sourcePoint = '{}.cv[0]'.format(each_tgt_crv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    if selectcmpnt == True:
+                        collectmycurve.append(tgt_sourcePoint)    
+                    else:
+                        collectmycurve.append(each_tgt_crv) 
+        mc.select(collectmycurve, r=1)
+        
 class set_select_win(QtWidgets.QWidget):
     # def __init__(self):
     def __init__(self):
@@ -271,22 +241,51 @@ class set_select_win(QtWidgets.QWidget):
         self.setLayout(self.layout)
  
     def add_widgets(self):
-        self.vertical_order_layout_ta = QtWidgets.QHBoxLayout()
-        self.myform.addRow(self.vertical_order_layout_ta)
+        self.vertical_order_layout_ta = QtWidgets.QVBoxLayout()
+        self.myform.addRow(self.vertical_order_layout_ta) 
         self.sel_label_button = QtWidgets.QLabel("Use Space:")
-        self.vertical_order_layout_ta.addWidget(self.sel_label_button)         
-        self.sel_world_button = QtWidgets.QPushButton("World")
-        self.connect(self.sel_world_button, SIGNAL("clicked()"),
+        self.vertical_order_layout_ta.addWidget(self.sel_label_button) 
+        self.sel_trn_world_button = QtWidgets.QPushButton("Obj -> World")
+        self.sel_trn_world_button.clicked.connect(
+                    lambda: self.map_obj_select_transfer())
+        self.vertical_order_layout_ta.addWidget(self.sel_trn_world_button) 
+        self.sel_world_button = QtWidgets.QPushButton("Vertice -> World")
+        self.sel_world_button.clicked.connect(
                     lambda: self.map_select_transfer())
-        self.vertical_order_layout_ta.addWidget(self.sel_world_button)
-        self.sel_uv_button = QtWidgets.QPushButton("UV")
-        self.connect(self.sel_uv_button, SIGNAL("clicked()"),
+        self.vertical_order_layout_ta.addWidget(self.sel_world_button) 
+        self.sel_uv_button = QtWidgets.QPushButton("Vertice -> UV")
+        self.sel_uv_button.clicked.connect(
                     lambda: self.UV_select_transfer())
-        self.vertical_order_layout_ta.addWidget(self.sel_uv_button)    
+        self.vertical_order_layout_ta.addWidget(self.sel_uv_button)     
         self.sel_pnt_button = QtWidgets.QPushButton("Current Paint")
-        self.connect(self.sel_pnt_button, SIGNAL("clicked()"),
+        self.sel_pnt_button.clicked.connect(
                     lambda: self.sel_window_paint())
-        self.vertical_order_layout_ta.addWidget(self.sel_pnt_button)    
+        self.vertical_order_layout_ta.addWidget(self.sel_pnt_button)     
+        self.sel_fol_button = QtWidgets.QPushButton("Follicle")
+        self.sel_fol_button.clicked.connect(
+                    lambda: self.follicle_selecting())
+        self.vertical_order_layout_ta.addWidget(self.sel_fol_button)   
+        self.sel_crv_button = QtWidgets.QPushButton("Curve")
+        self.sel_crv_button.clicked.connect(
+                    lambda: self.curve_selecting())
+        self.vertical_order_layout_ta.addWidget(self.sel_crv_button)  
+        self.rnm_msh_button = QtWidgets.QPushButton("rename mesh")
+        self.rnm_msh_button.clicked.connect(
+                    lambda: self.mesh_selecting_renaming_mesh())
+        self.vertical_order_layout_ta.addWidget(self.rnm_msh_button)     
+        self.rnm_crv_button = QtWidgets.QPushButton("rename curve")
+        self.rnm_crv_button.clicked.connect(
+                    lambda: self.curve_selecting_renaming_crv())
+        self.vertical_order_layout_ta.addWidget(self.rnm_crv_button) 
+        self.rnm_crv_button = QtWidgets.QPushButton("select crv from crv")
+        self.rnm_crv_button.clicked.connect(
+                    lambda: self.curve_select_nearest_crv())
+        self.vertical_order_layout_ta.addWidget(self.rnm_crv_button)   
+        self.rnm_crv_button = QtWidgets.QPushButton("rename crv from crv")
+        self.rnm_crv_button.clicked.connect(
+                    lambda: self.curve_rename_nearest_crv())
+        self.vertical_order_layout_ta.addWidget(self.rnm_crv_button)
+            
  
     def sel_window_paint(self):
         # Transfers selection to nearby verts of other objects.
@@ -301,7 +300,74 @@ class set_select_win(QtWidgets.QWidget):
         inst_win = wgtmap_select_gui()
         inst_win.show()
  
- 
+    def map_obj_select_transfer(self):
+        # print "start"
+        # Transfers selection to nearby verts of other objects.
+        NDIM = 3
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select two objects near eachother. EG: locator near the surface of the mesh"
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".001",
+                button=["Go","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Go":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=False
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select two objects near eachother. EG: locator near the surface of the mesh"
+            return
+        # mc.select(selObj[0])
+        #determine if the mapper is a vertex selection or object
+        result = []
+        sourceName = [selObj[0]]
+        #transfer the mapper into verts
+        #determine the mapping selections
+        eachtarget=[(each) for each in selObj if each != sourceName[0]]
+        #targetpoints into array
+        rad = radius*2
+        if adding == False:
+            mc.select(cl=1)
+        for eachSrc in sourceName:
+            res_buck =[]
+            point = mc.xform(eachSrc, ws=1, q=1, t=1)
+            mk_sphr = mc.polySphere(sx=10, sy=15, r=rad)
+            mc.xform(mk_sphr[0], ws=1, t=point)
+            for eachtgt in eachtarget:
+                #mc.select(eachtarget, d=1)
+                a = getPoints(eachtgt, space='world')
+                a.shape = a.size / NDIM, NDIM
+                #sourcepoints into array
+                #create empty set
+                result = set()
+                d = ((a-point)**2).sum(axis = 1) #compute distance
+                ndx = d.argsort()
+                max_idx = next((i for i, v in enumerate(ndx) if d[v] >radius), None)
+                if max_idx:
+                    result.update(ndx[:max_idx])
+                result = list(result)
+                for each in result:
+                    if each != None:
+                        get_res = '{}.vtx[{}]'.format(eachtgt, each)
+                        res_buck.append(get_res)
+            mc.delete(mk_sphr)
+        mc.select(res_buck, r=1)            
+
+
     def map_select_transfer(self):
         # print "start"
         # Transfers selection to nearby verts of other objects.
