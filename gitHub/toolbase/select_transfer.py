@@ -631,8 +631,181 @@ class set_select_win(QtWidgets.QWidget):
             except:
                 pass
         
-        
- 
+    def mesh_selecting_mesh_renaming_mesh(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts on separate meshes (like the base of separated feathers) and a group containing curves."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True  
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_msh = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="mesh") if ".vtx" not in each]
+        verts = [(each) for each in mc.ls(sl=1) if ".vtx" in each]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        make_dict = {}
+        for each_src in verts:
+            get_msh_name = each_src.split(".vtx")[0]
+            get_msh_num = re.findall(r'\d+', each_src.split(".vtx")[-1])[0]
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_msh  in targetSelection_msh:
+                get_tgt_par = mc.listRelatives(each_tgt_msh, p=1, type='transform')[0]
+                tgt_sourcePoint = '{}.vtx[{}]'.format(each_tgt_msh, get_msh_num)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    dict_new ={get_msh_name+"_msh": get_tgt_par}
+                    make_dict.update(dict_new)
+        print make_dict
+        for key, value in make_dict.items():
+            try:
+                mc.rename(value, key)
+            except:
+                pass
+
+    def mesh_selecting_renaming_mesh(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts on separate meshes (like the base of separated feathers) and a group containing curves."
+                return
+            else:
+                pass  
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return          
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        getNames=mc.ls(os=1, fl=1)
+        getFirst = getNames[0].split('.')[0]
+        getLast = getNames[-1].split('.')[0]
+        getFirstGrp =[(each) for each in mc.listRelatives(mc.ls(getFirst)[0], ap=1, typ='transform') ][0]
+        getLastGrp =[(each) for each in mc.listRelatives(mc.ls(getLast)[0], ap=1, typ='transform') ][0]
+        firstList=[(each) for each in getNames if mc.listRelatives(each.split('.')[0], ap=1, typ='transform')[0] == getFirstGrp]
+        secondList=[(each) for each in getNames if mc.listRelatives(each.split('.')[0], ap=1, typ='transform')[0] == getLastGrp]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        make_dict = {}
+        for each_src in firstList:
+            get_msh_name = each_src.split(".vtx")[0]
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_vtx  in secondList:
+                get_old_name = each_tgt_vtx.split(".vtx")[0]
+                tgt_pos = mc.pointPosition(each_tgt_vtx, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    dict_new ={get_old_name: get_msh_name+"_msh"}
+                    make_dict.update(dict_new)
+        for key, value in make_dict.items():
+            try:
+                mc.rename(key, value)
+            except:
+                pass
+
+    def curve_selecting_renaming_crv(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts on separate meshes (like the base of separated feathers) and a group containing curves."
+                return
+            else:
+                pass   
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return         
+        targetSelection_crvs = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="nurbsCurve")]
+        verts = [(each) for each in mc.ls(sl=1) if mc.nodeType(each) =="mesh"]
+        if len(verts)>0:
+            pass
+        else:
+            verts = []
+            selectMesh = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="mesh")]
+            for each in selectMesh:
+                getall = mc.ls("{}.vtx[*]".format(each), fl=1)
+                verts.append(getall)
+            verts = verts[0]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        make_dict = {}        
+        for each_src in verts:
+            get_msh_name = each_src.split(".vtx")[0]
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                tgt_sourcePoint = '{}.cv[0]'.format(each_tgt_crv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    get_transfm = mc.listRelatives(each_tgt_crv, p=1, type ="transform")[0]
+                    dict_new ={get_transfm:get_msh_name+"_crv"}
+                    make_dict.update(dict_new)
+        for key, value in make_dict.items():
+            print key, value
+            try:
+                mc.rename(key, value)
+            except:
+                pass
+            
+            
+            
+            
     def UV_select_transfer(self):
         selObj=mc.ls(sl=1, fl=1)
         if selObj:
@@ -736,6 +909,177 @@ class set_select_win(QtWidgets.QWidget):
         except:
             pass
  
+    def find_falloff(self, make_grp, itemized, sec_last_tgt_cv, x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max):
+        tgt_sourcePoint = "{}.cv[{}]".format(itemized, sec_last_tgt_cv)
+        tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+        if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+            make_grp.append(itemized.split('Shape')[0])
+            
+    def curve_select_nearest_crv(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<1:
+                print "select a curve within a group you want to calculate for distance."
+                return
+            else:
+                pass      
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                dropoff = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return        
+        newtarget_crvs = mc.ls(sl=1)
+        targetSelection_crvs = [(each) for each in
+                                        mc.listRelatives(mc.listRelatives(mc.ls(sl=1)[0], p = 1)[0], ad=1, type="nurbsCurve")]
+        trgt_Crvs = newtarget_crvs
+        make_grp = []        
+        for tgt_cfv in trgt_Crvs:
+            get_cv = mc.ls('{}.cv[*]'.format(tgt_cfv), fl=1)
+            #determine falloff from the last cv position
+            last_cv = len(get_cv)
+            end_cv =  "{}.cv[{}]".format(tgt_cfv, last_cv)
+            pos=mc.xform(end_cv, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            #check distance from surrounding curves by up to the 4 back from last
+            for itemized in targetSelection_crvs:
+                if itemized != '{}Shape'.format(tgt_cfv):
+                    get_tgt_cv = mc.ls('{}.cv[*]'.format(itemized), fl=1)
+                    last_tgt_cv = len(get_tgt_cv)
+                    self.find_falloff(make_grp, itemized, last_tgt_cv, x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max)
+                    sec_last_tgt_cv = len(get_cv)-1
+                    self.find_falloff(make_grp, itemized, sec_last_tgt_cv, x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max)
+                    sec_last_tgt_cv = len(get_cv)-2
+                    self.find_falloff(make_grp, itemized, sec_last_tgt_cv, x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max)
+                    sec_last_tgt_cv = len(get_cv)-3
+                    self.find_falloff(make_grp, itemized, sec_last_tgt_cv, x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max)    
+        mc.select(make_grp, r=1)
+
+
+    def cV1(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select two groups of curves."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(mc.listRelatives(each, p=1, type="transform")[0]) for each in mc.listRelatives(selObj[1], ad=1, type="nurbsCurve")]
+        driverSelection_crvs = [("{}.cv[0]".format(each)) for each in mc.listRelatives(selObj[0], ad=1, type="nurbsCurve")]
+        if len(driverSelection_crvs)>0:
+            pass
+        else:
+            pass
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        # collectmycurve =[(tgt_sourcePoint) for tgt_sourcePoint in targetSelection_crvs if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max]
+        collectmycurve = []
+        for each_src in driverSelection_crvs:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for tgt_cfv  in targetSelection_crvs:
+                tgt_sourcePoint = "{}Shape.cv[0]".format(tgt_cfv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    collectmycurve.append(tgt_cfv)
+        mc.select(collectmycurve, r=1)
+        
+    def curve_rename_nearest_crv(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select two groups of curves."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True                                            
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(mc.listRelatives(each, p=1, type="transform")[0]) for each in mc.listRelatives(selObj[1], ad=1, type="nurbsCurve")]
+        driverSelection_crvs = [("{}.cv[0]".format(each)) for each in mc.listRelatives(selObj[0], ad=1, type="nurbsCurve")]
+        print driverSelection_crvs
+        if len(driverSelection_crvs)>0:
+            pass
+        else:
+            pass       
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        make_dict = {}
+        for each_crv in driverSelection_crvs:
+            each_src = each_crv
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for tgt_cfv  in targetSelection_crvs:
+                tgt_sourcePoint = "{}.cv[0]".format(tgt_cfv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    dict_new ={tgt_cfv:each_src+"_02_crv"}
+                    make_dict.update(dict_new)        
+        for key, value in make_dict.items():
+            try:
+                mc.rename(key, value)
+            except:
+                pass                    
+            
+            
+
+
 inst_mkwin=set_select_win()
 inst_mkwin.show()
  
