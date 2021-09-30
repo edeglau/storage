@@ -72,55 +72,81 @@ class plotter_UI(QtWidgets.QMainWindow):
                     lambda: self._plotter())
         self.plot_button_layout.addWidget(self.plot_vtx_button)       
         self.plot_ave_button = QtWidgets.QPushButton("Plot Averages")
-        self.connect(self.plot_ave_button, SIGNAL("clicked()"),
-                    lambda: self._plotter_avrg())
+        self.plot_ave_button.clicked.connect(lambda: self._plotter_avrg())
         self.plot_button_layout.addWidget(self.plot_ave_button)
- 
+
         self.onion_button = QtWidgets.QPushButton("Onion")
-        self.connect(self.onion_button, SIGNAL("clicked()"),
-                    lambda: self._onion_skin())
-        self.plot_button_layout.addWidget(self.onion_button) 
- 
-        self.loc_button = QtWidgets.QPushButton("Locate")
-        self.connect(self.loc_button, SIGNAL("clicked()"),
-                    lambda: self.locator_select_verts())
-        self.plot_button_layout.addWidget(self.loc_button)  
- 
+        self.onion_button.clicked.connect(lambda: self._onion_skin())
+        self.plot_button_layout.addWidget(self.onion_button)  
+
+        self.loc_button = QtWidgets.QPushButton("Locate each")
+        self.loc_button.clicked.connect(lambda: self.locator_select_verts())
+        self.plot_button_layout.addWidget(self.loc_button)   
+
         self.loc_mas_button = QtWidgets.QPushButton("Locate Mass")
-        self.connect(self.loc_mas_button, SIGNAL("clicked()"),
-                    lambda: self.locator_selected_mass())
-        self.plot_button_layout.addWidget(self.loc_mas_button) 
- 
-        self.reshape_edge_button = QtWidgets.QPushButton("Reshape to Edge")
-        self.connect(self.reshape_edge_button, SIGNAL("clicked()"),
-                    lambda: self.matchCurveShapes())
-        self.plot_button_layout.addWidget(self.reshape_edge_button)
- 
-        self.reshape_shape_button = QtWidgets.QPushButton("Reshape to Shape")
-        self.connect(self.reshape_shape_button, SIGNAL("clicked()"),
-                    lambda: self.matchFullShape())
-        self.plot_button_layout.addWidget(self.reshape_shape_button)
- 
-        self.int_fix_button = QtWidgets.QPushButton("Intersection Fix")
-        self.connect(self.int_fix_button, SIGNAL("clicked()"),
-                    lambda: self.shrink_intersections())
-        self.plot_button_layout.addWidget(self.int_fix_button) 
- 
- 
-        self.transform_c_button = QtWidgets.QPushButton("Transform Cache")
-        self.connect(self.transform_c_button, SIGNAL("clicked()"),
-                    lambda: self.offset_cache_static())
-        self.plot_button_layout.addWidget(self.transform_c_button) 
- 
-        self.off_c_button = QtWidgets.QPushButton("Offset Cache")
-        self.connect(self.off_c_button, SIGNAL("clicked()"),
-                    lambda: self.offset_cache())
-        self.plot_button_layout.addWidget(self.off_c_button) 
- 
+        self.loc_mas_button.clicked.connect(lambda: self.locator_selected_mass())
+        self.plot_button_layout.addWidget(self.loc_mas_button)  
+
+        self.lu_button = QtWidgets.QPushButton("lineup")
+        self.lu_button.clicked.connect(lambda: self.aim_obj())
+        self.plot_button_layout.addWidget(self.lu_button)
+
         self.mm_button = QtWidgets.QPushButton("Match Matrix")
-        self.connect(self.mm_button, SIGNAL("clicked()"),
-                    lambda: self.xformmove())
-        self.plot_button_layout.addWidget(self.mm_button)
+        self.mm_button.clicked.connect(lambda: self.xformmove())
+        self.plot_button_layout.addWidget(self.mm_button) 
+        
+        self.mm_xx_button = QtWidgets.QPushButton("Mirror Matrix +X--X")
+        self.mm_xx_button.clicked.connect(lambda: self.xform_mirror_move())
+        self.plot_button_layout.addWidget(self.mm_xx_button) 
+
+
+        self.mc_button = QtWidgets.QPushButton("Mirror Create +X--X")
+        self.mc_button.clicked.connect(lambda: self.xform_mirror_create())
+        self.plot_button_layout.addWidget(self.mc_button) 
+
+
+        self.rst_orig_button = QtWidgets.QPushButton("Set to Origin")
+        self.rst_orig_button.clicked.connect(lambda: self.xform_set_origin())
+        self.plot_button_layout.addWidget(self.rst_orig_button) 
+
+        self.rst_obj_button = QtWidgets.QPushButton("Set to Obj")
+        self.rst_obj_button.clicked.connect(lambda: self.xform_set_to_sel())
+        self.plot_button_layout.addWidget(self.rst_obj_button) 
+
+        self.rst_button = QtWidgets.QPushButton("Reset transforms")
+        self.rst_button.clicked.connect(lambda: self.xform_reset_move())
+        self.plot_button_layout.addWidget(self.rst_button) 
+
+        self.dpcnst_button = QtWidgets.QPushButton("Dupe Constraint")
+        self.dpcnst_button.clicked.connect(lambda: self.dup_cnst())
+        self.plot_button_layout.addWidget(self.dpcnst_button) 
+        
+
+        self.vert_align_label = QtWidgets.QLabel("Vertice Align")        
+        self.plot_slider_layout.addWidget(self.vert_align_label)
+
+        self.reshape_edge_button = QtWidgets.QPushButton("Reshape to Edge")
+        self.reshape_edge_button.clicked.connect(lambda: self.matchCurveShapes())
+        self.plot_button_layout.addWidget(self.reshape_edge_button) 
+
+        self.reshape_shape_button = QtWidgets.QPushButton("Reshape to Shape")
+        self.reshape_shape_button.clicked.connect(lambda: self.matchFullShape())
+        self.plot_button_layout.addWidget(self.reshape_shape_button)
+        
+        self.int_fix_button = QtWidgets.QPushButton("Intersection Fix")
+        self.int_fix_button.clicked.connect(lambda: self.shrink_intersections())
+        self.plot_button_layout.addWidget(self.int_fix_button)  
+
+
+        self.transform_c_button = QtWidgets.QPushButton("Transform Cache")
+        self.transform_c_button.clicked.connect(lambda: self.offset_cache_static())
+        self.plot_button_layout.addWidget(self.transform_c_button)  
+
+        self.off_c_button = QtWidgets.QPushButton("Offset Cache")
+        self.off_c_button.clicked.connect(lambda: self.offset_cache())
+        self.plot_button_layout.addWidget(self.off_c_button)  
+
+
  
  
  
@@ -479,36 +505,81 @@ class plotter_UI(QtWidgets.QMainWindow):
             mc.SetKeyTranslate(getloc[0])         
             mc.SetKeyRotate(getloc[0])
             mc.currentTime(each)
- 
+            
+     def aim_obj(self, arg=None):
+        selObj=mc.ls(sl=1, fl=1)
+        par_const = selObj[-1]
+        if len(mc.ls(sl=1))>1:
+            pass
+        else:
+            print "select more than one object for lineup. If adding many, select the driving aim object last"
+            pass
+        for each in selObj[:-1]:
+            cret_cnst = mc.aimConstraint(par_const, each)
+            mc.delete(cret_cnst)
  
     def locator_selected_mass(self, arg=None):
         selObj=mc.ls(sl=1, fl=1)
-        transform=mc.xform(selObj, q=1, ws=1, t=1)
-        posBucketx=self.median_find(transform[0::3])
-        posBuckety=self.median_find(transform[1::3])
-        posBucketz=self.median_find(transform[2::3])
+        bucket_x = []
+        bucket_y = []
+        bucket_z = []
+        bucketlist = []
+        for each in selObj:
+            transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+            bucket_x.append(transformWorldMatrix[0])
+            bucket_y.append(transformWorldMatrix[1])
+            bucket_z.append(transformWorldMatrix[2])
+        posBucketx=self.median_find(bucket_x)
+        posBuckety=self.median_find(bucket_y)
+        posBucketz=self.median_find(bucket_z)
         getLoc=mc.spaceLocator()
         mc.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
+        get_const = mc.normalConstraint(selObj[0], getLoc[0])
+        mc.delete(get_const)
         return getLoc[0]
  
+    def dup_cnst(self, each):
+        getSel=mc.ls(sl=1, fl=1)
+        parentObj=getSel[0]
+        for number, each in enumerate(getSel[1:]):
+            if ":" in each:
+                newname = each.split(":")[-1]
+            else:
+                newname = each
+            rname = newname+'_poly'
+            newObj=mc.duplicate(parentObj,n=rname)
+            mc.parentConstraint(each, newObj) 
+
+    def locationXForm(self, each):
+        # getObj=mc.ls(each)
+        #transform=getObj.getTranslation()
+        transform=mc.xform(each , q=True, ws=1, t=True)
+        if transform==[0.0, 0.0, 0.0]:
+            transformWorldMatrix=each.getScalePivot(ws=1)[:3]
+            # transformWorldMatrix=getObj.getScalePivot(ws=1)[:3]
+            rotateWorldMatrix = mc.xform(each, q=True, wd=1, ra=True)
+        else:
+            transformWorldMatrix = mc.xform(each, q=True, ws=1, t=True)
+            rotateWorldMatrix = mc.xform(each, q=True, ws=1, ro=True)
+        return transformWorldMatrix, rotateWorldMatrix
+
+            
     def locator_select_verts(self, arg=None):
         selObj=mc.ls(sl=1, fl=1)
-        transform=mc.xform(selObj, q=1, bb=1)
-        posBucketx=self.median_find(transform[0::3])
-        posBuckety=self.median_find(transform[1::3])
-        posBucketz=self.median_find(transform[2::3])
-        getLoc=mc.spaceLocator()
-        mc.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
+        if len(selObj) >0:
+            for each in selObj:
+                print each
+                transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
+                rotate=mc.xform(selObj[0], q=True, ws=1, ro=True)
+                getLoc=mc.spaceLocator(n=str(each)+"_loc")
+                mc.xform(getLoc[0], t=(transformWorldMatrix))                
+                get_const = mc.normalConstraint(each, getLoc[0])
+                mc.delete(get_const)                
+        elif len(selObj)<1:
+            print "select one or more vertices"
+            pass               
         return getLoc[0]
- 
- 
-    # def locator_select_verts(self, arg=None):
-    #     selObj=mc.ls(sl=1, fl=1)
-    #     transform=mc.xform(selObj,  q=1, wd=1, t=1)
-    #     getLoc=mc.spaceLocator()
-    #     mc.xform(getLoc[0], t=(transform[0], transform[1], transform[2]))
-    #     return getLoc[0]
- 
+
  
     def helpWin(self, stringField):
         '''--------------------------------------------------------------------------------------------------------------------------------------
