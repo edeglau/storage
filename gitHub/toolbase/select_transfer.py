@@ -8,38 +8,119 @@ from apiWrappers import getPoints
 import mMesh
 reload(mMesh)
 import maya.api.OpenMaya as OpenMaya
- 
+from scipy.spatial import ckdtree
+import numpy as np
 checkHoudini = os.getenv("HOUDINI_VERSION")
- 
+import re
 checkMaya = os.getenv("REZ_MAYA_VERSION")
-import PyQt4
-from PyQt4 import QtCore, QtGui, Qt
-from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
-    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
-    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
-    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
-    QFont, QAbstractItemView, QMenu, QMessageBox
-from PyQt4.QtCore import SIGNAL
- 
- 
-if checkHoudini != None:
-    import hutil
-    from hutil.Qt import QtCore, QtWidgets, QtWidgets
-    from hutil.Qt.QtCore import SIGNAL
-#Author: Elise Deglau
-#https://atlas.bydeluxe.com/confluence/display/~lime/2018-8-23+Elise+D
- 
-#to add to shelf:
- 
-# import sys
-# filepath=( '//sw/dev/deglaue/tools//' )
-# if not filepath in sys.path:
-#     sys.path.append(str(filepath))
-# import select_transfer
-# reload (select_transfer)
-# evokeTool = select_transfer.map_select_transfer()
-# evokeTool()
- 
+
+import Qt_py
+from Qt_py.Qt import QtCore, QtGui, QtWidgets
+
+
+class wgtmap_select_gui(QtWidgets.QMainWindow):
+    def __init__(self):
+        super(wgtmap_select_gui, self).__init__()
+        self.initUI()
+
+    def initUI(self):     
+        self.setWindowTitle("Select based on weightmap")
+        self.central_widget=QtWidgets.QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.masterLayout=QtWidgets.QGridLayout(self.central_widget)
+        self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
+
+
+        self.myform = QtWidgets.QFormLayout()
+        self.wgt_layout = QtWidgets.QGridLayout()
+        self.masterLayout.addLayout(self.wgt_layout, 0,0,1,1)
+
+        self.SelectionSetupLayout = QtWidgets.QGridLayout()
+        self.selection_widgetframe = QtWidgets.QFrame()
+        self.selection_widgetframe.setLayout(self.SelectionSetupLayout)
+        self.SelectionSetupLayout.addLayout(self.myform, 0,0,1,1)
+        self.wgt_layout.addLayout(self.SelectionSetupLayout, 0,0,1,1)
+
+        self.add_widgets()
+
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidget(self.selection_widgetframe)
+        scroll.setWidgetResizable(False)
+        self.wgt_layout.addWidget(scroll, 1,0,1,1)
+        self.setLayout(self.wgt_layout)
+
+    def add_widgets(self):
+        self.sel_order_layout = QtWidgets.QHBoxLayout()
+        self.myform.addRow(self.sel_order_layout) 
+        self.sel_button_layout = QtWidgets.QVBoxLayout()
+        self.myform.addRow(self.sel_button_layout)         
+        self.value_label = QtWidgets.QLabel("value")
+        self.sel_order_layout.addWidget(self.value_label)  
+        self.textNum = QtWidgets.QLineEdit("10%")
+        self.textNum.textChanged.connect(self.set_slider)
+        self.sel_order_layout.addWidget(self.textNum)        
+        self.selection_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal) 
+        self.selection_slider.Orientation = (0) 
+        self.selection_slider.setMinimum(1)
+        self.selection_slider.setMaximum(100)
+        self.selection_slider.setValue(10)        
+        self.selection_slider.valueChanged.connect(self.print_slider)
+        self.sel_order_layout.addWidget(self.selection_slider) 
+        self.drop_label = QtWidgets.QLabel("dropoff")
+        self.sel_order_layout.addWidget(self.drop_label)     
+        self.droppoff = QtWidgets.QLineEdit(".5")
+        self.sel_order_layout.addWidget(self.droppoff)           
+        self.swap_button = QtWidgets.QPushButton("Swap")
+        self.swap_button.clicked.connect(
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.swap_button)     
+        self.swap_def_button = QtWidgets.QPushButton("Swap_def")
+        self.swap_def_button.clicked.connect(
+                    lambda: self.sel_default_function(radius = self.selection_slider.value(), adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.swap_def_button) 
+        self.add_button = QtWidgets.QPushButton("Add")
+        self.add_button.clicked.connect(
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = False))
+        self.sel_button_layout.addWidget(self.add_button)   
+        self.swap_rev_button = QtWidgets.QPushButton("SwapReverseValue")
+        self.swap_rev_button.clicked.connect(
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = False, reverse = True))
+        self.sel_button_layout.addWidget(self.swap_rev_button)     
+        self.add_rev_button = QtWidgets.QPushButton("AddReverseValue")
+        self.add_rev_button.clicked.connect(
+                    lambda: self.sel_wgt_function(radius = self.selection_slider.value(), adding = True, reverse = True))
+        self.sel_button_layout.addWidget(self.add_rev_button)                                     
+        self.sel_errant_button = QtWidgets.QPushButton("Grab Errant")
+        self.sel_errant_button.clicked.connect(
+                    lambda: self.sel_errant_weight(adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.sel_errant_button)   
+        self.sel_errant_button_pos = QtWidgets.QPushButton("Grab Errant Pos")
+        self.sel_errant_button_pos.clicked.connect(
+                    lambda: self.sel_errant_weight_pos(adding = False, reverse = False))
+        self.sel_button_layout.addWidget(self.sel_errant_button_pos)           
+        self.pt_fol_button = QtWidgets.QPushButton("paint fol")
+        self.pt_fol_button.clicked.connect(lambda: self.paint_fol_function(radius = self.selection_slider.value(), adding = True, reverse = False))
+        self.sel_button_layout.addWidget(self.pt_fol_button)     
+        self.pt_crv_button = QtWidgets.QPushButton("paint crv")
+        self.pt_crv_button.clicked.connect(
+                    lambda: self.paint_crv_function(radius = self.selection_slider.value(), adding = True, reverse = False))
+        self.sel_button_layout.addWidget(self.pt_crv_button)    
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
 #icon
  
 # /sw/dev/deglaue/icons/deglaue_toolset_seltransfr.png
