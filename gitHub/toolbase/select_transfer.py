@@ -392,14 +392,14 @@ class set_select_win(QtWidgets.QWidget):
                 radius = mc.promptDialog(query=True, text=True)
                 radius = float(radius)
                 radius = radius * radius
-                adding=True       
+                adding=True        
             elif result == "Swap":
                 radius = mc.promptDialog(query=True, text=True)
                 radius = float(radius)
                 radius = radius * radius
                 adding=False
             else:
-                print "selection transfer cancelled" 
+                print "selection transfer cancelled"  
                 return
         else:
             print "select a group of verts and an object or two objects near eachother."
@@ -444,8 +444,194 @@ class set_select_win(QtWidgets.QWidget):
             result = list(result)
             mc.select(['{}.vtx[{}]'.format(eachtarget, x) for x in result], add =1)
  
- 
- 
+    def follicle_selecting(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts and an object or two objects near eachother."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Add","Swap","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Add":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=True
+            elif result == "Swap":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=False
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of follicles."
+            return        
+        targetSelection_crvs = [(each) for item in mc.ls(sl=1) if ".vtx" not in item for each in mc.listRelatives(item, ad=1, type="follicle")]
+        verts = [(item) for item in mc.ls(sl=1) if ".vtx" in item]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        for each_src in selObj:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                getpar=mc.listRelatives(each_tgt_crv, p=1, type="transform")[0]
+                tgt_pos=mc.xform(getpar, ws=1, q=1, t=1)
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    collectmycurve.append(each_tgt_crv)    
+        mc.select(collectmycurve, add=1) 
+
+        
+    def curve_selecting(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts and an object or two objects near eachother."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["SwapToCV","AddCV","SwapToCrv","AddCrv","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "SwapToCV":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=False
+            elif result == "SwapToCrv":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = False
+                adding=False
+            elif result == "AddCV":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True
+            elif result == "AddCrv":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = False
+                adding=True  
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="nurbsCurve")]
+        verts = [(each) for each in mc.ls(sl=1) if mc.nodeType(each) =="mesh"]
+        if len(verts)>0:
+            pass
+        else:
+            verts = []
+            selectMesh = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="mesh")]
+            for each in selectMesh:
+                getall = mc.ls("{}.vtx[*]".format(each), fl=1)
+                verts.append(getall)
+            verts = verts[0]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        for each_src in verts:
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                tgt_sourcePoint = '{}.cv[0]'.format(each_tgt_crv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    if selectcmpnt == True:
+                        collectmycurve.append(tgt_sourcePoint)   
+                    else:
+                        collectmycurve.append(each_tgt_crv)  
+        mc.select(collectmycurve, add=1)  
+
+        
+    def curve_selecting_renaming_mesh(self):
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of cvs (like the base of separated feathers) and a group of mesh."
+                return
+            else:
+                pass         
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".1",
+                button=["Engage!","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Engage!":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                selectcmpnt = True
+                adding=True  
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and a group of curves"
+            return
+        targetSelection_crvs = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="nurbsCurve")]
+        verts = [(each) for each in mc.ls(sl=1) if mc.nodeType(each) =="mesh"]
+        if len(verts)>0:
+            pass
+        else:
+            verts = []
+            selectMesh = [(each) for each in mc.listRelatives(mc.ls(sl=1), ad=1, type="mesh")]
+            for each in selectMesh:
+                getall = mc.ls("{}.vtx[*]".format(each), fl=1)
+                verts.append(getall)
+            verts = verts[0]
+        dropoff = radius
+        if adding == False:
+            mc.select(cl=1)
+        collectmycurve = []
+        make_dict = {}
+        for each_src in verts:
+            get_msh_name = each_src.split(".vtx")[0]
+            pos=mc.xform(each_src, ws=1, q=1, t=1)
+            x_pos_min, x_pos_max, y_pos_min, y_pos_max, z_pos_min, z_pos_max = pos[0]-dropoff, pos[0]+dropoff, pos[1]-dropoff, pos[1]+dropoff, pos[2]-dropoff, pos[2]+dropoff 
+            for each_tgt_crv  in targetSelection_crvs:
+                tgt_sourcePoint = '{}.cv[0]'.format(each_tgt_crv)
+                tgt_pos = mc.pointPosition(tgt_sourcePoint, w=1) 
+                if tgt_pos[0] >= x_pos_min and tgt_pos[0] <= x_pos_max and tgt_pos[1] >= y_pos_min and tgt_pos[1] <= y_pos_max and tgt_pos[2] >= z_pos_min and tgt_pos[2] <= z_pos_max:
+                    dict_new ={get_msh_name: each_tgt_crv+"_msh"}
+                    make_dict.update(dict_new)
+        for key, value in make_dict.items():
+            try:
+                mc.rename(key, value)
+            except:
+                pass
+        
+        
  
     def UV_select_transfer(self):
         selObj=mc.ls(sl=1, fl=1)
@@ -553,62 +739,3 @@ class set_select_win(QtWidgets.QWidget):
 inst_mkwin=set_select_win()
 inst_mkwin.show()
  
-# def get_dag_path(node):
-#     """Get the MDagPath of the given node.
- 
-#     :param node: Node name
-#     :return: Node MDagPath
-#     """
-#     selection_list = OpenMaya.MSelectionList()
-#     print selection_list
-#     selection_list.add(node)
-#     path = OpenMaya.MDagPath()
-#     selection_list.getDagPath(0)
-#     return path
- 
- 
-# def getPosition(point):
-#     print point
-#     '''
-#     Return the position of any point or transform
-#     @param point: Point to return position for
-#     @type point: str or list or tuple
-#     '''
-#     # Initialize point value
-#     pos = []
-#     if (type(point) == list) or (type(point) == tuple):
-#         if len(point) < 3:
-#             raise Exception('Invalid point value supplied! Not enough list/tuple elements!')
-#         pos = point[0:3]
-#     elif (type(point) == str) or (type(point) == unicode):
-#         # Check Transform
-#         mObject = getMObject(point)
-#         if mObject.hasFn(OpenMaya.MFn.kTransform):
-#             try:
-#                 pos = mc.xform(point,q=True,ws=True,rp=True)
-#                 print pos
-#             except:
-#                 pass
-          
-#         # pointPosition query
-#         if not pos:
-#             try:
-#                 pos = mc.pointPosition(point)
-#                 print pos
-#             except:
-#                 pass
-#         # xform - rotate pivot query
-#         if not pos:
-#             try:
-#                 pos = mc.xform(point,q=True,ws=True,rp=True)
-#                 print pos
-#             except:
-#                 pass
-#     #     # Unknown type
-#     #     if not pos:
-#     #         raise Exception('Invalid point value supplied! Unable to determine type of point "'+str(point)+'"!')
-#     # else:
-#     #     raise Exception('Invalid point value supplied! Invalid argument type!')
-          
-#     # # Return result
-#     return pos
