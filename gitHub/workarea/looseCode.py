@@ -340,4 +340,110 @@ def button_attach(self, wrap_mesh_driver, buttons, lods, grp_nm):
         mc.parent('{}_{}_rvt'.format(each_plane, each_lod), '{}_{}'.format(grp_nm, each_lod))
         mc.parent('{}_{}{}_{}_pln_geobaseWRP'.format(wr
 
-        
+arc_len = .4
+targetSelection_crvs = [(each) for each in mc.listRelatives(mc.ls("Body_Coll_headFurDesc_crv_grp")[0], ad=1, type="nurbsCurve")  if mc.arclen(each) < arc_len]
+ 
+mc.select( targetSelection_crvs, r=1)
+ 
+for each in targetSelection_crvs:
+    print mc.arclen(each)
+#for cleaning out curves that are too long
+selected = [
+'Body_Coll_tailFurDesc_crv_grp]
+mc.delete(selected)
+arc_len = .4
+targetSelection_crvs = [(mc.listRelatives(each, p=1, type="transform")[0] ) for each in mc.listRelatives(mc.ls("Body_Coll_headFurDesc_crv_grp")[0], ad=1, type="nurbsCurve")  if mc.arclen(each) < arc_len]
+mc.delete( targetSelection_crvs)
+ 
+ 
+simSelection = [(mc.listRelatives(each, p=1, type="transform" )) for each in mc.listRelatives(mc.ls("sim"), ad=1, type="mesh") if "rest" not in each]
+    
+
+        #blendshape
+        cntrl = 'c_ulnaHook_base_ctrl'
+        ctrl_attr_name = 'UlnaFix'
+        driver_geo = 'r_forearmPartC_0001_hi_bsp_geo'
+        driven_geo = 'r_forearmPartC_0001_hi'
+        parent_grp = 'noTransform'
+        parent_cnst = 'r_arm_elbow_jnt'
+        def_name = '{}_bsp'.format(driver_geo)
+ 
+        blendAnim = attrLib.addFloat(cntrl, ln=ctrl_attr_name, dv=0, min=0, max=1, k=1)
+        mc.parentConstraint(cntrl, driver_geo, mo=1)
+        try:
+            mc.parent(driver_geo, parent_grp)
+        except:
+            pass
+        try:
+            mc.setAttr('{}.visibility'.format(driver_geo), 0)
+        except:
+            pass
+        mc.blendShape(driver_geo, driven_geo, origin = 'world',
+                      n=def_name, w=(0, 0.0))
+        mc.connectAttr('{}.{}'.format(cntrl, ctrl_attr_name), '{}.{}'.format(def_name, driver_geo), f=1)
+
+    
+#xgen
+
+    descriptionList = [xgenNS+'_moustachHair',
+                        xgenNS+'_beardHair',
+                        xgenNS+'_eyeBrowsHair',
+                        xgenNS+'_headHair',
+                        xgenNS+'_earsTipHair',
+                        xgenNS+'_toesHair',
+                        xgenNS+'_tailHair']
+  
+    for description in descriptionList:
+        result=description.split('_')
+        curvelist=(techRigNS+':'+result[-1]+'_simCurves_postTech_grp')
+        XgenAttachGuideCurves(description,curvelist)
+ 
+def XgenAttachGuideCurves(description,curveList=[]):
+    collection = xg.palette(description)
+    mc.select(curveList)
+    #make sure get only nurbsCurve shapes.
+    sel = mc.ls(sl=True,ni=True,dag=True,type='nurbsCurve')
+    if sel is None or sel ==[]:
+        mc.warning("//Fail!! no valid curve for guideAnimation Found!")
+        return []
+    else:
+        #Set to use guideAnimation
+        xg.setAttr("useCache",'true', collection,description,"SplinePrimitive")
+        #set LiveMode true since attatch fresh curves
+        xg.setAttr('liveMode','true', collection, description, 'SplinePrimitive')
+        mc.select(sel,r=1)
+        mc.xgmFindAttachment(d=description,m='SplinePrimitive')
+        #mm.eval(cmd)
+        print sel
+        mc.warning("//curve total:%s attach to guideAnimation HairSystem"%(len(sel)))
+    #end if
+    return sel
+    
+    #box constraints
+    contrnt_whole_geo = {
+        'bbox_001':'c_clothesTop_0001_mid_sim_geo',
+        'bbox_002':'c_clothesTop_0001_mid_sim_geo',
+        }
+    for index, key in enumerate(contrnt_whole_geo):
+        value = contrnt_whole_geo.get(key)
+        self.glue_box_callup(index, key, value)
+ 
+def glue_box_callup(self, index, bbObj, geo):
+    print bbObj, geo
+    cnst_name = 'ptp_{}_{}_cnst'.format(geo, index)
+    if mc.objExists('rigids') == False:
+        mc.CreateEmptyGroup()
+        mc.rename(mc.ls(sl=1)[0], 'rigids')
+        mc.parent('rigids', 'cloth_sim')
+    if mc.objExists('constraints') == False:
+        mc.CreateEmptyGroup()
+        mc.rename(mc.ls(sl=1)[0], 'constraints')
+        mc.parent('constraints', 'cloth_sim')
+    mc.select([bbObj, geo], r=1)
+    command = 'select - r `VolumeComponentSelect`;'
+    mm.eval(command)
+    print mc.ls(sl=1)
+    mm.eval('createNConstraint pointToPoint 0;')[0]
+    cnstXform = mc.listRelatives(mc.ls(sl=1)[0], p=1, type="transform")[0]
+    mc.rename(cnstXform, cnst_name)
+    
