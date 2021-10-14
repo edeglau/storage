@@ -245,6 +245,14 @@ class set_select_win(QtWidgets.QWidget):
         self.myform.addRow(self.vertical_order_layout_ta) 
         self.sel_label_button = QtWidgets.QLabel("Use Space:")
         self.vertical_order_layout_ta.addWidget(self.sel_label_button) 
+        self.auto_trn_world_button = QtWidgets.QPushButton("Auto")
+        self.auto_trn_world_button.clicked.connect(
+                    lambda: self.auto_sel())
+        self.vertical_order_layout_ta.addWidget(self.auto_trn_world_button) 
+        self.auto_rev_world_button = QtWidgets.QPushButton("Auto-Rev")
+        self.auto_rev_world_button.clicked.connect(
+                    lambda: self.auto_sel_rev())
+        self.vertical_order_layout_ta.addWidget(self.auto_rev_world_button) 
         self.sel_trn_world_button = QtWidgets.QPushButton("Obj -> World")
         self.sel_trn_world_button.clicked.connect(
                     lambda: self.map_obj_select_transfer())
@@ -285,7 +293,78 @@ class set_select_win(QtWidgets.QWidget):
         self.rnm_crv_button.clicked.connect(
                     lambda: self.curve_rename_nearest_crv())
         self.vertical_order_layout_ta.addWidget(self.rnm_crv_button)
-            
+
+    def auto_sel(self):
+        if '.vtx' in mc.ls(sl=1)[0]:
+            print "please select two objects to perform this function"
+        else:
+            pass
+        self.map_select_transfer()
+
+
+    def auto_sel_rev(self):
+        # print "start"
+        # Transfers selection to nearby verts of other objects.
+        NDIM = 3
+        selObj=mc.ls(sl=1, fl=1)
+        #query if selected
+        if selObj:
+            if len(selObj)<2:
+                print "select a group of verts and an object or two objects near eachother."
+                return
+            else:
+                pass       
+            #get falloff amount 
+            result = mc.promptDialog(
+                title="Confirm",
+                message="Radius:",
+                text=".001",
+                button=["Swap","Add","Cancel"],
+                cancelButton="Cancel",
+                dismissString="Cancel" )
+            if result == "Add":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=True        
+            elif result == "Swap":
+                radius = mc.promptDialog(query=True, text=True)
+                radius = float(radius)
+                radius = radius * radius
+                adding=False
+            else:
+                print "selection transfer cancelled"  
+                return
+        else:
+            print "select a group of verts and an object or two objects near eachother."
+            return
+        # mc.select(selObj[0])
+        #determine if the mapper is a vertex selection or object
+        result = []
+        setup = []
+        #transfer the mapper into verts
+        eachtarget = selObj[0]
+        #determine the mapping selections
+        sourceName =[(each) for each in selObj if each != eachtarget]
+        #targetpoints into array
+        if adding == False:
+            mc.select(cl=1)    
+        for src_item in sourceName:
+            mc.select(eachtarget, d=1)
+            a = getPoints(mc.ls(eachtarget)[0], space='world')
+            a.shape = a.size / NDIM, NDIM
+            #sourcepoints into array
+            srcPoints = getPoints(mc.ls(src_item)[0], space = "world") 
+            #create empty set
+            result = set()
+            for point in srcPoints:
+                d = ((a-point)**2).sum(axis = 1) #compute distance
+                ndx = d.argsort()
+                max_idx = next((i for i, v in enumerate(ndx) if d[v] >radius), None)
+                if max_idx:
+                    result.update(ndx[:max_idx])
+            mc.select(['{}.vtx[{}]'.format(eachtarget, x) for x in result], add =1)
+            setup.append(mc.ls(sl=1))
  
     def sel_window_paint(self):
         # Transfers selection to nearby verts of other objects.
@@ -426,13 +505,13 @@ class set_select_win(QtWidgets.QWidget):
             targetName=[(each) for each in selObj if each != sourceName]
             #targetpoints into array
             if adding == False:
-                mc.select(cl=1)   
+                mc.select(cl=1)    
             for eachtarget in targetName:
                 mc.select(eachtarget, d=1)
                 a = getPoints(mc.ls(eachtarget)[0], space='world')
                 a.shape = a.size / NDIM, NDIM
                 #sourcepoints into array
-                srcPoints = getPoints(mc.ls(sourceName)[0], space = "world")
+                srcPoints = getPoints(mc.ls(sourceName)[0], space = "world") 
                 #create empty set
                 result = set()
                 for point in srcPoints:
@@ -441,9 +520,7 @@ class set_select_win(QtWidgets.QWidget):
                     max_idx = next((i for i, v in enumerate(ndx) if d[v] >radius), None)
                     if max_idx:
                         result.update(ndx[:max_idx])
-            result = list(result)
-            mc.select(['{}.vtx[{}]'.format(eachtarget, x) for x in result], add =1)
- 
+  
     def follicle_selecting(self):
         selObj=mc.ls(sl=1, fl=1)
         #query if selected
