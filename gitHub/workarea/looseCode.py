@@ -251,3 +251,93 @@ def cleanbase(self):
         plugin = "{}_fcl".format(findwire.split("_output_crv_wr")[0])
         mc.parent(each_bse, plugin)
         
+#finding dupes in scene:
+
+duplicates = [(f.split("|")[-1]) for f in mc.ls(dag=1) ]
+ collect_dups = [(item, count) for item, count in collections.Counter(duplicates).items() if count >1]
+ return collect_dups
+
+
+#precision
+
+    #USE IF SKINNING
+    self.createLocalSkeleton()
+    #parent constrain only models that are skinned
+    mc.parentConstraint('c_root_jnt', 'veh_f35A__model__mid', mo=1)
+    
+def createLocalSkeleton(self):
+    '''Precision rig script'''
+ 
+    # '''duplicate skeleton'''
+    lcl_skel_grp = mc.group(name="localSkeleton_grp", empty=1)
+    mc.setAttr("localSkeleton_grp.v", 0)
+    # '''duplicate all joint heirarchy without constraints'''
+    transform.duplicate("c_root_jnt", search='_jnt', replace='Local_jnt', hierarchy=True,
+                        ignoreTypes=["transform", "parentConstraint", "aimConstraint", "orientConstraint",
+                                     "annotationShape"])
+    # '''move to hierarchy'''
+    mc.parent("c_rootLocal_jnt", lcl_skel_grp)
+    # '''Set root local to zero'''
+    mc.setAttr("c_rootLocal_jnt.translateX",0)
+    mc.setAttr("c_rootLocal_jnt.translateY",0)
+    mc.setAttr("c_rootLocal_jnt.translateZ",0)
+    # '''set list of just the children joints of the local root'''
+    get_prnt = mc.ls('c_rootLocal_jnt')[0]
+    jnt_locals = mc.listRelatives(get_prnt, c=1, ad=1)
+    # '''connect children joints of local joint to the transform and rotate of original dependent joints'''
+    for each_jnt in jnt_locals:
+        if each_jnt.endswith("Local_jnt"):
+            orig_jnt = each_jnt.replace("Local_jnt","_jnt")
+            mc.connectAttr(orig_jnt+".translate",each_jnt+".translate")
+            mc.connectAttr(orig_jnt+".rotate",each_jnt+".rotate")
+        #'''remove errant joints'''
+        else :
+            try :
+                mc.delete(each_jnt)
+            except:
+                print
+                "already delete : " + each_jnt
+ 
+    #'''Set root local to the cog'''
+    mc.parent(lcl_skel_grp,"animGeo")
+    mc.setAttr(lcl_skel_grp + ".ty", mc.getAttr('c_root_jnt.ty'))
+    mc.setAttr(lcl_skel_grp + ".tz", mc.getAttr('c_root_jnt.tz'))
+   # '''connect scale'''
+    UNIFORMSCALE = "worldTransformSub_02_ctrl.uniformScale"
+    mc.connectAttr(UNIFORMSCALE, "localSkeleton_grp.scaleX", f=1)
+    mc.connectAttr(UNIFORMSCALE, "localSkeleton_grp.scaleY", f=1)
+    mc.connectAttr(UNIFORMSCALE, "localSkeleton_grp.scaleZ", f=1)
+    
+    #multiple rivet
+    self.button_attach('c_suit', ['buckle'], ['mid', 'lo'], 'buckle_rivets')
+def button_attach(self, wrap_mesh_driver, buttons, lods, grp_nm):
+    for each_lod in lods:
+        for each_plane in buttons:
+            mc.select('{}_{}_pln_geo.e[1]'.format(each_plane, each_lod), '{}_{}_pln_geo.e[2]'.format(each_plane, each_lod), r=1)
+            mm.eval('rivet;')
+            cnst = '{}_{}_rvt'.format(each_plane, each_lod)
+            mc.rename(mc.ls(sl=1)[0], cnst)
+            rvt_cnst = [(each) for each in mc.listRelatives(mc.ls(sl=1)[0], c=1) if
+                        mc.nodeType(each) == 'aimConstraint']
+            new_cnsrnt_nm = '{}_{}_aim_cnstrnt'.format(each_plane, each_lod)
+            mc.rename(rvt_cnst, new_cnsrnt_nm)
+            mc.parentConstraint(cnst, '{}_{}_jnt'.format(each_plane, each_lod), mo=1)
+            self.wrapDeformer('{}_{}'.format(wrap_mesh_driver, each_lod), '{}_{}_pln_geo'.format( each_plane, each_lod))
+            mc.parent('{}_{}_rvt'.format(each_plane, each_lod), '{}_{}'.format(grp_nm, each_lod))
+def button_attach(self, wrap_mesh_driver, buttons, lods, grp_nm):
+    for each_lod in lods:
+        for each_plane in buttons:
+            mc.select('{}_{}_pln_geo.e[1]'.format(each_plane, each_lod), '{}_{}_pln_geo.e[2]'.format(each_plane, each_lod), r=1)
+            mm.eval('rivet;')
+            cnst = '{}_{}_rvt'.format(each_plane, each_lod)
+            mc.rename(mc.ls(sl=1)[0], cnst)
+            rvt_cnst = [(each) for each in mc.listRelatives(mc.ls(sl=1)[0], c=1) if
+                        mc.nodeType(each) == 'aimConstraint']
+            new_cnsrnt_nm = '{}_{}_aim_cnstrnt'.format(each_plane, each_lod)
+            mc.rename(rvt_cnst, new_cnsrnt_nm)
+            mc.parentConstraint(cnst, '{}_{}_jnt'.format(each_plane, each_lod), mo=1)
+            self.wrapDeformer('{}_{}'.format(wrap_mesh_driver, each_lod), '{}_{}_pln_geo'.format( each_plane, each_lod))
+        mc.parent('{}_{}_rvt'.format(each_plane, each_lod), '{}_{}'.format(grp_nm, each_lod))
+        mc.parent('{}_{}{}_{}_pln_geobaseWRP'.format(wr
+
+        
