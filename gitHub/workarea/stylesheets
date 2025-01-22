@@ -1,0 +1,7 @@
+availableStyles=["darkorangefix", "darkStyle", "darkorange", "snow"]
+styleSheetFile=availableStyles[0]
+
+sshFile=open(os.path.join(__location__, styeSheetFile+".stylesheet"), 'r')
+self.styleData=sshFile.read()
+sshFile.close
+self.setStyleSheet(self.styleData)

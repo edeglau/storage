@@ -1,0 +1,17 @@
+selObj=cmds.ls(sl=1, fl=1)
+getShape=cmds.listRelatives(selObj[0], s=1)
+
+buildScatter=createNode("scatter")
+
+cmds.connectAttr(getShape[0]+".worldMesh", buildScatter+"inGeometry")
+cmds.connectAttr(getShape[0]+".worldMatrix", buildScatter+"inWorldMatrix")
+cmds.setAttr(buildScatter+"numberOfPoints", 70)
+buildShatter=createNode("shatter")
+cmds.connectAttr(buildScatter+".outGeometry", buildShatter+"inGeometry")
+cmds.connectAttr(buildScatter+".outPositionPP", buildShatter+"inPositionPP")
+
+getOutObj=cmds.duplicate(selObj[0])
+getOutShape=cmds.listRelatives(getOutObj[0], s=1)
+cmds.connectAttr(buildShatter+".outGeometry", getOutShape[0]+"inMesh")
+cmds.setAttr(buildShatter+"distance", .001)
+cmds.setAttr(buildShatter+"autoEvaluate", 1)

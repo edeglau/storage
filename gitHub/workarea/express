@@ -1,0 +1,21 @@
+import baseFunctions_maya
+getBaseClass=baseFunctions_maya.BaseClass()
+
+getSelected=cmds.ls(sl=1)
+master=getSelected[0]
+getChildren=getSelected[1:]
+initial=5
+additive=2
+drivingAtt='.rotateX'
+followAtt='.rotateX'
+collectNumbs=getBaseClass.Percentages(getChildren, 0.0, 1.0)
+collectNumbs=collectNumbs[1:-1]
+print "int $currentTime=`currentTime -q`;"
+for each, divNum in map(None, getChildren, collectNumbs):
+	foundIndex=getChildren.index(each)
+	num=(additive * foundIndex)
+	takeNum=initial+num
+	print "int $offset="+str(takeNum)+";"
+	print "$offsetTime=$currentTime-$offset;"
+	print "$getPos=`getAttr -t $offsetTime "+master+drivingAtt+"`;"
+	print each+followAtt+"=$getPos/"+str(divNum)+";"

@@ -1,0 +1,10 @@
+getName=["abcmb", "shot", "version"]
+getAll=[(each) for each in cmds.ls("*:*") if cmds.nodeType(each) == "transform"]
+collectAttr=[]
+for each in getAll:
+    Attrs=[(attrItem) for attrItem in cmds.listAttr (each) for attrName in getName if attrName in attrItem]
+    if len(Attrs)>0:        
+        for item in Attrs:
+            newItem=each+"."+item
+            findShot=cmds.getAttr(newItem)
+            print findShot

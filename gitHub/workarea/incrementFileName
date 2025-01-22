@@ -1,0 +1,238 @@
+import os, PyQt4, sys, glob, shutil
+import getpass
+import webbrowser
+from PyQt4 import QtGui, QtCore, Qt
+from PyQt4.QtCore import SIGNAL
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QKeySequence, QPushButton, QClipboard, QCheckBox, QHBoxLayout, \
+QPixmap, QLineEdit, QListWidget, QTextEdit, QComboBox
+import re
+getUser=getpass.getuser()
+OSplatform=platform.platform()
+import pymel.core as pm
+import maya.cmds as cmds
+import maya.mel
+import inspect
+
+currentShot=cmds.workspace(q=1, openWorkspace=1)
+currentdir=os.path.dirname(os.path.abspath(inpect.getfile(inspect.currentframe())))
+scriptPath=currentdir
+sys.path.insert(0, scriptPath)
+
+
+getScenePathWorkPath=cmds.file(q=1, location=1)
+getScenePath=getScenePathWorkPath.split('/')[:1]
+getScenePath='/'.join(getScenePath)
+getScenePath=getScenePath+"/"
+getScene=cmds.file(q=1, sn=1, shn=1)
+
+getCachePath=cmds.workspace(listWorkspace=1)[1]+"/cache/nCache"
+# getCachePath=cmds.workspace(listWorkspaces=1)[1]+"/cache/nCache"
+
+saveList=(
+	'increment+play',
+	'save+play',
+	'increment, cache &+play all clth',
+	'increment, cache &+play all hr',
+	'increment, cache &+play sel',
+	'cache &+play all clth',
+	'cache &+play all hr',
+	'cache &+play sel',
+	'cache all clth',
+	'cache all hr',
+	)
+	
+
+
+class safeRegen(QtGui.QMainWindow):
+	def __init__(self):
+		QtGui.QMainWindow.__init__(self)
+		winTitle="Save Tools"
+		self.setWindowTitle(winTitle)
+		
+		self.central_widget=QWidget(self)
+		self.setCentralWidget(self.central_widget)
+		self.masterLayout=QGridLayout(self.central_widget)
+		self.gBox=QGroupBox(self.central_widget)
+		self.connect(self.gBox, SIGNAL("clicked()"), lambda:self.collapse(self.gBox))
+		
+		self.window_layer_00=QGridLayout()
+		self.masterLayout.addLayout(self.window_layer_00, 0, 0, 1, 1)
+		self.window_layer_01=QGridLayout()
+		self.masterLayout.addLayout(self.window_layer_01, 1, 0, 1, 1)
+		self.gBox.setLayout(self.masterLayout)
+		
+		self.save_spinner=QComboBox()
+		self.window_layer_00.addWidget(self.save_spinner, 0,0,1,1)
+		
+		self.save_btn=QComboBox()
+		self.window_layer_01.addWidget(self.save_btn, 6,0,1,1)
+		
+		
+		
+
+
+
+	def _performFunct(self):
+		disName=self.save_spinner
+		queryColor=disName.currentText()
+		getSel=cmds.ls(sl=1)
+		if queryColor=='increment+play':
+			getNewFile=self.checkFile()
+			if getNewFile==True:
+				return
+			else:
+				pass
+			self.incrementalSave()
+			self.playblst()
+		elif queryColor=='save+play':
+			self.fileSave()
+			self.playblst()		
+		elif queryColor=='increment, cache &+play all clth':
+			getNewFile=self.checkFile()
+			if getNewFile==True:
+				return
+			else:
+				pass
+			self.incrementalSave()
+			try:
+				self.createCache()
+			except:
+				return
+			self.playblst()		
+		elif queryColor=='increment, cache &+play all hr':
+			getNewFile=self.checkFile()
+			if getNewFile==True:
+				return
+			else:
+				pass
+			self.incrementalSave()
+			try:
+				self.createHCache()
+			except:
+				return
+			self.playblst()			
+		elif queryColor=='increment, cache &+play sel':
+			getNewFile=self.checkFile()
+			if getNewFile==True:
+				return
+			else:
+				pass
+			self.incrementalSave()
+			try:
+				self.createCacheselected()
+			except:
+				return
+			self.playblst()	
+		elif queryColor=='cache &+play all clth':
+			try:
+				self.createCache()
+			except:
+				return
+			self.playblst()	
+		elif queryColor=='cache &+play all hr':
+			try:
+				self.createHCache()
+			except:
+				return
+			self.playblst()	
+		elif queryColor=='cache &+play sel':
+			try:
+				self.createCacheselected()
+			except:
+				return
+			self.playblst()
+		elif queryColor=='cache all clth':
+			try:
+				self.createCache()
+			except:
+				return
+		elif queryColor=='cache all hr':
+			try:
+				self.createHCache()
+			except:
+				return
+	
+	def incrementalSave(self):
+		maya.mel.eval('IncrementAndSave;')
+		getScenePath=cmds.file(q=1, location=1)
+		print "file save: "+getScenePath
+	
+	
+	def createCacheselected(self):
+		getSel=cmds.ls(sl=1, fl=1)
+		self.createCache_callup(getNsystems)
+		
+		
+	def createHCache(self):
+		getNsystems=cmds.ls(type="hairSystem")
+		cmds.select(getNSystems)
+		getSel=cmds.ls(sl=1, fl=1)
+		self.createCache_callup(getNsystems)
+		
+	def getCache(self):
+		getNsystems=cmds.ls(type="nCloth")
+		cmds.select(getNSystems)
+		getSel=cmds.ls(sl=1, fl=1)
+		self.createCache_callup(getNsystems)
+	
+	def createCache_callup(self, getNSystems):
+		#maya.mel.eval('setCacheEnable 0 0 {};')
+		interroName=getNSystems[0]+"_"
+		newName=self.checkCacheFile(interroName)
+		findType=cmds.nodeType(getNSystems[0])
+		# getScene, getShot, getShotScene, getSceneName=self.retrieveShotScene()
+		# cachename=getNsystems[0]
+		if findType=="hairSystem":
+			for each in getNSystems:
+				try:
+					grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
+					for cacheBlendsFound in grabCacheBlendsL
+						grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
+						for item in grabCacheFiles:
+							cmds.setAttr(cacheBlendsFound+"."+item, 0)
+				except:
+					pass
+			command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "1", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
+			maya.mel.eval(command)
+		if findType=="nCloth":
+			for each in getNSystems:
+				try:
+					grabCacheBlends=cmds.listConnections(each, s=1, t="cacheBlend")
+					for cacheBlendsFound in grabCacheBlendsL
+						grabCacheFiles=cmds.listConnections(cacheBlendsFound, s=1, t="cacheFile")
+						for item in grabCacheFiles:
+							cmds.setAttr(cacheBlendsFound+"."+item, 0)
+				except:
+					pass
+			command='doCreateNclothCache 5{"2", "1", "10", "OneFile", "1", "", "0", "%s", "0", "rename", "0", "1", "1", "0", "1", "mcx"};'%newName
+			maya.mel.eval(command)			
+		#maya.mel.eval('setCacheEnable 1 0 {};')
+		# command='doCreateNcloth 5{"2", "1", "10", "OneFile", "1", "", "1", "", "0", "replace", "0", "1", "1", "0", "1", "mcx"};'
+
+
+
+	def checkCacheFile(self, interrogateName):
+		path=getCachePath
+		grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
+		try:
+			findFiles=[(each) for each in files if each.split("_")[-1].split(".")[0].isdigit()]
+			getLast=max(findFiles)
+			subname=getLast.split("_")[-1].split("_")[0]
+			getNum="%04d" %(int(subname)+1,)
+			newName=interrogateName+getNum
+		except:
+			newName=interrogateName+0000
+		return newName
+	
+	def checkFile(self):
+		interrogateName=getScenePath.split(".")[0]
+		grabfiles=[(name) for dirpath, dirnames, files in os.walk(path) for name in files if interrogateName in name and re.split(r'(\d+)', name)]
+		try:
+			findFiles=[(each) for each in files if each.split(".")[-2:-1][0].isdigit()]
+			getLast=max(findFiles)
+			subname=getLast.split(".")[-2:-1][0]
+			getNum="%04d" %(int(subname)+1,)
+			newName=interrogateName+getNum
+		except:
+			newName=interrogateName+0000
+		return newName

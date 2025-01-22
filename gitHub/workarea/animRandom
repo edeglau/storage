@@ -1,0 +1,13 @@
+import random
+from numpy import arange
+getSel=cmds.ls(sl=1, fl=1)
+firstMinValue, firstMaxValue=25, 33
+getValue=1017
+for each in getSel:
+	cmds.SetKeyTranslate(each)
+	getVal=random.uniform(firstMinValue, firstMaxValue)
+	getVal=int(getVal)
+	newValue=getValue+getVal
+	cmds.currentTime(newValue)
+	cmds.setAttr(each+".translateY", 5)
+	cmds.SetKeyTranslate(each)

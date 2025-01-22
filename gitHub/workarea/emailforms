@@ -1,0 +1,90 @@
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
+	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+import os.path
+from os.path import isfile, join
+from datetime import datetime
+
+class buildEmail(QtGui.QWidget):
+	def __init__(self, to, cc, subject, body, category, categoryTru):
+		super(messageWidget, self).__init__()
+		self.initUI(to, cc, subject, body, category, categoryTru)
+	def initUI(self, to, cc, subject, body, category, categoryTru):
+		
+		getbodymsg=''.join(body)
+		
+		self.layout = QVBoxLayout()
+		self.btnlayout=QBoxLayout(1)
+		
+		self.tofield=QLineEdit(to)
+		self.layout.addWidget(self.tofield)
+				
+		self.ccfield=QLineEdit(cc)
+		self.layout.addWidget(self.ccfield)
+						
+		self.subfield=QLineEdit(subject)
+		self.layout.addWidget(self.subfield)
+		
+		self.gdLabel=QLabel(category)
+		self.layout.addWidget(self.gdLabel)
+		
+		
+		self.bodfield=QPlainTextEdit(getbodymsg)
+		self.layout.addWidget(self.bodfield)
+		
+		
+		tofield=self.tofield
+		tofield=tofield.text()
+		tofield=str(tofield)
+		ccfield=self.ccfield
+		ccfield=ccfield.text()
+		ccfield=str(ccfield)
+		subfield=self.subfield
+		subfield=subfield.text()
+		subfield=str(subfield)
+		
+		self.tktbutton=QPushButton("open web")
+		if categoryTru==True:
+			pass
+		else:
+			self.tktbutton.setEnabled(0)
+		self.connect(self.tktbutton, SIGNAL("clicked()"),
+					lambda: self.launchweb())
+		self.btnlayout.addWidget(self.tktbutton)
+		
+		self.emlbtn=QPushButton("email")
+		self.connect(self.emlbtn, SIGNAL("clicked()"),
+					lambda: self.launchweb())
+		self.btnlayout.addWidget(self.emlbtn)
+		
+		self.layout.addLayout(self.btnlayout)
+		self.setLayout(self.layout)
+		
+	def launchweb(self):
+		url="http:"
+		self.openweb(url)
+		
+	def openweb(self, url):
+		cmd=['firefox', '-new-tab', url]
+		proc=Popen(cmd)
+		
+	def openweb(self, to, cc, subject):
+		cc=cc+','
+		body=self.bodfield
+		body=body.toPlainText()
+		message="adding "+getPth+". continue?"
+    	reply=QtGui.QMessageBox.question(None, "Message", message, QtGui.QMessageBox.Yes,
+    									QtGui.QMessageBox.No)
+    	if reply == QtGui.QMessageBox.Yes:
+    		self.sendmail(subject, to, body, cc)
+    	if reply ==QtGui.MessageBox.No:
+    		print "cancelled"
+    		return

@@ -1,0 +1,143 @@
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, \
+	QComboBox, QKeySequence, QPlainTextEdit, QPushButton,QBoxLayout, \
+	QClipboard, QCheckBox, QVBoxLayout, QHBoxLayout, \
+	QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+	QTableWidget, QFont, QAbstractItemView, QMenu, QMessageBox
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+import os.path
+from os.path import isfile, join
+from datetime import datetime
+
+
+class sendmessageWidget(QtGui.QWidget):
+	def __init__(self, subject, to, cc, recipient, grouprecipient, queryID, body, multibody):
+		super(sendmessageWidget, self).__init__()
+		self.initUI(subject, to, cc, recipient, grouprecipient, queryID, body, multibody)
+		
+	def initUI(subject, to, cc, recipient, grouprecipient, queryID, body, multibody)
+		self.layout=QVBoxLayout()
+		self.directionsLabel=QLabel("How do you want to do this?")
+		self.layout.addWidget(self.directionsLabel)
+		self.btnLayout=QBoxLayout(1)
+		
+		self.msgngerbtn=QPushButton("messenger")
+		self.connect(self.msgngerbtn, SIGNAL("clicked()")
+					lambda: self.msngr_send(recipient, grouprecipient, body))
+		self.btnLayout.addWidget(self.msgngerbtn)
+		
+		self.emailbtn=QPushButton("email")
+		self.connect(self.emailbtn, SIGNAL("clicked()")
+					lambda: self.email_send(subject, to, cc, body))
+		self.btnLayout.addWidget(self.emailbtn)
+		
+	def msngr_send(self. recipient, grouprecipient, body)
+		self.msngrwidget=sendMsngrMultiWidget(body,  recipient, grouprecipient)
+		self.msngrwidget.show()
+		self.close()
+		
+	def email_send(self, subject, to, cc, body):
+		self.sendemail(subject, to, cc, body)
+		self.close()
+		
+
+
+	def sendemail(self,subject, to, cc, body ):
+		title = "error"
+		user=getUser+"@host.com"
+		try:
+			ccEmail=cc.replace(',', '; ')
+			ccString=''.join([(' -c' +x) for x in cc.split(';') if len(x)>1 and x.count('@')==1])
+			toString=''.join([(' ' +x) for x in to.split(';') if len(x)>1 and x.count'@')==1])
+			sendEmail='echo"%s" | mail -s "%s" %s %s' % (body, subject, cc, to)
+			os.open(sendEmail)
+			print "success"
+		except:
+			detailMessage= "failed"
+			print detailMessage
+			self.form_widget=messageWidget(detailMessage, title)
+			self.form_widget.show()
+			
+class messageWidget(QtGui.QWidget):
+	def __init__(self, detailMessge, title):
+		super(messageWidget, self).__init__()
+		self.initUI(detailMessge, title)
+	def initUI(self, detailMessge, title):
+		self.setWindowTitle(title)
+		print detailMessge
+		
+		self.layout = QVBoxLayout()
+		self.message=QLabel(detailMessge)
+		self.layout.addWidget(self.message)
+		self.setLayout(self.layout)
+		
+		
+class sendMsngrMultiWidget(QtGui.QWidget):
+	def __init__(self, body,  recipient, grouprecipient):
+    	super(sendMsngrMultiWidget,self).__init__()
+    	self.initUI(body,  recipient, grouprecipient)
+    def initUI(self, body,  recipient, grouprecipient):
+    	
+    	self.layout=QVBoxLayout()
+    	self.message=QTextEdit(body)
+    	self.message.setStyleSheet(" color:rgb(200, 80, 80);")
+    	self.layout.addWidget(self.message)
+    	
+    	self.DirectionsLabel=QLabel('who to?')
+    	self.layout.addWidget(self.DirectionsLabel)
+    	
+    	self.buttonslayout=QBoxLayout(1)
+    	self.buttonslayout2=QBoxLayout(0)
+    	self.framesingle=QFrame()
+    	self.framesingle.setStyleSheet("border-width: 2px; border-color:#ffffff;")
+    	self.framesingle.setLayout(self.buttonslayout2)
+    	
+    	self.a_spinner=QComboBox()
+    	self.a_spinner.addItems(List.keys())
+    	self.buttonslayout2.addWidget(self.a_spinner)
+    	
+    	userindex=self.a_spinner.findText(reipient[0])
+    	self.a_spinner.setCurrentIndex(userindex)
+    	
+    	self.singlebtn=QPushButton("<send")
+    	self.connect(self.singlebtn, SIGNAL("clicked()"),
+    		lambda:self.sendSingle(body, recipient))
+    	self.buttonslayout2.addWidget(self.singlebtn)
+
+    	self.allbtn=QPushButton("send to all")
+    	self.connect(self.allbtn, SIGNAL("clicked()"),
+    		lambda:self.sendall(body, grouprecipient))
+    	self.buttonslayout2.addWidget(self.allbtn)
+
+    	self.layout.addWidget(self.framesingle)
+    	self.layout.addLayout(self.buttonslayout)
+    	self.setLayout(self.layout)
+    	
+    def sendSingle(self, body, recipient):
+    	msgbody=self.message.toPlainText()
+    	singleName=self.a_spinner
+    	selfNameText=singleName.currentText()
+    	selfNameText=[selfNameText]
+    	print "sending to "+str(selfNameText)
+    	self.sendMessageCallupMult(msgbody, selfNameText)
+    	
+    def sendall(self, body, recipient):
+    	msgbody=self.message.toPlainText()
+    	print "sending to "+str(grouprecipient)
+    	self.sendMessageCallupMult(msgbody, grouprecipient)
+    	
+    def sendMessageCallupMult(self, msgbody, grouprecipient):
+    	msg="sending comet to "++" with message "++" >>end"
+    	reply=QtGui.QMessageBox.question(None, "Message", message, QtGui.QMessageBox.Yes,
+    									QtGui.QMessageBox.No)
+    	if reply == QtGui.QMessageBox.Yes:
+    		for each in recipient:
+    			cmd='hey -u %s -m "%s" -q'%(each, body)
+    			os.system(cmd)
+    	if reply ==QtGui.MessageBox.No:
+    		print "cancelled"
+    		return

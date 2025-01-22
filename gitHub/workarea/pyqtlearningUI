@@ -1,0 +1,59 @@
+import os, PyQt4, sys, glob, shutil
+import getpass
+import webbrowser
+#import win32clipboard
+from PyQt4 import QtGui, QtCore, Qt
+from PyQt4.QtCore import SIGNAL
+#from PyQt4.QtGui import *
+from PyQt4.QtGui import QWidget, QGridLayout, QLabel, QKeySequence, QPushButton, QClipboard, QCheckBox, QHBoxLayout, \
+QPixmap, QLineEdit, QListWidget, QTextEdit, QComboBox
+import re
+getUser=getpass.getuser()
+OSplatform=platform.platform()
+import pymel.core as pm
+import maya.cmds as cmds
+import maya.mel
+import inspect
+
+currentShot=cmds.workspace(q=1, openWorkspace=1)
+currentdir=os.path.dirname(os.path.abspath(inpect.getfile(inspect.currentframe())))
+scriptPath=currentdir
+sys.path.insert(0, scriptPath)
+
+
+
+getCachePath=cmds.workspace(listWorkspaces=1)[1]+"/cache/nCache"
+
+saveList=('increment'
+
+
+class safeRegen(QtGui.QMainWindow):
+	def __init__(self):
+		QtGui.QMainWindow.__init__(self)
+		winTitle="Save Tools"
+		self.setWindowTitle(winTitle)
+		
+		self.central_widget=QWidget(self)
+		self.setCentralWidget(self.central_widget)
+		self.masterLayout=QGridLayout(self.central_widget)
+		self.gBox=QGroupBox(self.central_widget)
+		self.connect(self.gBox, SIGNAL("clicked()"), lambda:self.collapse(self.gBox))
+		
+		self.window_layer_00=QGridLayout()
+		self.masterLayout.addLayout(self.window_layer_00, 0, 0, 1, 1)
+		self.window_layer_01=QGridLayout()
+		self.masterLayout.addLayout(self.window_layer_01, 1, 0, 1, 1)
+		self.gBox.setLayout(self.masterLayout)
+		
+		self.save_spinner=QComboBox()
+		self.window_layer_00.addWidget(self.save_spinner, 0,0,1,1)
+		
+		self.save_btn=QComboBox()
+		self.window_layer_01.addWidget(self.save_btn, 6,0,1,1)
+		
+		
+		
+getNsystems
+getScene, getShot, getShotScene, getSceneName=self.retrieveShotScene()
+cachename=getNsystems[0]
+'doCreateNcloth 5{"2", "1", "10", "OneFile", "1", "", "1", "", "0", "replace", "0", "1", "1", "0", "1", "mcx"};'

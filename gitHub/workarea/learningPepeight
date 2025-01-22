@@ -1,0 +1,2016 @@
+
+__author__ = "Elise Deglau"
+__ver__ = '1.0'
+
+
+# standard
+import os, sys, operator, re, glob, getpass, subprocess, shutil, string, random, ast, webbrowser, time, datetime
+import ast
+import os.path
+from subprocess import Popen, PIPE
+from os import stat, listdir, walk
+from pwd import getpwuid
+from os.path import isfile, join
+from datetime import datetime
+
+# 3rd party
+import PyQt4
+from PyQt4 import QtCore, QtGui, Qt
+from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
+    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
+    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
+    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
+    QFont, QAbstractItemView, QMenu, QMessageBox
+from PyQt4.QtCore import SIGNAL
+
+buttonGrp = []
+_failed_comments = [
+                "defaultText", 
+                "", 
+                "-", 
+                "_", 
+                "asdf", 
+                "asd", 
+                ".", 
+                "oo", 
+                "0", 
+                "00", 
+                " ", 
+                "qwer", 
+                "qwerty"
+                ]
+
+__location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+defaultText = "defaultText"
+presetlist = ["load"]
+typesOfReview = ['review', 'review_anim', 'delivery']
+availableStyles = ['darkOrange']
+styleSheetFile = availableStyles[0]
+headers = ('Name', 'Date', 'Path', 'Sub')
+dsktop_rev_build = ["Create Artist Review", "Build list", "Append blast", "Remove blast"]
+dsktop_rev_list = ['Artist Review List']
+setDefaultType = ['review']
+col1, col2, col3, col4 =  240, 160, 500, 50
+regularDict = {"darkRed":(150,70,70), 
+            "red":(180,50,50), 
+            "yellow":(120,120,70), 
+            "green":(70, 150, 70), 
+            "blue":(50,100,200), 
+            "grey":(50,50,50), 
+            "light_grey":(70,70,70), 
+            "hub":(70,80,100)
+            }
+_developer = [__author__]
+_get_user = getpass.getuser()
+_project = os.getenv("")
+_scene = os.getenv("")
+_shot = os.getenv("")
+_dept_task = os.getenv("")
+_getDeptrv_folder=  
+_projects = '/jobs/' + _project
+_proj_scene_name = os.listdir(_projects)
+_proj_scene_name = sorted(_proj_scene_name)
+_format_ext = ".jpg"
+_play_list_path = 
+_sgVarFilePath = 
+_user_path_pbmovs = '/home/' + _get_user
+by_detail = ["folder", "file"]
+win_title="mSubmit Manager " + __ver__
+
+
+class DropMenu(QtGui.QWidget):
+    def __init__(self, detailMessge, title, make_new_content):
+        super(DropMenu, self).__init__()
+        self.initUI(detailMessge, title, make_new_content)
+
+    def initUI(self, detailMessge, title, make_new_content):     
+        self.setWindowTitle(title)
+        self.layout = QVBoxLayout()
+        self.btnlayout = QBoxLayout(1)
+        self.playlist_names = QComboBox()
+        self.playlist_names.addItems(detailMessge)
+        self.layout.addWidget(self.playlist_names)
+        self.layout.addLayout(self.btnlayout)
+        self.sel_button = QPushButton("append")
+        self.connect(self.sel_button, SIGNAL("clicked()"),
+                    lambda: self.gotoAppend(make_new_content))
+        self.btnlayout.addWidget(self.sel_button)
+        self.setLayout(self.layout)
+
+    def gotoAppend(self, make_new_content):
+        get_artist_review_list = self.playlist_names
+        get_artist_review_list = get_artist_review_list.currentText()
+        access_main = mSubManagerWin()
+        access_main.append_artist_review(get_artist_review_list, make_new_content)
+        self.close()
+
+
+class managerWin(QtGui.QMainWindow):
+
+    def __init__(self, parent = None):
+        super(managerWin, self).__init__(parent)
+        shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+        ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+        ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.set_defaults(_scene, _shot)
+        try:
+            winTitle = win_title + '              ' + _project + " : " + _shot + " : (F" + str(shot_len_value) + ")   :   ( " + str(wk_strt_value-1) + "  |[ " + str(wk_strt_value) + " <<<[" + str(cut_in_value) + "-" + str(cut_out_value) + "]>>> " + str(wk_out_value) + " ]|  " + str(wk_out_value + 1) + " )"
+        except IndexError:
+            winTitle = win_title + '              ' + _project + " : " + _shot           
+        print 'Launching: ' + win_title
+        # get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.get_latest_depts_submitted(_project, _scene, _shot)
+        get_depts = os.listdir(_getDeptrv_folder)
+
+        ssh_file = open(os.path.join(__location__, styleSheetFile + ".stylesheet"), 'r')
+        self.style_data = ssh_file.read()
+        ssh_file.close
+        self.setStyleSheet(self.style_data)
+
+        ##WINDOW SETUP
+        self.setWindowTitle(winTitle)
+        self.central_widget = QWidget(self)
+        self.setCentralWidget(self.central_widget)
+        self.masterLayout = QGridLayout(self.central_widget)
+        self.masterLayout.setAlignment(QtCore.Qt.AlignTop)
+
+        ##VERTICAL LAYOUT
+        self.vertical_order_layout = QtGui.QBoxLayout(2)
+        self.vertical_order_layout.setAlignment(QtCore.Qt.AlignTop | QtCore.Qt.AlignVCenter)
+        self.masterLayout.addLayout(self.vertical_order_layout, 0,0,1,1)
+
+        self.topDivideLayout = QGridLayout()
+        self.botDivideLayout = QGridLayout()
+        self.upper_layout = QGridLayout()
+        self.topDivideLayout.addLayout(self.upper_layout, 0,0,1,1)
+
+        self.lower_layout = QGridLayout()
+        self.lower_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.botDivideLayout.addLayout(self.lower_layout, 0,0,1,1)
+
+        self.midLayout = QGridLayout()
+        self.midLayout.setAlignment(QtCore.Qt.AlignTop)
+        self.topDivideLayout.addLayout(self.midLayout, 2,0,1,1)
+
+        self.base_layout = QGridLayout()
+        self.base_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.botDivideLayout.addLayout(self.base_layout, 2,0,1,1)        
+
+        self.top = QtGui.QFrame(self)
+        self.top.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.top.setLayout(self.topDivideLayout)
+        
+        self.bottom = QtGui.QFrame(self)
+        self.bottom.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.bottom.setLayout(self.botDivideLayout)
+        
+        self.splitPlane = QtGui.QSplitter(QtCore.Qt.Vertical)
+        self.splitPlane.addWidget(self.top)
+        self.splitPlane.addWidget(self.bottom)
+        self.splitPlane.setSizes([650, 650])
+        self.vertical_order_layout.addWidget(self.splitPlane)
+
+        ##LAYERS
+        self.top_upper_layer = QGridLayout()
+        self.upper_layout.addLayout(self.top_upper_layer,1,0,1,1)
+
+        self.top_lower_layer = QGridLayout()
+        self.upper_layout.addLayout(self.top_lower_layer, 2,0,1,1)
+
+        self.custom_path_layer = QGridLayout()
+        self.upper_layout.addLayout(self.custom_path_layer, 3,0,1,1)
+
+        self.playblast_list_layer = QGridLayout()
+        self.midLayout.addLayout(self.playblast_list_layer,4,0,1,1)
+
+        self.lower_framed_layer = QGridLayout()
+        self.lower_framed_layer.setAlignment(QtCore.Qt.AlignTop)
+        self.lower_layout.addLayout(self.lower_framed_layer, 0,0,1,1)
+        
+        ##FRAMES
+        self.btm_upper_layer = QtGui.QGridLayout()
+        self.btm_upper_layer.setContentsMargins(5,10,5,10)
+        self.lower_but_frame = QtGui.QFrame()
+        self.lower_but_frame.setFixedHeight(80)
+        self.lower_but_frame.setLayout(self.btm_upper_layer)
+        self.lower_layout.addWidget(self.lower_but_frame, 1,0,1,1)
+
+        self.btm_lower_layer = QtGui.QGridLayout()
+        self.btm_lower_layer.setAlignment(QtCore.Qt.AlignTop)
+        self.btm_lower_layer.setContentsMargins(5,10,5,10)   
+        self.web_frame = QtGui.QFrame()
+        self.web_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+        self.btm_over_layout = QtGui.QGridLayout()
+        self.btm_over_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.btm_over_layout.addLayout(self.btm_lower_layer, 0,0,1,1)
+        self.btm_over_layout.addWidget(self.web_frame, 0,0,1,1)
+
+        self.framed_setup_layer = QtGui.QGridLayout()
+        self.framed_setup_layer.setContentsMargins(5,10,5,10)
+        self.framed_setup_frame = QtGui.QFrame()
+        self.framed_setup_frame.setStyleSheet("background-color: #434343; border-style: solid; border-width: 2px; border-color:#434343;border-radius:8px;")
+        self.framed_setup_frame.setFixedHeight(100)
+        self.framed_setup_frame.setLayout(self.framed_setup_layer)
+        self.lower_framed_layer.addWidget(self.framed_setup_frame, 0,0,1,1)
+
+        self.customLayout = QtGui.QGridLayout()
+        self.customLayout.setContentsMargins(5,10,5,10)
+        self.customFrame = QtGui.QFrame()
+        self.customFrame.setStyleSheet("background-color: #454545; border-style: solid; border-width: 2px; border-color:#565656;border-radius:8px;")
+        self.customFrame.setFixedHeight(80)
+        self.customFrame.setLayout(self.customLayout)
+        self.custom_path_layer.addWidget(self.customFrame, 0,0,1,1)
+
+        self.list_frame = QFrame()
+        self.list_frame.setStyleSheet("color: rgb" + str(regularDict.get("grey")))
+        self.list_layout = QHBoxLayout()
+        self.list_frame.setLayout(self.list_layout)
+
+        ##FRAMED SUBLAYER
+        self.frame_title_layout = QGridLayout()
+        self.framed_setup_layer.addLayout(self.frame_title_layout, 0,0,1,1)
+        self.frame_radio_layout = QGridLayout()
+        self.framed_setup_layer.addLayout(self.frame_radio_layout, 1,0,1,1)
+        self.frame_btn_layout = QGridLayout()
+        self.lower_framed_layer.addLayout(self.frame_btn_layout, 2,0,1,1)
+        self.msgBox = QGridLayout()
+        self.frame_title_layout.addLayout(self.msgBox, 0,0,1,1)
+        self.radiobox = QGridLayout()
+        self.frame_title_layout.addLayout(self.radiobox, 1,0,1,1)
+
+        ##WIDGETS
+
+        ##TOP UPPER
+
+        self.dept_drp = QComboBox()
+        self.dept_drp.addItems(get_depts)
+        self.dept_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.connect(self.dept_drp, SIGNAL("customContextMenuRequested(QPoint)"), self.dept_drp_r_click)
+        deptindex = self.dept_drp.findText(_dept_task, QtCore.Qt.MatchFixedString)
+        self.dept_drp.setCurrentIndex(deptindex)
+        self.top_upper_layer.addWidget(self.dept_drp, 0,0,1,1)
+
+        self.reviewtype_drp = QComboBox()
+        self.reviewtype_drp.addItems(typesOfReview)
+        self.top_upper_layer.addWidget(self.reviewtype_drp, 0,1,1,1)
+
+        self.scene_drp = QComboBox()
+        self.top_upper_layer.addWidget(self.scene_drp, 0,2,1,1)
+        self.scene_drp.addItems(_proj_scene_name)
+        self.scene_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.scene_drp.customContextMenuRequested.connect(self.scene_drp_r_click)
+        
+        self.shot_drp = QComboBox()
+        self.top_upper_layer.addWidget(self.shot_drp, 0,3,1,1)
+        self.shot_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.connect(self.shot_drp, SIGNAL("customContextMenuRequested(QPoint)"), self.shot_drp_r_click)
+        QtCore.QObject.connect(self.scene_drp, SIGNAL("currentIndexChanged(QString)"),
+                                self.on_shot_drp_changed)
+        self.reset_btn = QPushButton("Reset")
+        self.reset_btn.setToolTip("reset to current shot")
+        self.connect(self.reset_btn, SIGNAL('clicked()'), lambda *args:self.reset_window(cut_in_value, cut_out_value))
+        self.top_upper_layer.addWidget(self.reset_btn, 0,5,1,1)
+
+        ##TOP LOWER
+
+        self.launch_hub_btn = QPushButton("launch hub")
+        self.launch_hub_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))
+        self.connect(self.launch_hub_btn, SIGNAL('clicked()'), self.launch_hub)
+        self.top_lower_layer.addWidget(self.launch_hub_btn, 0,0,1,1)
+
+        self.work_folder_btn = QPushButton("open workfolder")
+        self.connect(self.work_folder_btn, SIGNAL('clicked()'), self._open_work_folder)
+        self.top_lower_layer.addWidget(self.work_folder_btn, 0,1,1,1)
+
+        self.artistlist_build_drp = QComboBox()
+        self.artistlist_build_drp.addItems(dsktop_rev_build)
+        self.artistlist_build_drp.setStyleSheet("color: #b1b1b1; background-color: rgba(175,70,70,50);")
+        QtCore.QObject.connect(self.artistlist_build_drp, SIGNAL("currentIndexChanged(QString)"),
+                                self.build_artist_review)
+        self.artistlist_build_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.connect(self.artistlist_build_drp, SIGNAL("customContextMenuRequested(QPoint)"), self.artist_rev_list_drp_r_click)
+        self.list_layout.addWidget(self.artistlist_build_drp)
+        self.top_lower_layer.addWidget(self.artistlist_build_drp, 0,4,1,1)
+
+        self.artistlist_collection_drp = QComboBox()
+        self.artistlist_collection_drp.setStyleSheet("color: #b1b1b1; background-color: rgba(175,70,70,50);")
+        preset = self.find_playlists(_play_list_path)
+        preset = [(each.split("/")[-1]) for each in preset]
+        artist_reviews_listnames = [(each.split("_storedText.txt")[0]) for each in preset]
+        QtCore.QObject.connect(self.artistlist_collection_drp, SIGNAL("currentIndexChanged(QString)"),self.load_artist_review)
+        self.artistlist_collection_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.connect(self.artistlist_collection_drp, SIGNAL("customContextMenuRequested(QPoint)"), self.artist_rev_list_drp_r_click)
+        self.artistlist_collection_drp.addItems(dsktop_rev_list)
+        self.artistlist_collection_drp.addItems(artist_reviews_listnames)
+        self.top_lower_layer.addWidget(self.artistlist_collection_drp, 0,5,1,1)
+        
+        self.refresh_btn = QPushButton("Refresh")
+        self.refresh_btn.setToolTip("refresh")
+        self.connect(self.refresh_btn, SIGNAL('clicked()'), self.refresh_window)    
+        self.top_lower_layer.addWidget(self.refresh_btn, 0,6,0,1)
+
+        ##CUSTOM PATH
+        self.cust_path_label = QLabel("Custom path: ")
+        self.cust_path_label.setStyleSheet('background-color:transparent')
+        self.cust_path_label.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+        self.customLayout.addWidget(self.cust_path_label, 0,0,1,1)
+
+        self.cust_path_field = QLineEdit()
+        self.cust_path_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,25);")
+        self.cust_path_field.setVisible(1)
+        self.cust_path_field.setText("//")
+        self.cust_path_field.setFixedWidth(600)
+        self.customLayout.addWidget(self.cust_path_field, 0,1,1,1)
+
+        self.file_type_drp = QComboBox()
+        self.file_type_drp.addItems(by_detail)
+        self.file_type_drp.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.list_layout.addWidget(self.file_type_drp)
+        self.customLayout.addWidget(self.list_frame, 0,2,1,1)
+
+        self.default_proj_btn = QPushButton("Set to _project default")
+        self.default_proj_btn.setToolTip("set list to load from custom path")
+        self.connect(self.default_proj_btn, SIGNAL('clicked()'), self.set_to_project)
+        self.customLayout.addWidget(self.default_proj_btn, 2,0,1,1)
+
+        self.user_folder_btn = QPushButton("Load from user folder")
+        self.user_folder_btn.setToolTip("set list to load from custom path")
+        self.connect(self.user_folder_btn, SIGNAL('clicked()'), self.set_to_user)
+        self.customLayout.addWidget(self.user_folder_btn, 2,1,1,1)
+
+        self.set_btn = QPushButton("Set")
+        self.set_btn.setToolTip("set list to load from custom path")
+        self.connect(self.set_btn, SIGNAL('clicked()'), self.set_toCustom)
+        self.customLayout.addWidget(self.set_btn, 2,2,1,1)
+
+        ##PLAYBLAST LIST
+        self.playBlastList = QTableWidget(1, 4)
+        self.playBlastList.setHorizontalHeaderLabels(headers)
+        self.playBlastList.setEditTriggers(QAbstractItemView.DoubleClicked | QAbstractItemView.SelectedClicked)     
+        col1, col2, col3, col4 =  240, 160, 500, 50
+        self.playBlastList.setColumnWidth(0, col1)
+        self.playBlastList.setColumnWidth(1, col2)
+        self.playBlastList.setColumnWidth(2, col3)
+        self.playBlastList.setColumnWidth(3, col4)
+        self.playBlastList.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.playBlastList.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.playBlastList.customContextMenuRequested.connect(self.playblast_list_r_click)
+        self.playBlastList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
+        self.connect(self.playBlastList, SIGNAL("itemClicked(QTableWidgetItem *)"), self.count_frames_selected_playblast)
+        self.connect(self.playBlastList, SIGNAL("itemDoubleClicked(QTableWidgetItem *)"), self.playblast_list_d_click)
+        self.playblast_list_layer.addWidget(self.playBlastList, 0,0,1,1)
+
+        ##FRAMED
+
+        self.count_frames_checkbox=QCheckBox("count frames on (may be slow)")
+        self.count_frames_checkbox.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,25);")
+        self.count_frames_checkbox.setContentsMargins(5,0,0,0)
+        self.count_frames_checkbox.setChecked(0)
+        self.radiobox.addWidget(self.count_frames_checkbox, 0,0,1,1)
+
+        self.comment_LbL = QLabel("Comment: ")
+        self.comment_LbL.setStyleSheet('background-color:transparent')
+        self.comment_LbL.setAlignment(QtCore.Qt.AlignCenter|QtCore.Qt.AlignVCenter)
+        self.msgBox.addWidget(self.comment_LbL, 0,0,1,1)
+
+        self.comment_field = QLineEdit()
+        self.comment_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,25);")
+        self.comment_field.setVisible(1)
+        self.comment_field.setText(defaultText)
+        self.comment_field.setFixedWidth(600)
+        self.msgBox.addWidget(self.comment_field, 0,1,1,1)
+        
+        self.head_lbl = QLabel("start")
+        self.head_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+        self.radiobox.addWidget(self.head_lbl, 1, 0,1,1)
+        
+        self.head_field = QTextEdit("")           
+        self.head_field.setFixedHeight(35)
+        self.head_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+        self.radiobox.addWidget(self.head_field, 1, 1,1,1)
+        
+        self.toe_lbl = QLabel("end")
+        self.toe_lbl.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+        self.radiobox.addWidget(self.toe_lbl, 1, 2,1,1)
+        
+        self.toe_field = QTextEdit("")
+        self.toe_field.setFixedHeight(35)
+        self.toe_field.setStyleSheet("color: #b1b1b1; background-color: rgba(255,255,255,0);")
+        self.radiobox.addWidget(self.toe_field, 1, 3,1,1)
+
+        ##BOTTOM UPPER
+        self.play_in_rv_button = QPushButton("play in RV")
+        self.connect(self.play_in_rv_button, SIGNAL('clicked()'), self.play_in_rv)
+        self.frame_btn_layout.addWidget(self.play_in_rv_button, 0,0,0,1)
+        
+        self.rv_wipe_btn = QPushButton("compare")
+        self.connect(self.rv_wipe_btn, SIGNAL('clicked()'), self.compare_in_rv)
+        self.frame_btn_layout.addWidget(self.rv_wipe_btn, 0,1, 0,1)
+
+        self.delete_preroll_btn = QPushButton("Clean roll frames")
+        self.delete_preroll_btn.setToolTip("remove roll frames from folder for playblast review - removes preroll frames and postroll for better review(with 1 frame buffer for frame blur)")
+        self.connect(self.delete_preroll_btn, SIGNAL('clicked()'), self.clean_playblasts_jpgs)
+        self.frame_btn_layout.addWidget(self.delete_preroll_btn, 0,2, 0,1)
+
+        self.mSubmit_btn = QPushButton("Submit To ub")
+        self.connect(self.mSubmit_btn, SIGNAL('clicked()'), self.pub_to_hub)
+        self.frame_btn_layout.addWidget(self.mSubmit_btn, 0,4, 1,1)
+
+        self.mSubmit_clr_btn = QPushButton("Clean submit to hub")
+        self.connect(self.mSubmit_clr_btn, SIGNAL('clicked()'), self.cln_pub_to_hub)
+        self.frame_btn_layout.addWidget(self.mSubmit_clr_btn, 0,3, 1,1)
+
+        ##BOTTOM LOWER
+        # get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.get_latest_depts_submitted(_project, _scene, _shot)
+        self.play_anim_btn = QPushButton()
+        self.play_anim_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_anim_btn.customContextMenuRequested.connect(self.anim_daily_drp_r_click)
+        self.connect(self.play_anim_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_anim(get_an_ver))
+        self.btm_upper_layer.addWidget(self.play_anim_btn,1,3,1,1)
+
+        self.play_anim_pub_btn = QPushButton()   
+        self.play_anim_pub_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_anim_pub_btn.customContextMenuRequested.connect(self.anim_daily_drp_r_click)
+        self.connect(self.play_anim_pub_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_anim_pub(get_an_pub_ver))
+        self.btm_upper_layer.addWidget(self.play_anim_pub_btn,2,3,1,1)
+        
+        self.play_light_btn = QPushButton()     
+        self.play_light_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_light_btn.customContextMenuRequested.connect(self.light_daily_drp_r_click)
+        self.connect(self.play_light_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_light(get_light_ver))
+        self.btm_upper_layer.addWidget(self.play_light_btn,1,6,1,1)
+        
+        self.play_comp_btn = QPushButton()          
+        self.play_comp_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_comp_btn.customContextMenuRequested.connect(self.comp_daily_drp_r_click)
+        self.connect(self.play_comp_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_comp(get_comp_ver))
+        self.btm_upper_layer.addWidget(self.play_comp_btn,1,7,1,1)
+        
+        self.play_track_btn = QPushButton()         
+        self.play_track_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_track_btn.customContextMenuRequested.connect(self.tracking_daily_drp_r_click)
+        self.connect(self.play_track_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_tracking(get_track_ver))
+        self.btm_upper_layer.addWidget(self.play_track_btn,1,0,1,1)
+        
+        self.play_fx_btn = QPushButton()         
+        self.play_fx_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_fx_btn.customContextMenuRequested.connect(self.fx_daily_drp_r_click)
+        self.connect(self.play_fx_btn, SIGNAL('clicked()'), self.play_latest_fx)
+        self.btm_upper_layer.addWidget(self.play_fx_btn,1,5,1,1)
+
+        self.play_mm_btn = QPushButton()      
+        self.play_mm_btn.setToolTip(get_mm_date)        
+        self.play_mm_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_mm_btn.customContextMenuRequested.connect(self.mm_daily_drp_r_click)
+        self.connect(self.play_mm_btn, SIGNAL('clicked()'),  lambda *args:self.play_latest_matchmove(get_mm_ver))
+        self.btm_upper_layer.addWidget(self.play_mm_btn,1,1,1,1)
+
+        self.play_mm_pub_btn = QPushButton()
+        self.play_mm_pub_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_mm_pub_btn.customContextMenuRequested.connect(self.mm_daily_drp_r_click)
+        self.connect(self.play_mm_pub_btn, SIGNAL('clicked()'),  lambda *args:self.play_latest_matchmov_pub(get_mm_pub_ver))
+        self.btm_upper_layer.addWidget(self.play_mm_pub_btn,2,1,1,1)
+
+        self.play_roto_btn = QPushButton()
+        self.play_roto_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_roto_btn.customContextMenuRequested.connect(self.roto_daily_drp_r_click)
+        self.connect(self.play_roto_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_roto(get_roto_ver))
+        self.btm_upper_layer.addWidget(self.play_roto_btn,1,2,1,1)
+        
+        self.play_ta_btn = QPushButton()           
+        self.play_ta_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_ta_btn.customContextMenuRequested.connect(self.ta_daily_drp_r_click)
+        self.connect(self.play_ta_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_techanim(get_ta_ver))
+        self.btm_upper_layer.addWidget(self.play_ta_btn,1,4,1,1)
+
+        self.play_ta_pub_btn = QPushButton()               
+        self.play_ta_pub_btn.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.play_ta_pub_btn.customContextMenuRequested.connect(self.ta_daily_drp_r_click)
+        self.connect(self.play_ta_pub_btn, SIGNAL('clicked()'), lambda *args:self.play_latest_techanim_pub(get_ta_pub_ver))
+        self.btm_upper_layer.addWidget(self.play_ta_pub_btn,2,4,1,1)
+        self.update_review_latest_buttons(get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver)
+
+        print "launching window"
+        self.start_window(cut_in_value, cut_out_value)
+
+    ##COMMON DEFAULT DIALOGS AND WARNINGS
+
+    def _select_warning(self):
+        sel_warning_text =  "Must select something in list"
+        return sel_warning_text
+
+    def _select_toofew_warning(self):
+        sel_warning_text =  "Must select more than one object in list"
+        return sel_warning_text
+
+    def _submit_warning(self):
+        sub_warning_text = "This version has already been submitted. Unable to submit again."
+        return sub_warning_text
+
+    def _comment_warning(self):
+        com_warning_text =  "Please provide a meaningful comment for submit"
+        return com_warning_text
+
+    def message_box_callup(self, note):
+        '''Default warning dialog'''
+        QtGui.QMessageBox.question(None, 'Message' , note)
+        
+    def make_body(self, prompt):
+        '''Default grab text dialog'''
+        text, ok = QtGui.QInputDialog.getText(None, 'Intput Dialog', prompt)
+        if ok:
+            _project = (str(text))
+        else:
+            return
+        return _project
+
+    ##BUTTON LCLICK FUNCTIONS
+    
+    def launch_hub(self):
+        url = "http:"
+        subprocess.Popen('firefox "%s"' % url, stdout = subprocess.PIPE, shell = True) 
+
+    def launch_folder(self, path):
+        '''This launches dolphin to the custom path'''
+        command = "dolphin '%s'"%path
+        subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)
+
+    def refresh_window(self):
+        '''This refreshes list with current interface layout(eg: changing to view anim and hitting 'refresh' will repopulate face with anim)'''
+        listed_dept = self.dept_drp
+        listed_dept = listed_dept.currentText()   
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText() 
+        listed_shot = self.shot_drp
+        listed_shot = listed_shot.currentText()
+        temp_play_list_path = '/jobs/' + _project + '/' + listed_scene + '/' + listed_shot + '/TASKS/' + listed_dept + "/maya/"
+        shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+        ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+        ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.set_defaults(listed_scene, listed_shot)
+        self.update_review_latest_buttons(get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver)
+        try:
+            winTitle = win_title + '              ' + _project + " : " + listed_shot + " : (F" + str(shot_len_value) + ")   :   ( " + str(wk_strt_value-1) + "  |[ " + str(wk_strt_value) + " <<<[" + str(cut_in_value) + "-" + str(cut_out_value) + "]>>> " + str(wk_out_value) + " ]|  " + str(wk_out_value + 1) + " )"
+        except IndexError:
+            winTitle = win_title + '              ' + _project + " : " + listed_shot
+        self.setWindowTitle(winTitle)
+        # self.refresh_artist_reviews(temp_play_list_path)
+        self.playblast_list_create(listed_dept, listed_scene, listed_shot)
+
+    def refresh_artist_reviews(self, play_path):
+        '''The combined function to refresh the playlist'''
+        play_path=str(play_path)
+        preset = self.find_playlists(play_path)
+        preset = [(each.split("/")[-1]) for each in preset]
+        artist_reviews_listnames = [(each.split("_storedText.txt")[0]) for each in preset]
+        self.artistlist_collection_drp.clear()
+        self.artistlist_collection_drp.addItems(dsktop_rev_list)
+        self.artistlist_collection_drp.addItems(artist_reviews_listnames)     
+
+    def reset_window(self, cut_in_value, cut_out_value):
+        '''This resets the window to default settings as is set in the shell env: resets shot and dept back to default'''
+        deptindex = self.dept_drp.findText(_dept_task, QtCore.Qt.MatchFixedString)
+        self.dept_drp.setCurrentIndex(deptindex)
+        self.start_window(cut_in_value, cut_out_value)
+        shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+        ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+        ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.set_defaults(_scene, _shot)
+        get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.get_latest_depts_submitted(_project, _scene, _shot)
+        self.update_review_latest_buttons(get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver)
+        try:
+            winTitle = win_title + '              ' + _project + " : " + _shot + " : (F" + str(shot_len_value) + ")   :   ( " + str(wk_strt_value-1) + "  |[ " + str(wk_strt_value) + " <<<[" + str(cut_in_value) + "-" + str(cut_out_value) + "]>>> " + str(wk_out_value) + " ]|  " + str(wk_out_value + 1) + " )"
+        except IndexError:
+            winTitle = win_title + '              ' + _project + " : " + _shot
+        self.setWindowTitle(winTitle)
+        self.playblast_list_create(_dept_task, _scene, _shot)
+        self.refresh_artist_reviews(_play_list_path)
+
+
+    def play_in_rv(self):
+        '''This will launch rv and play on what is selected in list'''
+        selected_in_list = self.is_listWid_item_selected()
+        if len(selected_in_list)<1:
+            print self._select_warning()
+            return
+        else:
+            pass
+        command = "rv " + str(selected_in_list[0]) + "/*"
+        print "you are running command: " + command
+        subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)  
+
+    def clean_playblasts_jpgs(self):
+        '''This is the function that removes preroll jpgs from image folder on selected playblast'''
+        shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+        ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+        ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.set_defaults(_scene, _shot)
+        selected_in_list = self.is_listWid_item_selected()
+        get_file_name = selected_in_list[0].split('/')[-1]      
+        get_preset = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(selected_in_list[0]) for name in files if name.lower().endswith(".jpg")]
+        for item in get_preset:
+            get_num_part = item.split(".")[-2]     
+            if get_num_part.isdigit():
+                try:
+                    get_num_part = int(get_num_part)
+                    get_strt_val = int(wk_strt_value)-1
+                    if get_num_part < get_strt_val:
+                        # getit = item.split("/")[-1]
+                        print "removing " + item
+                        os.remove(item)
+                except IndexError:
+                    pass
+                try:
+                    get_end_val = int(wk_out_value) + 1
+                    if int(get_num_part) > get_end_val:
+                        print "removing " + item
+                        os.remove(item)                 
+                except IndexError:
+                    print "no frames to remove"
+                    pass
+            else:
+                print "skipping " + item
+
+    def compare_in_rv(self):
+        '''This is the compare (rv -wipe) function that runs when user selects more than one playblast and uses compare.'''
+        selected_in_list = self.is_listWid_item_selected()
+        if len(selected_in_list)<2:
+            print self._select_toofew_warning()
+            return
+        else:
+            command = "rv -wipe " + str(selected_in_list[0]) + "/* " + str(selected_in_list[1]) + "/*"
+            print "you are running command: " + command
+            subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)
+
+    def cln_pub_to_hub(self):
+        '''This combines the cleaning frame function with the msubmit function to submit a workrange playblast'''
+        self.clean_playblasts_jpgs()
+        self.pub_to_hub()
+        
+    def pub_to_hub(self):
+        '''This builds the mSubmit command based on .jpg and executes it'''
+        selected_in_list = self.is_listWid_item_selected()
+        if len(selected_in_list)>0:
+            pass
+        else:
+            print self._select_warning()
+            self.message_box_callup(self._select_warning())
+            return
+        check_for_mov = [(each_file) for each_file in os.listdir(selected_in_list[0]) if "_mov" in each_file]
+        if len(check_for_mov)>0:
+            print self._submit_warning()
+            self.message_box_callup(self._submit_warning())
+            return
+        else:
+            pass
+        first_frame = self.head_field
+        get_first_frame = first_frame.toPlainText()
+        get_first_frame = get_first_frame.split('.')[0]
+        get_first_frame = str(get_first_frame)
+        get_comment_box = self.comment_field
+        get_comment_from_box = get_comment_box.text()
+        get_comment_from_box = str(get_comment_from_box)
+        get_review_type = self.reviewtype_drp
+        get_the_review_type = get_review_type.currentText()
+        get_the_review_type = str(get_the_review_type)
+        for each_comment in _failed_comments:
+            if get_comment_from_box  ==  each_comment:
+                get_comment_from_box = self.make_body(self._comment_warning())
+                print self._comment_warning()
+            else:
+                pass
+        get_selected_path = selected_in_list[0] + '/'
+        get_items = os.listdir(get_selected_path)
+        get_folder_for_jpgs = [(each_file) for each_file in get_items if "jpg" in each_file]
+        get_play_folder = selected_in_list[0] + '/' + get_folder_for_jpgs[0] + '/'
+        get_list = os.listdir(get_play_folder)
+        get_list = [(each_file) for each_file in get_list if not each_file.startswith('.')]
+        get_image_name = get_list[0].split('.')[0]
+        get_frame_length_exists = [os.path.join(get_play_folder, o) for o in os.listdir(get_play_folder)]
+        get_frame_length_exists.sort(key = lambda x: os.path.getmtime(x)) 
+        get_true_last = int(get_frame_length_exists[-3].split('.')[-2:-1][0])
+        get_last = self.toe_field  
+        get_last_frame = get_last.toPlainText()  
+        get_last_frame = get_last_frame.split('.')[0]
+        get_last_frame = str(get_last_frame)
+        if get_true_last<int(get_last_frame):
+            get_last_frame = get_true_last
+        else:
+            get_last_frame = get_last_frame
+        get_plate = get_play_folder + get_image_name + '.%04d' + _format_ext
+        command = 'msubmitCmd -p ' + get_plate + ' -s ' + str(get_first_frame) + ' -e ' + str(get_last_frame) + ' -n "' + get_comment_from_box + '" -t ' + get_the_review_type + ' --task ' + _dept_task
+        print "you are running command: " + command
+        subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)
+        print "submitted"
+
+    def _open_work_folder(self):
+        '''This launches dolphin to the workfolder for the department listed in the dept dropdown'''
+        listed_dept = self.dept_drp
+        listed_dept = listed_dept.currentText()   
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText() 
+        listed_shot = self.shot_drp
+        listed_shot = listed_shot.currentText()
+        path = '/jobs/' + _project + '/' + listed_scene + "/" + listed_shot + '/TASKS/' + listed_dept + "/maya/scenes/"
+        self.launch_folder(path)
+
+    def set_to_project(self):
+        '''This is for the custom paths - this repopulates the list to _project default'''
+        type_list = self.file_type_drp
+        list_type = type_list.currentText()       
+        get_the_path_slot = self.cust_path_field
+        get_the_path_slot.setText(_project_path_pbMovs)
+        self.cust_playblast_list_create(_project_path_pbMovs, list_type)
+
+    def set_to_user(self):
+        '''This is for the custom paths - this repopulates the list to user directory'''
+        type_list = self.file_type_drp
+        list_type = type_list.currentText()   
+        get_the_path_slot = self.cust_path_field
+        get_the_path_slot.setText(_user_path_pbmovs)
+        self.cust_playblast_list_create(_user_path_pbmovs, list_type)
+
+    def set_toCustom(self):
+        '''This is for the custom paths - this repopulates the list to custom path'''
+        type_list = self.file_type_drp
+        list_type = type_list.currentText()           
+        get_the_path_slot = self.cust_path_field
+        user_path = get_the_path_slot.text()
+        self.cust_playblast_list_create(user_path,list_type)
+
+    def play_latest_anim(self, get_an_ver):
+        '''This plays the latest msubmitted animation images'''
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/anim'      
+        format_to_play = 'jpg'    
+        file_dict = self.rv_latest_blast(play_folder, get_an_ver, format_to_play)   
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_anim_pub(self, get_an_pub_ver):
+        '''This plays the latest anim pubRender'''
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/anim'      
+        format_to_play = 'exr'    
+        file_dict = self.rv_latest_blast(play_folder, get_an_pub_ver, format_to_play)           
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_light(self, get_light_ver):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/lightcomp' 
+        format_to_play = 'exr'    
+        file_dict = self.rv_latest_blast(play_folder, get_light_ver, format_to_play)            
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_comp(self, get_comp_ver):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/comp'      
+        format_to_play = 'exr'    
+        file_dict = self.rv_latest_blast(play_folder, get_comp_ver, format_to_play)             
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_fx(self):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/fxflip'        
+        file_dict = self.rv_latest_blast(play_folder)
+        try:
+            get_play = file_dict[-1][0]
+        except IndexError:
+            print "none available"
+            return
+        self.direct_play_rv(get_play)
+
+    def play_latest_tracking(self, get_track_ver):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/trackcomp'     
+        format_to_play = 'jpg'    
+        file_dict = self.rv_latest_blast(play_folder, get_track_ver, format_to_play)    
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_matchmove(self, get_mm_ver):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/matchmove' 
+        format_to_play = 'jpg'    
+        file_dict = self.rv_latest_blast(play_folder, get_mm_ver, format_to_play)
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_matchmov_pub(self, get_mm_pub_ver):
+        format_to_play = 'exr'        
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/matchmove'     
+        # file_dict = self.rv_latest_mov_pubonly(play_folder)
+        file_dict = self.rv_latest_blast(play_folder, get_mm_pub_ver, format_to_play)
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_roto(self, get_roto_ver):
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/roto'
+        format_to_play = 'exr'    
+        file_dict = self.rv_latest_blast(play_folder, get_roto_ver, format_to_play)
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_techanim(self, get_ta_ver):
+        format_to_play = 'jpg'
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/techanim'      
+        file_dict = self.rv_latest_blast(play_folder, get_ta_ver, format_to_play)
+        get_play = file_dict[-1][0]
+        self.direct_play_rv(get_play)
+
+    def play_latest_techanim_pub(self, get_ta_pub_ver):
+        format_to_play = 'jpg'        
+        play_folder = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/techanim'      
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_blast(play_folder, get_ta_pub_ver, format_to_play)
+            get_play = file_dict[-1][0]
+            self.direct_play_rv(get_play)
+        else:
+            return
+    ##RIGHT CLICKS
+
+    def artist_rev_list_drp_r_click(self):
+        '''This opens dolphin to the artist review path'''
+        path = _play_list_path
+        self.launch_folder(path)
+
+    def anim_daily_drp_r_click(self):
+        '''This will launch dolphin to the animation playblast folder'''
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/anim'
+        self.launch_folder(path)
+
+    def light_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/lightcomp'
+        self.launch_folder(path)
+
+    def comp_daily_drp_r_click(self): 
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/comp'
+        self.launch_folder(path)
+
+    def fx_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/fxflip'
+        self.launch_folder(path)
+
+    def tracking_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/trackcomp'
+        self.launch_folder(path)
+
+    def mm_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/matchmove'
+        self.launch_folder(path)
+
+    def roto_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/roto'
+        self.launch_folder(path)
+
+    def ta_daily_drp_r_click(self):
+        path = '/jobs/' + _project + '/' + _scene + '/' + _shot + '/PRODUCTS/images/techanim'
+        self.launch_folder(path)
+
+    def playblast_list_r_click(self):
+        '''This launches dolphin to the current selected in list'''
+        selected_in_list = self.is_listWid_item_selected()
+        path = str(selected_in_list[0]) + "/"
+        # command = "xdg-open '%s'"%path
+        self.launch_folder(path)
+  
+    def scene_drp_r_click(self):
+        '''this launches dolphin to the listed _scene folder'''
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText()             
+        path = '/jobs/' + _project + '/' + listed_scene + "/"
+        self.launch_folder(path)
+
+    def shot_drp_r_click(self):
+        '''This launches dolphin to the listed shot folder'''
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText() 
+        listed_shot = self.shot_drp
+        listed_shot = listed_shot.currentText()       
+        path = '/jobs/' + _project + '/' + listed_scene + "/" + listed_shot
+        self.launch_folder(path)
+
+    def dept_drp_r_click(self):
+        '''This launches dolphin to the listed department images folder'''
+        listed_dept = self.dept_drp
+        listed_dept = listed_dept.currentText()   
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText() 
+        listed_shot = self.shot_drp
+        listed_shot = listed_shot.currentText()           
+        path = '/jobs/' + _project + '/' + listed_scene + "/" + listed_shot + '/PRODUCTS/images/' + listed_dept
+        self.launch_folder(path)       
+
+    ##DOUBLE CLICKS
+
+    def playblast_list_d_click(self):
+        '''This is the function when the user double clicks the playlist item'''
+        selected_in_list = self.is_listWid_item_selected()
+        self.replayblast_list_create(selected_in_list[0])
+
+    ##SELECT
+
+    def count_frames_selected_playblast(self):
+        '''This fetches the frames of the images to populate the start end field for revealing the frame range available of a given selected playblast'''
+        if self.count_frames_checkbox.isChecked() == True:
+            selected_in_list = self.is_listWid_item_selected()
+            get_items = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(selected_in_list[0]) for name in files if name.lower().endswith(".jpg")]
+            get_frame_length_exists=[ (each) for each in get_items if each.split('.')[-2:-1][0].isdigit() == True]
+            get_frame_length_exists.sort(key = lambda x: os.path.getmtime(x)) 
+            try:
+                get_true_first = int(get_frame_length_exists[0].split('.')[-2:-1][0])
+                get_true_last = int(get_frame_length_exists[-3].split('.')[-2:-1][0])
+                self.head_field.setText(str(float(get_true_first)))
+                self.toe_field.setText(str(float(get_true_last)))
+            except IndexError:
+                self.head_field.setText("0")
+                self.toe_field.setText("0")   
+        else:
+            return
+
+    ##DROP DOWNS
+
+    def on_shot_drp_changed(self):
+        '''This repopulates the shot drop down with the corresponding shots to _scene when the _scene dropdown is changed'''
+        self.get_scene()
+        newcol1 = self.playBlastList.columnWidth(0)
+        newcol2 = self.playBlastList.columnWidth(1)
+        newcol3 = self.playBlastList.columnWidth(2)
+        newcol4 = self.playBlastList.columnWidth(3)
+        if newcol1 == 0:
+            col1, col2, col3, col4 =  240, 160, 500, 50
+        else:
+            col1, col2, col3, col4 =  newcol1, newcol2, newcol3, newcol4
+        self.playBlastList.clear()
+
+    def build_artist_review(self):
+        '''This is the build artist review function'''
+        selected_in_list = self.is_listWid_item_selected()
+        list_build = self.artistlist_build_drp
+        list_build_function = list_build.currentText()
+        if list_build_function == dsktop_rev_build[0]:
+            return
+        elif list_build_function == dsktop_rev_build[1]:
+            if len(selected_in_list)<1:
+                print "need to select something"
+                return
+            else:
+                pass            
+            getitems = [(each.split("/")[-1]) for each in selected_in_list]
+            name_to_save = ' '.join(getitems)
+            prompt = "name of list:"
+            getget_comment_from_box = self.make_body(prompt)
+            if getget_comment_from_box == None:
+                print "needs name"
+                return
+            else:
+                pass
+            getget_comment_from_box = getget_comment_from_box.replace(' ', '_')
+            shotList = getget_comment_from_box + "_storedText.txt"
+            file_path_build = _play_list_path + shotList
+            copyfilemessage = "creating " + file_path_build
+            reply = QtGui.QMessageBox.question(None, 'Message' ,copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply  ==  QtGui.QMessageBox.Yes:
+                if os.path.isfile(file_path_build) == True:
+                    c_message = "create over " + file_path_build
+                    replay = QtGui.QMessageBox.question(None, 'Message' ,c_message, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+                    if reply  ==  QtGui.QMessageBox.Yes:
+                        inp = open(file_path_build, "w + ")
+                        print selected_in_list
+                        inp.write(str(selected_in_list))
+                        inp.close()
+                        print "created " + file_path_build
+                    else:
+                        print "cancelled"
+                        return
+                else:
+                    inp = open(file_path_build, "w + ")
+                    print selected_in_list
+                    inp.write(str(selected_in_list))
+                    inp.close()
+                    print "created " + file_path_build
+            else:
+                print "cancelled"
+                return
+            self.refresh_artist_reviews(_play_list_path)         
+        elif list_build_function == dsktop_rev_build[2]:
+            if len(selected_in_list)<1:
+                print "need to select something"
+                return
+            else:
+                pass                
+            get_preset = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(_play_list_path) for name in files if "_storedText.txt" in name]
+            if len(get_preset)<1:
+                print "there are no lists available to append to"
+                return
+            else:
+                pass
+            make_content = self.obtain_presets([get_preset[0]]) 
+            print make_content
+            make_new_content = list(set(make_content + selected_in_list))
+            print make_new_content
+            title = "new"
+            inst_win = DropMenu(get_preset, title, make_new_content)
+            inst_win.show()
+        elif list_build_function == dsktop_rev_build[3]:
+            not_selected_in_list = self.is_listWid_item_not_selected()
+            if len(not_selected_in_list)<1:
+                print "Not enough items to exclude from list"
+                return
+            else:
+                pass           
+            playlist_load = self.artistlist_collection_drp
+            playlist_name = playlist_load.currentText()                    
+            getitems = [(each.split("/")[-1]) for each in not_selected_in_list]
+            name_to_save = ' '.join(getitems)
+            shotList = playlist_name + "_storedText.txt"
+            file_path_build = _play_list_path + shotList
+            copyfilemessage = "updating " + file_path_build
+            reply = QtGui.QMessageBox.question(None, 'Message' ,copyfilemessage, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply  ==  QtGui.QMessageBox.Yes:
+                if os.path.isfile(file_path_build) == True:
+                    if reply  ==  QtGui.QMessageBox.Yes:
+                        inp = open(file_path_build, "w + ")
+                        print not_selected_in_list
+                        inp.write(str(not_selected_in_list))
+                        inp.close()
+                        print "created " + file_path_build
+                else:
+                    print "cancelled"
+                    return
+            else:
+                print "cancelled"
+                return
+            playlist_load = self.artistlist_collection_drp
+            playlist_name = playlist_load.currentText()     
+            self.load_artist_review()
+        reset_dropdown = self.artistlist_build_drp.findText(dsktop_rev_build[0], QtCore.Qt.MatchFixedString)
+        self.artistlist_build_drp.setCurrentIndex(reset_dropdown)
+
+    def load_artist_review(self):
+        '''This populates the playblast list with the contents for selected artist review list from dropdown'''
+        playlist_load = self.artistlist_collection_drp
+        playlist_name = playlist_load.currentText()
+        if playlist_name == dsktop_rev_list[0]:
+            pass
+        else:
+            get_preset = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(_play_list_path) for name in files if playlist_name + "_storedText.txt" == name]
+            file_dict = []
+            make_content = self.obtain_presets(get_preset)
+            if make_content:
+                pass
+            else:
+                return
+            for each in make_content:
+                import datetime
+                getFolders = [(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem]
+                if getFolders:
+                    sub = "yes"
+                else:
+                    sub = "no"                
+                get_actual_time = time.ctime(os.path.getmtime(each))
+                stat_buffer = os.stat(each)   
+                time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+                time_format = time_format.split(" ")[:4]
+                time_format = " ".join(time_format)
+                if "  " in str(get_actual_time):
+                    get_actual_time = get_actual_time.split("  ")
+                    get_actual_time = get_actual_time[1].split(" ")[1]
+                else:
+                    get_actual_time = get_actual_time.split(" ")[3]
+                time_format = time_format + "  " + get_actual_time + '>' + sub
+                make_dict = (each, time_format)
+                file_dict.append(make_dict)
+            count = len(file_dict)
+            file_dict = reversed(file_dict)     
+            count = len(make_content)
+            self.playBlastList.setColumnCount(4)
+            self.playBlastList.setRowCount(count)
+            self.playBlastList.setHorizontalHeaderLabels(headers)
+            for row, item in enumerate(file_dict):
+                key = item[0].split('/')[-1]
+                path = item[0]
+                value = item[1].split('>')[0]
+                sub = item[1].split('>')[1]
+                self.playBlastList.setItem(row, 0, QTableWidgetItem(key))
+                self.playBlastList.setItem(row, 1, QTableWidgetItem(value))
+                self.playBlastList.setItem(row, 2, QTableWidgetItem(path))
+                self.playBlastList.setItem(row, 3, QTableWidgetItem(sub))
+
+    def append_artist_review(self, get_artist_review_list, make_new_content):
+        '''This is the append to artist review list function'''
+        inp = open(get_artist_review_list, "w + ")
+        inp.write(str(make_new_content))
+        inp.close()
+        print "appended " + str(make_new_content) + " into " + get_artist_review_list
+
+    #AUXILLARY FUNCTIONS
+
+    ##SETUP
+
+    def start_window(self, cut_in_value, cut_out_value):
+        '''runs once window is launched to prefill the playblast list'''
+        index = self.scene_drp.findText(_scene, QtCore.Qt.MatchFixedString)
+        self.scene_drp.setCurrentIndex(index)
+        self.get_scene()
+        index2 = self.shot_drp.findText(_shot, QtCore.Qt.MatchFixedString)
+        self.shot_drp.setCurrentIndex(index2)
+        index6 = self.reviewtype_drp.findText(setDefaultType[0], QtCore.Qt.MatchFixedString)
+        self.reviewtype_drp.setCurrentIndex(index6)
+        try:
+            self.head_field.setText(str(float(cut_in_value)))
+            self.toe_field.setText(str(float(cut_out_value)))
+        except IndexError:
+            self.head_field.setText("0")
+            self.toe_field.setText("0")
+        self.playblast_list_create(_dept_task, _scene, _shot)
+
+    def get_scene(self):
+        '''This reads _scene from drop down'''
+        listed_scene = self.scene_drp
+        listed_scene = listed_scene.currentText()         
+        get_selected_path = '/jobs/' + _project + '/' + listed_scene
+        get_items = os.listdir(get_selected_path)
+        get_items = sorted(get_items)
+        self.get_shot(get_items)
+
+    def get_shot(self, get_items):
+        '''This reads the shot from drop down'''
+        getDrop_scene = self.shot_drp
+        getDrop_scene.clear()
+        getDrop_scene.addItems(get_items)
+
+    def find_playlists(self, prodding_directory):
+        '''This is triggered to find any stored artist review lists'''
+        preset = False
+        format = ".txt"
+        prodding_directory=str(prodding_directory)
+        get_preset = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(prodding_directory) for name in files if name.lower().endswith(format)]
+        preset = [(each) for each in get_preset if "storedText" in each]
+        return preset
+
+    def playblast_list_create(self, set_dept, set_scene, set_shot):
+        '''This populates the playblast list'''   
+        self.playBlastList.setColumnCount(4)
+        file_dict, count = self.grab_folder_items(set_dept, set_scene, set_shot) 
+        self.playBlastList.setRowCount(count)
+        self.playBlastList.setHorizontalHeaderLabels(headers)
+        if file_dict == False:
+            return
+        else:
+            for row, item in enumerate(file_dict):
+                key = item[0].split('/')[-1]
+                path = item[0]
+                value = item[1].split('>')[0]
+                sub = item[1].split('>')[1]
+                self.playBlastList.setItem(row, 0, QTableWidgetItem(key))
+                self.playBlastList.setItem(row, 1, QTableWidgetItem(value))
+                self.playBlastList.setItem(row, 2, QTableWidgetItem(path))
+                self.playBlastList.setItem(row, 3, QTableWidgetItem(sub))
+
+    def set_folder_items(self, directory):
+        '''This sorts the playlist items by date'''
+        try:
+            get_files = [os.path.join(directory, o) for o in os.listdir(directory) if os.path.isdir(os.path.join(directory, o))]
+            pass
+        except IndexError:
+            return  
+        get_files.sort(key = lambda x: os.path.getmtime(x))
+        file_dict = []
+        for each in get_files:
+            import datetime
+            stat_buffer = os.stat(each)           
+            get_actual_time = time.ctime(os.path.getmtime(each))
+            time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+            time_format = time_format.split(" ")[:4]
+            time_format = " ".join(time_format)
+            if "  " in str(get_actual_time):
+                get_actual_time = get_actual_time.split("  ")
+                get_actual_time = get_actual_time[1].split(" ")[1]
+            else:
+                get_actual_time = get_actual_time.split(" ")[3]
+            time_format = time_format + "  " + get_actual_time
+            make_dict = (each, time_format)
+            file_dict.append(make_dict)
+        count = len(file_dict)
+        file_dict = reversed(file_dict)
+        return file_dict, count
+
+    def rv_latest_blast(self, play_folder, get_ta_ver, format_to_play):
+        '''This returns the latest submitted playblast of the dept listed(This should only be assigned to depts that pubRender EG: anim, techanim)'''
+        # format_to_use = "jpg"
+        play_folder=str(play_folder)
+        if os.path.isdir(play_folder) == True:
+            get_files = [os.path.join(play_folder, o) for o in os.listdir(play_folder) if os.path.isdir(os.path.join(play_folder, o))]
+            get_files = [(each_folder) for each_folder in get_files if get_ta_ver in each_folder]
+            pass
+        else:
+            return
+        get_files.sort(key = lambda x: os.path.getmtime(x))
+        file_dict = []
+        for each in get_files:
+            get_the_mov_folders = [(folderItem) for folderItem in os.listdir(each) if format_to_play in folderItem]
+            if get_the_mov_folders:
+                stat_buffer = os.stat(each)
+                import datetime
+                get_actual_time = time.ctime(os.path.getmtime(each))
+                get_movie = each + '/' + get_the_mov_folders[0]
+                time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+                time_format = time_format.split(" ")[:4]
+                time_format = " ".join(time_format)
+                if "  " in str(get_actual_time):
+                    get_actual_time = get_actual_time.split("  ")
+                    get_actual_time = get_actual_time[1].split(" ")[1]
+                else:
+                    get_actual_time = get_actual_time.split(" ")[3]
+                time_format = time_format + "  " + get_actual_time
+                make_dict = (get_movie, time_format)
+                file_dict.append(make_dict)
+        return file_dict
+
+    def get_latest_depts_submitted(self, _project, set_the_scene, set_the_shot):
+        '''This fetches the latest dept that has been submitted to set_the_pub - it is the information that will populate the bottom daily buttons'''
+        #getmatchmovefolder
+        print set_the_shot
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/matchmove'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_mm_ver = getitem.split('_')[-1]
+                get_mm_date = file_dict[-1][1] 
+            else:
+                get_mm_ver = 'no ver'
+                get_mm_date = 'no date'
+        else:
+            get_mm_ver = 'no ver'
+            get_mm_date = 'no date'     
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/matchmove'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_mm_pub_ver = getitem.split('_')[-1]
+                get_mm_pub_date = file_dict[-1][1]
+            else:
+                get_mm_pub_ver = 'no ver'
+                get_mm_pub_date = 'no date'   
+        else:
+            get_mm_pub_ver = 'no ver'
+            get_mm_pub_date = 'no date'                    
+        #gettrackfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/trackcomp'
+        if os.path.isdir(play_folder) == True:    
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_track_ver = getitem.split('_')[-1]
+                get_track_date = file_dict[-1][1]  
+            else:
+                get_track_ver = 'no ver'
+                get_track_date = 'no date'
+        else:
+            get_track_ver = 'no ver'
+            get_track_date = 'no date'                    
+        #getrotofolder  
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/roto'
+        if os.path.isdir(play_folder) == True:       
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_roto_ver = getitem.split('_')[-1]
+                get_roto_date = file_dict[-1][1]
+            else:
+                get_roto_ver = 'no ver'
+                get_roto_date = 'no date' 
+        else:
+            get_roto_ver = 'no ver'
+            get_roto_date = 'no date'                    
+        #getanim_folder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/anim'
+        if os.path.isdir(play_folder) == True:      
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_an_ver = getitem.split('_')[-1]
+                get_an_date = file_dict[-1][1]
+            else:
+                get_an_ver = 'no ver'
+                get_an_date = 'no date'
+        else:
+            get_an_ver = 'no ver'
+            get_an_date = 'no date'                    
+        #getanimpubfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/anim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_an_pub_ver = getitem.split('_')[-1]
+                get_an_pub_date = file_dict[-1][1]
+            else:
+                get_an_pub_ver = 'no ver'
+                get_an_pub_date = 'no date'
+        else:
+            get_an_pub_ver = 'no ver'
+            get_an_pub_date = 'no date'                    
+        #gettechanim_folder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/techanim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_ta_ver = getitem.split('_')[-1]
+                get_ta_date = file_dict[-1][1]
+            else:
+                get_ta_ver = 'no ver'
+                get_ta_date = 'no date'  
+        else:
+            get_ta_ver = 'no ver'
+            get_ta_date = 'no date'   
+        #gettechanimpubfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/techanim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_ta_pub_ver = getitem.split('_')[-1]
+                get_ta_pub_date = file_dict[-1][1]
+            else:
+                get_ta_pub_ver = 'no ver'
+                get_ta_pub_date = 'no date'   
+        else:
+            get_ta_pub_ver = 'no ver'
+            get_ta_pub_date = 'no date'                    
+        #getfxfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/fxflip'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_fx_ver = getitem.split('_')[-1]           
+                get_fx_date = file_dict[-1][1]
+            else:
+                get_fx_ver = 'no ver'
+                get_fx_date = 'no date'   
+        else:
+            get_fx_ver = 'no ver'
+            get_fx_date = 'no date'     
+        #getlightcompfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/lightcomp'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_light_ver = getitem.split('_')[-1]        
+                get_light_date = file_dict[-1][1]
+            else:
+                get_light_ver = 'no ver'
+                get_light_date = 'no date' 
+        else:
+            get_light_ver = 'no ver'
+            get_light_date = 'no date'                 
+        #getcompfolder
+        play_folder = '/jobs/' + _project + '/' + set_the_scene + '/' + set_the_shot + '/PRODUCTS/images/comp'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_comp_ver = getitem.split('_')[-1]     
+                get_comp_date = file_dict[-1][1]
+            else:
+                get_comp_ver = 'no ver'
+                get_comp_date = 'no date'
+        else:
+            get_comp_ver = 'no ver'
+            get_comp_date = 'no date'                     
+        return get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+         ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+         ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver
+
+    def update_review_latest_buttons(self, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver, get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date, get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver):
+        self.play_anim_btn.setText("anim " + get_an_ver)
+        if get_an_ver == "no ver":
+            self.play_anim_btn.setEnabled(False)
+            self.play_anim_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_anim_btn.setEnabled(True)
+            self.play_anim_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))              
+        self.play_anim_btn.setToolTip(get_an_date)
+        self.play_anim_pub_btn.setText("pubanim " + get_an_pub_ver)
+        if get_an_pub_ver == "no ver":
+            self.play_anim_pub_btn.setEnabled(False)
+            self.play_anim_pub_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_anim_pub_btn.setEnabled(True)
+            self.play_anim_pub_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))              
+        self.play_anim_pub_btn.setToolTip(get_an_pub_date)        
+        self.play_light_btn.setText("light " + get_light_ver)
+        if get_light_ver == "no ver":
+            self.play_light_btn.setEnabled(False)
+            self.play_light_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_light_btn.setEnabled(True)
+            self.play_light_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))         
+        self.play_light_btn.setToolTip(get_light_date)
+        self.play_comp_btn.setText("comp " + get_comp_ver)
+        if get_comp_ver == "no ver":
+            self.play_comp_btn.setEnabled(False)
+            self.play_comp_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_comp_btn.setEnabled(True)
+            self.play_comp_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))              
+        self.play_comp_btn.setToolTip(get_comp_date)        
+        self.play_track_btn.setText("track " + get_track_ver)
+        if get_track_ver == "no ver":
+            self.play_track_btn.setEnabled(False)
+            self.play_track_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_track_btn.setEnabled(True)
+            self.play_track_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))     
+        self.play_track_btn.setToolTip(get_track_date)                  
+        self.play_fx_btn.setText("fx " + get_fx_ver)
+        if get_fx_ver == "no ver":
+            self.play_fx_btn.setEnabled(False)
+            self.play_fx_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_fx_btn.setEnabled(True)
+            self.play_fx_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))            
+        self.play_fx_btn.setToolTip(get_fx_date)
+        self.play_mm_btn.setText("match " + get_mm_ver)
+        if get_mm_ver == "no ver":
+            self.play_mm_btn.setEnabled(False)
+            self.play_mm_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_mm_btn.setEnabled(True)
+            self.play_mm_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))        
+        self.play_mm_btn.setToolTip(get_mm_date)
+        self.play_mm_pub_btn.setText("pubmatch " + get_mm_pub_ver)
+        if get_mm_pub_ver == "no ver":
+            self.play_mm_pub_btn.setEnabled(False)
+            self.play_mm_pub_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_mm_pub_btn.setEnabled(True)
+            self.play_mm_pub_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))        
+        self.play_mm_pub_btn.setToolTip(get_mm_date)
+        self.play_roto_btn.setText("roto " + get_roto_ver)
+        if get_roto_ver == "no ver":
+            self.play_roto_btn.setEnabled(False)
+            self.play_roto_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_roto_btn.setEnabled(True)
+            self.play_roto_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))
+        self.play_roto_btn.setToolTip(get_roto_date)
+        self.play_ta_btn.setText("techanim " + get_ta_ver)
+        if get_ta_ver == "no ver":
+            self.play_ta_btn.setEnabled(False)
+            self.play_ta_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_ta_btn.setEnabled(True)
+            self.play_ta_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))
+        self.play_ta_btn.setToolTip(get_ta_date)
+        self.play_ta_pub_btn.setText("pubtechanim " + get_ta_pub_ver)
+        if get_ta_pub_ver == "no ver":
+            self.play_ta_pub_btn.setEnabled(False)
+            self.play_ta_pub_btn.setStyleSheet("color: rgb%s; background-color: rgba%s;" %(str(regularDict.get("grey")), str(regularDict.get("light_grey"))))
+        else:
+            self.play_ta_pub_btn.setEnabled(True)
+            self.play_ta_pub_btn.setStyleSheet("color: #b1b1b1; background-color: rgba%s;" %str(regularDict.get("hub")))
+        self.play_ta_pub_btn.setToolTip(get_ta_pub_date)
+
+    def get_listset_directory(self):
+        '''This fetches any artist review playlist txt files that have been saved into directory'''
+        list_array = self.playBlastList
+        count_data = list_array.rowCount()
+        model = list_array.model()
+        return model, count_data, list_array
+
+    def obtain_presets(self, prodding_file):
+        '''This is triggered during the append function to grab the information in the existing text file'''
+        # get_listnames = {}
+        for each in prodding_file:
+            List = open(each).readlines()
+            for aline in List:
+                make_content = ast.literal_eval(aline)
+                return make_content
+            
+    def cust_playblast_list_create(self, pathFound, list_type):
+        '''This is the function that populates the playblast list based on custom paths'''
+        self.playBlastList.setColumnCount(4)
+        try:
+            if list_type == "file":
+                get_files = [os.path.join(dirpath, name) for dirpath, dirnames, files in os.walk(_play_list_path) for name in files]
+            elif list_type == "folder":
+                get_files = [os.path.join(pathFound, o) for o in os.listdir(pathFound) if os.path.isdir(os.path.join(pathFound, o))]
+            pass
+        except IndexError:
+            print "nothing found"
+            return
+        get_files.sort(key = lambda x: os.path.getmtime(x))
+        file_dict = []
+        sub = "no"
+        for each in get_files:
+            stat_buffer = os.stat(each)
+            import datetime
+            get_actual_time = time.ctime(os.path.getmtime(each))
+            time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+            time_format = time_format.split(" ")[:4]
+            time_format = " ".join(time_format)
+            if "  " in str(get_actual_time):
+                get_actual_time = get_actual_time.split("  ")
+                get_actual_time = get_actual_time[1].split(" ")[1]
+            else:
+                get_actual_time = get_actual_time.split(" ")[3]
+            time_format = time_format + "  " + get_actual_time + '>' + sub
+            make_dict = (each, time_format)
+            file_dict.append(make_dict)
+        count = len(file_dict)
+        file_dict = reversed(file_dict)
+        dictItems = file_dict
+        self.playBlastList.setRowCount(count)
+        self.playBlastList.setHorizontalHeaderLabels(headers)
+        for row, item in enumerate(file_dict):
+            key = item[0].split('/')[-1]
+            path = item[0]
+            value = item[1].split('>')[0]
+            sub = item[1].split('>')[1]
+            self.playBlastList.setItem(row, 0, QTableWidgetItem(key))
+            self.playBlastList.setItem(row, 1, QTableWidgetItem(value))
+            self.playBlastList.setItem(row, 2, QTableWidgetItem(path))
+            self.playBlastList.setItem(row, 3, QTableWidgetItem(sub))    
+
+    def direct_play_rv(self, item):
+        '''This is the function that plays the latest dept daily button and if something is selected in playblast list, it will compare to it'''
+        selected_in_list = self.is_listWid_item_selected()
+        if selected_in_list:
+            converted_items = '/* '.join(selected_in_list)
+            command = "rv -wipe " + str(item) + "/* " + converted_items + "/*"
+            print "you are running command: " + command
+            subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)       
+        else:
+            command = "rv " + str(item) + "/*"
+            print "you are running command: " + command
+            subprocess.Popen(command, stdout = subprocess.PIPE, shell = True)   
+
+
+
+    def replayblast_list_create(self, directory):
+        '''This fetches information of the subfolder when the user double clicked the playblast list item'''
+        self.playBlastList.setColumnCount(4)
+        file_dict, count = self.set_folder_items(directory)        
+        self.playBlastList.setRowCount(count)
+        self.playBlastList.setHorizontalHeaderLabels(headers)
+        sub = 'no'
+        for row, item in enumerate(file_dict):
+            key = item[0].split('/')[-1]
+            path = item[0]
+            value = item[1].split('>')[0]
+            self.playBlastList.setItem(row, 0, QTableWidgetItem(key))
+            self.playBlastList.setItem(row, 1, QTableWidgetItem(value))
+            self.playBlastList.setItem(row, 2, QTableWidgetItem(path))
+            self.playBlastList.setItem(row, 3, QTableWidgetItem(sub))
+
+    def is_listWid_item_selected(self):
+        '''This detects which row is selected. This will default to a row regardless of column selected'''
+        list_widget = self.playBlastList
+        (data_in_playblast_listWidget, count_data) = self.get_listWidgetData()
+        get_string_id = []
+        for index in xrange(count_data):
+            get = list_widget.item(index, 0).isSelected()
+            if get == True:
+                get_table_data = list_widget.item(index, 2).text()
+                get_table_data = str(get_table_data)
+                get_string_id.append(get_table_data)
+            else:
+                get = list_widget.item(index, 1).isSelected()
+                if get == True:
+                    get_table_data = list_widget.item(index, 2).text()
+                    get_table_data = str(get_table_data)
+                    get_string_id.append(get_table_data)
+                else:
+                    get = list_widget.item(index, 2).isSelected()
+                    if get == True:
+                        get_table_data = list_widget.item(index, 2).text()
+                        get_table_data = str(get_table_data)
+                        get_string_id.append(get_table_data)
+                    else:
+                        get = list_widget.item(index, 3).isSelected()
+                        if get == True:
+                            get_table_data = list_widget.item(index, 3).text()
+                            get_table_data = str(get_table_data)
+                            get_string_id.append(get_table_data)                        
+        return get_string_id
+
+    def is_listWid_item_not_selected(self):
+        '''This detects which row is not selected. This will default to a row regardless of column selected'''
+        list_widget = self.playBlastList
+        (data_in_playblast_listWidget, count_data) = self.get_listWidgetData()
+        get_string_id = []
+        for index in xrange(count_data):
+            get = list_widget.item(index, 0).isSelected()
+            if get == False:
+                get_table_data = list_widget.item(index, 2).text()
+                get_table_data = str(get_table_data)
+                get_string_id.append(get_table_data)
+            else:
+                get = list_widget.item(index, 1).isSelected()
+                if get == False:
+                    get_table_data = list_widget.item(index, 2).text()
+                    get_table_data = str(get_table_data)
+                    get_string_id.append(get_table_data)
+                else:
+                    get = list_widget.item(index, 2).isSelected()
+                    if get == False:
+                        get_table_data = list_widget.item(index, 2).text()
+                        get_table_data = str(get_table_data)
+                        get_string_id.append(get_table_data)
+                    else:
+                        get = list_widget.item(index, 3).isSelected()
+                        if get == False:
+                            get_table_data = list_widget.item(index, 3).text()
+                            get_table_data = str(get_table_data)
+                            get_string_id.append(get_table_data)                        
+        return get_string_id
+
+    def get_listWidgetData(self):
+        '''This obtains data from the playblast list items'''
+        model, count_data, list_array  = self.get_listset_directory()   
+        data_in_playblast_listWidget = []
+        for row in range(model.rowCount()):
+            data_in_playblast_listWidget.append([])
+            for column in range(model.columnCount()):
+                index = model.index(row, column)
+                data_in_playblast_listWidget[row].append(str(model.data(index).toString()))
+        return data_in_playblast_listWidget, count_data
+
+    def grab_folder_items(self, set_dept, set_scene, set_shot):
+        '''This obtains information about the selected item in the playblast list'''
+        shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value, get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+        ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+        ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver = self.set_defaults(set_scene, set_shot)
+        dept_image_path ='/jobs/' + _project + '/' + set_scene + '/' + set_shot + '/PRODUCTS/images/'
+        if os.path.isdir(dept_image_path) == True:
+            get_depts = os.listdir(dept_image_path)
+            rv_folder = dept_image_path
+            directory = dept_image_path + set_dept
+            directory = str(directory)            
+            try:
+                self.head_field.setText(str(float(cut_in_value)))
+                self.toe_field.setText(str(float(cut_out_value)))
+            except IndexError:
+                self.head_field.setText("0")
+                self.toe_field.setText("0")
+            deptload = self.dept_drp
+            deptType = deptload.currentText()
+            deptType = str(deptType)
+            file_dict = []
+            get_files_exists = False
+            count = False
+            if os.path.isdir(directory):
+                get_files = [os.path.join(directory, o) for o in os.listdir(directory) if os.path.isdir(os.path.join(directory, o))]
+                get_files.sort(key = lambda x: os.path.getmtime(x))
+                get_files_exists = True
+            else:
+                get_files_exists = False
+                count = False
+                file_dict = False
+            if get_files_exists == True:
+                for each_folder in get_files:
+                    getFolders = [(folderItem) for folderItem in os.listdir(each_folder) if "mov" in folderItem]
+                    if getFolders:
+                        sub = "yes"
+                    else:
+                        sub = "no"
+                    stat_buffer = os.stat(each_folder)
+                    import datetime
+                    get_actual_time = time.ctime(os.path.getmtime(each_folder))
+                    time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+                    time_format = time_format.split(" ")[:4]
+                    time_format = " ".join(time_format)
+                    if "  " in str(get_actual_time):
+                        get_actual_time = get_actual_time.split("  ")
+                        get_actual_time = get_actual_time[1].split(" ")[1]
+                    else:
+                        get_actual_time = get_actual_time.split(" ")[3]
+                    time_format = time_format + "  " + get_actual_time + '>' + sub
+                    make_dict = (each_folder, time_format)
+                    file_dict.append(make_dict)
+                count = len(file_dict)
+                file_dict = reversed(file_dict)
+                dictItems = file_dict
+        else:
+            dept_image_path ='/jobs/' + _project + '/' + set_scene + '/' + set_shot
+            directory = dept_image_path
+            count = False
+            file_dict = False        
+        return file_dict, count
+
+    def set_defaults(self, scene_name, shot_name):
+        # shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0  
+        # print shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value
+        sgvar_file_path =
+        if os.path.isfile(sgvar_file_path) == True:
+        # get available in/out values
+            franges = {'WORK_IN': None, 'CUT_IN': None,
+                       'WORK_OUT': None, 'CUT_OUT': None}
+            for line in open(sgvar_file_path, 'r'):
+                if "CUT_DURATION" in line:
+                    shot_len_value = line.split('=')[-1].strip()
+                    if shot_len_value != "None":
+                        try:
+                            shot_len_value = int(shot_len_value)
+                        except IndexError:
+                            shot_len_value = 0.0
+                    else:
+                        shot_len_value = 0.0
+                if 'CUT_IN' in line:
+                    cut_in_value = line.split('=')[-1].strip()
+                    if cut_in_value != "None":
+                        try:
+                            cut_in_value = int(cut_in_value)
+                        except IndexError:
+                            cut_in_value = 0.0
+                    else:
+                        cut_in_value = 0.0
+                if 'CUT_OUT' in line:
+                    cut_out_value = line.split('=')[-1].strip()
+                    if cut_out_value != "None":
+                        try:
+                            cut_out_value = int(cut_out_value)
+                        except IndexError:
+                            cut_out_value = 0.0
+                    else:
+                        cut_out_value = 0.0
+                if 'WORK_IN' in line:
+                    wk_strt_value = line.split('=')[-1].strip()
+                    if wk_strt_value != "None":
+                        try:
+                            wk_strt_value = int(wk_strt_value)
+                        except IndexError:
+                            wk_strt_value = 0.0
+                    else:
+                        wk_strt_value = 0.0
+                if 'WORK_OUT' in line:
+                    wk_out_value = line.split('=')[-1].strip()
+                    if wk_out_value != "None":
+                        try:
+                            wk_out_value = int(wk_out_value)
+                        except IndexError:
+                            wk_out_value = 0.0
+                    else:
+                        wk_out_value = 0.0
+                if 'CUT_IN' in line:
+                    cut_shouldbe_in_value = line.split('=')[-1].strip()
+                    if cut_shouldbe_in_value != "None":
+                        try:
+                            cut_shouldbe_in_value = int(cut_shouldbe_in_value)-8
+                        except IndexError:
+                            cut_shouldbe_in_value = 0.0
+                    else:
+                        cut_shouldbe_in_value = 0.0
+                if 'CUT_OUT' in line:
+                    cut_shouldbe_out_value = line.split('=')[-1].strip()
+                    if cut_shouldbe_out_value != "None":
+                        try:
+                            cut_shouldbe_out_value = int(cut_shouldbe_out_value) + 8
+                        except IndexError:
+                            cut_shouldbe_out_value = 0.0
+                    else:
+                        cut_shouldbe_out_value = 0.0
+        else:
+            shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value = 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        #getmatchmovefolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/matchmove'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_mm_ver = getitem.split('_')[-1]
+                get_mm_date = file_dict[-1][1] 
+            else:
+                get_mm_ver = 'no ver'
+                get_mm_date = 'no date'
+        else:
+            get_mm_ver = 'no ver'
+            get_mm_date = 'no date'     
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/matchmove'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_mm_pub_ver = getitem.split('_')[-1]
+                get_mm_pub_date = file_dict[-1][1]
+            else:
+                get_mm_pub_ver = 'no ver'
+                get_mm_pub_date = 'no date'   
+        else:
+            get_mm_pub_ver = 'no ver'
+            get_mm_pub_date = 'no date'                    
+        #gettrackfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/trackcomp'
+        if os.path.isdir(play_folder) == True:    
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_track_ver = getitem.split('_')[-1]
+                get_track_date = file_dict[-1][1]  
+            else:
+                get_track_ver = 'no ver'
+                get_track_date = 'no date'
+        else:
+            get_track_ver = 'no ver'
+            get_track_date = 'no date'                    
+        #getrotofolder  
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/roto'
+        if os.path.isdir(play_folder) == True:       
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_roto_ver = getitem.split('_')[-1]
+                get_roto_date = file_dict[-1][1]
+            else:
+                get_roto_ver = 'no ver'
+                get_roto_date = 'no date' 
+        else:
+            get_roto_ver = 'no ver'
+            get_roto_date = 'no date'                    
+        #getanim_folder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/anim'
+        if os.path.isdir(play_folder) == True:      
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_an_ver = getitem.split('_')[-1]
+                get_an_date = file_dict[-1][1]
+            else:
+                get_an_ver = 'no ver'
+                get_an_date = 'no date'
+        else:
+            get_an_ver = 'no ver'
+            get_an_date = 'no date'                    
+        #getanimpubfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/anim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_an_pub_ver = getitem.split('_')[-1]
+                get_an_pub_date = file_dict[-1][1]
+            else:
+                get_an_pub_ver = 'no ver'
+                get_an_pub_date = 'no date'
+        else:
+            get_an_pub_ver = 'no ver'
+            get_an_pub_date = 'no date'                    
+        #gettechanim_folder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/techanim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_ta_ver = getitem.split('_')[-1]
+                get_ta_date = file_dict[-1][1]
+            else:
+                get_ta_ver = 'no ver'
+                get_ta_date = 'no date'  
+        else:
+            get_ta_ver = 'no ver'
+            get_ta_date = 'no date'   
+        #gettechanimpubfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/techanim'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_pubonly(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_ta_pub_ver = getitem.split('_')[-1]
+                get_ta_pub_date = file_dict[-1][1]
+            else:
+                get_ta_pub_ver = 'no ver'
+                get_ta_pub_date = 'no date'   
+        else:
+            get_ta_pub_ver = 'no ver'
+            get_ta_pub_date = 'no date'                    
+        #getfxfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/fxflip'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_fx_ver = getitem.split('_')[-1]           
+                get_fx_date = file_dict[-1][1]
+            else:
+                get_fx_ver = 'no ver'
+                get_fx_date = 'no date'   
+        else:
+            get_fx_ver = 'no ver'
+            get_fx_date = 'no date'     
+        #getlightcompfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/lightcomp'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_light_ver = getitem.split('_')[-1]        
+                get_light_date = file_dict[-1][1]
+            else:
+                get_light_ver = 'no ver'
+                get_light_date = 'no date' 
+        else:
+            get_light_ver = 'no ver'
+            get_light_date = 'no date'                 
+        #getcompfolder
+        play_folder = '/jobs/' + _project + '/' + scene_name + '/' + shot_name + '/PRODUCTS/images/comp'
+        if os.path.isdir(play_folder) == True:
+            file_dict = self.rv_latest_mov_nopub(play_folder)
+            if len(file_dict)>0:
+                get_play = file_dict[-1][0]
+                getitem = get_play.split('/')[-2]
+                get_comp_ver = getitem.split('_')[-1]     
+                get_comp_date = file_dict[-1][1]
+            else:
+                get_comp_ver = 'no ver'
+                get_comp_date = 'no date'
+        else:
+            get_comp_ver = 'no ver'
+            get_comp_date = 'no date'                         
+        return shot_len_value, cut_in_value, cut_out_value, wk_strt_value, wk_out_value, cut_shouldbe_in_value, cut_shouldbe_out_value\
+                ,get_mm_ver, get_track_ver, get_roto_ver, get_an_ver,get_ta_ver, get_fx_ver, get_light_ver, get_comp_ver\
+                ,get_mm_date, get_mm_pub_ver, get_mm_pub_date, get_track_date, get_roto_date, get_an_date,get_ta_date, get_fx_date, get_light_date, get_comp_date\
+                ,get_an_pub_date, get_ta_pub_date, get_an_pub_ver, get_ta_pub_ver
+
+    def rv_latest_mov_pubonly(self, play_folder):
+        '''This returns the latest pubrender of the dept listed(This should only be assigned to depts that pubRender EG: anim, techanim)'''
+        play_folder=str(play_folder)
+        if os.path.isdir(play_folder) == True:
+            get_files = [os.path.join(play_folder, o) for o in os.listdir(play_folder) if os.path.isdir(os.path.join(play_folder, o))]
+        else:
+            return
+        get_files.sort(key = lambda x: os.path.getmtime(x))
+        file_dict = []
+        for each in get_files:
+            get_the_mov_folders = [(folderItem) for folderItem in os.listdir(each) if "mov" in folderItem and "pubRender" in folderItem]
+            if get_the_mov_folders:
+                stat_buffer = os.stat(each)
+                import datetime
+                get_actual_time = time.ctime(os.path.getmtime(each))
+                get_movie = each + '/' + get_the_mov_folders[0]
+                time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+                time_format = time_format.split(" ")[:4]
+                time_format = " ".join(time_format)
+                if "  " in str(get_actual_time):
+                    get_actual_time = get_actual_time.split("  ")
+                    get_actual_time = get_actual_time[1].split(" ")[1]
+                else:
+                    get_actual_time = get_actual_time.split(" ")[3]
+                time_format = time_format + "  " + get_actual_time
+                make_dict = (get_movie, time_format)
+                file_dict.append(make_dict)
+        return file_dict
+
+    def rv_latest_mov_nopub(self, play_folder):
+        '''This returns the latest playblast of the dept listed(This should only be assigned to depts that pubRender EG: anim, techanim)'''
+        play_folder=str(play_folder)
+        if os.path.isdir(play_folder) == True:
+            get_files = [os.path.join(play_folder, o) for o in os.listdir(play_folder) if os.path.isdir(os.path.join(play_folder, o))]
+            pass
+        else:
+            return
+        get_files.sort(key = lambda x: os.path.getmtime(x))
+        file_dict = []
+        for each_file in get_files:
+            get_the_mov_folders = [(folderItem) for folderItem in os.listdir(each_file) if "mov" in folderItem and "pubRender" not in folderItem]
+            if get_the_mov_folders:
+                stat_buffer = os.stat(each_file)
+                import datetime
+                get_actual_time = time.ctime(os.path.getmtime(each_file))
+                get_movie = each_file + '/' + get_the_mov_folders[0]
+                time_format = datetime.datetime.fromtimestamp(stat_buffer.st_mtime).strftime('%c')
+                time_format = time_format.split(" ")[:4]
+                time_format = " ".join(time_format)
+                if "  " in str(get_actual_time):
+                    get_actual_time = get_actual_time.split("  ")
+                    get_actual_time = get_actual_time[1].split(" ")[1]
+                else:
+                    get_actual_time = get_actual_time.split(" ")[3]
+                time_format = time_format + "  " + get_actual_time
+                make_dict = (get_movie, time_format)
+                file_dict.append(make_dict)
+        return file_dict
+
+app = QtGui.QApplication(sys.argv)
+inst = managerWin()
+inst.show()
+sys.exit(app.exec_())
+
