@@ -346,7 +346,7 @@ class ValueClass(object):
             getSel=cmds.ls(sl=1)[0]
             pass
         except:
-            print "select something"
+            print ("select something")
             return
         if ":" in getSel:
             if "Anim" in getSel:
