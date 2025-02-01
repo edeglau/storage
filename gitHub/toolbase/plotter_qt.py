@@ -8,25 +8,15 @@ from os  import popen
 from sys import stdin
 from random import randint
 from sys import argv
-
-#import PyQt4
-#from PyQt4 import QtCore, QtGui, Qt
-#from PyQt4.QtGui import QWidget, QRadioButton, QGridLayout, QLabel, \
-#    QTableWidget, QComboBox, QKeySequence, QToolButton, QPlainTextEdit, QPushButton,QBoxLayout, \
-#    QClipboard, QTableWidgetItem, QCheckBox, QVBoxLayout, QHBoxLayout, \
-#    QPixmap, QLineEdit, QListWidget, QTextEdit, QSizePolicy, QFrame, QPalette, QColor, \
-#    QFont, QAbstractItemView, QMenu, QMessageBox
-#from PyQt4.QtCore import SIGNAL
- 
+# from mrig_pyqt import QtCore, QtGui, QtWidgets
+# from mrig_pyqt.QtCore import SIGNAL
 import PyQt5
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 detailMessge = ['X', 'Y', 'Z', 'XY', 'XZ', 'YZ']
 class plotter_UI(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
-        super(plotter_UI, self).__init__(parent = None)
-
-        self.setWindowTitle("Plotter Window 2.0")
+        super(plotter_UI, self).__init__(parent = None)        self.setWindowTitle("Plotter Window 2.0")
         self.central_widget=QtWidgets.QWidget(self)
         self.setCentralWidget(self.central_widget)
         self.masterLayout=QtWidgets.QGridLayout(self.central_widget)
@@ -41,14 +31,15 @@ class plotter_UI(QtWidgets.QMainWindow):
         self.selection_widgetframe = QtWidgets.QFrame()
         self.selection_widgetframe.setLayout(self.SelectionSetupLayout)
         self.SelectionSetupLayout.addLayout(self.myform, 0,0,1,1)
-        self.layout.addLayout(self.SelectionSetupLayout, 0,0,1,1)        self.add_widgets()
+        self.layout.addLayout(self.SelectionSetupLayout, 0,0,1,1)
+
+        self.add_widgets()
 
         scroll = QtWidgets.QScrollArea()
         scroll.setWidget(self.selection_widgetframe)
         scroll.setWidgetResizable(False)
         self.layout.addWidget(scroll, 1,0,1,1)
         self.setLayout(self.layout)
-
     def add_widgets(self):
         self.plot_order_layout = QtWidgets.QHBoxLayout()
         self.myform.addRow(self.plot_order_layout) 
@@ -74,14 +65,15 @@ class plotter_UI(QtWidgets.QMainWindow):
 
         self.onion_button = QtWidgets.QPushButton("Onion")
         self.onion_button.clicked.connect(lambda: self._onion_skin())
-        self.plot_button_layout.addWidget(self.onion_button)  
+        self.plot_button_layout.addWidget(self.onion_button)  
+
         self.loc_button = QtWidgets.QPushButton("Locate each")
         self.loc_button.clicked.connect(lambda: self.locator_select_verts())
         self.plot_button_layout.addWidget(self.loc_button)   
 
         self.loc_mas_button = QtWidgets.QPushButton("Locate Mass")
         self.loc_mas_button.clicked.connect(lambda: self.locator_selected_mass())
-        self.plot_button_layout.addWidget(self.loc_mas_button)  
+        self.plot_button_layout.addWidget(self.loc_mas_button)  
 
         self.lu_button = QtWidgets.QPushButton("lineup")
         self.lu_button.clicked.connect(lambda: self.aim_obj())
@@ -107,10 +99,10 @@ class plotter_UI(QtWidgets.QMainWindow):
         self.mm_xx_button.clicked.connect(lambda: self.xform_mirror_move())
         self.plot_button_layout.addWidget(self.mm_xx_button) 
 
-
         self.mc_button = QtWidgets.QPushButton("Mirror Create +X--X")
         self.mc_button.clicked.connect(lambda: self.xform_mirror_create())
         self.plot_button_layout.addWidget(self.mc_button) 
+
 
         self.rst_orig_button = QtWidgets.QPushButton("Set to Origin")
         self.rst_orig_button.clicked.connect(lambda: self.xform_set_origin())
@@ -141,16 +133,18 @@ class plotter_UI(QtWidgets.QMainWindow):
 
         self.int_fix_button = QtWidgets.QPushButton("Intersection Fix")
         self.int_fix_button.clicked.connect(lambda: self.shrink_intersections())
-        self.plot_button_layout.addWidget(self.int_fix_button)  
+        self.plot_button_layout.addWidget(self.int_fix_button)  
 
-
-        self.transform_c_button = QtWidgets.QPushButton("Transform Cache")
+       self.transform_c_button = QtWidgets.QPushButton("Transform Cache")
         self.transform_c_button.clicked.connect(lambda: self.offset_cache_static())
         self.plot_button_layout.addWidget(self.transform_c_button)  
 
-       self.off_c_button = QtWidgets.QPushButton("Offset Cache")
+        self.off_c_button = QtWidgets.QPushButton("Offset Cache")
         self.off_c_button.clicked.connect(lambda: self.offset_cache())
         self.plot_button_layout.addWidget(self.off_c_button)  
+
+
+
 
         self.strLayout = QtWidgets.QGridLayout()
         self.strFrame = QtWidgets.QFrame()
@@ -199,7 +193,9 @@ class plotter_UI(QtWidgets.QMainWindow):
         self.bias_slider.setTickPosition(self.bias_slider.TicksBelow)
         # self.bias_slider.valueChanged.clicked.connect(self.print_bias_slider)
         self.bias_slider.valueChanged.connect(self.print_bias_slider)
-        self.biasLayout.addWidget(self.bias_slider) 
+        self.biasLayout.addWidget(self.bias_slider)   
+
+
         self.driftLayout = QtWidgets.QGridLayout()
         self.driftFrame = QtWidgets.QFrame()
         self.driftFrame.setStyleSheet("color: #aaccff; background-color: rgba(70,70,100,50);")
@@ -232,7 +228,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         self.plot_slider_layout.addWidget(self.align_button)      
         self.align_mass_button = QtWidgets.QPushButton("Align Mass")
         self.align_mass_button.clicked.connect(lambda: self._offset_verts_mass())
-        self.plot_slider_layout.addWidget(self.align_mass_button)  
+        self.plot_slider_layout.addWidget(self.align_mass_button)      
 
     def selection_grab(self):
         '''--------------------------------------------------------------------------------------------------------------------------------------
@@ -242,7 +238,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         if getSel:
             pass
         else:
-            print "You need to make a selection for this tool to operate on."
+            print ("You need to make a selection for this tool to operate on.")
             return
         return getSel
 
@@ -276,6 +272,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         directn=self.aligning
         direction = str(directn.currentText())        
         self.space_vert(strength, amount, direction, biases)
+
     def _plot_each_vert(self):
         self.plot_each_vert()
 
@@ -288,13 +285,12 @@ class plotter_UI(QtWidgets.QMainWindow):
     def matchFullShape(self):
         getFirstGrp, getSecondGrp=self.CurveShapes()
         self.matchCurveShapes_andShrinkWrap(getFirstGrp, getSecondGrp)
-
     def onionSkin(self):
         selObj=mc.ls(sl=1, fl=1)       
         if len(selObj)==1:
             pass
         else:
-            print "Select 1 object" 
+            print ("Select 1 object" )
         getRange=mc.playbackOptions(q=1, max=1)#get framerange of scene to set keys in iteration 
         getRange=int(getRange)#change framerange to an integer. May have to change this to a float iterator on a half key blur(butterfly wings)
         for each in range(getRange):
@@ -326,7 +322,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         if len(selObj)>0:
             pass
         else:
-            print "Select 1 object" 
+            print ("Select 1 object") 
             return     
         getTopRange=mc.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
         getLowRange=mc.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
@@ -351,14 +347,13 @@ class plotter_UI(QtWidgets.QMainWindow):
             mc.currentTime(each)
         mc.delete(getloc[0])
         return placeloc[0]
-
     def plot_vert(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
         selObj=mc.ls(sl=1, fl=1)      
         if len(selObj)>0:
             pass
         else:
-            print "Select 1 object" 
+            print ("Select 1 object") 
             return     
         getTopRange=mc.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
         getLowRange=mc.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
@@ -387,15 +382,13 @@ class plotter_UI(QtWidgets.QMainWindow):
             mc.SetKeyRotate(placeloc[0])
             mc.currentTime(each)
         mc.delete(getloc[0])
-
-
     def _plotter_avrg(self):
         '''plots a locator to a vertice or face per keyframe in a timeline'''
         selObj=mc.ls(sl=1, fl=1)      
         if len(selObj)>0:
             pass
         else:
-            print "Select 1 object" 
+            print ("Select 1 object") 
             return     
         getTopRange=mc.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
         getLowRange=mc.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
@@ -404,7 +397,8 @@ class plotter_UI(QtWidgets.QMainWindow):
         getloc=mc.spaceLocator(n=selObj[0]+"cnstr_lctr")
         mc.normalConstraint(selObj[0], getloc[0])
         placeloc=mc.spaceLocator(n=selObj[0]+"lctr")
-        for each in getRange:            mc.currentTime(each)            
+        for each in getRange:
+            mc.currentTime(each)            
             transform=mc.xform(selObj, q=1, ws=1, t=1)
             posBucketx=self.array_median_find(transform[0::3])
             posBuckety=self.array_median_find(transform[1::3])
@@ -426,7 +420,7 @@ class plotter_UI(QtWidgets.QMainWindow):
 
     def array_median_find(self, lst):
         mysum=numpy.median(numpy.array(lst))
-        return mysum            
+        return mysum           
 
     def space_vert(self, strength, amount, direction, bias):
         '''offsets a vert from another'''
@@ -435,12 +429,13 @@ class plotter_UI(QtWidgets.QMainWindow):
         bias=float(bias)
         selObj=mc.ls(sl=1, fl=1)   
         firstpart, secondpart = selObj[:len(selObj)/2], selObj[len(selObj)/2:]
-        print firstpart, secondpart
+        print (firstpart, secondpart)
         if len(firstpart)==len(secondpart):
             pass
         else:
-            print "Odd number in length. Please pick exactly same amount of verts between two rows"
-            return        for leadingVert, followVert in map(None, firstpart, secondpart):
+            print ("Odd number in length. Please pick exactly same amount of verts between two rows")
+            return
+        for leadingVert, followVert in map(None, firstpart, secondpart):
             mc.select(leadingVert, r=1)
             mc.select(followVert, add=1)
             getfirst=mc.ls(sl=1)[0]
@@ -485,7 +480,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         if len(selObj)>0:
             pass
         else:
-            print "Select 1 object" 
+            print ("Select 1 object") 
         getTopRange=mc.playbackOptions(q=1, max=1)+1#get framerange of scene to set keys in iteration 
         getLowRange=mc.playbackOptions(q=1, min=1)-1#get framerange of scene to set keys in iteration 
         edgeBucket=[]
@@ -505,7 +500,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         if len(mc.ls(sl=1))>1:
             pass
         else:
-            print "select more than one object for lineup. If adding many, select the driving aim object last"
+            print ("select more than one object for lineup. If adding many, select the driving aim object last")
             pass
         for each in selObj[:-1]:
             cret_cnst = mc.aimConstraint(par_const, each)
@@ -523,6 +518,9 @@ class plotter_UI(QtWidgets.QMainWindow):
             bucket_x.append(transformWorldMatrix[0])
             bucket_y.append(transformWorldMatrix[1])
             bucket_z.append(transformWorldMatrix[2])            
+        # posBucketx=self.median_find(transformWorldMatrix[0::3])
+        # posBuckety=self.median_find(transformWorldMatrix[1::3])
+        # posBucketz=self.median_find(transformWorldMatrix[2::3])
         posBucketx=self.median_find(bucket_x)
         posBuckety=self.median_find(bucket_y)
         posBucketz=self.median_find(bucket_z)
@@ -530,7 +528,10 @@ class plotter_UI(QtWidgets.QMainWindow):
         mc.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
         get_const = mc.normalConstraint(selObj[0], getLoc[0])
         mc.delete(get_const)
-        return getLoc[0]    def dup_cnst(self, each):
+        return getLoc[0]
+
+
+    def dup_cnst(self, each):
         getSel=mc.ls(sl=1, fl=1)
         parentObj=getSel[0]
         for number, each in enumerate(getSel[1:]):
@@ -554,8 +555,7 @@ class plotter_UI(QtWidgets.QMainWindow):
             rotateWorldMatrix = cmds.xform(each, q=True, ws=1, ro=True)
             newObj=cmds.duplicate(parentObj,n=parentObj+str(number))
             cmds.xform(newObj[0], ws=1, t=transformWorldMatrix)
-            cmds.xform(newObj[0], ws=1, ro=rotateWorldMatrix)  
-
+            cmds.xform(newObj[0], ws=1, ro=rotateWorldMatrix)  
 
     def locationXForm(self, each):
         # getObj=mc.ls(each)
@@ -569,11 +569,12 @@ class plotter_UI(QtWidgets.QMainWindow):
             transformWorldMatrix = mc.xform(each, q=True, ws=1, t=True)
             rotateWorldMatrix = mc.xform(each, q=True, ws=1, ro=True)
         return transformWorldMatrix, rotateWorldMatrix
+
     def locator_select_verts(self, arg=None):
         selObj=mc.ls(sl=1, fl=1)
         if len(selObj) >0:
             for each in selObj:
-                print each
+                print (each)
                 transformWorldMatrix, rotateWorldMatrix=self.locationXForm(each)
                 # transform=mc.xform(each, q=1, ws=1, t=1)
                 # rotate_trns=mc.xform(selObj, q=1, ws=1, rp=1)
@@ -586,7 +587,7 @@ class plotter_UI(QtWidgets.QMainWindow):
                 get_const = mc.normalConstraint(each, getLoc[0])
                 mc.delete(get_const)                
         elif len(selObj)<1:
-            print "select one or more vertices"
+            print ("select one or more vertices")
             pass               
         return getLoc[0]
 
@@ -604,16 +605,25 @@ class plotter_UI(QtWidgets.QMainWindow):
             getLoc=mc.spaceLocator(n=str(selObj[0])+"_loc")
             mc.xform(getLoc[0], t=(posBucketx, posBuckety, posBucketz))
         elif len(selObj)<1:
-            print "select one or more vertices"
-            pass        else:
+            print ("select one or more vertices")
+            pass
+        else:
             for each in selObj:
-                print each
+                print (each)
+                # transform=mc.xform(each, q=1, t=1)
                 transformWorldMatrix, rotateWorldMatrix=self.locationXForm(selObj)
+                # posBucketx=self.median_find(transform[0::3])
+                # posBuckety=self.median_find(transform[1::3])
+                # posBucketz=self.median_find(transform[2::3])
                 getLoc=mc.spaceLocator(n=str(each)+"_loc")
                 mc.xform(getLoc[0], t=(transformWorldMatrix))                
         return getLoc[0]
-
-
+    # def locator_select_verts(self, arg=None):
+    #     selObj=mc.ls(sl=1, fl=1)
+    #     transform=mc.xform(selObj,  q=1, wd=1, t=1)
+    #     getLoc=mc.spaceLocator()
+    #     mc.xform(getLoc[0], t=(transform[0], transform[1], transform[2]))
+    #     return getLoc[0]
     def helpWin(self, stringField):
         '''--------------------------------------------------------------------------------------------------------------------------------------
         Interface Layout
@@ -637,7 +647,7 @@ class plotter_UI(QtWidgets.QMainWindow):
     def offset_cache(self):
         checkSel = mc.ls(sl=1)
         if len(checkSel)<2:
-            print "you need to select two objects"
+            print ("you need to select two objects")
         leader = checkSel[1]
         mc.select(leader, r=1)
         mc.ConvertSelectionToVertices(leader)
@@ -663,7 +673,7 @@ class plotter_UI(QtWidgets.QMainWindow):
     def offset_cache_static(self):
         checkSel = mc.ls(sl=1)
         if len(checkSel)<2:
-            print "you need to select two objects"
+            print ("you need to select two objects")
         leader = checkSel[1]
         mc.select(leader, r=1)
         mc.ConvertSelectionToVertices(leader)
@@ -684,7 +694,8 @@ class plotter_UI(QtWidgets.QMainWindow):
         mc.select(getchildren, add =1 )
         create_cstr = mc.cluster()
         # connect result to cluster
-        mc.connectAttr( plsMns+".output3D", create_cstr[0]+"Handle.translate", f = 1)    def CurveShapes(self):
+        mc.connectAttr( plsMns+".output3D", create_cstr[0]+"Handle.translate", f = 1)
+    def CurveShapes(self):
         getSel=self.selection_grab()
         if getSel:
             pass
@@ -692,14 +703,14 @@ class plotter_UI(QtWidgets.QMainWindow):
             return
         getNames=mc.ls(sl=1, fl=1)
         if ".e[" not in str(getNames[0]):
-            print "selection needs to be continuous edges of two seperate polygon objects: first select one, then continuous edge and then the continuous edge on a seperate poly object that you want to deform it along"
+            print ("selection needs to be continuous edges of two seperate polygon objects: first select one, then continuous edge and then the continuous edge on a seperate poly object that you want to deform it along")
             return
         else:
             pass
         getFirstGrp = getNames[0].split(".")[0]
         getSecondGrp = getNames[-1:][0].split(".")[0]
         if getFirstGrp == getSecondGrp:
-            print "Only one poly object has been detected. Select one object and it's continuous edge and then select another object and select it's continuous edge for the first object to align to."
+            print ("Only one poly object has been detected. Select one object and it's continuous edge and then select another object and select it's continuous edge for the first object to align to.")
             return
         else:
             pass
@@ -711,7 +722,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         getFirstCurve=mc.ls(sl=1, fl=1)
         '''get cv total of curve'''
         getFirstCurveInfo=mc.ls(sl=1, fl=1)
-        print "this needs to be refactored to not use pymel: Line 725"
+        print ("this needs to be refactored to not use pymel: Line 725")
         numberCV=str(pm.PyNode(getFirstCurveInfo[0]).numCVs())
         mc.delete(getFirstCurve[0], ch=1)
         '''wrap child mesh to curve'''
@@ -722,7 +733,8 @@ class plotter_UI(QtWidgets.QMainWindow):
         mc.CreateCurveFromPoly()
         getSecondCurve=mc.ls(sl=1, fl=1)
         getSecondCurveInfo=mc.ls(sl=1, fl=1)
-        '''rebuilt curve to match first curve built'''        mc.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
+        '''rebuilt curve to match first curve built'''
+        mc.rebuildCurve(getSecondCurve[0], getFirstCurve[0], rt=2 )
         getSecondCurve=mc.ls(sl=1, fl=1)
         getSecondCurveInfo=mc.ls(sl=1, fl=1)
         mc.delete(getSecondCurve[0], ch=1)
@@ -733,8 +745,6 @@ class plotter_UI(QtWidgets.QMainWindow):
         '''blend child curve to parent curve'''
         mc.blendShape(getSecondCurve[0], getFirstCurve[0],w=(0, 1.0))
         return getFirstGrp, getSecondGrp
-
-
     def matchCurveShapes_andShrinkWrap(self, getFirstGrp, getSecondGrp):
         myDict={
                 ".shapePreservationEnable":1,
@@ -770,15 +780,13 @@ class plotter_UI(QtWidgets.QMainWindow):
         mc.connectAttr(getSecondGrp+".worldMesh[0]", getShrink[0]+".targetGeom", f=1)
         for key, value in myDict.items():
             mc.setAttr(getShrink[0]+key, value)
+
     def xformmove(self):
         '''move to matrix'''
         objSel=mc.ls(sl=1)
         matrix=mc.xform(objSel[0], q=1, ws=1, m=1)
         mc.xform(objSel[1], ws=1, m=matrix)   
         mc.select(objSel[1])
-
-
-
     def xformrot(self):
         '''move to matrix'''
         getornt = mc.orientConstraint (mc.ls(sl=1)[0], mc.ls(sl=1)[-1], mo=0)
@@ -821,6 +829,9 @@ class plotter_UI(QtWidgets.QMainWindow):
             mc.setAttr("temp_grp.scaleX", -1)
             mc.parent(new_dup[0], w=1)
             mc.delete("temp_grp")
+
+
+
     def xform_set_originV1(self):
         '''reset transforms to sit at origin'''
         objSel=mc.ls(sl=1)
@@ -834,8 +845,9 @@ class plotter_UI(QtWidgets.QMainWindow):
             mc.select(each, r=1)
             mc.makeIdentity(apply='true', t=0, r=1, s=0)
             # maya.mel.eval( "ResetTransformations;" )
-            print "reset {}".format(each)
+            print ("reset {}".format(each))
             mc.delete(getIt)
+
 
     def xform_set_origin(self):
         '''reset transforms to sit at origin'''
@@ -852,7 +864,7 @@ class plotter_UI(QtWidgets.QMainWindow):
             # mc.xform("{}.rotatePivot".format(each), a=1, ro=0,0,0)
             # mc.rotate(0,0,0, "{}.rotatePivot".format(each) , a =1)
             mc.xform("{}.rotatePivot".format(each), ws=1, ro=rotateWorldMatrix)
-            print "reset {}".format(each)
+            print ("reset {}".format(each))
             mc.delete(getIt)
 
     def xform_set_to_sel(self):
@@ -869,16 +881,18 @@ class plotter_UI(QtWidgets.QMainWindow):
         mc.select(objSel, r=1)
         mc.xform("{}.rotatePivot".format(objSel),  ws=1, t=transformWorldMatrix)
         mc.xform("{}.rotatePivot".format(objSel), ws=1, ro=rotateWorldMatrix)
-        print "reset {}".format(objSel)
+        # mc.xform("{}.rotatePivot".format(each),  a=rotateWorldMatrix)
+        # mc.move(rotateWorldMatrix[0], rotateWorldMatrix[1], rotateWorldMatrix[2], "{}.rotatePivot".format(each) ,r=1, rpr=1 )
+        print ("reset {}".format(objSel))
         mc.delete(getIt)
+
     def xform_reset_move(self):
         '''reset transforms'''
         objSel=mc.ls(sl=1)
         matrix=mc.xform(objSel[0], q=1, ws=1, m=1)
         getloc=mc.spaceLocator(n="cnstr_lctr")
         mc.xform(getloc[0], m=matrix)
-        maya.mel.eval( "ResetTransformations;" )
-        # mc.makeIdentity(apply='false', t=1, r=1, s=1)
+        maya.mel.eval( "ResetTransformations;" )        # mc.makeIdentity(apply='false', t=1, r=1, s=1)
         mc.select([getloc[0], objSel[0]], r=1 )
         # self.xformmove()
         mc.xform(objSel[0], m=matrix)
@@ -924,8 +938,7 @@ class plotter_UI(QtWidgets.QMainWindow):
         ".targetGeom":0,
         ".targetInflation":0.06115107902,
         ".targetSmoothLevel":1,
-        }
-        getSel=self.selection_grab()
+        }        getSel=self.selection_grab()
         if getSel:
             pass
         else:
@@ -969,7 +982,4 @@ class plotter_UI(QtWidgets.QMainWindow):
 
 inst_mkwin=plotter_UI()
 inst_mkwin.show()
-
-
-
 
