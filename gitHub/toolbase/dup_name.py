@@ -70,31 +70,34 @@ class duplct_name_UI(QtWidgets.QMainWindow):
         self.duplct_rnm.clicked.connect(lambda: self.rename_dups())
         self.duplct_nm_button_layout.addWidget(self.duplct_rnm)
 
+
     def print_dups(self):
         collect_dups = self.find_dups()
         if len(collect_dups)>0:
             collect_sel = []
             for index, each in enumerate(collect_dups):
-                print each
+                print (each)
                 getgroup  = mc.ls(each[0], l=1)
                 for item in getgroup:
-                    print item
+                    print (item)
         else:
-            print "no duplicate named objects present to print"
+            print ("no duplicate named objects present to print")
+
+
 
     def select_dups(self):
         collect_dups = self.find_dups()
         if len(collect_dups)>0:
             collect_sel = []
             for index, each in enumerate(collect_dups):
-                print each
+                print (each)
                 getgroup  = mc.ls(each[0], l=1)
                 for item in getgroup:
-                    print item
+                    print (item)
                     collect_sel.append(item)
             mc.select(collect_sel, r=1)
         else:
-            print "no duplicate named objects present to select"
+            print ("no duplicate named objects present to select")
 
     # @commonUtil.undochunk
     def rename_dups(self):
@@ -105,12 +108,12 @@ class duplct_name_UI(QtWidgets.QMainWindow):
                     try:
                         new_name = "{}_{}_{}".format(each[0], str(index), str(item))
                         mc.rename(mc.ls(each[0])[0], new_name)
-                        print "Renamed {} to {} ".format(each[0], new_name)
+                        print ("Renamed {} to {} ".format(each[0], new_name))
                     except:
-                        print "unable to rename {}".format(each[0])
+                        print ("unable to rename {}".format(each[0]))
                         pass
         else:
-            print "no duplicate named objects present to rename"
+            print ("no duplicate named objects present to rename")
 
     def find_dups(self):
         duplicates = [(f.split("|")[-1]) for f in mc.ls(dag=1) ]
